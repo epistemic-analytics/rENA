@@ -19,6 +19,7 @@ accumulate <- function(dfDT, by, codeNames, window = 3,append=F) {
   ##dfDT_windows=dfDT_codes[, {ref_window_df2(.SD,windowSize=window,append=TRUE)}, by=conversationsBy, .SDcols=codeNames, with=T]
   ##dfDT_windows=dfDT_codes[, {ref_window_df2(.SD,windowSize=window,append=TRUE)}, by=conversationsBy, .SDcols=codeNames, with=T]
 
+  dfDT_codes = copy(dfDT);
   dfDT_codes[, (codedTriNames) := ref_window_df2(.SD,windowSize=window,append=append), by=conversationsBy, .SDcols=codeNames, with=T];
   dfDT_codes_u = dfDT_codes[UserName %in% gList, { triNames=.SD[, (codedTriNames), with=F]; lapply(triNames, sum) }, by=unitsBy ];
 

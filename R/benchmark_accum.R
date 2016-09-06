@@ -3,6 +3,7 @@ library(RcppRoll);
 Rcpp::sourceCpp('src/svector_to_ut.cpp')
 Rcpp::sourceCpp('src/dfvector_to_ut.cpp')
 Rcpp::sourceCpp('src/vector_to_ut.cpp')
+Rcpp::sourceCpp('src/ref_window_df2.cpp')
 source('~/Workspaces/RStudio2/rENA/R/old.accumulation.R');
 source('~/Workspaces/RStudio2/rENA/R/roll.sum.pad.R');
 source('~/Workspaces/RStudio2/rENA/R/lagpad.R');
@@ -28,9 +29,9 @@ sList = paste(conversationsList$ActivityNumber, conversationsList$GroupName, sep
 gList = c("akash v", "alexander b", "amelia n", "tiffany x"); #paste(unitsList$UserName, sep = " & ");
 uList = gList;
 
-benchRes = microbenchmark(
-  #old.accumulation(window = 1,codes = df[,codeNames],group = unitsList,units = unitsList,stanzas = conversations,sList = sList,gList = gList,uList = uList, binary = T),
-  accumulate(df, c(), codeNames, window=1)
-)
+#benchRes = microbenchmark(
+oldRes = old.accumulation(window = 1,codes = df[,codeNames],group = unitsList,units = unitsList,stanzas = conversations,sList = sList,gList = gList,uList = uList, binary = T)
+newRes = accumulate(df, c(), codeNames, window=1)
+#)
 
 
