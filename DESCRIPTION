@@ -1,0 +1,17 @@
+Package: rENA
+Type: Package
+Name: ENA
+Title: Epistemic Network Analysis
+Description: Create sets for Epistemic Network Analysis (ENA).
+Version: 0.1.0
+Authors@R: c(person("Cody L Marquart", role = c("aut", "cre"), email="cody.marquart@wisc.edu"))
+Author: Cody L Marquart [aut, cre]
+Maintainer: Cody L Marquart <cody.marquart@wisc.edu>
+License: GPL (>= 2)
+LazyData: TRUE
+LinkingTo: Rcpp
+Imports:
+    Rcpp
+Suggests:
+    microbenchmark
+RoxygenNote: 5.0.1
