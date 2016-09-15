@@ -5,6 +5,82 @@
 
 using namespace Rcpp;
 
+// dfvector_to_ut
+DataFrame dfvector_to_ut(DataFrame v, CharacterVector nms);
+RcppExport SEXP rENA_dfvector_to_ut(SEXP vSEXP, SEXP nmsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< DataFrame >::type v(vSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type nms(nmsSEXP);
+    __result = Rcpp::wrap(dfvector_to_ut(v, nms));
+    return __result;
+END_RCPP
+}
+// ref_window_df
+DataFrame ref_window_df(DataFrame v, CharacterVector nms, int windowSize, bool append);
+RcppExport SEXP rENA_ref_window_df(SEXP vSEXP, SEXP nmsSEXP, SEXP windowSizeSEXP, SEXP appendSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< DataFrame >::type v(vSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type nms(nmsSEXP);
+    Rcpp::traits::input_parameter< int >::type windowSize(windowSizeSEXP);
+    Rcpp::traits::input_parameter< bool >::type append(appendSEXP);
+    __result = Rcpp::wrap(ref_window_df(v, nms, windowSize, append));
+    return __result;
+END_RCPP
+}
+// ref_window_df
+DataFrame ref_window_df(DataFrame df, int windowSize, bool binary, bool useDiaganol);
+RcppExport SEXP rENA_ref_window_df(SEXP dfSEXP, SEXP windowSizeSEXP, SEXP binarySEXP, SEXP useDiaganolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< DataFrame >::type df(dfSEXP);
+    Rcpp::traits::input_parameter< int >::type windowSize(windowSizeSEXP);
+    Rcpp::traits::input_parameter< bool >::type binary(binarySEXP);
+    Rcpp::traits::input_parameter< bool >::type useDiaganol(useDiaganolSEXP);
+    __result = Rcpp::wrap(ref_window_df(df, windowSize, binary, useDiaganol));
+    return __result;
+END_RCPP
+}
+// ref_window_df2
+DataFrame ref_window_df2(DataFrame df, int windowSize, bool binary, bool useDiaganol);
+RcppExport SEXP rENA_ref_window_df2(SEXP dfSEXP, SEXP windowSizeSEXP, SEXP binarySEXP, SEXP useDiaganolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< DataFrame >::type df(dfSEXP);
+    Rcpp::traits::input_parameter< int >::type windowSize(windowSizeSEXP);
+    Rcpp::traits::input_parameter< bool >::type binary(binarySEXP);
+    Rcpp::traits::input_parameter< bool >::type useDiaganol(useDiaganolSEXP);
+    __result = Rcpp::wrap(ref_window_df2(df, windowSize, binary, useDiaganol));
+    return __result;
+END_RCPP
+}
+// ref_window_sum
+DataFrame ref_window_sum(DataFrame df);
+RcppExport SEXP rENA_ref_window_sum(SEXP dfSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< DataFrame >::type df(dfSEXP);
+    __result = Rcpp::wrap(ref_window_sum(df));
+    return __result;
+END_RCPP
+}
+// svector_to_ut
+std::vector<std::string> svector_to_ut(std::vector<std::string> v);
+RcppExport SEXP rENA_svector_to_ut(SEXP vSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type v(vSEXP);
+    __result = Rcpp::wrap(svector_to_ut(v));
+    return __result;
+END_RCPP
+}
 // vector_to_ut_full
 std::vector<int> vector_to_ut_full(std::vector<int> v);
 RcppExport SEXP rENA_vector_to_ut_full(SEXP vSEXP) {

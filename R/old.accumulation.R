@@ -8,21 +8,6 @@ old.accumulation = function(
   correction,
   envName, windowSort=NULL
 ){
-  make.adjacency.labels=function(x){
-    y=length(x)
-    z=matrix(NA, 4, y * (y - 1) / 2)
-    col=0
-    for (p in 2:y) {
-      for (q in 1:(p-1)) {
-        col=col+1;
-        z[1,col]=x[p]
-        z[2,col]=x[q]
-        z[3,col]=p
-        z[4,col]=q
-      }
-    }
-    z
-  }
   clean.factors= function(df) {
     for(i in 1:ncol(df)) {
       z=df[,i]
@@ -73,6 +58,8 @@ old.accumulation = function(
   output$stanzaWindowSortBy = windowSort;
   output$plus1 = FALSE;
   output$adjacency.key = make.adjacency.labels(colnames(codes));
+
+
   if(window >= 0) {
     # co-occur each stanza based on window size
     coOccuredCodes = matrix(0, nrow(codes), choose(ncol(codes), 2));
@@ -92,13 +79,13 @@ old.accumulation = function(
         if(binary) {
           coOccuredVector[coOccuredVector > 0] = 1;
         }
-
+        if(stanzaValue == "3 & Electric") {
+        }
         # the input data is not necessarily ordered by conversation so when we compute the cooccurances
         # we keep them in the same order as the input data.
         coOccuredCodes[which(concatenatedStanza == stanzaValue)[i],] = coOccuredVector;
       }
     }
-
     # accumulate co-occured codes saving sums for each group + unit pair.
     output$data = as.data.frame(matrix(0, 0, choose(ncol(codes), 2)));
     #output$meta = as.data.frame(matrix("", 0, ncol(group) + ncol(units)), stringsAsFactors = FALSE);
@@ -112,8 +99,10 @@ old.accumulation = function(
       } else { # non-trajectory set
         unitVals = groupValue;
       }
+
       for(unitValue in unitVals) {
         #print(paste("uV:", unitValue))
+
         if(unitValue == unitVals[1] || !accumTraj)	{
           unitCoOccuredCodes = numeric(ncol(coOccuredCodes));
         }
@@ -122,7 +111,6 @@ old.accumulation = function(
           unitCoOccuredCodes = unitCoOccuredCodes + colSums(data.matrix(as.data.frame(coOccuredCodes[unitRows[unitRows %in% groupRows],])));
         }
         output$data = rbind(output$data, unitCoOccuredCodes);
-
         unitMetadata = rbind(c(group[groupRows[1],], units[unitRows[1],]));
         colnames(unitMetadata) = c(colnames(group), colnames(units));
         rownames(unitMetadata) = unitRows[1];

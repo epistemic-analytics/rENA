@@ -6,11 +6,11 @@
 using namespace Rcpp;
 using namespace arma;
 
-arma::vec vector_to_ut(arma::mat v) {
+vec vector_to_ut(mat v) {
   int vL = v.size();
   int vS = ( (vL * (vL + 1)) / 2) - vL ;
   int s = 0;
-  arma::vec vR( vS );
+  vec vR( vS );
   for( int i = 2; i <= vL; i++ ) {
     for (int j = 0; j < i-1; j++ ) {
       vR[s] = v[j] * v[i-1];
@@ -25,60 +25,43 @@ arma::vec vector_to_ut(arma::mat v) {
 //' @export
 // [[Rcpp::export]]
 DataFrame ref_window_df2(
-    DataFrame v,
-    CharacterVector nms = CharacterVector::create(),
+    DataFrame df,
     int windowSize = 0,
-    bool append = false
+    bool binary = true,
+    bool useDiaganol = false
 ) {
-  int vRows = v.nrows();
-  int AmLength = 0;
-  if( nms.length() == 0 ) {
-    AmLength = ( (v.size() * (v.size() + 1)) / 2) - v.size() ;
-  } else {
-    AmLength = nms.length();
-  }
+  int dfRows = df.nrows();
+  int dfCols = df.size();
+  int numCoOccurences = ( (dfCols * (dfCols + 1)) / 2) - ((!useDiaganol)?dfCols:0);
 
-  // Matrix to be returned as DataFrame.
-  IntegerMatrix Am(vRows, AmLength);
-  arma::mat Am_mat(vRows, AmLength);
+  //mat df_AsMatrix(dfRows,dfCols);
+  mat df_CoOccurred(dfRows, numCoOccurences, fill::zeros);
 
-  IntegerMatrix v_AsMatrix(vRows,v.size());
-  IntegerMatrix v_AsMatrix_window(vRows, (append)?(AmLength+v.size()):AmLength);
-  for (int i=0; i<v.size();i++) {
-    v_AsMatrix(_,i)=NumericVector(v[i]);
-  }
-
-  for(int row = 0; row < vRows; row++) {
-    IntegerMatrix currRow = v_AsMatrix( Range( (row-windowSize>=0)?(row-windowSize):0,row ), _ );
-
-    arma::mat currRowSummed = arma::sum(Rcpp::as<arma::mat>(currRow));
-    arma::vec toUT = vector_to_ut(currRowSummed);
-
-    if(windowSize > 0 && row-1>=0) {
-      IntegerMatrix currRow_refs = v_AsMatrix( Range( (row-windowSize>=0)?(row-windowSize):0,(row-1>0)?row-1:0 ), _ );
-      arma::mat currRow_refsSummed = arma::sum(Rcpp::as<arma::mat>(currRow_refs));
-      arma::vec toUT_refs = vector_to_ut(currRow_refsSummed);
-
-      v_AsMatrix_window(row, _) = Rcpp::as<IntegerMatrix>(wrap(toUT-toUT_refs));
-    } else {
-      v_AsMatrix_window(row, _) = Rcpp::as<IntegerMatrix>(wrap(toUT));
-    }
-    if(append == true) {
-      for(int z = 0; z < v.size(); z++) {
-        v_AsMatrix_window(row, AmLength+z) = currRowSummed[z]; //Rcpp::as<IntegerMatrix>(wrap(currRowSummed));
-      }
-    }
-  }
-
-  //if(append == false){
-    DataFrame df(v_AsMatrix_window);
-    return df;
-  //} else {
-  //  for(int z = 0; z < v.size(); z++) {
-  //    v_AsMatrix_window( _, AmLength+z) = v_AsMatrix(_, z);
-  //  }
-    //DataFrame df = DataFrame::create(v_AsMatrix, v_AsMatrix_window);
-  //  DataFrame df(v_AsMatrix_window);
-  //  return df;
+  //for (int i=0; i<dfCols;i++) {
+  //  df_AsMatrix(_,i) = Rcpp::as<mat>(df[i]);
   //}
+
+  for(int row = 0; row < dfRows; row++) {
+  //  IntegerMatrix currRow = df[(row-windowSize>=0)?(row-windowSize):0];
+//
+  //  mat currRowSummed = sum(Rcpp::as<arma::mat>(currRow));
+  //  vec toUT = vector_to_ut(currRowSummed);
+//
+  //  if(windowSize > 0 && row-1>=0) {
+  //    //IntegerMatrix currRow_refs = df[(row-windowSize>=0)?(row-windowSize):0,(row-1>0)?row-1:0)];
+  //    //arma::mat currRow_refsSummed = arma::sum(Rcpp::as<arma::mat>(currRow_refs));
+  //    //arma::ivec toUT_refs = vector_to_ut(currRow_refsSummed);
+  //    vec toUT_subs = toUT; // - toUT_refs;
+//
+  //    df_CoOccurred.row(row) = trans(toUT_subs);
+  //  } else {
+  //    df_CoOccurred.row(row) = trans(toUT);
+  //  }
+  }
+//
+  //if(binary == true) {
+  //  df_CoOccurred.elem( find(df_CoOccurred > 0) ).ones();
+  //}
+
+  return wrap(df); //_CoOccurred);
 }
