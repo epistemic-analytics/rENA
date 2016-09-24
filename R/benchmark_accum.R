@@ -15,8 +15,8 @@ df = read.csv("./data/rs.data.sorted.csv");
 
 #df = df[order(as.POSIXlt(df$Timestamp, format = "%m/%d/%Y %H:%M")), ]
 
-codeNames = c("E.data","S.data","E.design","S.design");
-#codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
+#codeNames = c("E.data","S.data","E.design","S.design");
+codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
 
 unitsBy = c("UserName");
 #unitsListTable = data.frame(unique(df[, unitsBy]));

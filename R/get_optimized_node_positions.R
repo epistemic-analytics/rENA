@@ -35,7 +35,6 @@ get_optimized_node_positions = function(w,
   e$correlations = matrix(y[nrow(y)-1, ],
                           nrow=e$num_samples, ncol=num_dims,
                           dimnames=list(NULL, pc_names))
-
   e$iter_names = vector(length=ncol(y))
   e$iter_index = matrix(nrow=e$num_samples*e$num_dims, ncol = 2, dimnames=list(NULL, c("iter", "dim")))
   for(i in 1:ncol(y)){
@@ -44,15 +43,13 @@ get_optimized_node_positions = function(w,
     e$iter_index[i, 2] = y[nrow(y), i]
   }
 
-
-
   e$x_all_iters = matrix(y[1:(nrow(y)-2), ],
                          nrow=e$N,
-                         ncol=num_dims*e$num_samples,
-                         dimnames=list(e$node_names,
-                                       e$iter_names))
+                         ncol=num_dims*e$num_samples); #,
+                         #dimnames=list(e$node_names,
+                        #               e$iter_names))
 
-  e$x = matrix(nrow=e$N, ncol=num_dims, dimnames=list(e$node_names, pc_names))
+  e$x = matrix(nrow=e$N, ncol=num_dims); #, dimnames=list(e$node_names, pc_names))
   for(i in 1:num_dims){
     e$x[, i] = rowMeans(y[1:(nrow(y)-2), y[nrow(y), ]==i])
   }
@@ -61,9 +58,7 @@ get_optimized_node_positions = function(w,
   e$centroids = matrix(nrow=e$K, ncol=ncol(e$x_all_iters))
   for(i in 1:ncol(e$centroids)){
     mps = (e$x_all_iters[e$i, i] + e$x_all_iters[e$j, i])/2
-    e$centroids[, i] = apply(e$w,
-                             1,
-                             function(z) sum(z*mps)/sum(z))
+    e$centroids[, i] = apply(e$w, 1, function(z) sum(z*mps)/sum(z))
   }
 
   e$cen_pair_dists = e$centroids[e$i2, ] - e$centroids[e$j2, ]
@@ -81,6 +76,5 @@ get_optimized_node_positions = function(w,
       e[[i]] = NULL
     return(e)
   }
-
   if(!return_all) return(e$x)
 }

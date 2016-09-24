@@ -46,14 +46,22 @@ The order of the parameter is the same as in the vector<Type> init.
 
 namespace BT {
   template<class D, class OP>
-  std::vector<D> Simplex(OP f,                   //target function
-			 std::vector<D> init,    //initial guess of the parameters
-			 D tol=1E8*std::numeric_limits<D>::epsilon(), //termination criteria
-			 std::vector<std::vector<D> > x =  std::vector<std::vector<D> >(),
-			 //x: The Simplex
-			 int iterations=1E5
-  ){    //iteration step number
+  std::vector<D> Simplex(
+       //target function
+       OP f,
 
+			 //initial guess of the parameters
+			 std::vector<D> init,
+
+			 //termination criteria
+			 D tol = 1E8*std::numeric_limits<D>::epsilon(),
+
+			 //x: The Simplex
+			 std::vector<std::vector<D> > x =  std::vector<std::vector<D> >(),
+
+       //iteration step number
+			 int iterations = 1E5
+  ){
     int N=init.size();                         //space dimension
     const double a=1.0, b=1.0, g=0.5, h=0.5;   //coefficients
                                                //a: reflection  -> xr
@@ -84,10 +92,11 @@ namespace BT {
 
       //xcentriod
       std::transform(init.begin(), init.end(),xcentroid_old.begin(), std::bind2nd(std::multiplies<D>(), N+1) );
-    }//constructing the simplex finished
+    } //constructing the simplex finished
 
     //optimization begins
     for(cnt=0; cnt<iterations; ++cnt){
+      //std::cout << "Diff: " << (diff/N) << std::endl;
       for(int i=0;i<N+1;++i){
 	      vf[i]= f(x[i]);
       }
@@ -126,6 +135,8 @@ namespace BT {
                          //see if the difference is less than the termination criteria
       for(int i=0; i<N; ++i)
 	      diff += fabs(xcentroid_old[i]-xcentroid_new[i]);
+
+      //std::cout << "Diff: " << (diff/N) << std::endl;
 
       if (diff/N < tol) break;              //terminate the optimizer
       else xcentroid_old.swap(xcentroid_new); //update simplex center
@@ -173,6 +184,7 @@ namespace BT {
     } //optimization is finished
 
     if(cnt==iterations){//max number of iteration achieves before tol is satisfied
+      //std::cout<<"Tol:"<<tol<<std::endl;
       std::cout<<"Iteration limit achieves, result may not be optimal"<<std::endl;
     }
     return x[x1];

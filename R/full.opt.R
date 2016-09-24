@@ -10,16 +10,15 @@ full.opt = function(w, t, node_names, return_all=F, dims = 1:6) {
                                    num_dims=length(dims),
                                    max_iter=1000,
                                    return_all=return_all)
-  browser();
-  return(F);
   out = list()
   out$sums_sq_dists = vector(length=length(dims))
-  out$x_scaled = matrix(nrow=x$N, ncol=x$num_dims, dimnames = list(x$node_names, NULL))
+  out$x_scaled = matrix(nrow=x$N, ncol=x$num_dims) #, dimnames = list(x$node_names, NULL))
 
   for(dim in 1:x$num_dims)
   {
     # ::::::: solution check ::::::
     #   throw an error if the solutions aren't linearly dependent
+    browser();
     r_sq = lm_(x$x_all_iters[, x$iter_index[, 2] == dim])
     if(min(r_sq) < 0.9)
     {
@@ -29,10 +28,11 @@ full.opt = function(w, t, node_names, return_all=F, dims = 1:6) {
     }
 
     # ::::::: choose solution with highest correlation ::::::
+    browser()
     highest_corr = which(x$correlations[, dim] == max(x$correlations[, dim]))
     highest_corr = highest_corr + (dim - 1)*x$opt_params$n_samples
     soln = x$x_all_iters[, highest_corr]
-
+    browser()
     # :::::: remove zero vectors ::::::
     bool = apply(x$w, 1, function(TMP) sum(TMP) != 0)
     result = scale_soln(soln, x$t[bool, dim], x$w[bool, ])

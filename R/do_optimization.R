@@ -12,7 +12,6 @@ do_optimization = function(e)
       mps = (x[e$i] + x[e$j])/2
       centroids = ((e$w %*% as.matrix(mps)) / rowSums(e$w))[,1]
       dcentroids = centroids[e$i2] - centroids[e$j2]
-      browser();
       return(cor(t_pair_dists, dcentroids))
     }
 
@@ -22,8 +21,9 @@ do_optimization = function(e)
                                                     maxit=e$maxit),
                                      lower=-3,
                                      upper=3))
+    #browser();
     out = c(result$par, result$value, dim)
-    names(out) = c(e$node_names, "corr", "dim")
+    #names(out) = c(e$node_names, "corr", "dim")
     return(out)
   }
 
