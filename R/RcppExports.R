@@ -12,13 +12,92 @@ dfvector_to_ut <- function(v, nms) {
     .Call('rENA_dfvector_to_ut', PACKAGE = 'rENA', v, nms)
 }
 
-#' @param v - A dataframe
-#' @param nms - A vector of characters used for colnames of returned DataFrame
-#' @export
-ref_window_df <- function(v, nms = as.character( c()), windowSize = 0L, append = FALSE) {
-    .Call('rENA_ref_window_df', PACKAGE = 'rENA', v, nms, windowSize, append)
+count_if <- function(x) {
+    .Call('rENA_count_if', PACKAGE = 'rENA', x)
 }
 
+vecmin <- function(x) {
+    .Call('rENA_vecmin', PACKAGE = 'rENA', x)
+}
+
+vecmax <- function(x) {
+    .Call('rENA_vecmax', PACKAGE = 'rENA', x)
+}
+
+logicalToColNums <- function(lv) {
+    .Call('rENA_logicalToColNums', PACKAGE = 'rENA', lv)
+}
+
+rowSumsC <- function(x) {
+    .Call('rENA_rowSumsC', PACKAGE = 'rENA', x)
+}
+
+fixIt <- function(df) {
+    .Call('rENA_fixIt', PACKAGE = 'rENA', df)
+}
+
+normIt <- function(df) {
+    .Call('rENA_normIt', PACKAGE = 'rENA', df)
+}
+
+rotate_c <- function(df, dims = 2L) {
+    .Call('rENA_rotate_c', PACKAGE = 'rENA', df, dims)
+}
+
+centerData <- function(values) {
+    .Call('rENA_centerData', PACKAGE = 'rENA', values)
+}
+
+centerDataRotated <- function(centeredValues, rotated) {
+    .Call('rENA_centerDataRotated', PACKAGE = 'rENA', centeredValues, rotated)
+}
+
+eq_pos <- function(names, labels, rotated, plusOne) {
+    .Call('rENA_eq_pos', PACKAGE = 'rENA', names, labels, rotated, plusOne)
+}
+
+triIndices <- function(len, row = 0L) {
+    .Call('rENA_triIndices', PACKAGE = 'rENA', len, row)
+}
+
+getcor <- function(dists, normed, x, NtriOne, NtriTwo, KtriOne, KtriTwo, dim = 0L) {
+    .Call('rENA_getcor', PACKAGE = 'rENA', dists, normed, x, NtriOne, NtriTwo, KtriOne, KtriTwo, dim)
+}
+
+single_optim <- function(normed, dists, rotated, NtriOne, NtriTwo, KtriOne, KtriTwo, dim = 0L, N = 0.0) {
+    .Call('rENA_single_optim', PACKAGE = 'rENA', normed, dists, rotated, NtriOne, NtriTwo, KtriOne, KtriTwo, dim, N)
+}
+
+do_opt <- function(normed, dists, rotated, NtriOne, NtriTwo, KtriOne, KtriTwo, N = 1.0, num_samples = 100L, num_dims = 2L) {
+    .Call('rENA_do_opt', PACKAGE = 'rENA', normed, dists, rotated, NtriOne, NtriTwo, KtriOne, KtriTwo, N, num_samples, num_dims)
+}
+
+get_optimized_node_pos <- function(normedFiltered, rotatedFiltered, num_dims = 2L, num_samples = 3L, max_iter = 1000L, return_all = TRUE) {
+    .Call('rENA_get_optimized_node_pos', PACKAGE = 'rENA', normedFiltered, rotatedFiltered, num_dims, num_samples, max_iter, return_all)
+}
+
+fastLm <- function(y, X) {
+    .Call('rENA_fastLm', PACKAGE = 'rENA', y, X)
+}
+
+summary_fastLm_c <- function(object) {
+    .Call('rENA_summary_fastLm_c', PACKAGE = 'rENA', object)
+}
+
+lm_ <- function(x) {
+    .Call('rENA_lm_', PACKAGE = 'rENA', x)
+}
+
+full_opt <- function(normed, rotated, dims = 2L, num_samples = 3L) {
+    .Call('rENA_full_opt', PACKAGE = 'rENA', normed, rotated, dims, num_samples)
+}
+
+testNO <- function(normed, rotated, soln) {
+    .Call('rENA_testNO', PACKAGE = 'rENA', normed, rotated, soln)
+}
+
+#' @title ref_window_df
+#' @name ref_window_df
 #' @param v - A dataframe
 #' @param nms - A vector of characters used for colnames of returned DataFrame
 #' @export
@@ -26,6 +105,8 @@ ref_window_df <- function(df, windowSize = 0L, binary = TRUE, useDiaganol = FALS
     .Call('rENA_ref_window_df', PACKAGE = 'rENA', df, windowSize, binary, useDiaganol)
 }
 
+#' @title ref_window_df2
+#' @name ref_window_df2
 #' @param v - A dataframe
 #' @param nms - A vector of characters used for colnames of returned DataFrame
 #' @export
@@ -33,6 +114,8 @@ ref_window_df2 <- function(df, windowSize = 0L, binary = TRUE, useDiaganol = FAL
     .Call('rENA_ref_window_df2', PACKAGE = 'rENA', df, windowSize, binary, useDiaganol)
 }
 
+#' @name ref_window_sum
+#' @title ref_window_sum
 #' @param v - A dataframe
 #' @param nms - A vector of characters used for colnames of returned DataFrame
 #' @export

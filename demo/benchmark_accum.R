@@ -1,22 +1,22 @@
-library("data.table");
-library(RcppRoll);
-library(microbenchmark);
-Rcpp::sourceCpp('src/svector_to_ut.cpp')
-#Rcpp::sourceCpp('src/dfvector_to_ut.cpp')
-#Rcpp::sourceCpp('src/vector_to_ut.cpp')
-Rcpp::sourceCpp('src/ref_window_df.cpp')
-Rcpp::sourceCpp('src/ref_window_sum.cpp')
-source('~/Workspaces/RStudio2/rENA/R/old.accumulation.R');
-#source('~/Workspaces/RStudio2/rENA/R/roll.sum.pad.R');
-#source('~/Workspaces/RStudio2/rENA/R/lagpad.R');
-source('~/Workspaces/RStudio2/rENA/R/accumulate.R');
-
-df = read.csv("./data/rs.data.sorted.csv");
+#library("data.table");
+#library(RcppRoll);
+#library(microbenchmark);
+#Rcpp::sourceCpp('src/svector_to_ut.cpp')
+##Rcpp::sourceCpp('src/dfvector_to_ut.cpp')
+##Rcpp::sourceCpp('src/vector_to_ut.cpp')
+#Rcpp::sourceCpp('src/ref_window_df.cpp')
+#Rcpp::sourceCpp('src/ref_window_sum.cpp')
+#source('~/Workspaces/RStudio2/rENA/R/old.accumulation.R');
+##source('~/Workspaces/RStudio2/rENA/R/roll.sum.pad.R');
+##source('~/Workspaces/RStudio2/rENA/R/lagpad.R');
+#source('~/Workspaces/RStudio2/rENA/R/accumulate.R');
+#
+#df = read.csv("./data/rs.data.sorted.csv");
 
 #df = df[order(as.POSIXlt(df$Timestamp, format = "%m/%d/%Y %H:%M")), ]
 
-#codeNames = c("E.data","S.data","E.design","S.design");
-codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
+codeNames = c("E.data","S.data","E.design","S.design");
+#codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
 
 unitsBy = c("UserName");
 #unitsListTable = data.frame(unique(df[, unitsBy]));
@@ -41,3 +41,5 @@ windowSize = 1;
 newRes = accumulate(df, conversationsBy, unitsBy, codeNames, window=windowSize)
 #,
 #times = 100))
+
+source('~/Workspaces/RStudio2/rENA/demo/rotateTests.R')

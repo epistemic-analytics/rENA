@@ -20,6 +20,8 @@ arma::ivec vector_to_ut(arma::imat v) {
   return vR;
 }
 
+//' @name ref_window_sum
+//' @title ref_window_sum
 //' @param v - A dataframe
 //' @param nms - A vector of characters used for colnames of returned DataFrame
 //' @export

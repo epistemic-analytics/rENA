@@ -4,7 +4,7 @@
 \alias{benchmark_ut}
 \title{Run benchmarks on the Upper Triangle creation functions}
 \usage{
-benchmark_ut(v, times)
+benchmark_ut(v = 1:4, times = 100)
 }
 \arguments{
 \item{v}{Vector to create the upper triangle from}

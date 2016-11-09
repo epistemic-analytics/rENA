@@ -33,6 +33,8 @@ do_optimization = function(e)
     foreach(i_sample=1:e$num_samples, .combine=cbind) %do% {
       single_optim(e, dim)
     }
+
+  print(optimization_results);
   optimization_results_2 = matrix()
 
   return(optimization_results)

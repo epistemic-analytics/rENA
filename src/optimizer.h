@@ -4,6 +4,7 @@
 #include <cmath>
 #include <algorithm>
 using namespace std;
+using namespace Rcpp;
 
 // Float vector with standard operations
 class Vector2 {
@@ -169,6 +170,8 @@ public:
     }
   }
   Vector2 step(Vector2 vec, float score) {
+    //Rcpp::Rcout << "Vec: " << vec[0] << "," << vec[1] << std::endl;
+
     db.insert(vec, score);
     try {
       if (vectors.size() < dimension+1) {

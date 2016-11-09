@@ -6,20 +6,9 @@
 using namespace Rcpp;
 using namespace arma;
 
-vec vector_to_ut(mat v) {
-  int vL = v.size();
-  int vS = ( (vL * (vL + 1)) / 2) - vL ;
-  int s = 0;
-  vec vR( vS );
-  for( int i = 2; i <= vL; i++ ) {
-    for (int j = 0; j < i-1; j++ ) {
-      vR[s] = v[j] * v[i-1];
-      s++;
-    }
-  }
-  return vR;
-}
 
+//' @title ref_window_df2
+//' @name ref_window_df2
 //' @param v - A dataframe
 //' @param nms - A vector of characters used for colnames of returned DataFrame
 //' @export

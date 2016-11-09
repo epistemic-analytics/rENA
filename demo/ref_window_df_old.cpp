@@ -1,4 +1,3 @@
-//'
 // [[Rcpp::depends(RcppArmadillo)]]
 
 #include <RcppArmadillo.h>
@@ -8,15 +7,12 @@ using namespace arma;
 
 //' @param v - A dataframe
 //' @param nms - A vector of characters used for colnames of returned DataFrame
-//' @export
-// [[Rcpp::export]]
-DataFrame ref_window_df(
+DataFrame ref_window_df_old (
     DataFrame v,
     CharacterVector nms = CharacterVector::create(),
     int windowSize = 0,
     bool append = false
 ) {
-
   int vRows = v.nrows();
   int AmLength = 0;
   if( nms.length() == 0 ) {

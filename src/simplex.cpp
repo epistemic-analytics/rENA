@@ -6,7 +6,7 @@
 using namespace Rcpp;
 using namespace arma;
 
-std::vector<double> Simplex(double f ( double x[] ), std::vector<double> init,    //initial guess of the parameters
+std::vector<double> Simplex(double f ( std::vector<double> x), std::vector<double> init,    //initial guess of the parameters
                        double tol=1E8*std::numeric_limits<double>::epsilon(), //termination criteria
                        std::vector<std::vector<double> > x =  std::vector<std::vector<double> >(),
                        //x: The Simplex

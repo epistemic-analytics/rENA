@@ -20,6 +20,8 @@ arma::vec vector_to_ut(arma::mat v) {
   return vR;
 }
 
+//' @title ref_window_df
+//' @name ref_window_df
 //' @param v - A dataframe
 //' @param nms - A vector of characters used for colnames of returned DataFrame
 //' @export
