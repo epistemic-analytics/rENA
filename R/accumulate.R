@@ -1,4 +1,4 @@
-accumulate <- function(dfDT, stanzasBy, unitsBy, codeNames, window = 3,append=F) {
+accumulate.data <- function(dfDT, stanzasBy, unitsBy, codeNames, window = 3,append=F) {
   if(!is.data.table(dfDT)) {
     dfDT = as.data.table(dfDT);
   }

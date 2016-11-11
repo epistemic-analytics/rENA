@@ -40,8 +40,8 @@ normIt <- function(df) {
     .Call('rENA_normIt', PACKAGE = 'rENA', df)
 }
 
-rotate_c <- function(df, dims = 2L) {
-    .Call('rENA_rotate_c', PACKAGE = 'rENA', df, dims)
+pca <- function(m, dims = 2L) {
+    .Call('rENA_pca', PACKAGE = 'rENA', m, dims)
 }
 
 centerData <- function(values) {
@@ -68,8 +68,20 @@ single_optim <- function(normed, dists, rotated, NtriOne, NtriTwo, KtriOne, Ktri
     .Call('rENA_single_optim', PACKAGE = 'rENA', normed, dists, rotated, NtriOne, NtriTwo, KtriOne, KtriTwo, dim, N)
 }
 
-do_opt <- function(normed, dists, rotated, NtriOne, NtriTwo, KtriOne, KtriTwo, N = 1.0, num_samples = 100L, num_dims = 2L) {
-    .Call('rENA_do_opt', PACKAGE = 'rENA', normed, dists, rotated, NtriOne, NtriTwo, KtriOne, KtriTwo, N, num_samples, num_dims)
+getN <- function(normed) {
+    .Call('rENA_getN', PACKAGE = 'rENA', normed)
+}
+
+getK <- function(normed) {
+    .Call('rENA_getK', PACKAGE = 'rENA', normed)
+}
+
+do_opt <- function(normed, dists, rotated, num_samples = 100L, num_dims = 2L) {
+    .Call('rENA_do_opt', PACKAGE = 'rENA', normed, dists, rotated, num_samples, num_dims)
+}
+
+getRotationDistances <- function(rotated) {
+    .Call('rENA_getRotationDistances', PACKAGE = 'rENA', rotated)
 }
 
 get_optimized_node_pos <- function(normedFiltered, rotatedFiltered, num_dims = 2L, num_samples = 3L, max_iter = 1000L, return_all = TRUE) {
@@ -88,12 +100,20 @@ lm_ <- function(x) {
     .Call('rENA_lm_', PACKAGE = 'rENA', x)
 }
 
-full_opt <- function(normed, rotated, dims = 2L, num_samples = 3L) {
-    .Call('rENA_full_opt', PACKAGE = 'rENA', normed, rotated, dims, num_samples)
+full_opt <- function(normed, rotated, optim_nodes, dims = 2L, num_samples = 3L) {
+    .Call('rENA_full_opt', PACKAGE = 'rENA', normed, rotated, optim_nodes, dims, num_samples)
 }
 
 testNO <- function(normed, rotated, soln) {
     .Call('rENA_testNO', PACKAGE = 'rENA', normed, rotated, soln)
+}
+
+get_cor <- function(dists, cents) {
+    .Call('rENA_get_cor', PACKAGE = 'rENA', dists, cents)
+}
+
+run_optimC <- function() {
+    .Call('rENA_run_optimC', PACKAGE = 'rENA')
 }
 
 #' @title ref_window_df

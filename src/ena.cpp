@@ -122,18 +122,22 @@ public:
   }
 
   double calc(arma::vec x) {
-    //Rcpp::Rcout << "X: " << x << std::endl;
     arma::mat t_pair_dists = this->dists.col(this->dim);
     arma::mat mps = trans(((x(this->NtriOne) + x(this->NtriTwo)) / 2));
-
     arma::mat multRes = this->normed * mps.t(); //.row(0);
-    //Rcpp::Rcout << "MPS * normed: " << multRes << std::endl;
-    //arma::mat centroids = ((sum(this->normed, 0) % trans(mps)) - sum(this->normed, 0));
-    //Rcpp::Rcout << "Rowsum: " << sum(this->normed, 1) << std::endl;
     arma::mat centroids = multRes / sum(this->normed, 1);
     arma::mat dcentroids = centroids(this->KtriOne) - centroids(this->KtriTwo);
+    arma::mat c = cor(t_pair_dists, dcentroids, 0);
 
-    arma::mat c = cor(t_pair_dists, dcentroids, 1);
+    //Rcpp::Rcout << "Vec x: " << x << std::endl;
+    //Rcpp::Rcout << "dists: " << t_pair_dists << std::endl;
+    //Rcpp::Rcout << "MPS * normed: " << multRes << std::endl;
+    //Rcpp::Rcout << "Rowsum: " << sum(this->normed, 1) << std::endl;
+    //Rcpp::Rcout << "Cents: " << centroids << std::endl;
+    //Rcpp::Rcout << "DCents: " << dcentroids << std::endl;
+    //Rcpp::Rcout << "cor: " << c << std::endl;
+
+
     return(c(0,0));
   }
 };
@@ -399,14 +403,29 @@ List single_optim(
 }
 
 // [[Rcpp::export]]
+double getN(arma::mat normed) {
+  return 0.5 + sqrt( 0.25 + 2*normed.n_cols );
+}
+
+// [[Rcpp::export]]
+int getK(arma::mat normed) {
+  return normed.n_rows;
+}
+
+// [[Rcpp::export]]
 NumericMatrix do_opt(
     arma::mat normed,
     arma::mat dists,
     arma::mat rotated,
-    arma::uvec NtriOne, arma::uvec NtriTwo,
-    arma::uvec KtriOne, arma::uvec KtriTwo,
-    double N = 1.0, int num_samples = 100, int num_dims = 2
+    int num_samples = 100, int num_dims = 2
 ) {
+  double N = getN(normed);
+  int K = getK(normed);
+
+  uvec NtriOne = triIndices(N, 0);
+  uvec NtriTwo = triIndices(N, 1);
+  uvec KtriOne = triIndices(K, 0);
+  uvec KtriTwo = triIndices(K, 1);
 
   NumericMatrix soRes(N+2, num_dims*num_samples);
 
@@ -423,13 +442,25 @@ NumericMatrix do_opt(
         soRes(k, r) = newVec[k]; //newVec;
         s++;
       }
-      soRes(k, r) = nV["correlation"]; // FIXME: this should be a correlation value?
+      soRes(k, r) = nV["correlation"];
       soRes(k+1, r) = i;  //Tracks the dimension
       r++;
     }
   }
 
   return soRes;
+}
+
+
+// [[Rcpp::export]]
+arma::mat getRotationDistances(arma::mat rotated) {
+  int K = getK(rotated);
+  uvec KtriOne = triIndices(K, 0);
+  uvec KtriTwo = triIndices(K, 1);
+
+  arma::mat pairDists = (rotated.rows(KtriOne) - rotated.rows(KtriTwo));
+
+  return pairDists;
 }
 
 // [[Rcpp::export]]
@@ -443,51 +474,46 @@ Rcpp::List get_optimized_node_pos(
   arma::uvec b = find(any(normedFiltered != 0, 1) > 0); //apply(normed, 1, function(z) !all(z==0))
   arma::mat normedNonZero = normedFiltered.rows(b);
 
-  int K = normedNonZero.n_rows;
-  double N = 0.5 + sqrt( 0.25 + 2*normedNonZero.n_cols );
+  int K = getK(normedNonZero);
+  double N = getN(normedNonZero);
 
   uvec NtriOne = triIndices(N, 0);
   uvec NtriTwo = triIndices(N, 1);
   uvec KtriOne = triIndices(K, 0);
   uvec KtriTwo = triIndices(K, 1);
 
-  arma::mat pairDists = (rotatedFiltered.rows(KtriOne) - rotatedFiltered.rows(KtriTwo));
-  NumericMatrix opted = do_opt(normedFiltered, pairDists, rotatedFiltered, NtriOne, NtriTwo, KtriOne, KtriTwo, N, num_samples, num_dims);
-
-  NumericMatrix optedRes = opted; //( _ , Range(4,9) );
-  //optedRes = transpose(optedRes);
-  //optedRes = optedRes(_, Range(0, optedRes.ncol() - 3 - 1));
-
+  arma::mat pairDists = getRotationDistances(rotatedFiltered);
+  NumericMatrix opted = do_opt(normedFiltered, pairDists, rotatedFiltered, num_samples, num_dims);
   CharacterVector pc_names(num_dims);
   for(int i=0; i<num_dims; i++) {
     pc_names[i] = "PC" + std::to_string(i);
   }
   opted.attr("colnames") = pc_names;
 
-  NumericMatrix correlations = optedRes( Range(K, K), _ ); // Range(0,optedRes.ncol()-num_samples-1) );
+  NumericMatrix correlations = opted( Range(K, K), _ ); // Range(0,opted.ncol()-num_samples-1) );
   correlations.attr("dim") = Dimension(num_samples,num_dims);
 
-  CharacterVector iterNames(optedRes.ncol());
+  CharacterVector iterNames(opted.ncol());
   NumericMatrix iterIndex(N * num_samples, 2);
-  for(int i=0; i<optedRes.ncol(); i++) {
-    iterNames[i] = "PC_" + std::to_string((int) optedRes(optedRes.nrow() - 1, i)) + "_iter_"+ std::to_string((int) i);
-    iterIndex(i, 0) = optedRes(optedRes.nrow() - 2, i);
-    iterIndex(i, 1) = optedRes(optedRes.nrow() - 1, i);
+  for(int i=0; i<opted.ncol(); i++) {
+    iterNames[i] = "PC_" + std::to_string((int) opted(opted.nrow() - 1, i)) + "_iter_"+ std::to_string((int) i);
+    iterIndex(i, 0) = opted(opted.nrow() - 2, i);
+    iterIndex(i, 1) = opted(opted.nrow() - 1, i);
   }
 
-  arma::mat AllIters = Rcpp::as<arma::mat>(optedRes);
+  arma::mat AllIters = Rcpp::as<arma::mat>(opted);
   AllIters = AllIters.rows(0, AllIters.n_rows - 3);
   arma::mat IterMeans = arma::mat(N, num_dims, fill::zeros);
 
-  NumericVector dimRow = optedRes( optedRes.nrow() - 1, _ );
+  NumericVector dimRow = opted( opted.nrow() - 1, _ );
 
   int t=0;
   for( int i=0; i<num_dims; i++) {
     LogicalVector dimRowFilter = ( dimRow == i );
     arma::vec vecs = Rcpp::as<arma::vec>(logicalToColNums(dimRowFilter));
 
-    arma::mat rowsToSum2 = arma::mat(optedRes.nrow()-2, num_samples, fill::zeros);
-    rowsToSum2 = AllIters(0, vecs(0), size(optedRes.nrow()-2, vecs.size()));
+    arma::mat rowsToSum2 = arma::mat(opted.nrow()-2, num_samples, fill::zeros);
+    rowsToSum2 = AllIters(0, vecs(0), size(opted.nrow()-2, vecs.size()));
 
     arma::vec rowsMeaned = mean(rowsToSum2, 1);
 
@@ -671,25 +697,17 @@ List scale_soln ( arma::mat xi, arma::mat ti, arma::mat w ) {
 }
 
 // [[Rcpp::export]]
-Rcpp::List full_opt(arma::mat normed, arma::mat rotated, int dims = 2, int num_samples = 3) {
-  arma::mat out = arma::mat(normed.n_rows, normed.n_cols, fill::zeros);
-  //arma::vec summed = ;
+Rcpp::List full_opt(arma::mat normed, arma::mat rotated, Rcpp::List optim_nodes, int dims = 2, int num_samples = 3) {
+
   arma::uvec summedMatched = find((sum(normed, 1)) > 0);
   arma::uvec summedMatched_r = find((sum(rotated, 1)));
 
   arma::mat normedFiltered = normed.rows(summedMatched);
-
-  //Rcpp::Rcout << "normed: " << normed << std::endl;
-  //Rcpp::Rcout << "rotate: " << rotated << std::endl;
-  //Rcpp::Rcout << "summed1: " << normedFiltered << std::endl;
-  //Rcpp::Rcout << "summed2: " << summedMatched_r << std::endl;
-
   arma::mat rotatedFiltered = rotated.rows(summedMatched_r);
 
-  //Rcpp::Rcout << "dims: " << dims << std::endl;
-  //Rcpp::Rcout << "samps: " << num_samples << std::endl;
+  arma::mat out = arma::mat(normed.n_rows, normed.n_cols, fill::zeros);
 
-  Rcpp::List nodes = get_optimized_node_pos(normed, rotated, dims, num_samples);
+  Rcpp::List nodes = Rcpp::wrap(optim_nodes); //get_optimized_node_pos(normed, rotated, dims, num_samples);
   arma::mat cents = nodes["centroids"];
   //Rcpp::Rcout << "Nodes: " << cents << std::endl;
 
@@ -699,17 +717,12 @@ Rcpp::List full_opt(arma::mat normed, arma::mat rotated, int dims = 2, int num_s
   arma::mat x_scaled = arma::mat(N, dims);
 
   NumericMatrix AllIters = Rcpp::as<NumericMatrix>(nodes["AllIters"]);
-  //Rcpp::Rcout << "AllIters: " << AllIters << std::endl;
-
   NumericMatrix iterIndex = Rcpp::as<NumericMatrix>(nodes["IterIndex"]);
   iterIndex = iterIndex( Range(0, (dims * num_samples) - 1), _ );
+
   List AllItersList(dims);
-
   NumericMatrix corrs = nodes["Correlations"];
-
   for( int i=0; i<dims; i++) {
-    //Rcpp::Rcout << "Dimension: " << i << std::endl;
-
     NumericVector thisDim = iterIndex( _, 1);
     LogicalVector thisDims = thisDim == i;
     NumericVector thisDimCols = logicalToColNums(thisDims);
@@ -777,5 +790,16 @@ bool testNO(arma::mat normed, arma::vec rotated, arma::vec soln) {
     v = o.step(v, solnObj(v));
   }
   //Rcpp::Rcout << "V: " << v << std::endl;
+  return true;
+}
+
+// [[Rcpp::export]]
+arma::mat get_cor(arma::vec dists, arma::vec cents) {
+  return cor(dists, cents);
+}
+
+// [[Rcpp::export]]
+bool run_optimC() {
+
   return true;
 }

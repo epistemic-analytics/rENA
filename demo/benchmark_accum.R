@@ -1,17 +1,17 @@
-#library("data.table");
-#library(RcppRoll);
-#library(microbenchmark);
-#Rcpp::sourceCpp('src/svector_to_ut.cpp')
-##Rcpp::sourceCpp('src/dfvector_to_ut.cpp')
-##Rcpp::sourceCpp('src/vector_to_ut.cpp')
-#Rcpp::sourceCpp('src/ref_window_df.cpp')
-#Rcpp::sourceCpp('src/ref_window_sum.cpp')
-#source('~/Workspaces/RStudio2/rENA/R/old.accumulation.R');
-##source('~/Workspaces/RStudio2/rENA/R/roll.sum.pad.R');
-##source('~/Workspaces/RStudio2/rENA/R/lagpad.R');
-#source('~/Workspaces/RStudio2/rENA/R/accumulate.R');
-#
-#df = read.csv("./data/rs.data.sorted.csv");
+library("data.table");
+library(RcppRoll);
+library(microbenchmark);
+Rcpp::sourceCpp('src/svector_to_ut.cpp')
+#Rcpp::sourceCpp('src/dfvector_to_ut.cpp')
+#Rcpp::sourceCpp('src/vector_to_ut.cpp')
+Rcpp::sourceCpp('src/ref_window_df.cpp')
+Rcpp::sourceCpp('src/ref_window_sum.cpp')
+source('~/Workspaces/RStudio2/rENA/R/old.accumulation.R');
+#source('~/Workspaces/RStudio2/rENA/R/roll.sum.pad.R');
+#source('~/Workspaces/RStudio2/rENA/R/lagpad.R');
+source('~/Workspaces/RStudio2/rENA/R/accumulate.R');
+
+df = read.csv("./data/rs.data.sorted.csv");
 
 #df = df[order(as.POSIXlt(df$Timestamp, format = "%m/%d/%Y %H:%M")), ]
 
@@ -38,7 +38,7 @@ windowSize = 1;
 #print(microbenchmark(
 #oldRes = old.accumulation(window = windowSize, codes = df[,codeNames],group = unitsList,units = unitsList,stanzas = conversations,sList = sList,gList = gList,uList = uList, binary = T)
 #,
-newRes = accumulate(df, conversationsBy, unitsBy, codeNames, window=windowSize)
+newRes = accumulate.data(df, conversationsBy, unitsBy, codeNames, window=windowSize)
 #,
 #times = 100))
 
