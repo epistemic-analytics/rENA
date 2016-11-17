@@ -9,6 +9,7 @@
 #include <RcppArmadillo.h>
 #include "/Users/clmarquart/Workspaces/RStudio2/rENA/src/simplex.h"
 #include "/Users/clmarquart/Workspaces/RStudio2/rENA/src/optimizer.h"
+//#include "/Users/clmarquart/Workspaces/RStudio2/rENA/src/optim.c"
 //#include "cor.h"
 
 using namespace Rcpp;
@@ -466,7 +467,7 @@ arma::mat getRotationDistances(arma::mat rotated) {
 // [[Rcpp::export]]
 Rcpp::List get_optimized_node_pos(
     arma::mat normedFiltered,
-    arma::mat rotatedFiltered,
+    NumericMatrix opted,
     int num_dims=2, int num_samples=3, int max_iter=1000,
     bool return_all = true
 ) {
@@ -474,27 +475,27 @@ Rcpp::List get_optimized_node_pos(
   arma::uvec b = find(any(normedFiltered != 0, 1) > 0); //apply(normed, 1, function(z) !all(z==0))
   arma::mat normedNonZero = normedFiltered.rows(b);
 
-  int K = getK(normedNonZero);
   double N = getN(normedNonZero);
+  int K = getK(normedNonZero);
 
   uvec NtriOne = triIndices(N, 0);
   uvec NtriTwo = triIndices(N, 1);
   uvec KtriOne = triIndices(K, 0);
   uvec KtriTwo = triIndices(K, 1);
 
-  arma::mat pairDists = getRotationDistances(rotatedFiltered);
-  NumericMatrix opted = do_opt(normedFiltered, pairDists, rotatedFiltered, num_samples, num_dims);
+  //arma::mat pairDists = getRotationDistances(rotatedFiltered);
+  //NumericMatrix opted = Rcpp::wrap(dataOptim); //do_opt(normedFiltered, pairDists, rotatedFiltered, num_samples, num_dims);
   CharacterVector pc_names(num_dims);
   for(int i=0; i<num_dims; i++) {
     pc_names[i] = "PC" + std::to_string(i);
   }
   opted.attr("colnames") = pc_names;
 
-  NumericMatrix correlations = opted( Range(K, K), _ ); // Range(0,opted.ncol()-num_samples-1) );
+  NumericMatrix correlations = opted( Range(opted.nrow()-2, opted.nrow()-2), _ ); // Range(0,opted.ncol()-num_samples-1) );
   correlations.attr("dim") = Dimension(num_samples,num_dims);
 
   CharacterVector iterNames(opted.ncol());
-  NumericMatrix iterIndex(N * num_samples, 2);
+  NumericMatrix iterIndex(num_dims * num_samples, 2);
   for(int i=0; i<opted.ncol(); i++) {
     iterNames[i] = "PC_" + std::to_string((int) opted(opted.nrow() - 1, i)) + "_iter_"+ std::to_string((int) i);
     iterIndex(i, 0) = opted(opted.nrow() - 2, i);
@@ -509,7 +510,7 @@ Rcpp::List get_optimized_node_pos(
 
   int t=0;
   for( int i=0; i<num_dims; i++) {
-    LogicalVector dimRowFilter = ( dimRow == i );
+    LogicalVector dimRowFilter = ( dimRow == i+1 );
     arma::vec vecs = Rcpp::as<arma::vec>(logicalToColNums(dimRowFilter));
 
     arma::mat rowsToSum2 = arma::mat(opted.nrow()-2, num_samples, fill::zeros);
@@ -522,15 +523,17 @@ Rcpp::List get_optimized_node_pos(
   }
 
   arma::mat centroids = arma::mat( K, AllIters.n_cols );
+
   for( int i=0; i<centroids.n_cols; i++ ) {
     arma::mat subbed = AllIters.rows(NtriOne);
     arma::mat subbedTwo = AllIters.rows(NtriTwo);
     arma::vec subbedComb = ( subbed.col(i) + (subbedTwo.col(i) / 2) );
     arma::vec subbedComb2 = normedNonZero * subbedComb;
     arma::vec summedRows = sum(subbedComb2, 1) / sum(normedNonZero, 1);
+
     centroids.col(i) = summedRows;
   }
-  arma::mat centroid_dists = centroids.cols(KtriOne) - centroids.cols(KtriTwo);
+  arma::mat centroid_dists = centroids.rows(KtriOne) - centroids.rows(KtriTwo);
 
   if(return_all == true) {
     //  e$opt_params = list(max_iterations = e$maxit,
@@ -768,6 +771,7 @@ Rcpp::List full_opt(arma::mat normed, arma::mat rotated, Rcpp::List optim_nodes,
 
   return List::create(
     _["positions"] = x_scaled,
+    _["correlations"] = corrs,
     _["sums_sq_dists"] = sums_sq_dists
   );
 }
@@ -798,8 +802,46 @@ arma::mat get_cor(arma::vec dists, arma::vec cents) {
   return cor(dists, cents);
 }
 
+typedef void (*integrand) (unsigned ndim, const double *x, void *,
+              unsigned fdim, double *fval);
+
 // [[Rcpp::export]]
 bool run_optimC() {
 
   return true;
+}
+
+// [[Rcpp::export]]
+double calc_cor(
+  arma::vec x,
+  List set,
+  int dim
+) {
+  arma::mat dists = set["rotation_dists"];
+  //Rcpp::Rcout << "All dists: " << dists << std::endl;
+
+  arma::mat t_pair_dists = dists.col(dim);
+  arma::mat normed = set["data.normed"];
+  double N = getN(normed);
+  int K = getK(normed);
+
+  //Rcpp::Rcout << "N: " << N <<std::endl;
+  //Rcpp::Rcout << "K: " << K <<std::endl;
+
+  uvec NtriOne = triIndices(N, 0);
+  uvec NtriTwo = triIndices(N, 1);
+  uvec KtriOne = triIndices(K, 0);
+  uvec KtriTwo = triIndices(K, 1);
+
+  arma::mat mps = trans(((x(NtriOne) + x(NtriTwo)) / 2));
+  arma::mat multRes = normed * mps.t();
+  arma::mat centroids = multRes / sum(normed, 1);
+  arma::mat dcentroids = centroids(KtriOne) - centroids(KtriTwo);
+  //Rcpp::Rcout << "dcent: " << dcentroids.n_rows << std::endl;
+  //Rcpp::Rcout << "dists: " << t_pair_dists.n_rows << std::endl;
+  arma::mat c = cor(t_pair_dists, dcentroids, 0);
+
+  //double corrd = c(0,0);
+  //Rcpp::Rcout << "Cor: " << c(0,0) << std::endl;
+  return c(0,0);
 }

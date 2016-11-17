@@ -116,6 +116,10 @@ run_optimC <- function() {
     .Call('rENA_run_optimC', PACKAGE = 'rENA')
 }
 
+calc_cor <- function(x, set, dim) {
+    .Call('rENA_calc_cor', PACKAGE = 'rENA', x, set, dim)
+}
+
 #' @title ref_window_df
 #' @name ref_window_df
 #' @param v - A dataframe

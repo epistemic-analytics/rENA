@@ -341,6 +341,19 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// calc_cor
+double calc_cor(arma::vec x, List set, int dim);
+RcppExport SEXP rENA_calc_cor(SEXP xSEXP, SEXP setSEXP, SEXP dimSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< List >::type set(setSEXP);
+    Rcpp::traits::input_parameter< int >::type dim(dimSEXP);
+    __result = Rcpp::wrap(calc_cor(x, set, dim));
+    return __result;
+END_RCPP
+}
 // ref_window_df
 DataFrame ref_window_df(DataFrame df, int windowSize, bool binary, bool useDiaganol);
 RcppExport SEXP rENA_ref_window_df(SEXP dfSEXP, SEXP windowSizeSEXP, SEXP binarySEXP, SEXP useDiaganolSEXP) {
