@@ -27,7 +27,8 @@ arma::ivec vector_to_ut(arma::imat v) {
 //' @export
 // [[Rcpp::export]]
 DataFrame ref_window_sum(
-    DataFrame df
+  DataFrame df,
+  bool binary = true
 ) {
   int dfCols = df.size();
   int dfRows = df.nrows();

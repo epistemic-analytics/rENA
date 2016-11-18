@@ -242,18 +242,18 @@ BEGIN_RCPP
 END_RCPP
 }
 // get_optimized_node_pos
-Rcpp::List get_optimized_node_pos(arma::mat normedFiltered, arma::mat rotatedFiltered, int num_dims, int num_samples, int max_iter, bool return_all);
-RcppExport SEXP rENA_get_optimized_node_pos(SEXP normedFilteredSEXP, SEXP rotatedFilteredSEXP, SEXP num_dimsSEXP, SEXP num_samplesSEXP, SEXP max_iterSEXP, SEXP return_allSEXP) {
+Rcpp::List get_optimized_node_pos(arma::mat normedFiltered, NumericMatrix opted, int num_dims, int num_samples, int max_iter, bool return_all);
+RcppExport SEXP rENA_get_optimized_node_pos(SEXP normedFilteredSEXP, SEXP optedSEXP, SEXP num_dimsSEXP, SEXP num_samplesSEXP, SEXP max_iterSEXP, SEXP return_allSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< arma::mat >::type normedFiltered(normedFilteredSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type rotatedFiltered(rotatedFilteredSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type opted(optedSEXP);
     Rcpp::traits::input_parameter< int >::type num_dims(num_dimsSEXP);
     Rcpp::traits::input_parameter< int >::type num_samples(num_samplesSEXP);
     Rcpp::traits::input_parameter< int >::type max_iter(max_iterSEXP);
     Rcpp::traits::input_parameter< bool >::type return_all(return_allSEXP);
-    __result = Rcpp::wrap(get_optimized_node_pos(normedFiltered, rotatedFiltered, num_dims, num_samples, max_iter, return_all));
+    __result = Rcpp::wrap(get_optimized_node_pos(normedFiltered, opted, num_dims, num_samples, max_iter, return_all));
     return __result;
 END_RCPP
 }
