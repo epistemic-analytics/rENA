@@ -21,7 +21,6 @@ do_optimization = function(e, inPar = F, maxit = 1000)
                                                     maxit=maxit),
                                      lower=-3,
                                      upper=3))
-    #browser();
     out = c(result$par, result$value, dim)
     #names(out) = c(e$node_names, "corr", "dim")
     return(out)
@@ -61,8 +60,8 @@ do_optimization_2 = function(e, inPar=F, maxit = 1000) {
 
   if(is(e, "ENAset")) {
     e_list = list(
-      data.normed = e$get("data")$normed,
-      rotation_dists = e$get("rotation_dists"),
+      data.normed = e$data$normed,
+      rotation_dists = e$rotation_dists,
       dims = e$get("dimensions"),
       samples = e$get("samples")
     );
@@ -72,21 +71,20 @@ do_optimization_2 = function(e, inPar=F, maxit = 1000) {
 
   # :::::: function single_optim ::::::
   single_optim = function(e, dim, N = getN(e$data.normed)) {
-    suppressWarnings(result <- optim(par = runif(N,-3, 3),
+    #browser();
+    result <- suppressWarnings(optim(par = runif(N,-3, 3),
                                      fn = calc_cor,
                                      gr = NULL,
                                      e, dim-1, # ... parameters to calc_cor()
                                      method = "Nelder-Mead",
-                                     control = list(fnscale=-1,maxit=1000),
-                                     lower=-3,
-                                     upper=3
-                                     ))
+                                     control = list(fnscale=-1,maxit=40)
+                                     ,lower=-3, upper=3))
     #browser();
     out = c(result$par, result$value, dim)
     #names(out) = c(e$node_names, "corr", "dim")
     return(out)
   }
-
+  #browser()
   N = getN(e$data.normed);
   if(inPar == T) {
     # :::::: load and register doParallel ::::::

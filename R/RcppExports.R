@@ -84,8 +84,8 @@ getRotationDistances <- function(rotated) {
     .Call('rENA_getRotationDistances', PACKAGE = 'rENA', rotated)
 }
 
-get_optimized_node_pos <- function(normedFiltered, rotatedFiltered, num_dims = 2L, num_samples = 3L, max_iter = 1000L, return_all = TRUE) {
-    .Call('rENA_get_optimized_node_pos', PACKAGE = 'rENA', normedFiltered, rotatedFiltered, num_dims, num_samples, max_iter, return_all)
+get_optimized_node_pos <- function(normedFiltered, opted, num_dims = 2L, num_samples = 3L, max_iter = 1000L, return_all = TRUE) {
+    .Call('rENA_get_optimized_node_pos', PACKAGE = 'rENA', normedFiltered, opted, num_dims, num_samples, max_iter, return_all)
 }
 
 fastLm <- function(y, X) {

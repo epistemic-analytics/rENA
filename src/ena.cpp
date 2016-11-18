@@ -245,6 +245,35 @@ arma::mat fixIt(DataFrame df) {
   return(output);
 }
 
+// [[Rcpp::export]]
+arma::mat sphere_norm(arma::mat m) {
+  int rows = m.n_rows;
+  arma::mat output(rows , m.n_cols, fill::zeros);
+
+  for (int p = 0; p < rows; p++) {
+    arma::vec vlength = pow( sum( pow(m.row(p),2), 1 ), 0.5);
+    double vl = vlength(0);
+
+    if (vl > 0) {
+      output.row(p) = ( m.row(p) / vl );
+    }
+  }
+  return output;
+}
+
+// [[Rcpp::export]]
+arma::mat dont_sphere_norm(arma::mat m) {
+  int nrows = m.n_rows;
+  double largestRowVectorLength = 0;
+  for(int rowNum=0; rowNum < nrows; rowNum++) {
+    arma::vec currLength = pow( sum( pow(m.row(rowNum),2), 1 ), 0.5);
+    double cl = currLength(0);
+    largestRowVectorLength = std::max(largestRowVectorLength, cl);
+  }
+
+  m = m / largestRowVectorLength;
+  return(m);
+}
 
 // [[Rcpp::export]]
 arma::mat normIt(DataFrame df) {
@@ -404,8 +433,8 @@ List single_optim(
 }
 
 // [[Rcpp::export]]
-double getN(arma::mat normed) {
-  return 0.5 + sqrt( 0.25 + 2*normed.n_cols );
+int getN(arma::mat normed) {
+  return floor(0.5 + sqrt( 0.25 + 2*normed.n_cols ));
 }
 
 // [[Rcpp::export]]
@@ -471,7 +500,6 @@ Rcpp::List get_optimized_node_pos(
     int num_dims=2, int num_samples=3, int max_iter=1000,
     bool return_all = true
 ) {
-
   arma::uvec b = find(any(normedFiltered != 0, 1) > 0); //apply(normed, 1, function(z) !all(z==0))
   arma::mat normedNonZero = normedFiltered.rows(b);
 
@@ -487,12 +515,20 @@ Rcpp::List get_optimized_node_pos(
   //NumericMatrix opted = Rcpp::wrap(dataOptim); //do_opt(normedFiltered, pairDists, rotatedFiltered, num_samples, num_dims);
   CharacterVector pc_names(num_dims);
   for(int i=0; i<num_dims; i++) {
-    pc_names[i] = "PC" + std::to_string(i);
+    pc_names[i] = "PC" + std::to_string(i+1);
   }
   opted.attr("colnames") = pc_names;
 
+  CharacterVector correlationRowNames(num_samples);
+  for(int i=0; i<num_samples; i++) {
+    correlationRowNames[i] = "Sample " + std::to_string(i+1);
+  }
+
   NumericMatrix correlations = opted( Range(opted.nrow()-2, opted.nrow()-2), _ ); // Range(0,opted.ncol()-num_samples-1) );
   correlations.attr("dim") = Dimension(num_samples,num_dims);
+
+  colnames(correlations) = pc_names;
+  rownames(correlations) = correlationRowNames;
 
   CharacterVector iterNames(opted.ncol());
   NumericMatrix iterIndex(num_dims * num_samples, 2);
@@ -818,7 +854,6 @@ double calc_cor(
   int dim
 ) {
   arma::mat dists = set["rotation_dists"];
-  //Rcpp::Rcout << "All dists: " << dists << std::endl;
 
   arma::mat t_pair_dists = dists.col(dim);
   arma::mat normed = set["data.normed"];
