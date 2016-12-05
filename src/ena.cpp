@@ -736,79 +736,58 @@ List scale_soln ( arma::mat xi, arma::mat ti, arma::mat w ) {
 }
 
 // [[Rcpp::export]]
-Rcpp::List full_opt(arma::mat normed, arma::mat rotated, Rcpp::List optim_nodes, int dims = 2, int num_samples = 3) {
+Rcpp::List full_opt(arma::mat normed, arma::mat rotated, Rcpp::List optim_nodes, int dims = 2, int num_samples = 3, bool checkUnique = false) {
 
+  /*
   arma::uvec summedMatched = find((sum(normed, 1)) > 0);
   arma::uvec summedMatched_r = find((sum(rotated, 1)));
-
   arma::mat normedFiltered = normed.rows(summedMatched);
   arma::mat rotatedFiltered = rotated.rows(summedMatched_r);
+  Rcpp::List nodes = Rcpp::wrap(optim_nodes);
+  arma::mat cents = optim_nodes["centroids"];
+  */
 
-  arma::mat out = arma::mat(normed.n_rows, normed.n_cols, fill::zeros);
+  int N = getN(normed); // Rcpp::as<int>(optim_nodes["N"]);
 
-  Rcpp::List nodes = Rcpp::wrap(optim_nodes); //get_optimized_node_pos(normed, rotated, dims, num_samples);
-  arma::mat cents = nodes["centroids"];
-  //Rcpp::Rcout << "Nodes: " << cents << std::endl;
+  NumericMatrix x_unscaled(N, dims);
 
-  int N = Rcpp::as<int>(nodes["N"]);
-
-  arma::fvec sums_sq_dists = arma::fvec(dims);
-  arma::mat x_scaled = arma::mat(N, dims);
-
-  NumericMatrix AllIters = Rcpp::as<NumericMatrix>(nodes["AllIters"]);
-  NumericMatrix iterIndex = Rcpp::as<NumericMatrix>(nodes["IterIndex"]);
+  NumericMatrix AllIters = Rcpp::as<NumericMatrix>(optim_nodes["AllIters"]);
+  NumericMatrix iterIndex = Rcpp::as<NumericMatrix>(optim_nodes["IterIndex"]);
   iterIndex = iterIndex( Range(0, (dims * num_samples) - 1), _ );
 
-  List AllItersList(dims);
-  NumericMatrix corrs = nodes["Correlations"];
+  NumericMatrix corrs = optim_nodes["Correlations"];
+  NumericVector dimCols = iterIndex( _, 1);
+
   for( int i=0; i<dims; i++) {
-    NumericVector thisDim = iterIndex( _, 1);
-    LogicalVector thisDims = thisDim == i;
-    NumericVector thisDimCols = logicalToColNums(thisDims);
+    NumericVector thisDimCols = logicalToColNums(dimCols == (i+1));
 
-    int s=0;
-    NumericMatrix AllItersFiltered( AllIters.nrow(), thisDimCols.size());
-    for( int j=0; j<thisDimCols.size(); j++) {
-      AllItersFiltered( _, s ) = AllIters( _, thisDimCols[j] );
-      s++;
+    // Check for unique solutions
+    if(checkUnique == true) {
+      int s=0;
+      NumericMatrix AllItersFiltered( AllIters.nrow(), thisDimCols.size());
+      for( int j=0; j<thisDimCols.size(); j++) {
+        AllItersFiltered( _, s ) = AllIters( _, thisDimCols[j] );
+        s++;
+      }
+      List lm_Result = lm_(AllItersFiltered);
+      NumericVector rSquares = lm_Result["r.squares"];
+      if(min(rSquares) < 0.9) {
+        Rcpp::Rcout << "R squares for dimension "<< i << " indicate ill-conditioned solution: " << rSquares << std::endl;
+      }
     }
-    AllItersList[i] = AllItersFiltered;
 
-    List lm_Result = lm_(AllItersFiltered);
-    NumericVector rSquares = lm_Result["r.squares"];
-    if(min(rSquares) < 0.9) {
-      //Rcpp::Rcout << "R squares for dimension "<< i << " indicate ill-conditioned solution: " << rSquares << std::endl;
-    }
-
-    //Rcpp::Rcout << "Corrs: " << corrs << std::endl;
-    LogicalVector highest_corr_vec = corrs(_, i) == max( corrs(_, i));
+    NumericMatrix itersForDim = iterIndex( Range(thisDimCols(0), thisDimCols(thisDimCols.size()-1)), _ );
+    LogicalVector highest_corr_vec = itersForDim(_, 0) == max( itersForDim(_, 0));
     NumericVector thisDimCols2 = logicalToColNums(highest_corr_vec);
 
-    int highest_corr = thisDimCols2(0); // + ((i - 1) * num_samples);
-
+    int highest_corr = thisDimCols(thisDimCols2(0)); // + ((i - 1) * num_samples);
     NumericVector solnV = AllIters( _ , highest_corr);
-    arma::vec soln = Rcpp::as<arma::vec>(solnV);
-    soln = soln.head( solnV.size() ); // - 2 );
-    //Rcpp::Rcout << "SOLN: " << soln << std::endl;
-
-    //Rcpp::Rcout << "rot: " << rotated << std::endl;
-    //Rcpp::Rcout << "TI: " << rotatedFiltered.col(i) << std::endl;
-    //Rcpp::Rcout << "w: " << normedFiltered << std::endl;
-
-    List scaleResult = scale_soln(soln, rotatedFiltered.col(i), normedFiltered);
-    arma::vec scaleVec = scaleResult["out"];
-    //Rcpp::Rcout << "SOLN 2: " << scaleVec << std::endl;
-    double scaleVal = scaleResult["val"];
-
-    sums_sq_dists[i] = scaleVal;
-    arma::vec scaledVec = (scaleVec[0] + (scaleVec[1] * soln));
-    x_scaled.col(i) = scaledVec;
+    x_unscaled(_, i) = solnV;
   }
 
   return List::create(
-    _["positions"] = x_scaled,
-    _["correlations"] = corrs,
-    _["sums_sq_dists"] = sums_sq_dists
+    _["positions"] = x_unscaled,
+    _["correlations"] = corrs
   );
 }
 
@@ -860,9 +839,6 @@ double calc_cor(
   double N = getN(normed);
   int K = getK(normed);
 
-  //Rcpp::Rcout << "N: " << N <<std::endl;
-  //Rcpp::Rcout << "K: " << K <<std::endl;
-
   uvec NtriOne = triIndices(N, 0);
   uvec NtriTwo = triIndices(N, 1);
   uvec KtriOne = triIndices(K, 0);
@@ -872,11 +848,46 @@ double calc_cor(
   arma::mat multRes = normed * mps.t();
   arma::mat centroids = multRes / sum(normed, 1);
   arma::mat dcentroids = centroids(KtriOne) - centroids(KtriTwo);
-  //Rcpp::Rcout << "dcent: " << dcentroids.n_rows << std::endl;
-  //Rcpp::Rcout << "dists: " << t_pair_dists.n_rows << std::endl;
+
   arma::mat c = cor(t_pair_dists, dcentroids, 0);
 
-  //double corrd = c(0,0);
-  //Rcpp::Rcout << "Cor: " << c(0,0) << std::endl;
   return c(0,0);
+}
+
+// [[Rcpp::export]]
+arma::vec soln_MPS(arma::mat x) {
+  arma::rowvec xVec = x.t();
+  arma::uvec CC1 = triIndices(xVec.size(), 0);
+  arma::uvec CC2 = triIndices(xVec.size(), 1);
+  arma::vec mps = ((xVec(CC1) + xVec(CC2)) / 2);
+  return(mps);
+}
+
+// [[Rcpp::export]]
+double soln_calc(
+  arma::vec coeff, arma::vec xi, arma::vec ti, arma::mat w, int dim
+) {
+  arma::vec mps = soln_MPS( (coeff[0]) + ( (coeff[1]) * xi) );
+
+  arma::vec ci = arma::vec(w.n_rows);
+  for(int i=0; i < w.n_rows; i++) {
+    ci[i] = sum(w.row(i) * mps) / sum(w.row(i)) ;
+  }
+
+  double ssd = sum(arma::pow((ci - ti), 2));
+  return(ssd);
+}
+
+// [[Rcpp::export]]
+arma::mat remove_zero_rows(arma::mat toFilter) {
+  arma::uvec b = find(any(toFilter != 0, 1) > 0);
+  arma::mat filtered = toFilter.rows(b);
+  return(filtered);
+}
+
+// [[Rcpp::export]]
+arma::mat remove_zero_rows2(arma::mat toFilter, arma::mat indices) {
+  arma::uvec b = find(any(indices != 0, 1) > 0);
+  arma::mat filtered = toFilter.rows(b);
+  return(filtered);
 }

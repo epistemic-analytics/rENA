@@ -36,6 +36,14 @@ fixIt <- function(df) {
     .Call('rENA_fixIt', PACKAGE = 'rENA', df)
 }
 
+sphere_norm <- function(m) {
+    .Call('rENA_sphere_norm', PACKAGE = 'rENA', m)
+}
+
+dont_sphere_norm <- function(m) {
+    .Call('rENA_dont_sphere_norm', PACKAGE = 'rENA', m)
+}
+
 normIt <- function(df) {
     .Call('rENA_normIt', PACKAGE = 'rENA', df)
 }
@@ -120,6 +128,14 @@ calc_cor <- function(x, set, dim) {
     .Call('rENA_calc_cor', PACKAGE = 'rENA', x, set, dim)
 }
 
+soln_MPS <- function(x) {
+    .Call('rENA_soln_MPS', PACKAGE = 'rENA', x)
+}
+
+soln_calc <- function(coeff, xi, ti, w, dim) {
+    .Call('rENA_soln_calc', PACKAGE = 'rENA', coeff, xi, ti, w, dim)
+}
+
 #' @title ref_window_df
 #' @name ref_window_df
 #' @param v - A dataframe
@@ -143,8 +159,8 @@ ref_window_df2 <- function(df, windowSize = 0L, binary = TRUE, useDiaganol = FAL
 #' @param v - A dataframe
 #' @param nms - A vector of characters used for colnames of returned DataFrame
 #' @export
-ref_window_sum <- function(df) {
-    .Call('rENA_ref_window_sum', PACKAGE = 'rENA', df)
+ref_window_sum <- function(df, binary = TRUE) {
+    .Call('rENA_ref_window_sum', PACKAGE = 'rENA', df, binary)
 }
 
 #' Calculates the upper triangle of a vector of integers  if it

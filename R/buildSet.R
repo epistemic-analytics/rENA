@@ -11,6 +11,7 @@ load("~/old-df.RData")
 
 source('R/accumulate.R');
 source('R/do_optimization.R');
+source('R/do_scale.R');
 source('R/ENAdata.R');
 source('R/ENAset.R');
 
@@ -22,7 +23,6 @@ codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client
 units_all_names = c("akash v","alexander b","amelia n","arden f","brandon l","cameron k","connor f","devin c","jimmy i","jordan l","joseph l","margaret n","peter p","robert z","steven z","tiffany x","abigail z","brandon f","brent p","cameron i","christina b","cormick u","daniel t","derek v","jackson p","keegan q","kiana k","luke u","madeline g","nathan d","nicholas l","nicholas n","ruzhen e","shane t","caitlyn y","justin y","samuel o","fletcher l","amirah u","carl b","christian x","kevin g","casey f","luis t","mitchell h","amalia x");
 units_less_names = units_all_names[1:4];
 
-#runIt <- function() {
 enadata = ENAdata$new(
   df, #"./data/rs.data.sorted.csv",
   unitsBy = c("UserName"), #,"Condition"),
@@ -32,10 +32,12 @@ enadata = ENAdata$new(
   windowSize = 1
 );
 
-enaset = ENAset$new(enadata, sphereNorm = F)
-enaset$process();
-#}
-#done = microbenchmark(runIt(), times=100)
-#print(done)
+runIt <- function() {
+  enaset = ENAset$new(enadata, sphereNorm = F)
+  enaset$process();
+}
 
-source('~/Workspaces/RStudio2/rENA/demo/plotTests.R')
+done = microbenchmark(runIt(), times=1)
+print(done)
+
+#source('~/Workspaces/RStudio2/rENA/demo/plotTests.R')

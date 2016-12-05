@@ -23,5 +23,5 @@ units_all_less = units_all[1:4];
 enadataNewcomb = ENAdata$new(df, unitsBy = c("week","send"), units = units_all, conversationsBy = c("stanza"), codeNames = codeNames, windowSize = 1);
 
 enasetNewcomb = ENAset$new(enadataNewcomb, codeColumns=c((3):18,21:37));
-enasetNewcomb$process();
+#enasetNewcomb$process();
 print("Done.")

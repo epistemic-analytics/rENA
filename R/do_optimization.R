@@ -60,7 +60,7 @@ do_optimization_2 = function(e, inPar=F, maxit = 1000) {
 
   if(is(e, "ENAset")) {
     e_list = list(
-      data.normed = e$data$normed,
+      data.normed = e$data$normed.non.zero,
       rotation_dists = e$rotation_dists,
       dims = e$get("dimensions"),
       samples = e$get("samples")
@@ -68,22 +68,25 @@ do_optimization_2 = function(e, inPar=F, maxit = 1000) {
 
     e = e_list;
   }
-
   # :::::: function single_optim ::::::
+  limits=list(min=-3,max=3);
+
   single_optim = function(e, dim, N = getN(e$data.normed)) {
     #browser();
-    result <- suppressWarnings(optim(par = runif(N,-3, 3),
+    result <- suppressWarnings(optim(par = runif(N,limits$min, limits$max),
                                      fn = calc_cor,
                                      gr = NULL,
                                      e, dim-1, # ... parameters to calc_cor()
                                      method = "Nelder-Mead",
-                                     control = list(fnscale=-1,maxit=40)
-                                     ,lower=-3, upper=3))
-    #browser();
+                                     control = list(
+                                       fnscale=-1,maxit=1000
+                                     )
+                                     ,lower=limits$min, upper=limits$max))
     out = c(result$par, result$value, dim)
     #names(out) = c(e$node_names, "corr", "dim")
     return(out)
   }
+
   #browser()
   N = getN(e$data.normed);
   if(inPar == T) {
@@ -108,5 +111,6 @@ do_optimization_2 = function(e, inPar=F, maxit = 1000) {
     }
   }
 
+  #browser()
   return(optimization_results)
 }

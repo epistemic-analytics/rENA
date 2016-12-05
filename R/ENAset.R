@@ -52,14 +52,23 @@ ENAset = R6Class("ENAset",
     #######
     ### Public Functions
     #######
-    update = function(data = private$enaData, dims = private$dimensions, ...) {
+    update = function(
+      data = private$enaData,
+      dims = private$dimensions,
+      samples = private$samples,
+      ...
+    ) {
       private$enaData <- data;
       private$dimensions <- dims;
-
+      private$samples <- samples;
       return(self$process());
     },
     process = function() return(private$run()),
-    get = function(x) return(private[[x]])
+    get = function(x) return(private[[x]]),
+    plot = function() {
+      plot(x=self$nodes$positions$scaled$positions[,1], y=self$nodes$positions$scaled$positions[,2], col = 0)
+      text(x=self$nodes$positions$scaled$positions[,1], y=self$nodes$positions$scaled$positions[,2], labels = rownames(self$nodes$positions$scaled$positions))
+    }
   ),
 
   private = list(
@@ -85,8 +94,7 @@ ENAset = R6Class("ENAset",
 
       codeNames_tri = svector_to_ut(private$enaData$get("codeNames"));
 
-      #browser();
-        self$data$raw = df[,(by_num+1):ncol(df), with=F];
+      self$data$raw = df[,(2):ncol(df), with=F];
       #if(is.null(private$codeColumns)) {
       #} else {
       #  self$data$raw = df[,private$codeColumns, with=F];
@@ -106,15 +114,21 @@ ENAset = R6Class("ENAset",
       } else {
         self$data$normed = dont_sphere_norm(data.matrix(self$data$raw.corrected));
       }
+      colnames(self$data$normed) = codeNames_tri;
 
-      #colnames(self$data$normed) = codeNames_tri;
+      self$data$normed.non.zero = remove_zero_rows(self$data$normed);
+
 
       self$data$centered$normed = centerData(self$data$normed);
-      #colnames(self$data$centered$normed) = codeNames_tri;
+      colnames(self$data$centered$normed) = codeNames_tri;
 
       self$data$centered$pca = pca(self$data$centered$normed, dims = private$dimensions);
       self$data$centered$rotated = centerDataRotated(self$data$centered$normed, self$data$centered$pca);
-      self$rotation_dists = getRotationDistances(self$data$centered$rotated);
+
+      #browser();
+      self$data$centered$rotated.non.zero = remove_zero_rows2(self$data$centered$rotated, indices=self$data$normed);
+
+      self$rotation_dists = getRotationDistances(self$data$centered$rotated.non.zero);
 
       if(private$optimMethod == "C") {
         self$data$optim = do_optimization_2(self, inPar = private$inPar);
@@ -122,9 +136,13 @@ ENAset = R6Class("ENAset",
         self$data$optim = do_optimization(self, inPar = private$inPar);
       }
 
-      self$nodes$positions$optim = get_optimized_node_pos(self$data$normed, private$dimensions, private$samples, opted = self$data$optim);
+      self$nodes$positions$optim = get_optimized_node_pos(self$data$normed.non.zero, private$dimensions, private$samples, opted = self$data$optim);
 
-      self$nodes$positions$rotated = full_opt(normed = self$data$normed, rotated = self$data$centered$rotated, optim_nodes = self$nodes$positions$optim, dims = private$dimensions);
+      self$nodes$positions$unscaled = full_opt(normed = self$data$normed.non.zero, rotated = self$data$centered$rotated.non.zero, optim_nodes = self$nodes$positions$optim, dims = private$dimensions, num_samples = private$samples);
+      rownames(self$nodes$positions$unscaled$positions) = private$enaData$get("codeNames")
+
+      self$nodes$positions$scaled = full_opt_soln(self$nodes$positions$unscaled$positions, self$data$normed.non.zero, self$data$centered$rotated.non.zero);
+      rownames(self$nodes$positions$scaled$positions) = private$enaData$get("codeNames")
 
       return(self);
     }

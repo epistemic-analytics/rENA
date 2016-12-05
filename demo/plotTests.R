@@ -1,2 +1,3 @@
-plot(x=enaset$nodes$positions$rotated$positions[,1], y=enaset$nodes$positions$rotated$positions[,2], col = 0)
-text(x=enaset$nodes$positions$rotated$positions[,1], y=enaset$nodes$positions$rotated$positions[,2], labels = c(1:16))
+
+plot(x=enaset$nodes$positions$scaled[,1]$scaled, y=enaset$nodes$positions$scaled[,2]$scaled, col = 0)
+text(x=enaset$nodes$positions$scaled[,1]$scaled, y=enaset$nodes$positions$scaled[,2]$scaled, labels = c(1:16))

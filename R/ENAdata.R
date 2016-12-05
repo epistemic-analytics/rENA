@@ -14,6 +14,7 @@ ENAdata = R6Class("ENAdata",
       codeNames = NULL,
       windowSize = 1,
       binary = T,
+      exact.match = T,
       ...
     ) {
       private$file <- file;
@@ -23,6 +24,7 @@ ENAdata = R6Class("ENAdata",
       private$codeNames <- codeNames;
       private$windowSize <- windowSize;
       private$binary <- binary;
+      private$exact.match <- exact.match;
       private$data <- private$loadFile();
     },
 
@@ -73,6 +75,7 @@ ENAdata = R6Class("ENAdata",
     conversationsBy = NULL,
     codeNames = NULL,
     binary = T,
+    exact.match = T,
 
     #######
     ### Private Functions
@@ -91,9 +94,7 @@ ENAdata = R6Class("ENAdata",
 
       unitsList = unitsListTable;
 
-      conversations = df[, private$conversationsBy]
-      conversationsList = unique(conversations)
-      sList = trimws(unique(apply(df[, colnames(conversationsList)], 1, paste , collapse = " & ")));
+      #conversations = data.matrix(df[, private$conversationsBy]);
 
       if(is.null(private$units)) {
         private$units = apply(as.matrix(as.matrix(unique(df[, colnames(unitsList)]), ncol=length(colnames(unitsList)))), 1, paste , collapse = ".");
@@ -106,7 +107,8 @@ ENAdata = R6Class("ENAdata",
         units = private$units,
         codeNames = private$codeNames,
         window = private$windowSize,
-        binary = private$binary
+        binary = private$binary,
+        exact.match = private$exact.match
       );
 
       return(newRes);

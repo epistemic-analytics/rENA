@@ -84,6 +84,28 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// sphere_norm
+arma::mat sphere_norm(arma::mat m);
+RcppExport SEXP rENA_sphere_norm(SEXP mSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat >::type m(mSEXP);
+    __result = Rcpp::wrap(sphere_norm(m));
+    return __result;
+END_RCPP
+}
+// dont_sphere_norm
+arma::mat dont_sphere_norm(arma::mat m);
+RcppExport SEXP rENA_dont_sphere_norm(SEXP mSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat >::type m(mSEXP);
+    __result = Rcpp::wrap(dont_sphere_norm(m));
+    return __result;
+END_RCPP
+}
 // normIt
 arma::mat normIt(DataFrame df);
 RcppExport SEXP rENA_normIt(SEXP dfSEXP) {
@@ -194,7 +216,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // getN
-double getN(arma::mat normed);
+int getN(arma::mat normed);
 RcppExport SEXP rENA_getN(SEXP normedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
@@ -354,6 +376,32 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// soln_MPS
+arma::vec soln_MPS(arma::mat x);
+RcppExport SEXP rENA_soln_MPS(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
+    __result = Rcpp::wrap(soln_MPS(x));
+    return __result;
+END_RCPP
+}
+// soln_calc
+double soln_calc(arma::vec coeff, arma::mat xi, arma::mat ti, arma::mat w, int dim);
+RcppExport SEXP rENA_soln_calc(SEXP coeffSEXP, SEXP xiSEXP, SEXP tiSEXP, SEXP wSEXP, SEXP dimSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec >::type coeff(coeffSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type xi(xiSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type ti(tiSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type w(wSEXP);
+    Rcpp::traits::input_parameter< int >::type dim(dimSEXP);
+    __result = Rcpp::wrap(soln_calc(coeff, xi, ti, w, dim));
+    return __result;
+END_RCPP
+}
 // ref_window_df
 DataFrame ref_window_df(DataFrame df, int windowSize, bool binary, bool useDiaganol);
 RcppExport SEXP rENA_ref_window_df(SEXP dfSEXP, SEXP windowSizeSEXP, SEXP binarySEXP, SEXP useDiaganolSEXP) {
@@ -383,13 +431,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // ref_window_sum
-DataFrame ref_window_sum(DataFrame df);
-RcppExport SEXP rENA_ref_window_sum(SEXP dfSEXP) {
+DataFrame ref_window_sum(DataFrame df, bool binary);
+RcppExport SEXP rENA_ref_window_sum(SEXP dfSEXP, SEXP binarySEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< DataFrame >::type df(dfSEXP);
-    __result = Rcpp::wrap(ref_window_sum(df));
+    Rcpp::traits::input_parameter< bool >::type binary(binarySEXP);
+    __result = Rcpp::wrap(ref_window_sum(df, binary));
     return __result;
 END_RCPP
 }
