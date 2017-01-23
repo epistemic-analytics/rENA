@@ -4,9 +4,9 @@ library(network)
 library(sna)
 library(visNetwork)
 library(data.table)
-library(ggrepel)
-library(ggnetwork)
-library(gridSVG)
+#library(ggrepel)
+#library(ggnetwork)
+#library(gridSVG)
 
 extractName <- function(name) {
   substring(name, regexec("[\\d]\\.[\\d]\\.(.*)", name, perl = T)[[1]][2]);

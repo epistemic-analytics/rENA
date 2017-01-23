@@ -8,9 +8,9 @@
 #include <iterator>
 #include <cmath>
 #include <RcppArmadillo.h>
-#include "/Users/clmarquart/Workspaces/RStudio2/rENA/src/simplex.h"
-#include "/Users/clmarquart/Workspaces/RStudio2/rENA/src/optimizer.h"
-#include "/Users/clmarquart/Workspaces/RStudio2/rENA/src/correlation.cpp"
+#include "simplex.h"
+#include "optimizer.h"
+#include "correlation.cpp"
 //#include "/Users/clmarquart/Workspaces/RStudio2/rENA/src/optim.c"
 //#include "cor.h"
 
