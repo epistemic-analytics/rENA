@@ -14,7 +14,7 @@ do_optimization = function(e, inPar = F, maxit = 1000)
       dcentroids = centroids[e$i2] - centroids[e$j2]
       return(cor(t_pair_dists, dcentroids))
     }
-
+    set.seed(42);
     suppressWarnings(result <- optim(par = runif(e$N,-3, 3),
                                      fn = get_cor,
                                      control = list(fnscale=-1,
@@ -73,6 +73,7 @@ do_optimization_2 = function(e, inPar=F, maxit = 1000) {
 
   single_optim = function(e, dim, N = getN(e$data.normed)) {
     #browser();
+    set.seed(42)
     result <- suppressWarnings(optim(par = runif(N,limits$min, limits$max),
                                      fn = calc_cor,
                                      gr = NULL,

@@ -19,6 +19,7 @@ ENAset = R6Class("ENAset",
       correction=0,
       ...
     ) {
+      #browser()
       private$enaData <- enaData;
       private$dimensions <- dims;
       private$samples <- samples;
@@ -53,14 +54,19 @@ ENAset = R6Class("ENAset",
     ### Public Functions
     #######
     update = function(
+      x = "set",
       data = private$enaData,
       dims = private$dimensions,
       samples = private$samples,
       ...
     ) {
-      private$enaData <- data;
-      private$dimensions <- dims;
-      private$samples <- samples;
+      if(x == "set") {
+        private$enaData <- data;
+        private$dimensions <- dims;
+        private$samples <- samples;
+      } else if (x == "data") {
+        private$enaData <- private$enaData$update(...);
+      }
       return(self$process());
     },
     process = function() return(private$run()),
@@ -91,15 +97,15 @@ ENAset = R6Class("ENAset",
     run = function() {
       df = private$enaData$get();
       by_num = length(private$enaData$get("unitsBy"));
-
       codeNames_tri = svector_to_ut(private$enaData$get("codeNames"));
 
+      #browser()
       self$data$raw = df[,(2):ncol(df), with=F];
       #if(is.null(private$codeColumns)) {
       #} else {
       #  self$data$raw = df[,private$codeColumns, with=F];
       #}
-
+      #browser();
       self$data$raw.corrected = self$data$raw;
       if(private$binary == F) {
         if(private$correction == 1) {
@@ -115,15 +121,17 @@ ENAset = R6Class("ENAset",
         self$data$normed = dont_sphere_norm(data.matrix(self$data$raw.corrected));
       }
       colnames(self$data$normed) = codeNames_tri;
+      rownames(self$data$normed) = rownames(private$enaData$get());
 
       self$data$normed.non.zero = remove_zero_rows(self$data$normed);
 
-
       self$data$centered$normed = centerData(self$data$normed);
       colnames(self$data$centered$normed) = codeNames_tri;
+      rownames(self$data$centered$normed) = rownames(private$enaData$get());
 
       self$data$centered$pca = pca(self$data$centered$normed, dims = private$dimensions);
       self$data$centered$rotated = centerDataRotated(self$data$centered$normed, self$data$centered$pca);
+      rownames(self$data$centered$rotated) = rownames(private$enaData$get());
 
       #browser();
       self$data$centered$rotated.non.zero = remove_zero_rows2(self$data$centered$rotated, indices=self$data$normed);

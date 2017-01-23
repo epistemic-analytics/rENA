@@ -1,4 +1,5 @@
 // [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::depends(RcppParallel)]]
 
 #include <iostream>
 #include <vector>
@@ -9,6 +10,7 @@
 #include <RcppArmadillo.h>
 #include "/Users/clmarquart/Workspaces/RStudio2/rENA/src/simplex.h"
 #include "/Users/clmarquart/Workspaces/RStudio2/rENA/src/optimizer.h"
+#include "/Users/clmarquart/Workspaces/RStudio2/rENA/src/correlation.cpp"
 //#include "/Users/clmarquart/Workspaces/RStudio2/rENA/src/optim.c"
 //#include "cor.h"
 
@@ -849,9 +851,16 @@ double calc_cor(
   arma::mat centroids = multRes / sum(normed, 1);
   arma::mat dcentroids = centroids(KtriOne) - centroids(KtriTwo);
 
-  arma::mat c = cor(t_pair_dists, dcentroids, 0);
+  arma::mat cmat2(t_pair_dists.n_rows, 2);
+  cmat2.col(0) = t_pair_dists;
+  cmat2.col(1) = dcentroids;
+  NumericMatrix cc = cp_cor(Rcpp::wrap(cmat2));
 
-  return c(0,0);
+  //arma::mat c = cor(t_pair_dists, dcentroids, 0);
+
+  //Rcpp::Rcout << "Cor 1: " << c(0,0) << std::endl;
+  //Rcpp::Rcout << "Cor 2: " << cc(1,0) << std::endl;
+  return cc(1,0);
 }
 
 // [[Rcpp::export]]

@@ -10,6 +10,7 @@ ENAdata = R6Class("ENAdata",
     initialize = function(
       file,
       unitsBy = NULL, units = NULL,
+      unitsSelected = NULL,
       conversationsBy = NULL,
       codeNames = NULL,
       windowSize = 1,
@@ -20,11 +21,13 @@ ENAdata = R6Class("ENAdata",
       private$file <- file;
       private$unitsBy <- unitsBy;
       private$units <- units;
+      private$unitsSelected <- unitsSelected;
       private$conversationsBy <- conversationsBy;
       private$codeNames <- codeNames;
       private$windowSize <- windowSize;
       private$binary <- binary;
       private$exact.match <- exact.match;
+      #browser();
       private$data <- private$loadFile();
     },
 
@@ -37,12 +40,16 @@ ENAdata = R6Class("ENAdata",
       codeNames = private$codeNames,
       conversationsBy = private$conversationsBy,
       units = private$units,
+      unitsSelected = private$unitsSelected,
       reload = F
     ) {
-      if(file != private$file) {
+      if(all.equal.raw(file, private$file) == FALSE) {
         private$file <- file; reload = T;
       }
-      if( all.equal(codeNames, private$codeNames) == F ) {
+      if( identical(unitsSelected, private$unitsSelected) == F) {
+        private$unitsSelected <- unitsSelected; reload = T;
+      }
+      if( identical(codeNames, private$codeNames) == F ) {
         private$codeNames <- codeNames; reload = T;
       }
       if( is.null(units) || !all(units == private$units) ) {
@@ -72,6 +79,7 @@ ENAdata = R6Class("ENAdata",
     unitsList = NULL,
     unitsBy = NULL,
     units = NULL,
+    unitsSelected = NULL,
     conversationsBy = NULL,
     codeNames = NULL,
     binary = T,
@@ -81,13 +89,16 @@ ENAdata = R6Class("ENAdata",
     ### Private Functions
     #######
     loadFile = function() {
-      if(class(private$file) == "data.frame") {
-        df = private$file;
-      } else {
-        df = read.csv(private$file);
-      }
-      df_DT = as.data.table(df);
       #browser()
+      if(any(class(private$file) == "data.frame")) {
+        df = private$file;
+        df_DT = as.data.table(df);
+      } else {
+        df_DT = fread(private$file);
+        df = as.data.frame(df_DT);
+      }
+      #df_DT = as.data.table(df);
+
       unitsListTable = data.frame(df[, private$unitsBy]);
       private$unitsList = unique(unitsListTable);
       colnames(unitsListTable) = private$unitsBy;
@@ -96,15 +107,16 @@ ENAdata = R6Class("ENAdata",
 
       #conversations = data.matrix(df[, private$conversationsBy]);
 
-      if(is.null(private$units)) {
-        private$units = apply(as.matrix(as.matrix(unique(df[, colnames(unitsList)]), ncol=length(colnames(unitsList)))), 1, paste , collapse = ".");
-      }
-
+      #if(is.null(private$units)) {
+      #  private$units = apply(as.matrix(as.matrix(unique(df[, colnames(unitsList)]), ncol=length(colnames(unitsList)))), 1, paste , collapse = ".");
+      #}
+      #browser();
       newRes = accumulate.data(
         dfDT = df,
         stanzasBy = private$conversationsBy,
         unitsBy = private$unitsBy,
-        units = private$units,
+        units = private$units, #private$units,
+        unitsSelected = private$unitsSelected,
         codeNames = private$codeNames,
         window = private$windowSize,
         binary = private$binary,

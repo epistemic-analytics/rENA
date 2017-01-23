@@ -28,11 +28,11 @@ full.opt = function(w, t, node_names, return_all=F, dims = 1:6) {
     }
 
     # ::::::: choose solution with highest correlation ::::::
-    browser()
+    #browser()
     highest_corr = which(x$correlations[, dim] == max(x$correlations[, dim]))
     highest_corr = highest_corr + (dim - 1)*x$opt_params$n_samples
     soln = x$x_all_iters[, highest_corr]
-    browser()
+    #browser()
     # :::::: remove zero vectors ::::::
     bool = apply(x$w, 1, function(TMP) sum(TMP) != 0)
     result = scale_soln(soln, x$t[bool, dim], x$w[bool, ])
