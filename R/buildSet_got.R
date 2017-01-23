@@ -9,7 +9,7 @@ Rcpp::sourceCpp('src/svector_to_ut.cpp');
 Rcpp::sourceCpp('src/ref_window_df.cpp');
 Rcpp::sourceCpp('src/ref_window_sum.cpp');
 
-load("~/old-df.RData")
+#load("~/old-df.RData")
 
 source('R/accumulate.R');
 source('R/do_optimization.R');
@@ -17,8 +17,8 @@ source('R/do_scale.R');
 source('R/ENAdata.R');
 source('R/ENAset.R');
 
-load('./data/581a266034064f4f6c8d4e87.rdata');
-load('./data/58178a2f34064f4f6c8d4e66.rdata');
+#load('./data/581a266034064f4f6c8d4e87.rdata');
+#load('./data/58178a2f34064f4f6c8d4e66.rdata');
 
 GoTSet = `all_starks&lann`;
 jaimeSet = eg_jaime_ep_season;
@@ -37,7 +37,7 @@ gotData = ENAdata$new(GoT, unitsBy = c("episode", "season", "character"), units 
 #runIt <- function() {
 gotSet = ENAset$new(gotData, sphereNorm = T)
 gotSet$process();
-gotSet$plot();
+#gotSet$plot();
 #}
 #done = microbenchmark(runIt(), times=100)
 #print(done)

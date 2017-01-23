@@ -6,6 +6,76 @@
 
 using namespace Rcpp;
 
+// c_cor
+NumericMatrix c_cor(NumericMatrix mat);
+RcppExport SEXP rENA_c_cor(SEXP matSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type mat(matSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_cor(mat));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cp_cor
+NumericMatrix cp_cor(NumericMatrix mat);
+RcppExport SEXP rENA_cp_cor(SEXP matSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type mat(matSEXP);
+    rcpp_result_gen = Rcpp::wrap(cp_cor(mat));
+    return rcpp_result_gen;
+END_RCPP
+}
+// c_run_cor
+NumericVector c_run_cor(NumericMatrix mat, int nwindow);
+RcppExport SEXP rENA_c_run_cor(SEXP matSEXP, SEXP nwindowSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< int >::type nwindow(nwindowSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_run_cor(mat, nwindow));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cp_run_cor
+NumericVector cp_run_cor(NumericMatrix mat, int nwindow);
+RcppExport SEXP rENA_cp_run_cor(SEXP matSEXP, SEXP nwindowSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< int >::type nwindow(nwindowSEXP);
+    rcpp_result_gen = Rcpp::wrap(cp_run_cor(mat, nwindow));
+    return rcpp_result_gen;
+END_RCPP
+}
+// c_run_cor_smart
+NumericVector c_run_cor_smart(NumericMatrix mat, int nwindow);
+RcppExport SEXP rENA_c_run_cor_smart(SEXP matSEXP, SEXP nwindowSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< int >::type nwindow(nwindowSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_run_cor_smart(mat, nwindow));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cp_run_cor_smart
+NumericVector cp_run_cor_smart(NumericMatrix mat, int nwindow);
+RcppExport SEXP rENA_cp_run_cor_smart(SEXP matSEXP, SEXP nwindowSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< int >::type nwindow(nwindowSEXP);
+    rcpp_result_gen = Rcpp::wrap(cp_run_cor_smart(mat, nwindow));
+    return rcpp_result_gen;
+END_RCPP
+}
 // dfvector_to_ut
 DataFrame dfvector_to_ut(DataFrame v, CharacterVector nms);
 RcppExport SEXP rENA_dfvector_to_ut(SEXP vSEXP, SEXP nmsSEXP) {
@@ -477,17 +547,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// vector_to_ut
-std::vector<int> vector_to_ut(std::vector<int> v);
-RcppExport SEXP rENA_vector_to_ut(SEXP vSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::vector<int> >::type v(vSEXP);
-    rcpp_result_gen = Rcpp::wrap(vector_to_ut(v));
-    return rcpp_result_gen;
-END_RCPP
-}
 // vector_to_ut_full
 std::vector<int> vector_to_ut_full(std::vector<int> v);
 RcppExport SEXP rENA_vector_to_ut_full(SEXP vSEXP) {
@@ -496,6 +555,17 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::vector<int> >::type v(vSEXP);
     rcpp_result_gen = Rcpp::wrap(vector_to_ut_full(v));
+    return rcpp_result_gen;
+END_RCPP
+}
+// vector_to_ut
+std::vector<int> vector_to_ut(std::vector<int> v);
+RcppExport SEXP rENA_vector_to_ut(SEXP vSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<int> >::type v(vSEXP);
+    rcpp_result_gen = Rcpp::wrap(vector_to_ut(v));
     return rcpp_result_gen;
 END_RCPP
 }
