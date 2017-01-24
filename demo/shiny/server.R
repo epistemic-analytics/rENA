@@ -17,9 +17,9 @@ shinyServer(function(input, output, session) {
   );
 
   thisSet <- reactive({
-    print("Updating the set.");
     settings = settings();
     if(settings$allowUpdate == T) {
+      print("Updating the set.");
       return(gotSet$update("data",
         unitsSelected=input$unitsSelected,
         codeNames=input$codesSelected
@@ -141,7 +141,7 @@ shinyServer(function(input, output, session) {
     colnames(unitMatrix) = rownames(unitMatrix);
     unitMatrix[c(unitSelected_name),unitRow_nodes] = unitRow;
     unitMatrix[unitRow_nodes, c(unitSelected_name)] = unitRow;
-    net3 = network(unitMatrix, directed=F);
+    net3 = NULL;#network(unitMatrix, directed=F);
 
     return(list(
       "name" = unitSelected_name,
