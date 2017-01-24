@@ -52,13 +52,9 @@
     .directive("enaTimeline", [function(){
       return {
         restrict: 'E',
-        scope: {
-          timeline: '='
-        },
+        scope: true,
         templateUrl: "templates/timeline.html",
-        link: function(scope, element, attrs) {
-          //console.log("Scope: ", scope);
-        }
+        link: function(scope, element, attrs) {}
       }
     }])
     .directive("housesAdded", [function(){
@@ -172,7 +168,10 @@
       });
     }])
     .controller("TimelineCtrl", ["$scope", "Shiny", "$timeout", function($scope, Shiny, $timeout){
-      $scope.timeline;
+      $scope.opened = {
+        "split": false,
+        "playing": false
+      };
       $timeout(function(){
         Shiny.addCustomMessageHandler("timelineUpdated", function(timeline) {
           $scope.$apply(function(){
@@ -182,10 +181,20 @@
       });
 
       $scope.play = function() {
-
+        console.log("play");
+        $scope.opened.playing = true;
+      };
+      $scope.stopPlay = function() {
+        console.log("clear play");
+        $scope.opened.playing = false;
       };
       $scope.split = function() {
-
+          console.log("split");
+          $scope.opened.split = true;
+      };
+      $scope.clearSplit = function() {
+        console.log("clear split");
+        $scope.opened.split = false;
       };
     }])
     .controller("NetworkPlotsCtrl", ["$scope", function($scope){

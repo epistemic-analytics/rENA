@@ -22,12 +22,22 @@ shinyUI(fluidPage(
       ),
       fluidRow(id="timelineRow", "ng-controller"="TimelineCtrl",
         h4("Timeline"),
-          uiOutput('collapseTo'),
+        #uiOutput('collapseTo'),
         div(
           HTML("<ena-timeline timeline='timeline'></ena-timeline>"),
           tags$span(id="timelineBtnWrap",
-            tags$button(class="glyphicon glyphicon-play", tags$span("Play")),
-            tags$button(class="glyphicon glyphicon-ban-circle", tags$span("Clear"))
+            tags$button(
+              tags$i(class="glyphicon glyphicon-play pull-left"), tags$span("Play"),
+              "ng-click" = "play($event)", "ng-if" = "!opened.playing"),
+            tags$button(
+              tags$i(class="glyphicon glyphicon-stop pull-left"), tags$span("Stop"),
+              "ng-click" = "stopPlay($event)", "ng-if" = "opened.playing"),
+            tags$button(
+              tags$i(class="glyphicon glyphicon-random pull-left"), tags$span("Split"),
+              "ng-click" = "split($event)", "ng-if" = "!opened.split"),
+            tags$button(
+              tags$i(class="glyphicon glyphicon-ban-circle pull-left"), tags$span("Clear"),
+              "ng-click" = "clearSplit($event)", "ng-if" = "opened.split")
           )
         )
       ),
