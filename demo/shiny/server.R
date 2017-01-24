@@ -20,10 +20,12 @@ shinyServer(function(input, output, session) {
     print("Updating the set.");
     settings = settings();
     if(settings$allowUpdate == T) {
-      gotSet$update("data",
+      return(gotSet$update("data",
         unitsSelected=input$unitsSelected,
         codeNames=input$codesSelected
-      );
+      ));
+    } else {
+      return(gotSet);
     }
   });
   unitsSelected <- reactive({
