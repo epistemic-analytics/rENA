@@ -1,5 +1,18 @@
-if(ls(pattern="gotSet") != "gotSet") {
+library(R6);
+library(data.table);
+library(microbenchmark);
+library(shiny);
+if("sigma" %in% installed.packages() == F) {
+  devtools::install_url("https://git.doit.wisc.edu/clmarquart/shiny-sigma/repository/archive.zip");
+}
+library(sigma);
+
+build = T;
+setwd("../../")
+haveGoTSet = ls(pattern="gotSet")
+if(!is.logical(haveGoTSet) || haveGoTSet != "gotSet") {
   print("Creating the GoT set.");
-  source('./R/buildSet_got.R');
+  if(build == T) {source('./R/buildSet_got.R');}
+  else {load(file = "./demo/gotSet.RData")}
 }
 runApp("./demo/shiny", port=7705, launch.browser = F)
