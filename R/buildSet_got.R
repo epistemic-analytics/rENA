@@ -1,9 +1,6 @@
 library(R6);
 library(data.table);
 library(microbenchmark);
-library(shiny);
-devtools::install_url("https://git.doit.wisc.edu/clmarquart/shiny-sigma/repository/archive.zip");
-library(sigma);
 
 Rcpp::sourceCpp('src/ena.cpp');
 Rcpp::sourceCpp('src/svector_to_ut.cpp');
