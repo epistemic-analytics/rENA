@@ -26,10 +26,12 @@ shinyServer(function(input, output, session) {
   thisSet <- reactive({
     print("Updating the set.");
     settings = settings();
-    gotSet$update("data",
-      unitsSelected=input$unitsSelected,
-      codeNames=input$codesSelected
-    );
+    if(settings$allowUpdate == T) {
+      gotSet$update("data",
+        unitsSelected=input$unitsSelected,
+        codeNames=input$codesSelected
+      );
+    }
   });
   unitsSelected <- reactive({
     set = thisSet();
