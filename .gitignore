@@ -2,3 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
+R/RcppExports.R
+src/RcppExports.cpp
