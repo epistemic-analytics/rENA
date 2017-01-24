@@ -68,10 +68,16 @@
         transclude: true,
         templateUrl: "templates/housesAdded.html",
         link: function(scope, element, attrs) {
-          console.log("Added houses: ", scope.$parent.housesAdded);
+          console.log("Added houses: ", scope.housesAdded);
 
           scope.housesAdded = [];
-
+          scope.$on("house-added", function(event, item){
+            if(
+              scope.housesAdded.map(h=>{ return h.house }).filter(h=>{ return h===item.house }).length < 1
+            ) {
+              scope.housesAdded.push(item);
+            }
+          });
           scope.$on("units-loaded", function(units) {
             console.log("Units already: ", scope.$parent.unitsSelected);
 
@@ -140,11 +146,7 @@
         console.log("Done dragging.");
       };
       $scope.dropCallback = function(index, item, external, type) {
-        if(
-          $scope.housesAdded.map(h=>{ return h.house }).filter(h=>{ return h===item.house }).length < 1
-        ) {
-          $scope.housesAdded.push(item);
-        }
+        $scope.$broadcast("house-added", item);
       };
 
       $timeout(function(){
