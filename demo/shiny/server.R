@@ -11,7 +11,7 @@ shinyServer(function(input, output, session) {
   values$sigmaNet2 = list(nodes = list(), edges = list());
   values$sigmaNetComp = list(nodes = list(), edges = list());
   values$settings = list(
-    "allowUpdate" = T,
+    "allowUpdate" = F,
     "grouping" = c("character","season", "episode"),
     "collapseTo" = c("character")
   );
