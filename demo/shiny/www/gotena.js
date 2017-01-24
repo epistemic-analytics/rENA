@@ -57,7 +57,7 @@
         },
         templateUrl: "templates/timeline.html",
         link: function(scope, element, attrs) {
-          console.log("Scope: ", scope);
+          //console.log("Scope: ", scope);
         }
       }
     }])
@@ -70,15 +70,21 @@
         link: function(scope, element, attrs) {
           console.log("Added houses: ", scope.$parent.housesAdded);
 
-          scope.$on("units-changes", function(units) {
+          scope.housesAdded = [];
+
+          scope.$on("units-loaded", function(units) {
             console.log("Units already: ", scope.$parent.unitsSelected);
-            scope.$parent.housesAdded = scope.$parent.unitsSelected.map(u=>{
-              return(
-                scope.$parent.housesJSON.filter(h=>{
+
+            scope.housesAdded = scope.$parent.unitsSelected.map(u=>{
+              var foundHouse = scope.$parent.housesJSON.filter(h=>{
                   return( h.house === u.house );
-                })[0]
-              )
+                })[0];
+
+              foundHouse.selected = foundHouse.selected || [];
+              foundHouse.selected.push(u);
+              return foundHouse;
             })
+            console.log(scope.housesAdded);
           });
         }
       }
@@ -91,6 +97,10 @@
         },
         templateUrl: "templates/houseList.html",
         link: function(scope, element, attrs) {
+          scope.$on("houses-changed", function(event, houses){
+            scope.houseList = houses;
+          });
+
           scope.setActiveHouse = function(h) {
             if(scope.$parent.activeHouse === h.house) {
               scope.$parent.activeHouse = undefined;
@@ -100,6 +110,18 @@
               h.active = true;
             }
           };
+        }
+      }
+    }])
+    .directive("houseCharacters", [function(){
+      return {
+        restrict: 'EA',
+        scope: {
+          characters: '='
+        },
+        templateUrl: "templates/houseCharacters.html",
+        link: function(scope, element, attrs) {
+
         }
       }
     }])
@@ -127,16 +149,15 @@
 
       $timeout(function(){
         Shiny.addCustomMessageHandler("unitsSelected", function(units) {
-          console.log("Units selected: ", JSON.parse(units));
           $scope.$apply(function(){
             $scope.unitsSelected = JSON.parse(units);
-            $scope.$broadcast("units-changes", $scope.unitsSelected);
+            $scope.$broadcast("units-loaded", $scope.unitsSelected);
           });
         });
         Shiny.addCustomMessageHandler("housesJSON", function(houses) {
-          console.log("housesJSON:", JSON.parse(houses));
           $scope.$apply(function(){
             $scope.housesJSON = JSON.parse(houses);
+            $scope.$broadcast("houses-changed", $scope.housesJSON);
           });
         });
       });
@@ -150,10 +171,8 @@
     }])
     .controller("TimelineCtrl", ["$scope", "Shiny", "$timeout", function($scope, Shiny, $timeout){
       $scope.timeline;
-
       $timeout(function(){
         Shiny.addCustomMessageHandler("timelineUpdated", function(timeline) {
-          console.log("Timeline updated:", timeline);
           $scope.$apply(function(){
             $scope.timeline = timeline;
           });

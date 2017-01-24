@@ -1,12 +1,4 @@
-library(ggplot2)
-library(GGally)
-library(network)
-library(sna)
-library(visNetwork)
 library(data.table)
-#library(ggrepel)
-#library(ggnetwork)
-#library(gridSVG)
 
 extractName <- function(name) {
   substring(name, regexec("[\\d]\\.[\\d]\\.(.*)", name, perl = T)[[1]][2]);
@@ -90,34 +82,12 @@ shinyUI(fluidPage(
             tags$div(id = "addCharsListColumn", "ng-class"="{'col-sm-12': showCharacters, 'col-sm-4': !showCharacters, 'hasActiveHouse': activeHouse !== undefined }",
               tags$div(id="addCharsWrap",
                 tags$div(id="addCharsAction", "ng-click"="showCharacters=!showCharacters",
-                  tags$h6("Add Characters",
-                    tags$i(class="glyphicon", "ng-class"="{'glyphicon-plus-sign': !showCharacters,'glyphicon-remove-sign': showCharacters}")
-                  )
+                  tags$h6("Add Characters"),
+                  tags$i(class="glyphicon", "ng-class"="{'glyphicon-plus-sign': !showCharacters,'glyphicon-remove-sign': showCharacters}")
                 )
               ),
               tags$div(id="addCharsListWrap", "ng-show"="showCharacters",
-                tags$ul(id="addCharsList", "house-list"=housesListJSON
-                  #lapply(unique(gotSet$get("enaData")$get("file")$house), function(h) {
-                  # lapply(housesList, function(h){
-                  #   tags$li(
-                  #     style=paste("background-color:",h$color, sep=""),
-                  #     #"draggable"="false",
-                  #     "dnd-draggable"=paste("{'house':",h$house,"}",sep=""),
-                  #     "dnd-effect-allowed"="move",
-                  #
-                  #     if(h$img == F) {
-                  #       tags$div(class='no-image', h$house)
-                  #     } else {
-                  #       withTags({
-                  #         div(
-                  #           img(src=paste("images/sigils/",h$house,".png",sep="")),
-                  #           div(class='has-image', paste("House",h$house, sep=" "))
-                  #         )
-                  #       })
-                  #     }
-                  #   )
-                  #})
-                )
+                tags$ul(id="addCharsList", "house-list"="")
               )
             )
           )

@@ -8,8 +8,8 @@
 #include <iterator>
 #include <cmath>
 #include <RcppArmadillo.h>
-#include "simplex.h"
-#include "optimizer.h"
+//#include "simplex.h"
+//#include "optimizer.h"
 #include "correlation.cpp"
 //#include "/Users/clmarquart/Workspaces/RStudio2/rENA/src/optim.c"
 //#include "cor.h"
@@ -146,85 +146,85 @@ public:
 };
 
 //arma::vec coeff, arma::vec ti, arma::vec xi
-class SOLN{
-private:
-  arma::mat w ;
-  arma::mat ti ;
-  arma::mat xi ;
-public:
-  SOLN(
-    arma::mat w,
-    arma::mat xi,
-    arma::mat ti
-  ) : w(w),
-  ti(ti),
-  xi(xi) {}
-
-  double operator()(Vector2 x) {
-    arma::vec v(2);
-    v << x[0] << x[1];
-    return this->calc( v );
-  }
-
-  double operator()(vector<double> x) {
-    //Rcpp::Rcout << "Coeff: " << arma::vec(x) << std::endl;
-    return this->calc( arma::vec(x) );
-  }
-
-  double operator()(arma::vec x) {
-    return this->calc(x);
-  }
-
-  arma::uvec triIndices(int len, int row = 0) {
-    int vL = len;
-    int vS = ( (vL * (vL + 1)) / 2) - vL ;
-    int s = 0;
-
-    arma::umat vR = arma::umat(2, vS, fill::zeros);
-    uvec vRone = uvec(vS);
-    for( int i = 2; i <= vL; i++ ) {
-      for (int j = 0; j < i-1; j++ ) {
-        if(row == 0) {
-          vR(0, s) = j;
-          vRone[s] = j;
-        } else {
-          vR(1, s) = i-1;
-          vRone[s] = i -1;
-        }
-        s++;
-      }
-    }
-    return vRone;
-  }
-
-  arma::vec MPS(arma::mat x) {
-    arma::rowvec xVec = x.t();
-    arma::uvec CC1 = triIndices(xVec.size(), 0);
-    arma::uvec CC2 = triIndices(xVec.size(), 1);
-    arma::vec mps = ((xVec(CC1) + xVec(CC2)) / 2);
-    return(mps);
-  }
-
-  double calc(arma::vec coeff) {
-    //Rcpp::Rcout << "Coeff: " << coeff[0] << ", " << coeff[1] << std::endl;
-    //arma::ivec coeffI = arma::ivec(coeff);
-    arma::vec mps = MPS( (coeff[0]) + ( (coeff[1]) * this->xi) );
-    //Rcpp::Rcout << "MPS: " << mps << std::endl;
-    //Rcpp::Rcout << "xi: " << this->xi << std::endl;
-    //arma::mat ww = trans(w);
-    arma::vec ci = arma::vec(w.n_rows);
-    for(int i=0; i < w.n_rows; i++) {
-      ci[i] = sum(w.row(i) * mps) / sum(w.row(i)) ;
-    }
-    //Rcpp::Rcout << "CI: " << ci << std::endl;
-
-    double ssd = sum(arma::pow((ci - this->ti), 2));
-
-    //Rcpp::Rcout << "SSD: " << ssd << std::endl;
-
-    return(ssd);
-  }
-};
+// class SOLN{
+// private:
+//   arma::mat w ;
+//   arma::mat ti ;
+//   arma::mat xi ;
+// public:
+//   SOLN(
+//     arma::mat w,
+//     arma::mat xi,
+//     arma::mat ti
+//   ) : w(w),
+//   ti(ti),
+//   xi(xi) {}
+//
+//   double operator()(Vector2 x) {
+//     arma::vec v(2);
+//     v << x[0] << x[1];
+//     return this->calc( v );
+//   }
+//
+//   double operator()(vector<double> x) {
+//     //Rcpp::Rcout << "Coeff: " << arma::vec(x) << std::endl;
+//     return this->calc( arma::vec(x) );
+//   }
+//
+//   double operator()(arma::vec x) {
+//     return this->calc(x);
+//   }
+//
+//   arma::uvec triIndices(int len, int row = 0) {
+//     int vL = len;
+//     int vS = ( (vL * (vL + 1)) / 2) - vL ;
+//     int s = 0;
+//
+//     arma::umat vR = arma::umat(2, vS, fill::zeros);
+//     uvec vRone = uvec(vS);
+//     for( int i = 2; i <= vL; i++ ) {
+//       for (int j = 0; j < i-1; j++ ) {
+//         if(row == 0) {
+//           vR(0, s) = j;
+//           vRone[s] = j;
+//         } else {
+//           vR(1, s) = i-1;
+//           vRone[s] = i -1;
+//         }
+//         s++;
+//       }
+//     }
+//     return vRone;
+//   }
+//
+//   arma::vec MPS(arma::mat x) {
+//     arma::rowvec xVec = x.t();
+//     arma::uvec CC1 = triIndices(xVec.size(), 0);
+//     arma::uvec CC2 = triIndices(xVec.size(), 1);
+//     arma::vec mps = ((xVec(CC1) + xVec(CC2)) / 2);
+//     return(mps);
+//   }
+//
+//   double calc(arma::vec coeff) {
+//     //Rcpp::Rcout << "Coeff: " << coeff[0] << ", " << coeff[1] << std::endl;
+//     //arma::ivec coeffI = arma::ivec(coeff);
+//     arma::vec mps = MPS( (coeff[0]) + ( (coeff[1]) * this->xi) );
+//     //Rcpp::Rcout << "MPS: " << mps << std::endl;
+//     //Rcpp::Rcout << "xi: " << this->xi << std::endl;
+//     //arma::mat ww = trans(w);
+//     arma::vec ci = arma::vec(w.n_rows);
+//     for(int i=0; i < w.n_rows; i++) {
+//       ci[i] = sum(w.row(i) * mps) / sum(w.row(i)) ;
+//     }
+//     //Rcpp::Rcout << "CI: " << ci << std::endl;
+//
+//     double ssd = sum(arma::pow((ci - this->ti), 2));
+//
+//     //Rcpp::Rcout << "SSD: " << ssd << std::endl;
+//
+//     return(ssd);
+//   }
+// };
 
 // [[Rcpp::export]]
 arma::mat fixIt(DataFrame df) {
@@ -418,19 +418,19 @@ List single_optim(
   }
   //Rcpp::Rcout << "Rands: " << rands << std::endl;
 
-  using BT::Simplex;
-  arma::vec sim = Simplex(
-     co
-    ,rands_
-    ,1E-5 //1E8*std::numeric_limits<double>::epsilon()
-    ,std::vector<std::vector<double> >()
-    //,1E5
-  );
+  //using BT::Simplex;
+  //arma::vec sim = Simplex(
+  //    co
+  //   ,rands_
+  //   ,1E-5 //1E8*std::numeric_limits<double>::epsilon()
+  //   ,std::vector<std::vector<double> >()
+  //   //,1E5
+  // );
 
-  sim = sim.tail(N);
+  //sim = sim.tail(N);
   return List::create(
-    _["positions"] = sim,
-    _["correlation"] = co(sim)
+    //_["positions"] = sim,
+    //_["correlation"] = co(sim)
   );
 }
 
@@ -624,7 +624,6 @@ List fastLm(const arma::vec & y, const arma::mat & X) {
 }
 
 // [[Rcpp::export]]
-//arma::vec
 List summary_fastLm_c(List object) {
   //double se = object["stderr"];
   //tval <- coef(object)/se
@@ -718,22 +717,22 @@ List scale_soln ( arma::mat xi, arma::mat ti, arma::mat w ) {
   //Rcpp::Rcout << "TI: " << ti << std::endl;
   //Rcpp::Rcout << "w: " << w << std::endl;
 
-  SOLN soln = SOLN(w, xi, ti); //, w);
-  using BT::Simplex;
-  arma::vec sim = Simplex(soln,rands_,1E-3,std::vector<std::vector<double> >());
-
-  //= optim(par = c(1, 1),
-  //            fn = obj,
-  //            control = list(maxit = 100000,
-  //                           reltol=1e-16),
-  //            ti = ti,
-  //            xi = xi)
-  //Rcpp::Rcout << "Soln sim: " << sim << std::endl;
-
-  return(List::create(
-    _["out"] = sim,
-    _["val"] = soln(sim)
-  ));
+  //SOLN soln = SOLN(w, xi, ti); //, w);
+  // using BT::Simplex;
+  // arma::vec sim = Simplex(soln,rands_,1E-3,std::vector<std::vector<double> >());
+  //
+  // //= optim(par = c(1, 1),
+  // //            fn = obj,
+  // //            control = list(maxit = 100000,
+  // //                           reltol=1e-16),
+  // //            ti = ti,
+  // //            xi = xi)
+  // //Rcpp::Rcout << "Soln sim: " << sim << std::endl;
+  //
+   return(List::create(
+  //   _["out"] = sim,
+  //   _["val"] = soln(sim)
+   ));
 
 }
 
@@ -793,26 +792,25 @@ Rcpp::List full_opt(arma::mat normed, arma::mat rotated, Rcpp::List optim_nodes,
   );
 }
 
-// [[Rcpp::export]]
-bool testNO(arma::mat normed, arma::vec rotated, arma::vec soln) {
-  float precision = 0.1;
-  int dimension = 2;
-  NelderMeadOptimizer o(dimension, precision);
-
-  // request a simplex to start with
-  Vector2 v(1, 1);
-  o.insert(v);
-  //o.insert(Vector2(0.1, 0.1));
-  //o.insert(Vector2(0.2, 0.7));
-
-  SOLN solnObj = SOLN(normed, soln, rotated);
-  Rcpp::Rcout << "SOLN: " << solnObj(v) << std::endl;
-  while (!o.done()) {
-    v = o.step(v, solnObj(v));
-  }
-  //Rcpp::Rcout << "V: " << v << std::endl;
-  return true;
-}
+// bool testNO(arma::mat normed, arma::vec rotated, arma::vec soln) {
+//   float precision = 0.1;
+//   int dimension = 2;
+//   NelderMeadOptimizer o(dimension, precision);
+//
+//   // request a simplex to start with
+//   Vector2 v(1, 1);
+//   o.insert(v);
+//   //o.insert(Vector2(0.1, 0.1));
+//   //o.insert(Vector2(0.2, 0.7));
+//
+//   SOLN solnObj = SOLN(normed, soln, rotated);
+//   Rcpp::Rcout << "SOLN: " << solnObj(v) << std::endl;
+//   while (!o.done()) {
+//     v = o.step(v, solnObj(v));
+//   }
+//   //Rcpp::Rcout << "V: " << v << std::endl;
+//   return true;
+// }
 
 // [[Rcpp::export]]
 arma::mat get_cor(arma::vec dists, arma::vec cents) {

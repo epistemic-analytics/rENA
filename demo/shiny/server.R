@@ -1,12 +1,4 @@
-library(ggplot2)
-library(GGally)
-library(network)
-library(sna)
-library(visNetwork)
-library(data.table)
-library(ggrepel)
-library(ggnetwork)
-library(gridSVG)
+ library(data.table)
 
 extractName <- function(name) {
   last(strsplit(name, ".", fixed=T)[[1]])
@@ -19,6 +11,7 @@ shinyServer(function(input, output, session) {
   values$sigmaNet2 = list(nodes = list(), edges = list());
   values$sigmaNetComp = list(nodes = list(), edges = list());
   values$settings = list(
+    "allowUpdate" = T,
     "grouping" = c("character","season", "episode"),
     "collapseTo" = c("character")
   );
@@ -39,7 +32,7 @@ shinyServer(function(input, output, session) {
     unitNames = set$get("enaData")$get("unitsSelected");
 
     unitNames.w.meta = lapply(set$get("enaData")$get("unitsSelected"), function(u) {
-      setData[setData$character==u,which(lapply(setData[which(f$character==u),], function(x) { length(unique(x)) == 1 && all(is.character(as.vector(x)))} ) == T)][1,]
+      setData[setData$character==u,which(lapply(setData[which(setData$character==u),], function(x) { length(unique(x)) == 1 && all(is.character(as.vector(x)))} ) == T)][1,]
     })
 
     unitNames.w.meta

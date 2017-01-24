@@ -2,7 +2,8 @@ library(R6);
 library(data.table);
 library(microbenchmark);
 library(shiny);
-#devtools::install_local("~/Workspaces/RStudio2/sigma/"); library(sigma);
+devtools::install_url("https://git.doit.wisc.edu/clmarquart/shiny-sigma/repository/archive.zip");
+library(sigma);
 
 Rcpp::sourceCpp('src/ena.cpp');
 Rcpp::sourceCpp('src/svector_to_ut.cpp');
@@ -10,18 +11,16 @@ Rcpp::sourceCpp('src/ref_window_df.cpp');
 Rcpp::sourceCpp('src/ref_window_sum.cpp');
 
 #load("~/old-df.RData")
+#load('./data/581a266034064f4f6c8d4e87.rdata');
+#load('./data/58178a2f34064f4f6c8d4e66.rdata');
+#GoTSet = `all_starks&lann`;
+#jaimeSet = eg_jaime_ep_season;
 
 source('R/accumulate.R');
 source('R/do_optimization.R');
 source('R/do_scale.R');
 source('R/ENAdata.R');
 source('R/ENAset.R');
-
-#load('./data/581a266034064f4f6c8d4e87.rdata');
-#load('./data/58178a2f34064f4f6c8d4e66.rdata');
-
-GoTSet = `all_starks&lann`;
-jaimeSet = eg_jaime_ep_season;
 
 codeNames = c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Hodor','Tyrion','Bronn','Brienne','Margaery','Olenna','Tywin','The.Hound','Oberyn','Littlefinger','Varys','Theon','Ramsay','Sansa','Jon.Snow','Ygritte','Myrcella','Sam','Bran','Rickon');
 codeNames_less = codeNames[1:4];

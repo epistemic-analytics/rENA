@@ -180,7 +180,9 @@ div[ng-controller='ENACtrl'] {
       height: calc(100% - 5px);
       margin: 5px 0 0 0;
     }
-  #selectedColumn {}
+  #selectedColumn {
+    height: calc(100% - 10px) !important;
+}
     div[dnd-list] {
       min-height: 50px;
     }
@@ -190,7 +192,7 @@ div[ng-controller='ENACtrl'] {
       padding: 0;
       min-height: 100px;
     }
-      ul[houses-added] li {
+      ul[houses-added] > li {
         height: 40px;
         color: #FFF;
         padding: 7px 10px 2px 30px;
@@ -211,9 +213,9 @@ div[ng-controller='ENACtrl'] {
           top: 4px
         }
     div#addCharsListColumn {
-    left: 0;
-    position: absolute;
-    bottom: 0px;
+    /* left: 0; */
+    /* position: absolute; */
+    /* bottom: 0px; */
 }
 #addCharsList li.activeHouse {
     position: absolute !important;
@@ -232,11 +234,12 @@ div#charactersRow {
     top: -40px;
     position: relative;
     /* background: gray; */
+    /* margin-left: -19px; */
 }
     div#addCharsWrap {
       position: absolute;
       bottom: 0px;
-      width: calc(100% - -2px);
+      width: 100%;
       left: 0px;
       background: #1c5379;
       color: #FFF;
@@ -248,7 +251,7 @@ div#charactersRow {
     #addCharsAction i.glyphicon {
       position: absolute;
       right: 25px;
-      top: -3px;
+      top: 10px;
       font-size: 1.6rem;
     }
     #addCharsList li[draggable="true"] div[dnd-handle] {
@@ -266,7 +269,9 @@ div#charactersRow {
 
     }
     #addCharsAction h6 {
-      position: relative;
+      position: absolute;
+      left: 10px;
+      display: inline-block;
     }
     #addCharsListWrap {
       position: absolute;
@@ -299,7 +304,7 @@ div#charactersRow {
         margin: 0;
         display: inline-flex;
       }
-        #addCharsList li {
+        #addCharsList > li {
           display: inline-block;
           width: calc(100% / 13);
           height: 100%;
@@ -624,11 +629,14 @@ li.activeHouse .houseCharList {
     width: calc(100% - 54px);
     background: #FFF;
     display: inline-flex;
+    padding: 0 0 0 10px;
+    color: #000;
 }
 
 #addCharsList > li.activeHouse .has-image {
     width: calc(100% - 20px);
     bottom: 5px;
+    color: #000;
 }
 
 
@@ -638,4 +646,50 @@ li.activeHouse .houseCharList {
     left: 50%;
     /* height: 100%; */
     top: auto;
+}
+
+
+.houseCharList > div {
+    width: 100%;
+    display: block;
+}
+
+house-characters {
+    display: block;
+    width: 100%;
+    height: calc(100% - 35px);
+    font-size: 1.2rem;
+}
+
+house-characters ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+house-characters ul li {
+    display: inline-block;
+    width: 120px;
+    border: 1px solid #b4b4b4;
+    background: #CCC;
+    border-radius: 5px;
+    margin: 0 5px 5px 0;
+    position: relative;
+    padding: 2px 3px;
+}
+
+
+house-characters ul li i.glyphicon-move {
+    position: absolute;
+    right: 18px;
+}
+
+
+div#addCharsListColumn.col-sm-12 {
+    width: calc(100% + 2px);
+}
+
+
+div#addCharsListColumn.col-sm-4 {
+    width: calc(33.3333% + 2px);
 }
