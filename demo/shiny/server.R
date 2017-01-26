@@ -3,30 +3,52 @@
 extractName <- function(name) {
   last(strsplit(name, ".", fixed=T)[[1]])
 }
-
 shinyServer(function(input, output, session) {
-  values <- reactiveValues();
+  getTimeline <- function(set,timelineBy,nest=T) {
+    seasons=unique(set$get('enaData')$get('file')[timelineBy]);
+
+    if(nest == T) {
+      timeline = list();
+
+      for(i in unique(seasons$season)) {
+        timeline[[as.character(i)]] = seasons[which(seasons$season == i), ]$episode;
+      }
+
+      timeline;
+    } else {
+      seasons$included = T;
+      seasons;
+    }
+  }
+  values <- reactiveValues(
+    timelineFiltered = NULL
+  );
   values$nodeSize = 3;
   values$sigmaNet1 = list(nodes = list(), edges = list());
   values$sigmaNet2 = list(nodes = list(), edges = list());
   values$sigmaNetComp = list(nodes = list(), edges = list());
   values$settings = list(
     "allowUpdate" = F,
+    "conversationsBy" = c("season", "episode"),
     "grouping" = c("character","season", "episode"),
     "collapseTo" = c("character")
   );
 
   thisSet <- reactive({
     settings = settings();
+    set = NULL;
     if(settings$allowUpdate == T) {
       print("Updating the set.");
-      return(gotSet$update("data",
+      set = gotSet$update("data",
         unitsSelected=input$unitsSelected,
         codeNames=input$codesSelected
-      ));
+      );
     } else {
-      return(gotSet);
+      set = gotSet;
     }
+    values$timeline = getTimeline(set, values$settings$conversationsBy);
+
+    return(set);
   });
   unitsSelected <- reactive({
     set = thisSet();
@@ -49,16 +71,12 @@ shinyServer(function(input, output, session) {
     housesList.w.chars
   });
   timeline <- reactive({
-    set = thisSet();
-    timeline = list();
-
-    seasons=unique(set$get('enaData')$get('file')[c("season","episode")]);
-    for(i in unique(seasons$season)) {
-      timeline[[as.character(i)]] = seasons[which(seasons$season == i), ]$episode;
-    }
-
-    timeline;
+    getTimeline(thisSet(),settings()$conversationsBy, TRUE)
   });
+  timelineFilter <- reactive({
+    getTimeline(thisSet(),settings()$conversationsBy, FALSE)
+  });
+
   settings <- reactive({
     values$settings
   });
@@ -82,11 +100,21 @@ shinyServer(function(input, output, session) {
     valMeaned = valDT[, lapply(.SD, mean), by = c(input$collapseTo), .SDcols = c('x','y')];
     rownames(valMeaned) = apply(valMeaned[,input$collapseTo, with = F], 1, paste, collapse=".")
 
-    valMeanedDT = as.data.frame(valMeaned)
-    df = data.table(valMeanedDT[,c('x','y')], valMeanedDT[,!(colnames(valMeanedDT) %in% c('x','y'))])
+    df = data.table(valMeaned[,c("x","y"),with=F],valMeaned[,c(colnames(valMeaned)[!colnames(valMeaned) %in% c('x','y')]),with=F]);
 
     rownames(df) = rownames(valMeaned);
     df$rownames = rownames(valMeaned);
+
+    browser(expr=debug);
+    timelineBy = settings()$conversationsBy;
+    timelineBy = timelineBy[timelineBy %in% colnames(df)]
+    setkeyv(df,timelineBy)
+
+    timelineFiltered = values$timelineFiltered;
+    if(!is.null(timelineFiltered)) {
+      df = df[.(timelineFiltered[timelineFiltered$included == T,timelineBy]), nomatch=0];
+    }
+
     df
   });
 
@@ -191,25 +219,18 @@ shinyServer(function(input, output, session) {
     if(is.null(val)) {
       return(NULL);
     }
-    #browser();
-    #val[,1] = val[,1] * 10; #Expand
-    #val[,2] = val[,2] * -10; #Expand and rotate
-    #val[,ncol(val)] = rownames(val);
-    #val[,ncol(val)] = rownames(val);
+
     val$x = val$x * 10;
     val$y = val$y * 10;
     val$id = rownames(val);
     val$label = rownames(val);
-    #browser();
-    #colnames(val) <- c("x","y","id","label");
+
 
     r.list2 = list(nodes = list(), edges = list());
     r.list2.nodes = lapply(1:nrow(val), function(x) {
       list(
-        label = rownames(val)[x],
-        id = rownames(val)[x],
-        #x = val[x,1],
-        #y = val[x,2],
+        label = val[x]$rownames,
+        id = val[x]$rownames,
         x = val$x[x],
         y = val$y[x],
         size = 1
@@ -282,9 +303,12 @@ shinyServer(function(input, output, session) {
   output$unitsClicked <- renderText({
     input$unitsClicked;
   });
-  output$timeline <- renderTable({
-    timeline()
-  });
+  # output$timeline <- renderTable({
+  #   timeline()
+  # });
+  # output$timelineUsed <- renderText({
+  #   jsonlite::toJSON(timeline2())
+  # });
 
   output$grouping <- renderUI({
     selectizeInput('grouping', 'Collapse by',
@@ -300,19 +324,24 @@ shinyServer(function(input, output, session) {
   });
 
   observe({
-    session$sendCustomMessage("timelineUpdated", timeline());
+    session$sendCustomMessage("timelineNested", timeline());
+    session$sendCustomMessage("timelineFilter", jsonlite::toJSON(timelineFilter()));
+
     session$sendCustomMessage("housesJSON", rjson::toJSON(housesListChars())); #housesListJSON);
     session$sendCustomMessage("unitsSelected", rjson::toJSON(unitsSelected()));
   })
-  observeEvent(input$timelime, {
-    session$sendCustomMessage("timelineUpdated", output$timelime);
+  observeEvent(input$timelineFiltered, {
+    values$timelineFiltered = jsonlite::fromJSON(input$timelineFiltered);
   });
-  observeEvent(input$unitsClicked, {
-    session$sendCustomMessage("unitsClicked", input$unitsClicked);
-  });
-  observeEvent(input$edgeClicked, {
-    session$sendCustomMessage("edgeClicked", "You clicked an edge!!");
-  });
+  # observeEvent(input$timelime, {
+  #   session$sendCustomMessage("timelineUpdated", output$timelime);
+  # });
+  # observeEvent(input$unitsClicked, {
+  #   session$sendCustomMessage("unitsClicked", input$unitsClicked);
+  # });
+  # observeEvent(input$edgeClicked, {
+  #   session$sendCustomMessage("edgeClicked", "You clicked an edge!!");
+  # });
 
   output
 })

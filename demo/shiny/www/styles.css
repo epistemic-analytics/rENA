@@ -743,3 +743,12 @@ ul[houses-added] > li li {
     height: 30px;
     padding-top: 5px;
 }
+
+
+#timelineRow .timeline-subgroup li.timelineInactive {
+    background-color: #ccc;
+}
+
+#timelineRow .timeline-subgroup li.timelineActive {
+    background-color: #9abed5;
+}

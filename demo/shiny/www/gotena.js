@@ -54,7 +54,24 @@
         restrict: 'E',
         scope: true,
         templateUrl: "templates/timeline.html",
-        link: function(scope, element, attrs) {}
+        link: function(scope, element, attrs) {
+          scope.$on("timeline-selections", function(event, tl) {
+            scope.timeline2 = tl;
+          });
+          scope.checkTimelineSection = function(season, episode) {
+            var toInc = true, obj;
+            if(scope.timeline2) {
+              obj = scope.timeline2.filter(t=>{return t.season==season && t.episode==episode})[0]
+              toInc = obj.included;
+            }
+            return toInc;
+          };
+          scope.toggleTimeline = function(season, episode) {
+            var toInc = scope.timeline2.filter(t=>{return t.season==season && t.episode==episode})[0]
+            toInc.included = !toInc.included;
+            Shiny.onInputChange("timelineFiltered", JSON.stringify(scope.timeline2));
+          };
+        }
       }
     }])
     .directive("enaSplitTimeline", [function() {
@@ -93,8 +110,6 @@
         transclude: true,
         templateUrl: "templates/housesAdded.html",
         link: function(scope, element, attrs) {
-          console.log("Added houses: ", scope.housesAdded);
-
           scope.housesAdded = [];
           scope.$on("house-added", function(event, item){
             if(
@@ -104,8 +119,6 @@
             }
           });
           scope.$on("units-loaded", function(units) {
-            console.log("Units already: ", scope.$parent.unitsSelected);
-
             scope.housesAdded = scope.$parent.unitsSelected.map(u=>{
               var foundHouse = scope.$parent.housesJSON.filter(h=>{
                   return( h.house === u.house );
@@ -115,7 +128,6 @@
               foundHouse.selected.push(u);
               return foundHouse;
             })
-            console.log(scope.housesAdded);
           });
         }
       }
@@ -189,12 +201,14 @@
         });
       });
 
+      /*
       Shiny.addCustomMessageHandler("unitsClicked", function(a) {
         console.log("Clicked a node: ", a);
       });
       Shiny.addCustomMessageHandler("edgeClicked", function(a) {
         console.log("Clicked an edge.")
       });
+      */
     }])
     .controller("TimelineCtrl", ["$scope", "Shiny", "$timeout", function($scope, Shiny, $timeout){
       $scope.opened = {
@@ -202,7 +216,13 @@
         "playing": false
       };
       $timeout(function(){
-        Shiny.addCustomMessageHandler("timelineUpdated", function(timeline) {
+        Shiny.addCustomMessageHandler("timelineFilter", function(timeline) {
+          $scope.$apply(function(){
+            $scope.timeline2 = (Array.isArray(timeline) ? timeline :JSON.parse(timeline));
+            $scope.$broadcast("timeline-selections", $scope.timeline2);
+          });
+        });
+        Shiny.addCustomMessageHandler("timelineNested", function(timeline) {
           $scope.$apply(function(){
             $scope.timeline = timeline;
           });
