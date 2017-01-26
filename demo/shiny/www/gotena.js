@@ -57,6 +57,35 @@
         link: function(scope, element, attrs) {}
       }
     }])
+    .directive("enaSplitTimeline", [function() {
+      return {
+        "restrict": "A",
+        "templateUrl": "templates/splitTimeline.html",
+        "scope": true,
+        "link": function($scope, $element, $attrs) {
+          $scope.opts = {};
+          function updateOpts() {
+            console.log("timeline", $scope.timeline);
+            if ($scope.timeline) {
+              $scope.opts.split = Math.round(Object.keys($scope.timeline).length / 2);
+            } else {
+              $scope.opts = {};
+            }
+            console.log("opts", $scope.opts);
+          }
+          $scope.$watch('timeline', updateOpts);
+        }
+      };
+    }])
+    .directive("splitGrab", [function() {
+      return {
+        "restrict": "A",
+        "template": `<span class="splitGrabOuter">
+          <span class="splitGrabInner"> </span>
+          <span class="splitGrabInner"> </span>
+        </span>`
+      };
+    }])
     .directive("housesAdded", [function(){
       return {
         restrict: 'EA',

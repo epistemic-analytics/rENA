@@ -129,6 +129,37 @@ div[ng-controller='ENACtrl'] {
         border-right: #d4d4d4 1px solid;
         content: " ";
       }
+  #splitTimeline {
+    margin-top: 5px;
+  }
+    #splitTimeline .splitTimelinePortion {
+      display: inline-block;
+      width: calc(50% - 2px);
+      position: relative;
+      vertical-align: top;
+      border-top: 2px solid #000;
+    }
+      #splitTimeline .splitTimelinePortion .splitGrab {
+        position: absolute;
+        top: -2px;
+        bottom: 0px;
+        cursor: ew-resize;
+      }
+        #splitTimeline .splitTimelinePortion .splitGrabLeft {
+          left: 0px;
+        }
+        #splitTimeline .splitTimelinePortion .splitGrabRight {
+          right: 0px;
+        }
+          .splitGrabOuter {
+            background: #000;
+            display: inline-block;
+            width: 13px;
+          }
+            .splitGrabInner {
+              border-right: 2px solid #FFF;
+              padding-left: 3px;
+            }
 #mainColumnWrap {
   height: calc(100% - 165px);
   background-color: #c3c3c3;
