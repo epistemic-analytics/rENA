@@ -22,7 +22,7 @@ shinyUI(fluidPage(
       ),
       fluidRow(id="timelineRow", "ng-controller"="TimelineCtrl",
         h4("Timeline"),
-          uiOutput('collapseTo'),
+        uiOutput('collapseTo'),
         div(
           HTML("<ena-timeline timeline='timeline'></ena-timeline>"),
           tags$span(id="timelineBtnWrap",
