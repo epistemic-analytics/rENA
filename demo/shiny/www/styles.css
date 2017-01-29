@@ -131,34 +131,72 @@ div[ng-controller='ENACtrl'] {
       }
   #splitTimeline {
     margin-top: 5px;
+    position: relative;
   }
-    #splitTimeline .splitTimelinePortion {
-      display: inline-block;
-      width: calc(50% - 2px);
+    #splitTimelineEpisodes {
       position: relative;
+    }
+      #splitTimelineEpisode {
+        cursor: pointer;
+      }
+      #timelineAdjustersWrapper {
+        margin-left: 6px;
+        margin-right: 12px;
+        position: absolute;
+        right: 0px;
+        left: 0px;
+        top: -3px;
+      }
+      #timelineAdjusters {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        right: 0px;
+        border-top: 3px solid #000;
+      }
+    /*#splitTimeline .splitTimelinePortion {
+      display: inline-block;
+      position: absolute;
+      top: 0px;
+      bottom: 0px;
       vertical-align: top;
       border-top: 2px solid #000;
     }
-      #splitTimeline .splitTimelinePortion .splitGrab {
+      #splitTimeline1 {
+        left: 0px;
+        right: 50%;
+      }
+      #splitTimeline2 {
+        right: 0px;
+        left: 50%;
+      }*/
+      #splitTimeline .splitGrab {
         position: absolute;
         top: -2px;
         bottom: 0px;
         cursor: ew-resize;
       }
-        #splitTimeline .splitTimelinePortion .splitGrabLeft {
+        #splitTimeline .splitGrabLeft {
           left: 0px;
         }
-        #splitTimeline .splitTimelinePortion .splitGrabRight {
+        #splitTimeline .splitGrabRight {
           right: 0px;
+        }
+        #splitTimeline .splitGrabCenter {
+          left: calc(50% - 27px);
         }
           .splitGrabOuter {
             background: #000;
             display: inline-block;
-            width: 13px;
+            width: 23px;
+            padding-bottom: 3px;
           }
             .splitGrabInner {
-              border-right: 2px solid #FFF;
+              border-right: 3px solid #FFF;
               padding-left: 3px;
+            }
+            .splitGrabInner:first-child {
+              padding-left: 7px;
             }
 #mainColumnWrap {
   height: calc(100% - 165px);

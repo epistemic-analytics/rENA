@@ -1,4 +1,4 @@
-(function(w, $, angular, Shiny, undefined) {
+(function(w, $, angular, Shiny, undefined) { "use strict";
   console.log("Installed.");
 
   var ENA = w.ENA = {
@@ -61,13 +61,13 @@
           scope.checkTimelineSection = function(season, episode) {
             var toInc = true, obj;
             if(scope.timeline2) {
-              obj = scope.timeline2.filter(t=>{return t.season==season && t.episode==episode})[0]
+              obj = scope.timeline2.filter(t => t.season==season && t.episode==episode)[0];
               toInc = obj.included;
             }
             return toInc;
           };
           scope.toggleTimeline = function(season, episode) {
-            var toInc = scope.timeline2.filter(t=>{return t.season==season && t.episode==episode})[0]
+            var toInc = scope.timeline2.filter(t => t.season==season && t.episode==episode)[0];
             toInc.included = !toInc.included;
             Shiny.onInputChange("timelineFiltered", JSON.stringify(scope.timeline2));
           };
@@ -80,17 +80,13 @@
         "templateUrl": "templates/splitTimeline.html",
         "scope": true,
         "link": function($scope, $element, $attrs) {
-          $scope.opts = {};
-          function updateOpts() {
-            console.log("timeline", $scope.timeline);
-            if ($scope.timeline) {
-              $scope.opts.split = Math.round(Object.keys($scope.timeline).length / 2);
-            } else {
-              $scope.opts = {};
-            }
-            console.log("opts", $scope.opts);
-          }
-          $scope.$watch('timeline', updateOpts);
+          $scope.splitSelect = function($event, season, episode) {
+            $scope.splitTimelineAt(season, episode);
+            var $target = $($event.target),
+              $center = $element.find(".splitGrabCenter"),
+              xOffset = $target.position().left;
+            $center.css("left", (xOffset - 6) + "px");
+          };
         }
       };
     }])
@@ -100,7 +96,39 @@
         "template": `<span class="splitGrabOuter">
           <span class="splitGrabInner"> </span>
           <span class="splitGrabInner"> </span>
-        </span>`
+        </span>`,
+        "link": function($scope, $element, $attrs) {
+          $element.on("mousedown.enaGrab", function($event) {
+            $event.preventDefault();
+            var $timeline = $("#timeline-groups"),
+              episodes = $timeline.find(".timeline-episode").toArray(),
+              $episode;
+            console.log("timeline", $timeline);
+            $(window).on("mousemove.enaGrab", function($event) {
+              $event.preventDefault();
+              console.log("event", $event);
+              var x = Math.round($event.pageX);
+              console.log("x", x);
+              for (let i = 0; i < episodes.length; i++) {
+                $episode = $(episodes[i]);
+                let left = $episode.offset().left,
+                  width = $episode.outerWidth();
+                console.log("left/width", left, width);
+                if (x <= (left + width) && x >= left) {
+                  break;
+                } else {
+                  $episode = null;
+                }
+              }
+              console.log("epsidoe", $episode);
+              if ($episode) {
+                $element.closest(".splitGrab").css("left", $element.position().left);
+              }
+            }).on("mouseup.enaGrab", function($event) {
+              $(window).off("mouseup.enaGrab").off("mousemove.enaGrab");
+            });
+          });
+        }
       };
     }])
     .directive("housesAdded", [function(){
@@ -112,9 +140,7 @@
         link: function(scope, element, attrs) {
           scope.housesAdded = [];
           scope.$on("house-added", function(event, item){
-            if(
-              scope.housesAdded.map(h=>{ return h.house }).filter(h=>{ return h===item.house }).length < 1
-            ) {
+            if (scope.housesAdded.map(h=>h.house).filter(h=>h===item.house).length < 1) {
               scope.housesAdded.push(item);
             }
           });
@@ -213,6 +239,7 @@
     .controller("TimelineCtrl", ["$scope", "Shiny", "$timeout", function($scope, Shiny, $timeout){
       $scope.opened = {
         "split": false,
+        "splitChosen": false,
         "playing": false
       };
       $timeout(function(){
@@ -230,20 +257,22 @@
       });
 
       $scope.play = function() {
-        console.log("play");
         $scope.opened.playing = true;
       };
       $scope.stopPlay = function() {
-        console.log("clear play");
         $scope.opened.playing = false;
       };
       $scope.split = function() {
-          console.log("split");
           $scope.opened.split = true;
+          $scope.opened.splitChosen = false;
       };
       $scope.clearSplit = function() {
-        console.log("clear split");
         $scope.opened.split = false;
+        $scope.opened.splitChosen = false;
+      };
+      $scope.splitTimelineAt = function(season, episode) {
+        console.log("season/episode", season, episode);
+        $scope.opened.splitChosen = true;
       };
     }])
     .controller("NetworkPlotsCtrl", ["$scope", function($scope){
