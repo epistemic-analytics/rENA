@@ -81,7 +81,10 @@
         "scope": true,
         "link": function($scope, $element, $attrs) {
           $scope.splitSelect = function($event, season, episode) {
-            $scope.splitTimelineAt(season, episode);
+            var seasons = _.keys($scope.timeline);
+            $scope.splitTimelineAt("center", season, episode);
+            $scope.splitTimelineAt("left", _.first(seasons), _.first(_.first(seasons)));
+            $scope.splitTimelineAt("right", _.last(seasons), _.last(_.last(seasons)));
             var $target = $($event.target),
               $center = $element.find(".splitGrabCenter"),
               xOffset = $target.position().left;
@@ -91,6 +94,20 @@
       };
     }])
     .directive("splitGrab", [function() {
+      function noOverlap(which, $episode, positions) {
+        let scope = $episode.scope();
+        if (which === "left") {
+          let pos = positions.center;
+          return ((scope.season < pos.season) || (scope.season === pos.season && scope.episode < pos.episode));
+        } else if (which === "right") {
+          let pos = positions.center;
+          return ((scope.season > pos.season) || (scope.season === pos.season && scope.episode > pos.episode));
+        } //else
+        let left = positions.left,
+            right = positions.right;
+        return (((scope.season > left.season) || (scope.season === left.season && scope.episode > left.episode)) &&
+              ((scope.season < right.season) || (scope.season === right.season && scope.episode < right.episode)));
+      }
       return {
         "restrict": "A",
         "template": `<span class="splitGrabOuter">
@@ -101,31 +118,32 @@
           $element.on("mousedown.enaGrab", function($event) {
             $event.preventDefault();
             var $timeline = $("#timeline-groups"),
+                cl = $element.closest(".splitGrab")[0].classList,
+                which = (cl.contains("splitGrabCenter") ? "center" :
+                  (cl.contains("splitGrabLeft") ? "left" : "right")),
               episodes = $timeline.find(".timeline-episode").toArray(),
               $episode;
-            console.log("timeline", $timeline);
-            $(window).on("mousemove.enaGrab", function($event) {
+            $(window).on("mousemove.enaGrab", _.throttle(function($event) {
               $event.preventDefault();
-              console.log("event", $event);
               var x = Math.round($event.pageX);
-              console.log("x", x);
               for (let i = 0; i < episodes.length; i++) {
                 $episode = $(episodes[i]);
-                let left = $episode.offset().left,
+                let left = Math.round($episode.offset().left),
                   width = $episode.outerWidth();
-                console.log("left/width", left, width);
-                if (x <= (left + width) && x >= left) {
+                if (x <= (left + width) && x >= left && noOverlap(which, $episode, $scope.positions)){
                   break;
                 } else {
                   $episode = null;
                 }
               }
-              console.log("epsidoe", $episode);
               if ($episode) {
-                $element.closest(".splitGrab").css("left", $element.position().left);
+                $element.closest(".splitGrab").css("left", ($episode.position().left - 6) + "px");
               }
-            }).on("mouseup.enaGrab", function($event) {
+            }, 50)).on("mouseup.enaGrab", function($event) {
               $(window).off("mouseup.enaGrab").off("mousemove.enaGrab");
+              if ($episode) {
+                $scope.splitTimelineAt(which, $episode.scope().season, $episode.scope().episode);
+              }
             });
           });
         }
@@ -242,6 +260,11 @@
         "splitChosen": false,
         "playing": false
       };
+      $scope.positions = {
+        "right": {},
+        "left": {},
+        "center": {}
+      };
       $timeout(function(){
         Shiny.addCustomMessageHandler("timelineFilter", function(timeline) {
           $scope.$apply(function(){
@@ -269,10 +292,13 @@
       $scope.clearSplit = function() {
         $scope.opened.split = false;
         $scope.opened.splitChosen = false;
+        _.each($scope.positions, (o, which) => { $scope.positions[which] = {}; });
+        $(".splitGrab").css("left", "");
       };
-      $scope.splitTimelineAt = function(season, episode) {
-        console.log("season/episode", season, episode);
+      $scope.splitTimelineAt = function(which, season, episode) {
         $scope.opened.splitChosen = true;
+        $scope.positions[which].season = season;
+        $scope.positions[which].episode = episode;
       };
     }])
     .controller("NetworkPlotsCtrl", ["$scope", function($scope){

@@ -12,6 +12,7 @@ shinyUI(fluidPage(
     tags$script(src="bower_components/angular-messages/angular-messages.min.js"),
     tags$script(src="bower_components/angular-material/angular-material.min.js"),
     tags$script(src="bower_components/angular-drag-and-drop-lists/angular-drag-and-drop-lists.js"),
+    tags$script(src="bower_components/underscore/underscore-min.js"),
     tags$script(src="gotena.js")
   ),
 

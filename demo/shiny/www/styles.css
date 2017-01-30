@@ -104,6 +104,9 @@ div[ng-controller='ENACtrl'] {
     margin: 0px;
     height: 70px;
   }
+  #timeline-groups {
+    position: relative;
+  }
   #timelineRow .timeline-group {
     display: inline-block;
     width: calc(100% / 6);
