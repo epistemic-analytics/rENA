@@ -114,7 +114,9 @@
                 which = (cl.contains("splitGrabCenter") ? "center" :
                   (cl.contains("splitGrabLeft") ? "left" : "right")),
               episodes = $timeline.find(".timeline-episode").toArray(),
-              $episode = null;
+              $episode = null,
+              $top = $("#timelineTopBar"),
+              timelineWidth = $("#timelineAdjustersWrapper").width();
             $(window).on("mousemove.enaGrab", _.throttle(function($event) {
               $event.preventDefault();
               var x = Math.round($event.pageX),
@@ -126,7 +128,9 @@
                 });
               if (episode) {
                 $episode = $(episode);
-                $element.closest(".splitGrab").css("left", ($episode.position().left - 6) + "px");
+                let left = ($episode.position().left - 6);
+                $element.closest(".splitGrab").css("left", left + "px");
+                updateTopBar(which, left, $top, timelineWidth);
               }
             }, 50)).on("mouseup.enaGrab", function($event) {
               $(window).off("mouseup.enaGrab").off("mousemove.enaGrab");
@@ -135,6 +139,9 @@
               }
             });
 
+            function updateTopBar(which, left, $top, width) {
+              $top.css(which, (which === "left" ? left : width - left - 23) + "px"); //23 == grabber width
+            }
             function noOverlap(which, $episode) {
               let scope = $episode.scope(),
                 s = _.toInt(scope.season),

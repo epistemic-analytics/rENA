@@ -146,44 +146,36 @@ div[ng-controller='ENACtrl'] {
         margin-left: 6px;
         margin-right: 12px;
         position: absolute;
-        right: 0px;
-        left: 0px;
+        right: 0;
+        left: 0;
         top: -3px;
       }
       #timelineAdjusters {
         position: absolute;
-        top: 0px;
-        left: 0px;
-        right: 0px;
-        border-top: 3px solid #000;
+        top: 0;
+        left: 0;
+        right: 0;
+        /* border-top: 3px solid #000; */
+        border-top: 3px solid transparent;
       }
-    /*#splitTimeline .splitTimelinePortion {
-      display: inline-block;
-      position: absolute;
-      top: 0px;
-      bottom: 0px;
-      vertical-align: top;
-      border-top: 2px solid #000;
-    }
-      #splitTimeline1 {
-        left: 0px;
-        right: 50%;
-      }
-      #splitTimeline2 {
-        right: 0px;
-        left: 50%;
-      }*/
+        #timelineTopBar {
+          border-top: 3px solid #000;
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+        }
       #splitTimeline .splitGrab {
         position: absolute;
         top: -2px;
-        bottom: 0px;
+        bottom: 0;
         cursor: ew-resize;
       }
         #splitTimeline .splitGrabLeft {
-          left: 0px;
+          left: 0;
         }
         #splitTimeline .splitGrabRight {
-          right: 0px;
+          right: 0;
         }
         #splitTimeline .splitGrabCenter {
           left: calc(50% - 27px);
