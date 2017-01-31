@@ -1,5 +1,9 @@
 (function(w, $, angular, Shiny, undefined) { "use strict";
-  console.log("Installed.");
+  console.info("Installed.");
+
+  _.mixin({
+    "toInt": num => parseInt(num, 10)
+  });
 
   var ENA = w.ENA = {
     graphs: {
@@ -44,7 +48,7 @@
     /** Filters **/
     .filter("unitsBy", [ function() {
       return function(units, by) {
-        console.log("Units: ", units);
+        console.info("Units: ", units);
       };
     }])
 
@@ -81,10 +85,12 @@
         "scope": true,
         "link": function($scope, $element, $attrs) {
           $scope.splitSelect = function($event, season, episode) {
-            var seasons = _.keys($scope.timeline);
+            var seasons = _.keys($scope.timeline),
+              firstSeason = _.first(seasons),
+              lastSeason = _.last(seasons);
             $scope.splitTimelineAt("center", season, episode);
-            $scope.splitTimelineAt("left", _.first(seasons), _.first(_.first(seasons)));
-            $scope.splitTimelineAt("right", _.last(seasons), _.last(_.last(seasons)));
+            $scope.splitTimelineAt("left",firstSeason, _.first($scope.timeline[firstSeason]));
+            $scope.splitTimelineAt("right", lastSeason, _.last($scope.timeline[lastSeason]));
             var $target = $($event.target),
               $center = $element.find(".splitGrabCenter"),
               xOffset = $target.position().left;
@@ -94,20 +100,6 @@
       };
     }])
     .directive("splitGrab", [function() {
-      function noOverlap(which, $episode, positions) {
-        let scope = $episode.scope();
-        if (which === "left") {
-          let pos = positions.center;
-          return ((scope.season < pos.season) || (scope.season === pos.season && scope.episode < pos.episode));
-        } else if (which === "right") {
-          let pos = positions.center;
-          return ((scope.season > pos.season) || (scope.season === pos.season && scope.episode > pos.episode));
-        } //else
-        let left = positions.left,
-            right = positions.right;
-        return (((scope.season > left.season) || (scope.season === left.season && scope.episode > left.episode)) &&
-              ((scope.season < right.season) || (scope.season === right.season && scope.episode < right.episode)));
-      }
       return {
         "restrict": "A",
         "template": `<span class="splitGrabOuter">
@@ -122,21 +114,18 @@
                 which = (cl.contains("splitGrabCenter") ? "center" :
                   (cl.contains("splitGrabLeft") ? "left" : "right")),
               episodes = $timeline.find(".timeline-episode").toArray(),
-              $episode;
+              $episode = null;
             $(window).on("mousemove.enaGrab", _.throttle(function($event) {
               $event.preventDefault();
-              var x = Math.round($event.pageX);
-              for (let i = 0; i < episodes.length; i++) {
-                $episode = $(episodes[i]);
-                let left = Math.round($episode.offset().left),
-                  width = $episode.outerWidth();
-                if (x <= (left + width) && x >= left && noOverlap(which, $episode, $scope.positions)){
-                  break;
-                } else {
-                  $episode = null;
-                }
-              }
-              if ($episode) {
+              var x = Math.round($event.pageX),
+                episode = _.find(episodes, e => {
+                  let $e = $(e),
+                      left = Math.round($e.offset().left),
+                      width = $e.outerWidth();
+                  return (x <= (left + width) && x >= left && noOverlap(which, $e));
+                });
+              if (episode) {
+                $episode = $(episode);
                 $element.closest(".splitGrab").css("left", ($episode.position().left - 6) + "px");
               }
             }, 50)).on("mouseup.enaGrab", function($event) {
@@ -145,6 +134,28 @@
                 $scope.splitTimelineAt(which, $episode.scope().season, $episode.scope().episode);
               }
             });
+
+            function noOverlap(which, $episode) {
+              let scope = $episode.scope(),
+                s = _.toInt(scope.season),
+                e = _.toInt(scope.episode),
+                pos = $scope.positions,
+                tl = $scope.timeline;
+              // less than season and episode is at least one from other episode
+              // equal seasons and episodes at least one from other episode
+              // !last in season and !first in season
+              if (which === "left") {
+                return ((s < pos.center.season && (_.first(tl[pos.center.season]) !== pos.center.episode || _.last(tl[s]) !== e)) ||
+                  (s === pos.center.season && (e + 1) < pos.center.episode));
+              } else if (which === "right") {
+                return ((s > pos.center.season && (_.last(tl[pos.center.season]) !== pos.center.episode || _.first(tl[s]) !== e)) ||
+                  (s === pos.center.season && (e - 1) > pos.center.episode));
+              } //else
+              return (((s > pos.left.season && (_.last(tl[pos.left.season]) !== pos.left.episode || _.first(tl[s]) !== e)) ||
+                        (s === pos.left.season && e > (pos.left.episode + 1)))
+                    && ((s < pos.right.season && (_.first(tl[pos.right.season]) !== pos.right.episode || _.last(tl[s]) !== e)) ||
+                        (s === pos.right.season && e < (pos.right.episode - 1))));
+            }
           });
         }
       };
@@ -164,10 +175,7 @@
           });
           scope.$on("units-loaded", function(units) {
             scope.housesAdded = scope.$parent.unitsSelected.map(u=>{
-              var foundHouse = scope.$parent.housesJSON.filter(h=>{
-                  return( h.house === u.house );
-                })[0];
-
+              var foundHouse = scope.$parent.housesJSON.filter(h=>h.house === u.house)[0];
               foundHouse.selected = foundHouse.selected || [];
               foundHouse.selected.push(u);
               return foundHouse;
@@ -224,7 +232,7 @@
       $scope.activeHouse = undefined;
 
       $scope.dragHouseComplete = function() {
-        console.log("Done dragging.");
+        console.info("Done dragging.");
       };
       $scope.dropCallback = function(index, item, external, type) {
         $scope.$broadcast("house-added", item);
@@ -268,7 +276,7 @@
       $timeout(function(){
         Shiny.addCustomMessageHandler("timelineFilter", function(timeline) {
           $scope.$apply(function(){
-            $scope.timeline2 = (Array.isArray(timeline) ? timeline :JSON.parse(timeline));
+            $scope.timeline2 = (Array.isArray(timeline) ? timeline : JSON.parse(timeline));
             $scope.$broadcast("timeline-selections", $scope.timeline2);
           });
         });
@@ -297,17 +305,17 @@
       };
       $scope.splitTimelineAt = function(which, season, episode) {
         $scope.opened.splitChosen = true;
-        $scope.positions[which].season = season;
-        $scope.positions[which].episode = episode;
+        $scope.positions[which].season = _.toInt(season);
+        $scope.positions[which].episode = _.toInt(episode);
       };
     }])
     .controller("NetworkPlotsCtrl", ["$scope", function($scope){
       $scope.clearPlot = function(wh) {
-        console.log("Clearing: ", wh);
+        console.info("Clearing: ", wh);
         ENA.graphs.unit.selections.splice(wh-1,1)
         Shiny.onInputChange("unitClicked"+wh, null);
 
-        if(wh === 1 && ENA.graphs.unit.selections.length > 0) {
+        if (wh === 1 && ENA.graphs.unit.selections.length > 0) {
           Shiny.onInputChange("unitClicked"+2, null)
           Shiny.onInputChange("unitClicked"+1, ENA.graphs.unit.selections[0])
         }
