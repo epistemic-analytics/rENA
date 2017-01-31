@@ -308,7 +308,9 @@
         $scope.opened.split = false;
         $scope.opened.splitChosen = false;
         _.each($scope.positions, (o, which) => { $scope.positions[which] = {}; });
+        //this should be somewhere else... ooooooooh well
         $(".splitGrab").css("left", "");
+        $("#timelineTopBar").css({"left": "", "right" : ""});
       };
       $scope.splitTimelineAt = function(which, season, episode) {
         $scope.opened.splitChosen = true;
