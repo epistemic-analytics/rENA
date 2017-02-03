@@ -17,7 +17,7 @@ shinyUI(fluidPage(
   ),
 
   tags$body("ng-app"="ENAapp",
-    tags$div("ng-controller"="ENACtrl", "ng-class" = "{'showCharacters': showCharacters}",
+    tags$div("ng-controller"="ENACtrl", "ng-class" = "{'showCharacters': opts.showCharacters, 'showEpisodeSummary': opts.showEpisodeSummary}",
       fluidRow(id="headerRow",
         headerPanel("Game of Thrones ENA")
       ),
@@ -44,10 +44,10 @@ shinyUI(fluidPage(
       ),
 
       fluidRow(id="mainColumnWrap",
-        column(width=8,
+        column(width=8, id="centerColumn", "ng-class" = "{'col-sm-8': !opts.showEpisodeSummary, 'col-sm-6': opts.showEpisodeSummary}",
           fluidRow(id="plotRow",
             column(width=4, id="selectedColumn", class="column",
-
+              "ng-show" = "!opts.showEpisodeSummary",
               h4('Characters'),
               tags$ul("houses-added"="",
                 "dnd-list"="addedItems", "dnd-effect-allowed"="link",
@@ -89,15 +89,17 @@ shinyUI(fluidPage(
               )
             )
           ),
-          fluidRow(id="charactersRow",
-            tags$div(id = "addCharsListColumn", "ng-class"="{'col-sm-12': showCharacters, 'col-sm-4': !showCharacters, 'hasActiveHouse': activeHouse !== undefined }",
+          fluidRow(id="charactersRow", "ng-show" = "!opts.showEpisodeSummary",
+            tags$div(id = "addCharsListColumn",
+                     "ng-class" = "{'col-sm-12': opts.showCharacters, 'col-sm-4': !opts.showCharacters, 'hasActiveHouse': activeHouse !== undefined }",
               tags$div(id="addCharsWrap",
-                tags$div(id="addCharsAction", "ng-click"="showCharacters=!showCharacters",
+                tags$div(id="addCharsAction", "ng-click" = "toggleCharacters()",
                   tags$h6("Add Characters"),
-                  tags$i(class="glyphicon", "ng-class"="{'glyphicon-plus-sign': !showCharacters,'glyphicon-remove-sign': showCharacters}")
+                  tags$i(class="glyphicon",
+                         "ng-class" = "{'glyphicon-plus-sign': !opts.showCharacters, 'glyphicon-remove-sign': opts.showCharacters}")
                 )
               ),
-              tags$div(id="addCharsListWrap", "ng-show"="showCharacters",
+              tags$div(id="addCharsListWrap", "ng-show"="opts.showCharacters",
                 tags$ul(id="addCharsList", "house-list"="")
               )
             )
@@ -128,7 +130,14 @@ shinyUI(fluidPage(
             ),
             sigmaOutput('sigmaNet2')
           )
-        )
+        ),
+        column(width = 2, id = "episodeSummary", class="column", "ng-if" = "opts.showEpisodeSummary",
+               "ng-controller" = "EpisodeSummaryCtrl", "ng-include" = "'templates/episodeSummary.html'")
+      ),
+      div(
+        id = "sideMinimizedArea",
+        tags$a(id = "minimizedTitle", "ng-click" = "toggleSideMinimized()",
+               "ng-bind" = "(opts.showEpisodeSummary ? 'Characters' : 'Episode Summary')")
       )
     )
   )

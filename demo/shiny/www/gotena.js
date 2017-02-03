@@ -18,16 +18,10 @@
   };
 
   ENA.graphs.unit.events["clickNode"] = function(clickData) {
-    var
-       selected = clickData.data.node.id
-      ,selectedLen = ENA.graphs.unit.selections.length
-    ;
+    var selected = clickData.data.node.id,
+      selectedLen = ENA.graphs.unit.selections.length;
 
-    if(
-      selected &&
-      selectedLen < 2 &&
-      ENA.graphs.unit.selections[0] != selected
-    ) {
+    if(selected && selectedLen < 2 && ENA.graphs.unit.selections[0] != selected) {
       Shiny.onInputChange("unitClicked"+(selectedLen+1), selected);
       ENA.graphs.unit.selections.push(selected);
     }
@@ -230,7 +224,10 @@
 
     /** Controllers **/
     .controller("ENACtrl", ["$scope", "$timeout", function($scope, $timeout) {
-      $scope.showCharacters = true;
+      $scope.opts = {
+        "showCharacters": true,
+        "showEpisodeSummary": false
+      };
       $scope.settings = {
         groups: [ "Season", "Episode" ]
       };
@@ -243,6 +240,13 @@
       };
       $scope.dropCallback = function(index, item, external, type) {
         $scope.$broadcast("house-added", item);
+      };
+      $scope.toggleSideMinimized = function() {
+        $scope.opts.showEpisodeSummary = !$scope.opts.showEpisodeSummary;
+        $scope.opts.showCharacters = !$scope.opts.showEpisodeSummary;
+      };
+      $scope.toggleCharacters = function() {
+        $scope.opts.showCharacters = !$scope.opts.showCharacters;
       };
 
       $timeout(function(){
@@ -294,6 +298,12 @@
         });
       });
 
+      var updateGraphSplit = _.debounce(function() {
+        console.log("update graph", $scope.timeline);
+        console.log("tmime2", $scope.timeline2);
+        //Shiny.onInputChange("timelineFiltered", JSON.stringify(scope.timeline2));
+      }, 50);
+
       $scope.play = function() {
         $scope.opened.playing = true;
       };
@@ -316,6 +326,7 @@
         $scope.opened.splitChosen = true;
         $scope.positions[which].season = _.toInt(season);
         $scope.positions[which].episode = _.toInt(episode);
+        updateGraphSplit();
       };
     }])
     .controller("NetworkPlotsCtrl", ["$scope", function($scope){
@@ -335,6 +346,9 @@
         units: true,
         labels: true
       };
+    }])
+    .controller("EpisodeSummaryCtrl", ["$scope", function($scope) {
+
     }])
   ;
 })(window, jQuery, angular, Shiny);
