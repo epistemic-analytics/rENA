@@ -240,6 +240,7 @@ div[ng-controller='ENACtrl'] {
     padding: 0;
     margin: 3px 0 0;
     height: calc(100% - 10px) !important;
+    background-color: #FFF;
   }
     .showEpisodeSummary #unitPlotColumn {
       width: calc(100% - 10px);
@@ -361,9 +362,9 @@ div[ng-controller='ENACtrl'] {
     #addCharsList li[draggable="true"] div[dnd-handle] {
       cursor: grab;
       cursor:-webkit-grab;
-      background-size: 200%;
+      background-size: 175%;
       background-repeat: no-repeat;
-      background-position: 50% 10px;
+      background-position: 50% 5px;
       /* width: 50px; */
     }
 
@@ -481,7 +482,8 @@ div[ng-controller='ENACtrl'] {
     }
     #unitPlotColumn .tabbable .tab-content {
       padding-bottom: 35px;
-      min-height: 435px;
+      min-height: calc(100% - 65px);
+      background-color: #FFF;
     }
 
     #sidePlotColumn  {
@@ -745,7 +747,7 @@ li.activeHouse .houseCharList {
 #addCharsList > li.activeHouse .has-image {
     width: calc(100% - 20px);
     bottom: 5px;
-    color: #000;
+    /* color: #000; */
 }
 
 
@@ -787,6 +789,10 @@ house-characters ul li {
     padding: 2px 3px;
 }
 
+house-characters ul li i.glyphicon-check {
+    position: absolute;
+    right: 33px;
+}
 house-characters ul li i.glyphicon-move {
     position: absolute;
     right: 18px;
@@ -821,6 +827,20 @@ ul[houses-added] > li li {
 
 #timelineRow .timeline-subgroup li.timelineActive {
     background-color: #9abed5;
+}
+
+
+.sigma > svg > g {
+    user-select: none;
+}
+
+#unitPlotColumn .tab-content #sigma {
+    background-color: #FFF;
+}
+
+
+i.glyphicon.glyphicon-check.isUnit {
+    color: blue;
 }
 
 #episodeSummary {

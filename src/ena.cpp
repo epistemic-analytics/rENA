@@ -290,15 +290,8 @@ arma::mat normIt(DataFrame df) {
 }
 
 // [[Rcpp::export]]
-Rcpp::NumericMatrix pca(arma::mat m, int dims = 2) {
-  //int dfRows = df.nrows();
-  //int dfCols = df.size();
-
-  //arma::mat m(dfRows, dfCols, fill::zeros);
-  //for (int i=0; i<dfCols;i++) {
-  //  m.col(i) = Rcpp::as<arma::vec>(df[i]);
-  //}
-
+List pca(arma::mat m, int dims = 2) {
+//Rcpp::NumericMatrix pca(arma::mat m, int dims = 2) {
   arma::mat pca;
   arma::mat score;
   arma::vec latent;
@@ -309,7 +302,11 @@ Rcpp::NumericMatrix pca(arma::mat m, int dims = 2) {
     pca = pca.head_cols(dims);
   }
 
-  return Rcpp::wrap(pca);
+  return List::create(
+    _["pca"] = pca,
+    _["latent"] = latent
+  );
+  //return Rcpp::wrap(pca);
 }
 
 // [[Rcpp::export]]

@@ -6,6 +6,7 @@
   });
 
   var ENA = w.ENA = {
+    collapseTo: undefined,
     graphs: {
       unit: {
         selections: [],
@@ -22,23 +23,68 @@
     ENA.excerpts = ex;
   });
 
-  ENA.graphs.unit.events["clickNode"] = function(clickData) {
-    var selected = clickData.data.node.id,
-      selectedLen = ENA.graphs.unit.selections.length;
+  Shiny.addCustomMessageHandler("collapseTo", function(c) {
+    ENA.collapseTo = c;
+  });
 
-    if(selected && selectedLen < 2 && ENA.graphs.unit.selections[0] != selected) {
-      Shiny.onInputChange("unitClicked"+(selectedLen+1), selected);
-      ENA.graphs.unit.selections.push(selected);
+  var clicks = 0, clickTimeout, clickedAt;
+  ENA.graphs.unit.events["clickNode"] = function(clickData) {
+    console.log("Clicked: ", clickData)
+    if(clicks === 0) {
+      clickTimeout = setTimeout(function() {
+        console.log("Plotting the network.");
+
+        var
+           selected = clickData.data.node.id
+          ,selectedLen = ENA.graphs.unit.selections.length
+        ;
+
+        if(
+          selected &&
+          selectedLen < 2 &&
+          (
+            !ENA.graphs.unit.selections[0] ||
+            ENA.graphs.unit.selections[0].id != selected
+          )
+        ) {
+          Shiny.onInputChange("unitClicked"+(selectedLen+1), clickData.data.node); //selected);
+          ENA.graphs.unit.selections.push(clickData.data.node); //selected);
+        }
+        Shiny.onInputChange("unitsClicked", ENA.graphs.unit.selections);
+
+        clearTimeout(clickTimeout);
+        clicks = 0;
+        clickedAt = 0;
+      }, sigma.settings.doubleClickTimeout);
+      clickedAt = event.timeStamp;
+      clicks++;
+    } else if (event.timeStamp - clickedAt < sigma.settings.doubleClickTimeout) {
+      console.log("double click clear -> ", clickTimeout);
+      clearTimeout(clickTimeout);
+      clicks = 0; clickedAt = 0;
     }
-    Shiny.onInputChange("unitsClicked", ENA.graphs.unit.selections);
   };
   ENA.graphs.network.events["clickEdge"] = function(edge) {
     Shiny.onInputChange("edgeClicked", { camera: this.id, edge: edge, noce: Math.random() });
   };
+  ENA.graphs.unit.events["doubleClickNode"] = function(clickData) {
+    console.log("Double click: ", clickData);
+    if(!ENA.collapseTo.filter(c=>{return c === clickData.data.node.expandTo}).length) {
+      ENA.collapseTo.push(clickData.data.node.expandTo);
+
+      // Set collapseTo to a unitClicked instead, update DataROtated or something
+      //Shiny.onInputChange("collapseTo", JSON.stringify(ENA.collapseTo));
+      Shiny.onInputChange("toggleNode", JSON.stringify(clickData.data.node));
+    }
+  };
 
   var ENAapp = angular.module("ENAapp", ['ngMaterial','dndLists']);
-
   ENAapp
+    .run(["Shiny","$timeout", function(Shiny,$timeout) {
+      $timeout(function(){
+        Shiny.onInputChange("updateDataRotated", true);
+      })
+    }])
     /** Factories **/
     .factory("Shiny", [ "$timeout", function($timeout) {
       return(window.Shiny);
@@ -188,18 +234,50 @@
         templateUrl: "templates/housesAdded.html",
         link: function(scope, element, attrs) {
           scope.housesAdded = [];
+          scope.showCharacters;
+
+          scope.toggleShowCharacters = function(house) {
+            if(scope.showCharacters === house) scope.showCharacters = undefined
+            else scope.showCharacters = house;
+          };
+
           scope.$on("house-added", function(event, item){
-            if (scope.housesAdded.map(h=>h.house).filter(h=>h===item.house).length < 1) {
-              scope.housesAdded.push(item);
+            var
+              currentHouses = scope.housesAdded, //.map(h=>{ return h }),
+              currentHouse = currentHouse = currentHouses[item.house.house],
+              haveHouse = !!currentHouse, // && currentHouse.length > 0,
+              haveUnit = currentHouse && currentHouse.selected.filter(u=>{ return u === item.character })
+            ;
+
+            item.house.selected = item.house.selected || [];
+            if(
+              item.type === "house" &&
+              !haveHouse
+            ) {
+              scope.housesAdded[item.house.house] = item.house;
+            } else if (
+              item.type === "character"
+            ) {
+              if(!haveHouse) scope.housesAdded[item.house.house] = item.house;
+              var newUnit = {'character': item.character, 'house': item.house.house};
+              //item.house.selected.push(newUnit);
+              scope.housesAdded[item.house.house].selected.push(newUnit);
+              scope.showCharacters = item.house.house;
+
+              scope.$parent.unitsSelected.push(newUnit)
+              console.log("Now what:", scope.$parent.unitsSelected.map(u=>{return u.character}));
+              Shiny.onInputChange("unitsSelected", scope.$parent.unitsSelected.map(u=>{return u.character}));
+              Shiny.onInputChange("unitAdded", item);
             }
           });
-          scope.$on("units-loaded", function(units) {
-            scope.housesAdded = scope.$parent.unitsSelected.map(u=>{
-              var foundHouse = scope.$parent.housesJSON.filter(h=>h.house === u.house)[0];
-              foundHouse.selected = foundHouse.selected || [];
-              foundHouse.selected.push(u);
-              return foundHouse;
-            })
+          scope.$on("units-loaded", function(event, units) {
+
+            scope.housesAdded = {};
+            units.forEach(u=>{
+              scope.housesAdded[u.house] = scope.housesAdded[u.house] || scope.$parent.housesJSON.filter(h=>{return( h.house === u.house );})[0];
+              scope.housesAdded[u.house].selected = scope.housesAdded[u.house].selected || [];
+              scope.housesAdded[u.house].selected.push(u);
+            });
           });
         }
       }
@@ -207,13 +285,21 @@
     .directive("houseList", [function(){
       return {
         restrict: 'EA',
-        scope: {
-          houseList: '='
-        },
+        scope: {},
         templateUrl: "templates/houseList.html",
         link: function(scope, element, attrs) {
+          scope.houseList = [];
+          scope.unitsKeyed = {};
           scope.$on("houses-changed", function(event, houses){
             scope.houseList = houses;
+          });
+          scope.$on("units-loaded", function(event, units) {
+            scope.unitsSelected = units;
+            units.forEach(u=> {
+              console.log(u);
+              scope.unitsKeyed[u.character] = u;
+              scope.unitsKeyed[u.character].unit = true;
+            })
           });
 
           scope.setActiveHouse = function(h) {
@@ -232,11 +318,14 @@
       return {
         restrict: 'EA',
         scope: {
+          house: '=',
           characters: '='
         },
         templateUrl: "templates/houseCharacters.html",
         link: function(scope, element, attrs) {
-
+          scope.toggleUnitSelected = function(char, use) {
+            scope.$emit("toggle-unit", char, !use);
+          }
         }
       }
     }])
@@ -274,6 +363,10 @@
         $scope.opts.showCharacters = !$scope.opts.showCharacters;
       };
 
+      $scope.$on("toggle-unit", function(event, char, use) {
+        console.log("Toggling:", char, "to", use);
+      });
+
       function saveSettings() {
         localStorage.setItem(LS_NAME, JSON.stringify($scope.opts));
       }
@@ -293,6 +386,7 @@
           $scope.$apply(function(){
             $scope.unitsSelected = JSON.parse(units);
             $scope.$broadcast("units-loaded", $scope.unitsSelected);
+            $scope.$emit("units-loaded", $scope.unitsSelected);
           });
         });
         Shiny.addCustomMessageHandler("housesJSON", function(houses) {
