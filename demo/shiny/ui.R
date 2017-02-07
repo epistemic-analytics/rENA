@@ -12,6 +12,7 @@ shinyUI(fluidPage(
     tags$script(src="bower_components/angular-messages/angular-messages.min.js"),
     tags$script(src="bower_components/angular-material/angular-material.min.js"),
     tags$script(src="bower_components/angular-drag-and-drop-lists/angular-drag-and-drop-lists.js"),
+    tags$script(src="bower_components/underscore/underscore-min.js"),
     tags$script(src="gotena.js")
   ),
 
@@ -29,8 +30,18 @@ shinyUI(fluidPage(
         div(
           HTML("<ena-timeline timeline='timeline'></ena-timeline>"),
           tags$span(id="timelineBtnWrap",
-            tags$button(class="glyphicon glyphicon-play", tags$span("Play")),
-            tags$button(class="glyphicon glyphicon-ban-circle", tags$span("Clear"))
+            tags$button(
+              tags$i(class="glyphicon glyphicon-play pull-left"), tags$span("Play"),
+              "ng-click" = "play($event)", "ng-if" = "!opened.playing"),
+            tags$button(
+              tags$i(class="glyphicon glyphicon-stop pull-left"), tags$span("Stop"),
+              "ng-click" = "stopPlay($event)", "ng-if" = "opened.playing"),
+            tags$button(
+              tags$i(class="glyphicon glyphicon-random pull-left"), tags$span("Split"),
+              "ng-click" = "split($event)", "ng-if" = "!opened.split"),
+            tags$button(
+              tags$i(class="glyphicon glyphicon-ban-circle pull-left"), tags$span("Clear"),
+              "ng-click" = "clearSplit($event)", "ng-if" = "opened.split")
           )
         )
       ),

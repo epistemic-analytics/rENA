@@ -2,7 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
-R/RcppExports.R
-src/RcppExports.cpp
+RcppExports.R
+RcppExports.cpp
 *.out
 data/bigdata
