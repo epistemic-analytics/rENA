@@ -491,7 +491,7 @@
         $scope.position.active = season;
       };
 
-      $scope.$watch(() => Ena.excerpts, excerpts => {
+      $scope.$watch(() => ENA.excerpts, excerpts => {
         if (excerpts) {
           console.log("Excerpts", excerpts);
         }
