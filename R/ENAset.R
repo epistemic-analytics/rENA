@@ -129,11 +129,13 @@ ENAset = R6Class("ENAset",
       colnames(self$data$centered$normed) = codeNames_tri;
       rownames(self$data$centered$normed) = rownames(private$enaData$get());
 
-      self$data$centered$pca = pca(self$data$centered$normed, dims = private$dimensions);
+      pcaResults = pca(self$data$centered$normed, dims = private$dimensions);
+
+      self$data$centered$pca = pcaResults$pca;
+      self$data$centered$latent = pcaResults$latent;
       self$data$centered$rotated = centerDataRotated(self$data$centered$normed, self$data$centered$pca);
       rownames(self$data$centered$rotated) = rownames(private$enaData$get());
 
-      #browser();
       self$data$centered$rotated.non.zero = remove_zero_rows2(self$data$centered$rotated, indices=self$data$normed);
 
       self$rotation_dists = getRotationDistances(self$data$centered$rotated.non.zero);

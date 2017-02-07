@@ -27,7 +27,7 @@ ENAdata = R6Class("ENAdata",
       private$windowSize <- windowSize;
       private$binary <- binary;
       private$exact.match <- exact.match;
-      #browser();
+
       private$data <- private$loadFile();
     },
 
@@ -89,16 +89,13 @@ ENAdata = R6Class("ENAdata",
     ### Private Functions
     #######
     loadFile = function() {
-      #browser()
-      if(any(class(private$file) == "data.frame")) {
+      if(class(private$file) == "data.frame") {
         df = private$file;
-        df_DT = as.data.table(df);
       } else {
-        df_DT = fread(private$file);
-        df = as.data.frame(df_DT);
+        df = read.csv(private$file);
       }
-      #df_DT = as.data.table(df);
-
+      df_DT = as.data.table(df);
+      #browser()
       unitsListTable = data.frame(df[, private$unitsBy]);
       private$unitsList = unique(unitsListTable);
       colnames(unitsListTable) = private$unitsBy;
@@ -110,7 +107,7 @@ ENAdata = R6Class("ENAdata",
       #if(is.null(private$units)) {
       #  private$units = apply(as.matrix(as.matrix(unique(df[, colnames(unitsList)]), ncol=length(colnames(unitsList)))), 1, paste , collapse = ".");
       #}
-      #browser();
+
       newRes = accumulate.data(
         dfDT = df,
         stanzasBy = private$conversationsBy,

@@ -16,13 +16,16 @@ shinyUI(fluidPage(
   ),
 
   tags$body("ng-app"="ENAapp",
+    HTML('<filter id="blurMe">
+            <feColorMatrix in="SourceGraphic" type="saturate" values="0.1" />
+         </filter>'),
     tags$div("ng-controller"="ENACtrl", "ng-class" = "{'showCharacters': showCharacters}",
       fluidRow(id="headerRow",
         headerPanel("Game of Thrones ENA")
       ),
       fluidRow(id="timelineRow", "ng-controller"="TimelineCtrl",
         h4("Timeline"),
-        uiOutput('collapseTo'),
+        #uiOutput('collapseTo'),
         div(
           HTML("<ena-timeline timeline='timeline'></ena-timeline>"),
           tags$span(id="timelineBtnWrap",
@@ -43,11 +46,7 @@ shinyUI(fluidPage(
                 "dnd-drop"="dropCallback(index, item, external, type)"
               ),
 
-              selectizeInput( 'unitsSelected', 'Units',
-                selected = gotSet$get("enaData")$get("unitsSelected"),
-                choices = unique(gotSet$get("enaData")$get("file")$character),
-                multiple = TRUE
-              ),
+              #uiOutput("unitSelector"),
 
               selectizeInput('codesSelected', 'Codes',
                 selected = gotSet$get("enaData")$get("codeNames"),
@@ -70,7 +69,7 @@ shinyUI(fluidPage(
                 tags$div(id="thresholdSlider",
                   tags$span("Relationship Strength"),
                   sliderInput("edgeZoom", NULL,
-                    min = 1, max = 10, value = 1, ticks=F, width="100"
+                    min = 1, max = 10, value = 3, ticks=F, width="100"
                   )
                 ),
                 tags$span(HTML("<md-switch ng-model='data.units' class='md-primary'>Units</md-switch>")),

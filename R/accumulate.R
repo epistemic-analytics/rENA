@@ -1,7 +1,7 @@
 accumulate.data <- function(
   dfDT,
   stanzasBy, unitsBy, units,
-  codeNames,
+  codeNames, stanzas = NULL,
   unitsSelected = NULL, window = 3,
   append=F,binary=T,
   exact.match = T
@@ -10,10 +10,11 @@ accumulate.data <- function(
     dfDT = as.data.table(dfDT);
   }
   dfDT_codes = copy(dfDT);
-  #browser()
   dfDT_codes$ENA_UNIT = trimws(apply(dfDT_codes[,unitsBy,with=F], 1, paste, collapse="."));
   codedTriNames = svector_to_ut(codeNames);
+  #browser()
   dfDT_codes[, (codedTriNames) := ref_window_df(.SD,windowSize=window), by=stanzasBy, .SDcols=codeNames, with=T];
+  #dfDT_codes[, (codedTriNames) := ifelse(nrow(.SD)==1,(as.data.frame(t(vector_to_ut(as.matrix(.SD))))),(ref_window_df(.SD,windowSize=window))), by=stanzasBy, .SDcols=codeNames, with=T];
 
   if(is.null(units)) {
     #return();
