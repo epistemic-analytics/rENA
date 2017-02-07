@@ -829,9 +829,24 @@ ul[houses-added] > li li {
   height: 100%;
   padding: 0;
 }
+  #episodeSummaryHeader h4 {
+    display: inline-block;
+  }
   #clearEpisodeSummary {
     font-size: 1.1rem;
+    margin-top: 10px;
+    margin-right: 5px;
   }
     #clearEpisodeSummary i {
       float: left;
+    }
+  #episodeSummaryContent {
+    height: 100%;
+  }
+    #episodeSummaryContent .seasonTabs li a {
+      padding: 5px;
+    }
+    #episodeSummaryContent .tab-content {
+      height: calc(100% - 78px);
+      overflow: auto;
     }
