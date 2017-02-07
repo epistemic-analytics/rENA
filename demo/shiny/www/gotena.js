@@ -18,7 +18,7 @@
   };
 
   Shiny.addCustomMessageHandler("allExcerpts", function(ex) {
-    console.log("All the excerpts: ", ex.length);
+    console.log("All the excerpts: ", ex);
     ENA.excerpts = ex;
   });
 
@@ -397,7 +397,12 @@
         $scope.position.active = season;
       };
 
-      $scope.$watch(() => Data.get("timeline"), (timeline) => {
+      $scope.$watch(() => Ena.excerpts, excerpts => {
+        if (excerpts) {
+          console.log("Excerpts", excerpts);
+        }
+      });
+      $scope.$watch(() => Data.get("timeline"), timeline => {
         if (timeline) {
           //TODO: placeholder for actual data
           var seasons = [];
