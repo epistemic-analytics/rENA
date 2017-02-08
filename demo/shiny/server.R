@@ -1,4 +1,4 @@
- library(data.table)
+library(data.table)
 
 extractName <- function(name) {
   last(strsplit(name, ".", fixed=T)[[1]])
@@ -22,6 +22,7 @@ shinyServer(function(input, output, session) {
   }
   values <- reactiveValues(
     timelineFiltered = NULL,
+    codesSelected = c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Tyrion','Bronn','Brienne','Tywin','Bran'),
     settings = list(
       "allowUpdate" = T,
       "conversationsBy" = c("season", "episode"),
@@ -36,8 +37,9 @@ shinyServer(function(input, output, session) {
         from=NULL
       )
       ,list(
-         by=list(character="Ned"),
-         collapseTo=c("character")
+        by=list(character=c("Ned")),
+        uuid=uuid::UUIDgenerate(),
+        from=NULL
        )
       # ,list(
       #    by=list(character=c("Jaime"),season=c(2)),
@@ -67,15 +69,18 @@ shinyServer(function(input, output, session) {
     set = NULL;
     #browser();
     setData = gotSet$get('enaData')$get('file');
+    #values$codesSelected = gotSet$get("enaData")$get("codeNames");
+
     unitNames = unitsSelected();
     values$unitNames.w.meta = lapply(unitNames, function(u) {
       setData[setData$character==u,which(lapply(setData[which(setData$character==u),], function(x) { length(unique(x)) == 1 && all(is.character(as.vector(x)))} ) == T)][1,]
-    })
+    });
     if(settings$allowUpdate == T) {
       print("Updating the set.");
       set = gotSet$update("data",
         unitsSelected=unitNames,
-        codeNames=input$codesSelected
+        #codeNames=input$codesSelected
+        codeNames=values$codesSelected
       );
       values$resetMainData = T;
     } else {
@@ -87,6 +92,9 @@ shinyServer(function(input, output, session) {
   });
   unitsSelectedMeta <- reactive({
     values$unitNames.w.meta
+  });
+  codesSelected <- reactive({
+    values$codesSelected
   });
   unitsSelected <- reactive({
     #set = thisSet();
@@ -106,15 +114,15 @@ shinyServer(function(input, output, session) {
     #browser()
     unitNames
   });
-  housesListChars <- reactive({
-    set = thisSet();
-    setData = set$get("enaData")$get("file");
+  housesListChars <- function() {
+    #set = thisSet();
+    setData = values$enaFile; #set$get("enaData")$get("file");
     housesList.w.chars = lapply(housesList, function(x) {
       x$characters = unique(setData[which(x$house==setData$house),]$character)
       x
     });
     housesList.w.chars
-  });
+  };
   timeline <- reactive({
     getTimeline(thisSet(),settings()$conversationsBy, TRUE)
   });
@@ -228,48 +236,35 @@ shinyServer(function(input, output, session) {
     }
 
     #NOT SURE IF NEEDED (up to NEW VERSION)
-    dRfilt = dR[, .SD[rownames == selectionObj$id], by="rownames", .SDcols = c(values$settings$collapseTo), with=T]
-    unitRow_allDF = useData2DT[dRfilt, colSums(.SD[, sapply(.SD, is.numeric), with=F]) ,on=values$settings$collapseTo];
-    unitRow_all = unitRow_allDF[!names(unitRow_allDF) %in% values$settings$grouping]
+      dRfilt = dR[, .SD[rownames == selectionObj$id], by="rownames", .SDcols = c(values$settings$collapseTo), with=T]
+      unitRow_allDF = useData2DT[dRfilt, colSums(.SD[, sapply(.SD, is.numeric), with=F]) ,on=values$settings$collapseTo];
+      unitRow_all = unitRow_allDF[!names(unitRow_allDF) %in% values$settings$grouping]
 
-    unitRow_all2 = NULL;
-    unitSelected_name2 = NULL;
-    # if(!is.null(selectionObj2)) {
-    #   #browser()
-    #   selection2 = selectionObj2$id;
-    #   if(!is.character(selection2)) {
-    #     selectionName2 = rownames(selection2)[1];
-    #   } else {
-    #     selectionName2 = selection2;
-    #   }
-    #   unitSelected_name2 = selectionObj2$id; # FIXME extractName(selectionName2);
-    #
-    #   dRfilt2 = dR[, .SD[rownames == selectionObj2$id], by="rownames", .SDcols = c(values$settings$collapseTo), with=T]
-    #   unitRow_allDF2 = useData2DT[dRfilt2, colSums(.SD[, sapply(.SD, is.numeric), with=F]) ,on=values$settings$collapseTo];
-    #   unitRow_all2 = unitRow_allDF2[!names(unitRow_allDF2) %in% values$settings$grouping]
-    #   unitRow_all = unitRow_all - unitRow_all2;
-    # }
-    unitRow = unitRow_all[unitRow_all != 0];
+      unitRow_all2 = NULL;
+      unitSelected_name2 = NULL;
 
-    unitRow_colors = unitRow;
-    unitRow_colors[] = "#eaa647";
-    if(!is.null(unitRow_all2)) {
-      unitRow_colors[unitRow_all  > unitRow_all2] = "#eaa647"; # TODO -> make config'd
-      unitRow_colors[unitRow_all  < unitRow_all2] = "#5399c7"; # TODO -> make config'd
-    }
-    unitRow[which(unitRow < 0, arr.ind=TRUE)] = unitRow[which(unitRow < 0, arr.ind=TRUE)] * -1;
+      unitRow = unitRow_all[unitRow_all != 0];
 
-    unitRow_nodes = unlist(lapply(strsplit( names(unitRow), "...", fixed=T ), function(x) { return(x[x != selectionObj$character ]) }));
-    # if(!is.null(unitSelected_name2)) {
-    #   unitRow_nodes = c(unitRow_nodes[unitRow_nodes != unitSelected_name2], unitSelected_name2)
-    # }
-    #browser()
-    unitMatrix = matrix(0, ncol=nrow(set$nodes$positions$scaled$positions), nrow=nrow(set$nodes$positions$scaled$positions));
-    rownames(unitMatrix) = rownames(set$nodes$positions$scaled$positions);
-    colnames(unitMatrix) = rownames(unitMatrix);
-    unitMatrix[c(selectionObj$character),unitRow_nodes] = unitRow;
-    unitMatrix[unitRow_nodes, c(selectionObj$character)] = unitRow;
-    net3 = NULL;#network(unitMatrix, directed=F);
+      unitRow_colors = unitRow;
+      unitRow_colors[] = "#eaa647";
+      if(!is.null(unitRow_all2)) {
+        unitRow_colors[unitRow_all  > unitRow_all2] = "#eaa647"; # TODO -> make config'd
+        unitRow_colors[unitRow_all  < unitRow_all2] = "#5399c7"; # TODO -> make config'd
+      }
+      unitRow[which(unitRow < 0, arr.ind=TRUE)] = unitRow[which(unitRow < 0, arr.ind=TRUE)] * -1;
+
+      unitRow_nodes = unlist(lapply(strsplit( names(unitRow), "...", fixed=T ), function(x) { return(x[x != selectionObj$character ]) }));
+      # if(!is.null(unitSelected_name2)) {
+      #   unitRow_nodes = c(unitRow_nodes[unitRow_nodes != unitSelected_name2], unitSelected_name2)
+      # }
+      #browser()
+      unitMatrix = matrix(0, ncol=nrow(set$nodes$positions$scaled$positions), nrow=nrow(set$nodes$positions$scaled$positions));
+      rownames(unitMatrix) = rownames(set$nodes$positions$scaled$positions);
+      colnames(unitMatrix) = rownames(unitMatrix);
+      unitMatrix[c(selectionObj$character),unitRow_nodes] = unitRow;
+      unitMatrix[unitRow_nodes, c(selectionObj$character)] = unitRow;
+      net3 = NULL;#network(unitMatrix, directed=F);
+    #END: NOT SURE IF NEEDED (up to NEW VERSION)
 
 
     ### NEW VERSION
@@ -563,17 +558,24 @@ shinyServer(function(input, output, session) {
     )
   });
   observe({
+    session$sendCustomMessage("housesJSON", rjson::toJSON(housesListChars())); #housesListJSON);
+  })
+  observe({
     session$sendCustomMessage("collapseTo", jsonlite::toJSON(values$settings$collapseTo));
 
     session$sendCustomMessage("timelineNested", timeline());
     session$sendCustomMessage("timelineFilter", jsonlite::toJSON(timelineFilter()));
 
-    session$sendCustomMessage("housesJSON", rjson::toJSON(housesListChars())); #housesListJSON);
     session$sendCustomMessage("unitsSelected", rjson::toJSON(unitsSelectedMeta()));
-    session$sendCustomMessage("allExcerpts", jsonlite::toJSON(as.character(values$enaFile[match(unique(excerpt_id), values$enaFile$excerpt_id), excerpt])));
+    session$sendCustomMessage("codesSelected", rjson::toJSON(codesSelected()));
+    session$sendCustomMessage("allExcerpts", jsonlite::toJSON(values$enaFile[match(unique(excerpt_id), values$enaFile$excerpt_id), c("season","episode",input$codesSelected, "excerpt"), with=F]));
   })
   observeEvent(input$updateDataRotated, {
     values$mainPlotData = dataRotated();
+  });
+  observeEvent(input$codesSelected, {
+    values$codesSelected=input$codesSelected
+    session$sendCustomMessage("codesSelected", rjson::toJSON(codesSelected()));
   });
   observeEvent(input$unitsSelected, {
     values$settings$unitsSelected = input$unitsSelected;
@@ -593,6 +595,26 @@ shinyServer(function(input, output, session) {
   });
   observeEvent(input$timelineFiltered, {
     values$timelineFiltered = jsonlite::fromJSON(input$timelineFiltered);
+  });
+  observeEvent(input$updateUnits, {
+    upUnits = jsonlite::fromJSON(input$updateUnits);
+    values$plottable = apply(upUnits, 1, function(u) { list(by=list(character=c(u[1])),uuid=uuid::UUIDgenerate(),from=NULL) });
+    units1 = apply(upUnits, 1, function(u) { data.frame(character=u[1], house=u[2]) });
+    units2 = unitsSelectedMeta();
+    unitsList = list();
+    for(i in 1:nrow(upUnits)) {
+      unitsList[[i]] = data.frame(character=upUnits[i,1], house=upUnits[i,2]);
+      #browser();
+      if(!any(values$codesSelected == upUnits[i,1])) {
+        values$codesSelected[length(values$codesSelected)+1] = upUnits[i,1]
+      }
+    }
+    session$sendCustomMessage("unitsSelected", rjson::toJSON(unitsList));
+    #session$sendCustomMessage("unitsSelected", rjson::toJSON(units2));
+  });
+  observeEvent(input$updateCodes, {
+    upCodes = jsonlite::fromJSON(input$updateCodes);
+    values$codesSelected = upCodes;
   });
   observeEvent(input$toggleNode, {
     itJ = jsonlite::fromJSON(input$toggleNode);

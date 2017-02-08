@@ -870,3 +870,24 @@ i.glyphicon.glyphicon-check.isUnit {
       height: calc(100% - 78px);
       overflow: auto;
     }
+
+span.charListAction {
+    position: absolute;
+    background-color: #dedede;
+    height: calc(100% + 0px);
+    display: inline-block;
+    width: 12px;
+    text-align: center;
+    top: 0px;
+    right: 25px;
+    padding: 3px 0 0;
+    color: #CCC;
+}
+span.charListAction.isUnit,
+span.charListAction.isCode
+ {
+  color: #2980bc;
+}
+span.charListAction.unit {
+    right: 37px;
+}
