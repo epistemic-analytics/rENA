@@ -492,6 +492,14 @@ arma::mat getRotationDistances(arma::mat rotated) {
   return pairDists;
 }
 
+#include <sstream>
+template <typename T>
+std::string NumberToString ( T Number ) {
+  std::ostringstream ss;
+  ss << Number;
+  return ss.str();
+}
+
 // [[Rcpp::export]]
 Rcpp::List get_optimized_node_pos(
     arma::mat normedFiltered,
@@ -514,13 +522,14 @@ Rcpp::List get_optimized_node_pos(
   //NumericMatrix opted = Rcpp::wrap(dataOptim); //do_opt(normedFiltered, pairDists, rotatedFiltered, num_samples, num_dims);
   CharacterVector pc_names(num_dims);
   for(int i=0; i<num_dims; i++) {
-    pc_names[i] = "PC" + std::to_string(i+1);
+    //pc_names[i] = "PC" + std::to_string(i+1);
+    pc_names[i] = "PC" + NumberToString(i+1);
   }
   opted.attr("colnames") = pc_names;
 
   CharacterVector correlationRowNames(num_samples);
   for(int i=0; i<num_samples; i++) {
-    correlationRowNames[i] = "Sample " + std::to_string(i+1);
+    correlationRowNames[i] = "Sample " + NumberToString(i+1);
   }
 
   NumericMatrix correlations = opted( Range(opted.nrow()-2, opted.nrow()-2), _ ); // Range(0,opted.ncol()-num_samples-1) );
@@ -532,7 +541,7 @@ Rcpp::List get_optimized_node_pos(
   CharacterVector iterNames(opted.ncol());
   NumericMatrix iterIndex(num_dims * num_samples, 2);
   for(int i=0; i<opted.ncol(); i++) {
-    iterNames[i] = "PC_" + std::to_string((int) opted(opted.nrow() - 1, i)) + "_iter_"+ std::to_string((int) i);
+    iterNames[i] = "PC_" + NumberToString((int) opted(opted.nrow() - 1, i)) + "_iter_"+ NumberToString((int) i);
     iterIndex(i, 0) = opted(opted.nrow() - 2, i);
     iterIndex(i, 1) = opted(opted.nrow() - 1, i);
   }
