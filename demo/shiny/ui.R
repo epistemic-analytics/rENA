@@ -1,4 +1,5 @@
 library(data.table)
+library(sigma)
 
 extractName <- function(name) {
   substring(name, regexec("[\\d]\\.[\\d]\\.(.*)", name, perl = T)[[1]][2]);
