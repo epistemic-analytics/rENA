@@ -23,7 +23,7 @@ shinyServer(function(input, output, session) {
   values <- reactiveValues(
     timelineFiltered = NULL,
     settings = list(
-      "allowUpdate" = T,
+      "allowUpdate" = F,
       "conversationsBy" = c("season", "episode"),
       "grouping" = c("character","season", "episode"),
       "collapseTo" = c("character")
@@ -570,7 +570,8 @@ shinyServer(function(input, output, session) {
 
     session$sendCustomMessage("housesJSON", rjson::toJSON(housesListChars())); #housesListJSON);
     session$sendCustomMessage("unitsSelected", rjson::toJSON(unitsSelectedMeta()));
-    session$sendCustomMessage("allExcerpts", jsonlite::toJSON(as.character(values$enaFile[match(unique(excerpt_id), values$enaFile$excerpt_id), excerpt])));
+    session$sendCustomMessage("allExcerpts", jsonlite::toJSON(
+      values$enaFile[match(unique(excerpt_id), values$enaFile$excerpt_id), c("season", "episode", input$codesSelected, "excerpt"), with=F]));
   })
   observeEvent(input$updateDataRotated, {
     values$mainPlotData = dataRotated();

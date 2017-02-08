@@ -20,7 +20,8 @@ shinyUI(fluidPage(
     HTML('<filter id="blurMe">
             <feColorMatrix in="SourceGraphic" type="saturate" values="0.1" />
          </filter>'),
-    tags$div("ng-controller"="ENACtrl", "ng-class" = "{'showCharacters': opts.showCharacters, 'showEpisodeSummary': opts.showEpisodeSummary}",
+    tags$div("ng-controller" = "ENACtrl", #"class" = "container-fluid",
+             "ng-class" = "{'showCharacters': opts.showCharacters, 'showEpisodeSummary': opts.showEpisodeSummary}",
       fluidRow(id="headerRow",
         headerPanel("Game of Thrones ENA")
       ),

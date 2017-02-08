@@ -865,8 +865,23 @@ i.glyphicon.glyphicon-check.isUnit {
   }
     #episodeSummaryContent .seasonTabs li a {
       padding: 5px;
+      cursor: pointer;
     }
     #episodeSummaryContent .tab-content {
       height: calc(100% - 78px);
       overflow: auto;
+      overflow-x: hidden;
+      border-left: 1px solid #DDD;
+      padding-left: 5px;
     }
+      #episodeSummaryContent .tab-content .summaryEpisodes > h4 i {
+        margin-right: 30px;
+        cursor: pointer;
+      }
+      #episodeSummaryContent .tab-content .excerpt:not(:last-child) {
+        margin-bottom: 15px;
+      }
+        #episodeSummaryContent .tab-content .excerpt .highlightedWord {
+          color: blue;
+          font-weight: bold;
+        }
