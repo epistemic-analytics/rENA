@@ -1,5 +1,21 @@
 library(data.table)
 
+filename = "../../data/GoT-ENA-ego-heads-v3.csv"
+if(file.exists(filename)) {
+  GoT = read.csv(filename)
+  gotData = ENAdata$new(
+    GoT,
+    unitsBy = c("season", "episode", "character"),
+    units = NULL, conversationsBy = c("unique_id"),
+    codeNames = c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Tyrion','Bronn','Brienne','Tywin','Bran'),
+    unitsSelected = c("Jaime","Ned"),
+    windowSize = 0,
+    exact.match = T
+  );
+  gotSet = ENAset$new(gotData, sphereNorm = T)
+  gotSet$process();
+}
+
 extractName <- function(name) {
   last(strsplit(name, ".", fixed=T)[[1]])
 }
