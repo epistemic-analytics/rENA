@@ -1,4 +1,5 @@
 library(data.table)
+library(sigma)
 
 extractName <- function(name) {
   substring(name, regexec("[\\d]\\.[\\d]\\.(.*)", name, perl = T)[[1]][2]);
@@ -56,14 +57,6 @@ shinyUI(fluidPage(
               tags$ul("houses-added"="",
                 "dnd-list"="addedItems", "dnd-effect-allowed"="link",
                 "dnd-drop"="dropCallback(index, item, external, type)"
-              ),
-
-              #uiOutput("unitSelector"),
-
-              selectizeInput('codesSelected', 'Codes',
-                selected = gotSet$get("enaData")$get("codeNames"),
-                choices = unique(gotSet$get("enaData")$get("file")$character),
-                multiple = TRUE
               )
             ),
             column(width = 8, id="unitPlotColumn", class="column",

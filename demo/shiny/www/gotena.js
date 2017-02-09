@@ -55,9 +55,6 @@
   ENA.graphs.unit.events["doubleClickNode"] = function(clickData) {
     if (!ENA.collapseTo.filter(c => c === clickData.data.node.expandTo).length) {
       ENA.collapseTo.push(clickData.data.node.expandTo);
-
-      // Set collapseTo to a unitClicked instead, update DataROtated or something
-      //Shiny.onInputChange("collapseTo", JSON.stringify(ENA.collapseTo));
       Shiny.onInputChange("toggleNode", JSON.stringify(clickData.data.node));
     }
   };
@@ -251,12 +248,12 @@
             }
           });
           scope.$on("units-loaded", function(event, units) {
-
             scope.housesAdded = {};
             units.forEach(u=>{
               scope.housesAdded[u.house] = scope.housesAdded[u.house] || scope.$parent.housesJSON.filter(h=>{return( h.house === u.house );})[0];
               scope.housesAdded[u.house].selected = scope.housesAdded[u.house].selected || [];
               scope.housesAdded[u.house].selected.push(u);
+              scope.housesAdded[u.house].selected = Array.from(new Set(scope.housesAdded[u.house].selected))
             });
           });
         }
@@ -275,12 +272,24 @@
           });
           scope.$on("units-loaded", function(event, units) {
             scope.unitsSelected = units;
+            Object.keys(scope.unitsKeyed).forEach(u=>{
+              scope.unitsKeyed[u].unit = false
+            });
             units.forEach(u=> {
               scope.unitsKeyed[u.character] = u;
               scope.unitsKeyed[u.character].unit = true;
             })
           });
-
+          scope.$on("codes-loaded", function(event, codes) {
+            scope.codesSelected = codes;
+            Object.keys(scope.unitsKeyed).forEach(u=>{
+              scope.unitsKeyed[u].code = false
+            });
+            codes.forEach(u=> {
+              scope.unitsKeyed[u] = scope.unitsKeyed[u] || {}
+              scope.unitsKeyed[u].code = true;
+            })
+          });
           scope.setActiveHouse = function(h) {
             if(scope.$parent.activeHouse === h.house) {
               scope.$parent.activeHouse = undefined;
@@ -303,7 +312,10 @@
         templateUrl: "templates/houseCharacters.html",
         link: function(scope, element, attrs) {
           scope.toggleUnitSelected = function(char, use) {
-            scope.$emit("toggle-unit", char, !use);
+            scope.$emit("toggle-unit", char, !use, this.$parent.house);
+          }
+          scope.toggleCodeSelected = function(char) {
+            scope.$emit("toggle-code", char);
           }
         }
       }
@@ -352,8 +364,18 @@
         });
       };
 
-      $scope.$on("toggle-unit", function(event, char, use) {
-        console.log("Toggling:", char, "to", use);
+      $scope.$on("toggle-unit", function(event, char, use, house) {
+        var newUnits = $scope.unitsSelected.filter(u=>{return(u.character!==char)})
+        if(use) {
+          newUnits.push({character: char, house: house.house})
+        }
+        console.log("New untis:", newUnits);
+        Shiny.onInputChange("updateUnits", JSON.stringify(newUnits));
+      });
+      $scope.$on("toggle-code", function(event, char) {
+        var newCodes = $scope.codesSelected.filter(u=>{return(u!==char)})
+        console.log("Toggling:", char, "to off");
+        Shiny.onInputChange("updateCodes", JSON.stringify(newCodes));
       });
 
       function saveSettings() {
@@ -375,7 +397,12 @@
           $scope.$apply(function() {
             $scope.unitsSelected = JSON.parse(units);
             $scope.$broadcast("units-loaded", $scope.unitsSelected);
-            $scope.$emit("units-loaded", $scope.unitsSelected);
+          });
+        });
+        Shiny.addCustomMessageHandler("codesSelected", function(codes) {
+          $scope.$apply(function(){
+            $scope.codesSelected = JSON.parse(codes);
+            $scope.$broadcast("codes-loaded", $scope.codesSelected);
           });
         });
         Shiny.addCustomMessageHandler("housesJSON", function(houses) {

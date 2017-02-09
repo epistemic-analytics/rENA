@@ -20,4 +20,39 @@ housesList = list(
 
 housesListJSON = rjson::toJSON(housesList)
 
+library(data.table);
+library(sigma);
+library(R6);
+library(RcppArmadillo);
 
+Rcpp::sourceCpp('../../src/ena.cpp')
+Rcpp::sourceCpp('../../src/ref_window_sum.cpp')
+Rcpp::sourceCpp('../../src/svector_to_ut.cpp')
+Rcpp::sourceCpp('../../src/ref_window_df.cpp')
+Rcpp::sourceCpp('../../src/vector_to_ut.cpp');
+source("../../R/accumulate.R");
+source('../../R/do_optimization.R');
+source('../../R/do_scale.R');
+source("../../R/ENAdata.R");
+source("../../R/ENAset.R");
+
+
+filename = "../../data/GoT-ENA-ego-heads-v3.csv"
+if(!file.exists(filename)) {
+  filename = substring(filename,first=5);
+}
+if(file.exists(filename)) {
+  print("Creating initial gotSet.");
+  GoT = read.csv(filename)
+  gotData = ENAdata$new(
+    GoT,
+    unitsBy = c("season", "episode", "character"),
+    units = NULL, conversationsBy = c("unique_id"),
+    codeNames = c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Tyrion','Bronn','Brienne','Tywin','Bran'),
+    unitsSelected = c("Jaime","Ned"),
+    windowSize = 0,
+    exact.match = T
+  );
+  gotSet = ENAset$new(gotData, sphereNorm = T)
+  gotSet$process();
+}
