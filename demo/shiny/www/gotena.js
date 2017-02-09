@@ -346,6 +346,10 @@
 
       $scope.timelineFilter = function() {
         Shiny.onInputChange("timelineFiltered", JSON.stringify($scope.timeline2));
+        //TODO: remove this when 'inputFiltered' returns something from server
+        $scope.$applyAsync(function() {
+          $scope.$broadcast("timeline-selections", $scope.timeline2);
+        });
       };
 
       $scope.$on("toggle-unit", function(event, char, use) {
@@ -496,6 +500,7 @@
         excerpts = ex;
         updateEpisodeSummary();
       });
+
       function updateEpisodeSummary() {
         if (excerpts) {
           var seasons = {},
