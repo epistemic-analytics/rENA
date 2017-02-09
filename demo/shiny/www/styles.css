@@ -207,7 +207,7 @@ div[ng-controller='ENACtrl'] {
   bottom: 0;
   right: 0;
   width: 35px;
-  background: #ADD8E6;
+  background: #F6F8F9;
 }
   .showEpisodeSummary #sideMinimizedArea {
     right: unset;
@@ -874,10 +874,16 @@ i.glyphicon.glyphicon-check.isUnit {
       border-left: 1px solid #DDD;
       padding-left: 5px;
     }
-      #episodeSummaryContent .tab-content .summaryEpisodes > h4 i {
-        margin-right: 30px;
-        cursor: pointer;
+      #episodeSummaryContent .tab-content .summaryEpisodes > h4 {
+          background: #E6E6E6;
+          padding: 5px;
+          font-size: 16px;
       }
+        #episodeSummaryContent .tab-content .summaryEpisodes > h4 i {
+          margin-right: 30px;
+          cursor: pointer;
+          top: 0;
+        }
       #episodeSummaryContent .tab-content .excerpt:not(:last-child) {
         margin-bottom: 15px;
       }

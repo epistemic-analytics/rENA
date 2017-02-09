@@ -24,12 +24,9 @@
 
   var clicks = 0, clickTimeout, clickedAt;
   ENA.graphs.unit.events["clickNode"] = function(clickData) {
-    console.log("Clicked: ", clickData);
     let now = Date.now();
     if (clicks === 0) {
       clickTimeout = setTimeout(function() {
-        console.log("Plotting the network.");
-
         var selected = clickData.data.node.id,
           selectedLen = ENA.graphs.unit.selections.length;
 
@@ -47,7 +44,6 @@
       clickedAt = now;
       clicks++;
     } else if (now - clickedAt < sigma.settings.doubleClickTimeout) {
-      console.log("double click clear -> ", clickTimeout);
       clearTimeout(clickTimeout);
       clicks = 0;
       clickedAt = 0;
@@ -57,8 +53,7 @@
     Shiny.onInputChange("edgeClicked", { camera: this.id, edge: edge, noce: Math.random() });
   };
   ENA.graphs.unit.events["doubleClickNode"] = function(clickData) {
-    console.log("Double click: ", clickData);
-    if(!ENA.collapseTo.filter(c=>{return c === clickData.data.node.expandTo}).length) {
+    if (!ENA.collapseTo.filter(c => c === clickData.data.node.expandTo).length) {
       ENA.collapseTo.push(clickData.data.node.expandTo);
 
       // Set collapseTo to a unitClicked instead, update DataROtated or something
@@ -69,7 +64,7 @@
 
   var ENAapp = angular.module("ENAapp", ['ngMaterial','dndLists']);
   ENAapp
-    .run(["Shiny","$timeout", "Data", function(Shiny, $timeout, Data) {
+    .run(["Shiny","$timeout", function(Shiny, $timeout) {
       $timeout(function(){
         Shiny.onInputChange("updateDataRotated", true);
       });
@@ -90,23 +85,18 @@
     }])
 
     /** Services **/
-    .service("Data", ["$rootScope", function($rootScope) {
-      var data = {};
-      Shiny.addCustomMessageHandler("allExcerpts", function(ex) {
-        ENA.excerpts = ex;
-        data.excerpts = ex;
-        $rootScope.$apply();
-      });
-      return {
-        "update": function(obj) {
-          _.each(obj, (v, k) => { data[k] = v; });
-        },
-        "get": function(which) {
-          if (!which) { return data; };
-          return data[which];
-        }
-      };
-    }])
+//    .service("Data", ["$rootScope", function($rootScope) {
+//      var data = {};
+//      return {
+//        "update": function(obj) {
+//          _.each(obj, (v, k) => { data[k] = v; });
+//        },
+//        "get": function(which) {
+//          if (!which) { return data; };
+//          return data[which];
+//        }
+//      };
+//    }])
 
     /** Directives **/
     .directive("enaTimeline", [function(){
@@ -128,7 +118,7 @@
           scope.toggleTimeline = function(season, episode) {
             var toInc = _.find(scope.timeline2, t => t.season == season && t.episode == episode);
             toInc.included = !toInc.included;
-            Shiny.onInputChange("timelineFiltered", JSON.stringify(scope.timeline2));
+            scope.timelineFilter();
           };
         }
       }
@@ -322,6 +312,8 @@
     /** Controllers **/
     .controller("ENACtrl", ["$scope", "$timeout", "$q", function($scope, $timeout, $q) {
       const LS_NAME = "ENA_SETTINGS";
+      $scope.timeline = null;
+      $scope.timeline2 = null;
       $scope.opts = {
         "showCharacters": true,
         "showEpisodeSummary": false
@@ -352,6 +344,10 @@
         $scope.opts.showCharacters = !$scope.opts.showCharacters;
       };
 
+      $scope.timelineFilter = function() {
+        Shiny.onInputChange("timelineFiltered", JSON.stringify($scope.timeline2));
+      };
+
       $scope.$on("toggle-unit", function(event, char, use) {
         console.log("Toggling:", char, "to", use);
       });
@@ -370,18 +366,35 @@
         });
       }
 
-      $timeout(function(){
+      $timeout(function() {
         Shiny.addCustomMessageHandler("unitsSelected", function(units) {
-          $scope.$apply(function(){
+          $scope.$apply(function() {
             $scope.unitsSelected = JSON.parse(units);
             $scope.$broadcast("units-loaded", $scope.unitsSelected);
             $scope.$emit("units-loaded", $scope.unitsSelected);
           });
         });
         Shiny.addCustomMessageHandler("housesJSON", function(houses) {
-          $scope.$apply(function(){
+          $scope.$apply(function() {
             $scope.housesJSON = JSON.parse(houses);
             $scope.$broadcast("houses-changed", $scope.housesJSON);
+          });
+        });
+        Shiny.addCustomMessageHandler("timelineFilter", function(timeline) {
+          $scope.$apply(function() {
+            $scope.timeline2 = (Array.isArray(timeline) ? timeline : JSON.parse(timeline));
+            $scope.$broadcast("timeline-selections", $scope.timeline2);
+          });
+        });
+        Shiny.addCustomMessageHandler("timelineNested", function(timeline) {
+          $scope.$apply(function() {
+            $scope.timeline = timeline;
+          });
+        });
+        Shiny.addCustomMessageHandler("allExcerpts", function(ex) {
+          $scope.$apply(function() {
+            $scope.excerpts = ex;
+            $scope.$broadcast("all-excerpts", ex);
           });
         });
       });
@@ -396,7 +409,7 @@
       */
       $scope.$watchCollection('opts', saveSettings);
     }])
-    .controller("TimelineCtrl", ["$scope", "Shiny", "$timeout", "Data", function($scope, Shiny, $timeout, Data){
+    .controller("TimelineCtrl", ["$scope", "Shiny", function($scope, Shiny) {
       $scope.opened = {
         "split": false,
         "splitChosen": false,
@@ -407,21 +420,6 @@
         "left": {},
         "center": {}
       };
-      $timeout(function(){
-        Shiny.addCustomMessageHandler("timelineFilter", function(timeline) {
-          $scope.$apply(function(){
-            $scope.timeline2 = (Array.isArray(timeline) ? timeline : JSON.parse(timeline));
-            $scope.$broadcast("timeline-selections", $scope.timeline2);
-            Data.update({"timeline2": $scope.timeline2});
-          });
-        });
-        Shiny.addCustomMessageHandler("timelineNested", function(timeline) {
-          $scope.$apply(function(){
-            $scope.timeline = timeline;
-            Data.update({"timeline": $scope.timeline});
-          });
-        });
-      });
 
       var updateGraphSplit = _.debounce(function() {
         _.each($scope.timeline2, tlo => {
@@ -431,8 +429,7 @@
           tlo.included = ((s > pos.left.season || (s === pos.left.season && e >= pos.left.episode)) &&
                           (s < pos.right.season || (s === pos.right.season && e <= pos.right.episode)));
         });
-        Shiny.onInputChange("timelineFiltered", JSON.stringify($scope.timeline2));
-        Data.update({"timeline2": $scope.timeline2});
+        $scope.timelineFilter();
       }, 50);
 
       $scope.play = function() {
@@ -479,38 +476,28 @@
         labels: true
       };
     }])
-    .controller("EpisodeSummaryCtrl", ["$scope", "$q", "Data", function($scope, $q, Data) {
+    .controller("EpisodeSummaryCtrl", ["$scope", "$q", function($scope, $q) {
       $scope.position = {};
       $scope.seasons = [];
-      $scope.open = {};
+      $scope.closed = {};
 
       $scope.openTab = function(season) {
         $scope.position.active = season;
+        $scope.closed = {};
       };
 
-      //TODO: timeline2 doesn't change, just values do...
-      var oldValues = null,
-        copy = null;
-      $scope.$watchGroup([() => Data.get("excerpts"), () => {
-        let tl = Data.get("timeline2");
-        if (tl) {
-          let vals = tl.map(t => "" + t.included).join("-");
-          if (vals !== oldValues) {
-            console.log("oldValues", oldValues);
-            console.log("newValues", vals);
-            oldValues = vals;
-            copy = _.clone(tl);
-          }
-          return copy;
-        }
-        oldValues = null;
-        copy = null;
-        return null;
-      }], data => {
-        console.log("data", data);
-        var excerpts = data[0],
-          timeline = Data.get("timeline2");
-        if (excerpts && timeline) {
+      var timeline2 = null,
+        excerpts = null;
+      $scope.$on("timeline-selections", function($event, timeline) {
+        timeline2 = timeline;
+        updateEpisodeSummary();
+      });
+      $scope.$on("all-excerpts", function($event, ex) {
+        excerpts = ex;
+        updateEpisodeSummary();
+      });
+      function updateEpisodeSummary() {
+        if (excerpts) {
           var seasons = {},
             organized = [];
           _.each(excerpts, ex => {
@@ -518,7 +505,7 @@
             seasons[ex.season][ex.episode] = (seasons[ex.season][ex.episode] || []);
             var text = ex.excerpt,
               codes = (_.chain(ex).keys(ex).without("season", "episode", "excerpt")
-                          .filter(key => ex[key] === 1 && codeIncluded(ex, timeline)).value());
+                          .filter(key => ex[key] === 1 && codeIncluded(ex)).value());
             _.each(codes, name => {
               text = text.replace(new RegExp("\\b(" + name +")\\b", "gi"), "<span class=\"highlightedWord\">$1</span>");
             });
@@ -535,12 +522,11 @@
           });
           $scope.seasons = organized;
           $scope.openTab(_.first($scope.seasons));
-          console.log("Seasons", organized);
-          console.log("timeline", timeline);
         }
-      });
-      function codeIncluded(ex, timeline) {
-        var o = _.find(timeline, t => t.season === ex.season && t.episode === ex.episode);
+      }
+      function codeIncluded(ex) {
+        if (!timeline2) return true;
+        var o = _.find(timeline2, t => t.season === ex.season && t.episode === ex.episode);
         return (o && o.included);
       };
     }])
