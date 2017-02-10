@@ -505,57 +505,57 @@
         $scope.closed = {};
       };
 
-      var timeline2 = $scope.timeline2,
-        excerpts = $scope.excerpts,
-        updateEpisodeSummary = _.debounce(function() {
-          if (excerpts) {
-            var seasons = {},
-              organized = [];
-            _.each(excerpts, ex => {
-              seasons[ex.season] = (seasons[ex.season] || {});
-              seasons[ex.season][ex.episode] = (seasons[ex.season][ex.episode] || []);
-              var text = ex.excerpt,
-                codes = (_.chain(ex).keys(ex).without("season", "episode", "excerpt")
-                            .filter(key => ex[key] === 1 && codeIncluded(ex)).value());
-              _.each(codes, name => {
-                let color = getColor(name);
-                text = text.replace(new RegExp("\\b(" + name +")\\b", "gi"), //
-                  `<span class="highlightedWord" style="color: "` + color + `>$1</span>`);
-              });
-              seasons[ex.season][ex.episode].push({
-                "text": text,
-                "codes": codes
-              });
+      var updateEpisodeSummary = _.debounce(function() {
+        if ($scope.excerpts) {
+          console.log("$scope.excerpts", $scope.excerpts);
+          var seasons = {},
+            organized = [];
+          _.each($scope.excerpts, ex => {
+            seasons[ex.season] = (seasons[ex.season] || {});
+            seasons[ex.season][ex.episode] = (seasons[ex.season][ex.episode] || []);
+            var text = ex.excerpt,
+              codes = (_.chain(ex).keys(ex).without("season", "episode", "excerpt")
+                          .filter(key => ex[key] === 1 && codeIncluded(ex)).value());
+            _.each(codes, name => {
+              let color = getColor(name);
+              console.log("color", name, color);
+              text = text.replace(new RegExp("\\b(" + name +")\\b", "gi"),
+                "<span class=\"highlightedWord\" style=\"color: " + color + ";\">$1</span>");
             });
-            _.each(seasons, (episodes, seasonName) => {
-              organized.push({
-                "name": seasonName,
-                "episodes": _.map(episodes, (excerpts, episode) => ({"name": episode, "excerpts": excerpts}))
-              });
+            seasons[ex.season][ex.episode].push({
+              "text": text,
+              "codes": codes
             });
-            $scope.seasons = organized;
-            $scope.openTab(_.first($scope.seasons));
-            $scope.$apply();
-          }
-        }, 50);
+          });
+          _.each(seasons, (episodes, seasonName) => {
+            organized.push({
+              "name": seasonName,
+              "episodes": _.map(episodes, (excerpts, episode) => ({"name": episode, "excerpts": excerpts}))
+            });
+          });
+          $scope.seasons = organized;
+          $scope.openTab(_.first($scope.seasons));
+          $scope.$apply();
+          console.log("seasons", organized);
+        }
+      }, 50);
       $scope.$on("timeline-selections", function($event, timeline) {
-        timeline2 = timeline;
         updateEpisodeSummary();
       });
       $scope.$on("all-excerpts", function($event, ex) {
-        excerpts = ex;
         updateEpisodeSummary();
       });
-      console.log("$scope", $scope);
       updateEpisodeSummary();
 
       function codeIncluded(ex) {
-        if (!timeline2) return true;
-        var o = _.find(timeline2, t => t.season === ex.season && t.episode === ex.episode);
+        if (_.isEmpty($scope.timeline2)) return true;
+        var o = _.find($scope.timeline2, t => t.season === ex.season && t.episode === ex.episode);
         return (o && o.included);
       }
       function getColor(name) {
-        //return $scope.housesAdded
+        if (!_.isEmpty($scope.unitsSelected) && !_.isEmpty($scope.housesAdded)) {
+          console.log("here");
+        }
         return "#00F";
       }
     }])

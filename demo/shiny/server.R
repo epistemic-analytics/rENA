@@ -584,7 +584,8 @@ shinyServer(function(input, output, session) {
 
     session$sendCustomMessage("unitsSelected", rjson::toJSON(unitsSelectedMeta()));
     session$sendCustomMessage("codesSelected", rjson::toJSON(codesSelected()));
-    session$sendCustomMessage("allExcerpts", jsonlite::toJSON(values$enaFile[match(unique(excerpt_id), values$enaFile$excerpt_id), c("season","episode",input$codesSelected, "excerpt"), with=F]));
+    session$sendCustomMessage("allExcerpts", jsonlite::toJSON(
+      values$enaFile[match(unique(excerpt_id), values$enaFile$excerpt_id), c("season", "episode", values$codesSelected, "excerpt"), with=F]));
   })
   observeEvent(input$updateDataRotated, {
     values$mainPlotData = dataRotated();
