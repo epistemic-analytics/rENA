@@ -78,22 +78,11 @@
       };
     }])
     .filter("Html", ["$sce", function($sce) {
-      return (html) => $sce.trustAsHtml(html);
+      return html => $sce.trustAsHtml(html);
     }])
 
     /** Services **/
-//    .service("Data", ["$rootScope", function($rootScope) {
-//      var data = {};
-//      return {
-//        "update": function(obj) {
-//          _.each(obj, (v, k) => { data[k] = v; });
-//        },
-//        "get": function(which) {
-//          if (!which) { return data; };
-//          return data[which];
-//        }
-//      };
-//    }])
+
 
     /** Directives **/
     .directive("enaTimeline", [function(){
@@ -369,11 +358,10 @@
         if(use) {
           newUnits.push({character: char, house: house.house})
         }
-        console.log("New untis:", newUnits);
         Shiny.onInputChange("updateUnits", JSON.stringify(newUnits));
       });
       $scope.$on("toggle-code", function(event, char) {
-        var newCodes = $scope.codesSelected.filter(u=>{return(u!==char)})
+        var newCodes = $scope.codesSelected.filter(u=>u!==char);
         console.log("Toggling:", char, "to off");
         Shiny.onInputChange("updateCodes", JSON.stringify(newCodes));
       });
@@ -517,8 +505,39 @@
         $scope.closed = {};
       };
 
-      var timeline2 = null,
-        excerpts = null;
+      var timeline2 = $scope.timeline2,
+        excerpts = $scope.excerpts,
+        updateEpisodeSummary = _.debounce(function() {
+          if (excerpts) {
+            var seasons = {},
+              organized = [];
+            _.each(excerpts, ex => {
+              seasons[ex.season] = (seasons[ex.season] || {});
+              seasons[ex.season][ex.episode] = (seasons[ex.season][ex.episode] || []);
+              var text = ex.excerpt,
+                codes = (_.chain(ex).keys(ex).without("season", "episode", "excerpt")
+                            .filter(key => ex[key] === 1 && codeIncluded(ex)).value());
+              _.each(codes, name => {
+                let color = getColor(name);
+                text = text.replace(new RegExp("\\b(" + name +")\\b", "gi"), //
+                  `<span class="highlightedWord" style="color: "` + color + `>$1</span>`);
+              });
+              seasons[ex.season][ex.episode].push({
+                "text": text,
+                "codes": codes
+              });
+            });
+            _.each(seasons, (episodes, seasonName) => {
+              organized.push({
+                "name": seasonName,
+                "episodes": _.map(episodes, (excerpts, episode) => ({"name": episode, "excerpts": excerpts}))
+              });
+            });
+            $scope.seasons = organized;
+            $scope.openTab(_.first($scope.seasons));
+            $scope.$apply();
+          }
+        }, 50);
       $scope.$on("timeline-selections", function($event, timeline) {
         timeline2 = timeline;
         updateEpisodeSummary();
@@ -527,40 +546,18 @@
         excerpts = ex;
         updateEpisodeSummary();
       });
+      console.log("$scope", $scope);
+      updateEpisodeSummary();
 
-      function updateEpisodeSummary() {
-        if (excerpts) {
-          var seasons = {},
-            organized = [];
-          _.each(excerpts, ex => {
-            seasons[ex.season] = (seasons[ex.season] || {});
-            seasons[ex.season][ex.episode] = (seasons[ex.season][ex.episode] || []);
-            var text = ex.excerpt,
-              codes = (_.chain(ex).keys(ex).without("season", "episode", "excerpt")
-                          .filter(key => ex[key] === 1 && codeIncluded(ex)).value());
-            _.each(codes, name => {
-              text = text.replace(new RegExp("\\b(" + name +")\\b", "gi"), "<span class=\"highlightedWord\">$1</span>");
-            });
-            seasons[ex.season][ex.episode].push({
-              "text": text,
-              "codes": codes
-            });
-          });
-          _.each(seasons, (episodes, seasonName) => {
-            organized.push({
-              "name": seasonName,
-              "episodes": _.map(episodes, (excerpts, episode) => ({"name": episode, "excerpts": excerpts}))
-            });
-          });
-          $scope.seasons = organized;
-          $scope.openTab(_.first($scope.seasons));
-        }
-      }
       function codeIncluded(ex) {
         if (!timeline2) return true;
         var o = _.find(timeline2, t => t.season === ex.season && t.episode === ex.episode);
         return (o && o.included);
-      };
+      }
+      function getColor(name) {
+        //return $scope.housesAdded
+        return "#00F";
+      }
     }])
   ;
 })(window, jQuery, angular, Shiny);

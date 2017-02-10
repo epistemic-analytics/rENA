@@ -888,11 +888,11 @@ i.glyphicon.glyphicon-check.isUnit {
         margin-bottom: 15px;
       }
         #episodeSummaryContent .tab-content .excerpt .highlightedWord {
-          color: blue;
+          /*color: blue;*/
           font-weight: bold;
         }
 
-span.charListAction {
+.charListAction {
     position: absolute;
     background-color: #dedede;
     height: calc(100% + 0px);
@@ -904,11 +904,10 @@ span.charListAction {
     padding: 3px 0 0;
     color: #CCC;
 }
-span.charListAction.isUnit,
-span.charListAction.isCode
- {
-  color: #2980bc;
-}
-span.charListAction.unit {
-    right: 37px;
-}
+  .charListAction.isUnit,
+  .charListAction.isCode {
+    color: #2980bc;
+  }
+  .charListAction.unit {
+      right: 37px;
+  }
