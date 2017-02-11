@@ -37,7 +37,8 @@ source("../../R/ENAdata.R");
 source("../../R/ENAset.R");
 
 
-filename = "../../data/GoT-ENA-ego-heads-v3.csv"
+#filename = "../../data/GoT-ENA-ego-heads-v3.csv"
+filename = "../../data/got-ena-ego-v1.csv"
 if(!file.exists(filename)) {
   filename = substring(filename,first=5);
 }
@@ -48,7 +49,7 @@ if(file.exists(filename)) {
     GoT,
     unitsBy = c("season", "episode", "character"),
     units = NULL, conversationsBy = c("unique_id"),
-    codeNames = c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Tyrion','Bronn','Brienne','Tywin','Bran'),
+    codeNames = gsub("\\.", "_", c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Tyrion','Bronn','Brienne','Tywin','Bran')),
     unitsSelected = c("Jaime","Ned"),
     windowSize = 0,
     exact.match = T

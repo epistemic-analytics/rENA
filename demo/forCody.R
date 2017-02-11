@@ -48,9 +48,9 @@ makeENA = function(csvPath, unitsBy, units, conversationsBy, codeNames, windowSi
 }
 
 #source('code/functions/ENAMaker/cpp/02/R/buildSet2.R')
-#csvPath = 'data/dataset_for_ENA_Include_STRATG_3_TRAJECT.csv'
+csvPath = 'data/bigdata/dataset_for_ENA_Include_STRATG_3_TRAJECT.csv'
 #csv2 = read.csv(csvPath)
-#csv = fread(csvPath) #, stringsAsFactors = F, strip.white = T)
+csv = fread(csvPath) #, stringsAsFactors = F, strip.white = T)
 #csv$STUDENT_ID_WEEK = apply(csv[,c('STUDENT_ID', 'WEEK')],1, paste,collapse=" & ")
 #write.csv(x = csv, file = 'data/dataset_for_ENA_Include_STRATG_3_TRAJECT.csv', row.names=F)
 
@@ -62,7 +62,7 @@ Rprof(filename=profName);
   makeENA(csv,
   	unitsBy = 'STUDENT_ID_WEEK',
   	setName = 'A_STUDENT_ID.WEEK',
-  	units = unique(csv$STUDENT_ID_WEEK),
+  	units = unique(csv$STUDENT_ID_WEEK)[1],
   	conversationsBy = c('STUDENT_ID_WEEK', 'row.id'),
   	codeNames = codeNames,
   	windowSize = 0)

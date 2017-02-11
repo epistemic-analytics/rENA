@@ -6,18 +6,19 @@ Rcpp::sourceCpp('src/ena.cpp');
 Rcpp::sourceCpp('src/svector_to_ut.cpp');
 Rcpp::sourceCpp('src/ref_window_df.cpp');
 Rcpp::sourceCpp('src/ref_window_sum.cpp');
-
-#load("~/old-df.RData")
-#load('./data/581a266034064f4f6c8d4e87.rdata');
-#load('./data/58178a2f34064f4f6c8d4e66.rdata');
-#GoTSet = `all_starks&lann`;
-#jaimeSet = eg_jaime_ep_season;
+Rcpp::sourceCpp('src/vector_to_ut.cpp');
 
 source('R/accumulate.R');
 source('R/do_optimization.R');
 source('R/do_scale.R');
 source('R/ENAdata.R');
 source('R/ENAset.R');
+
+#load("~/old-df.RData")
+#load('./data/581a266034064f4f6c8d4e87.rdata');
+#load('./data/58178a2f34064f4f6c8d4e66.rdata');
+#GoTSet = `all_starks&lann`;
+#jaimeSet = eg_jaime_ep_season;
 
 codeNames = c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Hodor','Tyrion','Bronn','Brienne','Margaery','Olenna','Tywin','The.Hound','Oberyn','Littlefinger','Varys','Theon','Ramsay','Sansa','Jon.Snow','Ygritte','Myrcella','Sam','Bran','Rickon');
 codeNames_less = codeNames[1:4];
@@ -28,13 +29,12 @@ unitNames_Jaime = c('1.1.Jaime','3.1.Jaime','5.1.Jaime','7.1.Jaime','10.1.Jaime'
 
 GoT = read.csv("./data/GoT-ENA-ego-heads-v3.csv")
 
-gotData = ENAdata$new(GoT, unitsBy = c("episode", "season", "character"), units = NULL, conversationsBy = c("unique_id"), codeNames = codeNames_Jaime, unitsSelected = c("Jaime"), windowSize = 1, exact.match = T );
+gotData = ENAdata$new(GoT, unitsBy = c("season", "episode", "character"), units = NULL, conversationsBy = c("unique_id"), codeNames = codeNames_Jaime, unitsSelected = c("Jaime","Ned"), windowSize = 0, exact.match = T );
 
 #runIt <- function() {
 gotSet = ENAset$new(gotData, sphereNorm = T)
 gotSet$process();
-#gotSet$plot();
-#}
+
 #done = microbenchmark(runIt(), times=100)
 #print(done)
 

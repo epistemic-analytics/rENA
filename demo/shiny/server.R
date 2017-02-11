@@ -1,21 +1,5 @@
 library(data.table)
 
-filename = "../../data/GoT-ENA-ego-heads-v3.csv"
-if(file.exists(filename)) {
-  GoT = read.csv(filename)
-  gotData = ENAdata$new(
-    GoT,
-    unitsBy = c("season", "episode", "character"),
-    units = NULL, conversationsBy = c("unique_id"),
-    codeNames = c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Tyrion','Bronn','Brienne','Tywin','Bran'),
-    unitsSelected = c("Jaime","Ned"),
-    windowSize = 0,
-    exact.match = T
-  );
-  gotSet = ENAset$new(gotData, sphereNorm = T)
-  gotSet$process();
-}
-
 extractName <- function(name) {
   last(strsplit(name, ".", fixed=T)[[1]])
 }
@@ -35,10 +19,11 @@ shinyServer(function(input, output, session) {
       seasons$included = T;
       seasons;
     }
-  }
+  };
+
   values <- reactiveValues(
     timelineFiltered = NULL,
-    codesSelected = c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Tyrion','Bronn','Brienne','Tywin','Bran'),
+    codesSelected = gsub("\\.","_", c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Tyrion','Bronn','Brienne','Tywin','Bran')),
     settings = list(
       "allowUpdate" = T,
       "conversationsBy" = c("season", "episode"),
@@ -83,19 +68,17 @@ shinyServer(function(input, output, session) {
   thisSet <- reactive({
     settings = settings();
     set = NULL;
-    #browser();
     setData = gotSet$get('enaData')$get('file');
-    #values$codesSelected = gotSet$get("enaData")$get("codeNames");
-
     unitNames = unitsSelected();
+
     values$unitNames.w.meta = lapply(unitNames, function(u) {
-      setData[setData$character==u,which(lapply(setData[which(setData$character==u),], function(x) { length(unique(x)) == 1 && all(is.character(as.vector(x)))} ) == T)][1,]
-    });
+      setData[setData$character==u,c("character", "house")][1,]
+    }); #lapply(unitNames, function(u) {setData[setData$character==u,which(lapply(setData[which(setData$character==u),], function(x) { length(unique(x)) == 1 && all(is.character(as.vector(x)))} ) == T)][1,]});
+
     if(settings$allowUpdate == T) {
       print("Updating the set.");
       set = gotSet$update("data",
         unitsSelected=unitNames,
-        #codeNames=input$codesSelected
         codeNames=values$codesSelected
       );
       values$resetMainData = T;
@@ -134,7 +117,7 @@ shinyServer(function(input, output, session) {
     #set = thisSet();
     setData = values$enaFile; #set$get("enaData")$get("file");
     housesList.w.chars = lapply(housesList, function(x) {
-      x$characters = unique(setData[which(x$house==setData$house),]$character)
+      x$characters = as.list(unique(setData[which(x$house==setData$house),]$character))
       x
     });
     housesList.w.chars
@@ -167,8 +150,6 @@ shinyServer(function(input, output, session) {
   };
   collapseFullData <- function(data, collapse, sep=".", cols = c("x","y")) {
     d = data[, lapply(.SD, mean), by = c(collapse), .SDcols = cols];
-    #browser()
-    #d$rownames = apply(d[,collapse, with = F], 1, paste, collapse=sep)
     d$rownames = d[,{apply(.SD,1,function(x){paste(trimws(x),collapse=sep)})},with=T,.SDcols=collapse]
     setcolorder(d, c(cols, setdiff(colnames(d), cols)))
     d
@@ -326,18 +307,19 @@ shinyServer(function(input, output, session) {
         size = 0.1
       );
     });
-
+    #browser()
     r.list2$edges = data.table(sapply(1:length(val$fullNodes), function(n) {
       x = as.data.frame(val$fullNodes[,n,with=F]);
       label=paste(x[3,],x[4,],sep=".");
       list(
         label=label, id=label,
-        size=as.numeric(x[1,][[1]])*log(input$edgeZoom)+0.1,
+        size=abs(as.numeric(x[1,][[1]])*log(input$edgeZoom)+0.1),
         color=as.character(x[2,]),
         source=x[3,], target=x[4,],
         type="animate"
       );
     }));
+    r.list2$edges = r.list2$edges[,sort.list(as.vector(unlist(r.list2$edges[3,,with=T])), decreasing=T), with=F]
     r.list2
   }
   createSigmaNet = function(val) {
@@ -510,11 +492,13 @@ shinyServer(function(input, output, session) {
       val$fullNodes = rbindlist(list(combs,val$edgeColors, blankRowDT, blankRowDT), use.names=T);
       for(xN in names(combs)) {
         x = unlist(strsplit(xN, "...", fixed = T));
-        val$matrix[which(val$matrix$rn==x[2]), x[1]] = combs[,xN,with=F]
-        val$matrix[which(val$matrix$rn==x[1]), x[2]] = combs[,xN,with=F]
-        val$fullNodes[3:4,xN] = x;
+        val$matrix[which(val$matrix$rn==x[2]), x[1]] = (combs[,xN,with=F])
+        val$matrix[which(val$matrix$rn==x[1]), x[2]] = (combs[,xN,with=F])
+        val$fullNodes[3:4,xN] = (x);
       }
       valToPlot = createSigmaNet2(val);
+      #browser()
+
       valToPlot$nodes = lapply(valToPlot$nodes, function(n) { n$color = "#4d4d4d"; n });
       values$sigmaNetComp = rjson::toJSON(valToPlot);
     }else {
@@ -590,6 +574,7 @@ shinyServer(function(input, output, session) {
     values$mainPlotData = dataRotated();
   });
   observeEvent(input$codesSelected, {
+    browser();
     values$codesSelected=input$codesSelected
     session$sendCustomMessage("codesSelected", rjson::toJSON(codesSelected()));
   });
@@ -597,14 +582,19 @@ shinyServer(function(input, output, session) {
     values$settings$unitsSelected = input$unitsSelected;
   });
   observeEvent(input$unitAdded, {
-    newLen = length(values$plottable) + 1;
-    values$plottable[[newLen]] = list(
-      by=list(
-        character=input$unitAdded$character
-      ),
-      uuid=uuid::UUIDgenerate(),
-      from=NULL
-    )
+    newUnits = rjson::fromJSON(input$unitAdded);
+    lapply(newUnits, function(x) {
+      newLen = length(values$plottable) + 1;
+
+      values$plottable[[newLen]] = list(
+        by=list(
+          character=x$character
+        ),
+        uuid=uuid::UUIDgenerate(),
+        from=NULL
+      )
+    });
+    NULL
   })
   observeEvent(input$collapseTo, {
     values$settings$collapseTo = jsonlite::fromJSON(input$collapseTo);
@@ -646,12 +636,12 @@ shinyServer(function(input, output, session) {
     if(length(toRemove) > 0) {
       if(length(labelParts) > 1) {
         if(any(values$plottable[[toRemove]]$by$season == labelParts[2])) {
-          values$plottable[[toRemove]]$by$season = values$plottable[[toRemove]]$by$season[values$plottable[[toRemove]]$by$season != labelParts[2]]
+          values$plottable[[toRemove]]$by$season = as.integer(values$plottable[[toRemove]]$by$season[values$plottable[[toRemove]]$by$season != labelParts[2]])
           if(length(values$plottable[[toRemove]]$by$season) == 0) {
             values$plottable[[toRemove]] <- NULL;
           }
         } else {
-          values$plottable[[toRemove]]$by$season = c(values$plottable[[toRemove]]$by$season, labelParts[2]);
+          values$plottable[[toRemove]]$by$season = as.integer(c(values$plottable[[toRemove]]$by$season, labelParts[2]));
         }
       } else {
         values$plottable[[toRemove]] <- NULL;
@@ -661,8 +651,8 @@ shinyServer(function(input, output, session) {
       newListItem = list(
         by=list(
           character=itJ$character,
-          season=labelParts[2],
-          episode=labelParts[3]
+          season=as.integer(labelParts[2]),
+          episode=as.integer(labelParts[3])
         ),
         uuid=uuid::UUIDgenerate(),
         from=itJ$uuid
@@ -682,6 +672,12 @@ shinyServer(function(input, output, session) {
         }
       }
 
+      if(any(names(aaV) == "season")) {
+        aaV$season = as.integer(aaV$season)
+      }
+      if(any(names(aaV) == "episode")) {
+        aaV$episode = as.integer(aaV$episode)
+      }
       newListItem$by = aaV;
       values$plottable[[newLen]] = newListItem
     }
