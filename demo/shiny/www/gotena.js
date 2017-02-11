@@ -28,24 +28,13 @@
 
   var clicks = 0, clickTimeout, clickedAt;
   ENA.graphs.unit.events["clickNode"] = function(clickData) {
-    console.log("Clicked: ", clickData)
-    if(clicks === 0) {
+    let now = Date.now();
+    if (clicks === 0) {
       clickTimeout = setTimeout(function() {
-        console.log("Plotting the network.");
+        var selected = clickData.data.node.id,
+          selectedLen = ENA.graphs.unit.selections.length;
 
-        var
-           selected = clickData.data.node.id
-          ,selectedLen = ENA.graphs.unit.selections.length
-        ;
-
-        if(
-          selected &&
-          selectedLen < 2 &&
-          (
-            !ENA.graphs.unit.selections[0] ||
-            ENA.graphs.unit.selections[0].id != selected
-          )
-        ) {
+        if (selected && selectedLen < 2 && (!ENA.graphs.unit.selections[0] || ENA.graphs.unit.selections[0].id != selected)) {
           Shiny.onInputChange("unitClicked"+(selectedLen+1), clickData.data.node); //selected);
           ENA.graphs.unit.selections.push(clickData.data.node); //selected);
         }
@@ -55,20 +44,20 @@
         clicks = 0;
         clickedAt = 0;
       }, sigma.settings.doubleClickTimeout);
-      clickedAt = event.timeStamp;
+
+      clickedAt = now;
       clicks++;
-    } else if (event.timeStamp - clickedAt < sigma.settings.doubleClickTimeout) {
-      console.log("double click clear -> ", clickTimeout);
+    } else if (now - clickedAt < sigma.settings.doubleClickTimeout) {
       clearTimeout(clickTimeout);
-      clicks = 0; clickedAt = 0;
+      clicks = 0;
+      clickedAt = 0;
     }
   };
   ENA.graphs.network.events["clickEdge"] = function(edge) {
     Shiny.onInputChange("edgeClicked", { camera: this.id, edge: edge, noce: Math.random() });
   };
   ENA.graphs.unit.events["doubleClickNode"] = function(clickData) {
-    console.log("Double click: ", clickData);
-    if(!ENA.collapseTo.filter(c=>{return c === clickData.data.node.expandTo}).length) {
+    if (!ENA.collapseTo.filter(c => c === clickData.data.node.expandTo).length) {
       ENA.collapseTo.push(clickData.data.node.expandTo);
       Shiny.onInputChange("toggleNode", JSON.stringify(clickData.data.node));
     }
@@ -76,10 +65,10 @@
 
   var ENAapp = angular.module("ENAapp", ['ngMaterial','dndLists']);
   ENAapp
-    .run(["Shiny","$timeout", function(Shiny,$timeout) {
+    .run(["Shiny","$timeout", function(Shiny, $timeout) {
       $timeout(function(){
         Shiny.onInputChange("updateDataRotated", true);
-      })
+      });
     }])
     /** Factories **/
     .factory("Shiny", [ "$timeout", function($timeout) {
@@ -92,20 +81,12 @@
         console.info("Units: ", units);
       };
     }])
+    .filter("Html", ["$sce", function($sce) {
+      return html => $sce.trustAsHtml(html);
+    }])
 
     /** Services **/
-    .service("Data", [function() {
-      var data = {};
-      return {
-        "update": function(obj) {
-          _.each(obj, (v, k) => { data[k] = v; });
-        },
-        "get": function(which){
-          if (!which) { return data; };
-          return data[which];
-        }
-      };
-    }])
+
 
     /** Directives **/
     .directive("enaTimeline", [function(){
@@ -118,17 +99,16 @@
             scope.timeline2 = tl;
           });
           scope.checkTimelineSection = function(season, episode) {
-            var toInc = true, obj;
-            if(scope.timeline2) {
-              obj = scope.timeline2.filter(t => t.season==season && t.episode==episode)[0];
-              toInc = obj.included;
+            if (scope.timeline2) {
+              let obj = _.find(scope.timeline2, t => t.season == season && t.episode == episode);
+              return obj.included;
             }
-            return toInc;
+            return true;
           };
           scope.toggleTimeline = function(season, episode) {
-            var toInc = scope.timeline2.filter(t => t.season==season && t.episode==episode)[0];
+            var toInc = _.find(scope.timeline2, t => t.season == season && t.episode == episode);
             toInc.included = !toInc.included;
-            Shiny.onInputChange("timelineFiltered", JSON.stringify(scope.timeline2));
+            scope.timelineFilter();
           };
         }
       }
@@ -246,10 +226,7 @@
             ;
 
             item.house.selected = item.house.selected || [];
-            if(
-              item.type === "house" &&
-              !haveHouse
-            ) {
+            if (item.type === "house" && !haveHouse) {
               scope.housesAdded[item.house.house] = item.house;
 
               var newUnits = item.house.characters.map(c=>{
@@ -375,6 +352,8 @@
     /** Controllers **/
     .controller("ENACtrl", ["$scope", "$timeout", "$q", function($scope, $timeout, $q) {
       const LS_NAME = "ENA_SETTINGS";
+      $scope.timeline = null;
+      $scope.timeline2 = null;
       $scope.opts = {
         "showCharacters": true,
         "showEpisodeSummary": false
@@ -430,12 +409,19 @@
         $scope.opts.showCharacters = !$scope.opts.showCharacters;
       };
 
+      $scope.timelineFilter = function() {
+        Shiny.onInputChange("timelineFiltered", JSON.stringify($scope.timeline2));
+        //TODO: remove this when 'inputFiltered' returns something from server
+        $scope.$applyAsync(function() {
+          $scope.$broadcast("timeline-selections", $scope.timeline2);
+        });
+      };
+
       $scope.$on("toggle-unit", function(event, char, use, house) {
         var newUnits = $scope.unitsSelected.filter(u=>{return(u.character!==char)})
         if(use) {
           newUnits.push({character: char, house: house.house})
         }
-        console.log("New untis:", newUnits);
         Shiny.onInputChange("updateUnits", JSON.stringify(newUnits));
       });
       $scope.$on("toggle-code", function(event, char, use) {
@@ -464,9 +450,9 @@
         });
       }
 
-      $timeout(function(){
+      $timeout(function() {
         Shiny.addCustomMessageHandler("unitsSelected", function(units) {
-          $scope.$apply(function(){
+          $scope.$apply(function() {
             $scope.unitsSelected = JSON.parse(units);
             $scope.$broadcast("units-loaded", $scope.unitsSelected);
           });
@@ -478,9 +464,26 @@
           });
         });
         Shiny.addCustomMessageHandler("housesJSON", function(houses) {
-          $scope.$apply(function(){
+          $scope.$apply(function() {
             $scope.housesJSON = JSON.parse(houses);
             $scope.$broadcast("houses-changed", $scope.housesJSON);
+          });
+        });
+        Shiny.addCustomMessageHandler("timelineFilter", function(timeline) {
+          $scope.$apply(function() {
+            $scope.timeline2 = (Array.isArray(timeline) ? timeline : JSON.parse(timeline));
+            $scope.$broadcast("timeline-selections", $scope.timeline2);
+          });
+        });
+        Shiny.addCustomMessageHandler("timelineNested", function(timeline) {
+          $scope.$apply(function() {
+            $scope.timeline = timeline;
+          });
+        });
+        Shiny.addCustomMessageHandler("allExcerpts", function(ex) {
+          $scope.$apply(function() {
+            $scope.excerpts = ex;
+            $scope.$broadcast("all-excerpts", ex);
           });
         });
       });
@@ -495,7 +498,7 @@
       */
       $scope.$watchCollection('opts', saveSettings);
     }])
-    .controller("TimelineCtrl", ["$scope", "Shiny", "$timeout", "Data", function($scope, Shiny, $timeout, Data){
+    .controller("TimelineCtrl", ["$scope", "Shiny", function($scope, Shiny) {
       $scope.opened = {
         "split": false,
         "splitChosen": false,
@@ -506,26 +509,16 @@
         "left": {},
         "center": {}
       };
-      $timeout(function(){
-        Shiny.addCustomMessageHandler("timelineFilter", function(timeline) {
-          $scope.$apply(function(){
-            $scope.timeline2 = (Array.isArray(timeline) ? timeline : JSON.parse(timeline));
-            $scope.$broadcast("timeline-selections", $scope.timeline2);
-            Data.update({"timeline2": $scope.timeline2});
-          });
-        });
-        Shiny.addCustomMessageHandler("timelineNested", function(timeline) {
-          $scope.$apply(function(){
-            $scope.timeline = timeline;
-            Data.update({"timeline": $scope.timeline});
-          });
-        });
-      });
 
       var updateGraphSplit = _.debounce(function() {
-        console.log("update graph", $scope.timeline);
-        console.log("tmime2", $scope.timeline2);
-        //Shiny.onInputChange("timelineFiltered", JSON.stringify(scope.timeline2));
+        _.each($scope.timeline2, tlo => {
+          let pos = $scope.positions,
+            s = _.toInt(tlo.season),
+            e = _.toInt(tlo.episode);
+          tlo.included = ((s > pos.left.season || (s === pos.left.season && e >= pos.left.episode)) &&
+                          (s < pos.right.season || (s === pos.right.season && e <= pos.right.episode)));
+        });
+        $scope.timelineFilter();
       }, 50);
 
       $scope.play = function() {
@@ -542,6 +535,7 @@
         $scope.opened.split = false;
         $scope.opened.splitChosen = false;
         _.each($scope.positions, (o, which) => { $scope.positions[which] = {}; });
+        updateGraphSplit();
         //this should be somewhere else... ooooooooh well
         $(".splitGrab").css("left", "");
         $("#timelineTopBar").css({"left": "", "right" : ""});
@@ -571,33 +565,69 @@
         labels: true
       };
     }])
-    .controller("EpisodeSummaryCtrl", ["$scope", "$q", "Data", function($scope, $q, Data) {
+    .controller("EpisodeSummaryCtrl", ["$scope", "$q", function($scope, $q) {
       $scope.position = {};
       $scope.seasons = [];
+      $scope.closed = {};
 
       $scope.openTab = function(season) {
         $scope.position.active = season;
+        $scope.closed = {};
       };
 
-      $scope.$watch(() => ENA.excerpts, excerpts => {
-        if (excerpts) {
-          console.log("Excerpts", excerpts);
-        }
-      });
-      $scope.$watch(() => Data.get("timeline"), timeline => {
-        if (timeline) {
-          //TODO: placeholder for actual data
-          var seasons = [];
-          _.each(timeline, (episodes, name) => {
-            seasons.push({
-              "name": name,
-              "episodes": _.map(episodes, eNum => ({"name": eNum, "text": ["test1", "test2", "test3"]}))
+      var updateEpisodeSummary = _.debounce(function() {
+        if ($scope.excerpts) {
+          console.log("$scope.excerpts", $scope.excerpts);
+          var seasons = {},
+            organized = [];
+          _.each($scope.excerpts, ex => {
+            seasons[ex.season] = (seasons[ex.season] || {});
+            seasons[ex.season][ex.episode] = (seasons[ex.season][ex.episode] || []);
+            var text = ex.excerpt,
+              codes = (_.chain(ex).keys(ex).without("season", "episode", "excerpt")
+                          .filter(key => ex[key] === 1 && codeIncluded(ex)).value());
+            _.each(codes, name => {
+              let color = getColor(name);
+              console.log("color", name, color);
+              text = text.replace(new RegExp("\\b(" + name +")\\b", "gi"),
+                "<span class=\"highlightedWord\" style=\"color: " + color + ";\">$1</span>");
+            });
+            seasons[ex.season][ex.episode].push({
+              "text": text,
+              "codes": codes
             });
           });
-          $scope.seasons = seasons;
-          $scope.openTab(_.first(seasons));
+          _.each(seasons, (episodes, seasonName) => {
+            organized.push({
+              "name": seasonName,
+              "episodes": _.map(episodes, (excerpts, episode) => ({"name": episode, "excerpts": excerpts}))
+            });
+          });
+          $scope.seasons = organized;
+          $scope.openTab(_.first($scope.seasons));
+          $scope.$apply();
+          console.log("seasons", organized);
         }
+      }, 50);
+      $scope.$on("timeline-selections", function($event, timeline) {
+        updateEpisodeSummary();
       });
+      $scope.$on("all-excerpts", function($event, ex) {
+        updateEpisodeSummary();
+      });
+      updateEpisodeSummary();
+
+      function codeIncluded(ex) {
+        if (_.isEmpty($scope.timeline2)) return true;
+        var o = _.find($scope.timeline2, t => t.season === ex.season && t.episode === ex.episode);
+        return (o && o.included);
+      }
+      function getColor(name) {
+        if (!_.isEmpty($scope.unitsSelected) && !_.isEmpty($scope.housesAdded)) {
+          console.log("here");
+        }
+        return "#00F";
+      }
     }])
   ;
 })(window, jQuery, angular, Shiny);

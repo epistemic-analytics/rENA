@@ -25,7 +25,7 @@ shinyServer(function(input, output, session) {
     timelineFiltered = NULL,
     codesSelected = gsub("\\.","_", c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Tyrion','Bronn','Brienne','Tywin','Bran')),
     settings = list(
-      "allowUpdate" = T,
+      "allowUpdate" = F,
       "conversationsBy" = c("season", "episode"),
       "grouping" = c("character","season", "episode"),
       "collapseTo" = c("character")
@@ -568,7 +568,8 @@ shinyServer(function(input, output, session) {
 
     session$sendCustomMessage("unitsSelected", rjson::toJSON(unitsSelectedMeta()));
     session$sendCustomMessage("codesSelected", rjson::toJSON(codesSelected()));
-    session$sendCustomMessage("allExcerpts", jsonlite::toJSON(values$enaFile[match(unique(excerpt_id), values$enaFile$excerpt_id), c("season","episode",input$codesSelected, "excerpt"), with=F]));
+    session$sendCustomMessage("allExcerpts", jsonlite::toJSON(
+      values$enaFile[match(unique(excerpt_id), values$enaFile$excerpt_id), c("season", "episode", values$codesSelected, "excerpt"), with=F]));
   })
   observeEvent(input$updateDataRotated, {
     values$mainPlotData = dataRotated();
