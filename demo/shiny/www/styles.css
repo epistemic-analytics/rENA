@@ -34,9 +34,19 @@ div[ng-controller='ENACtrl'] {
   box-shadow: 0px 2px 3px 1px #b3b5b6;
   z-index: 1000;
   position: relative;
+  background-image: url(images/headers/Jaime.png);
+  background-repeat: no-repeat;
+  text-align: right;
 }
   #headerRow h1 {
-    margin: 10px;
+    margin: 15px 0 15px 280px;
+    font-size: 1.7em;
+    font-weight: bold;
+    height: calc(100% - 24px);
+    position: relative;
+    display: block;
+    vertical-align: middle;
+    text-align: left;
   }
 #timelineRow {
   height: 105px;
@@ -235,10 +245,10 @@ div[ng-controller='ENACtrl'] {
   .showEpisodeSummary #mainColumnWrap {
     margin-left: 24px;
   }
-  #unitPlotColumn {
+  #plotRow #unitPlotColumn.column {
     width: calc(66.666667% - 15px);
     padding: 0;
-    margin: 3px 0 0;
+    /* margin: 3px 0 0; */
     height: calc(100% - 10px) !important;
     background-color: #FFF;
   }
@@ -296,9 +306,14 @@ div[ng-controller='ENACtrl'] {
       list-style: none;
       margin: 0;
       padding: 0;
-      min-height: 100px;
+      min-height: calc(100% - 0px);
       color: #FFF;
       font-weight: bold;
+      top: 0px;
+      position: absolute;
+      width: 100%;
+      left: 0;
+      padding: 40px 10px;
     }
       ul[houses-added] > li > div.houseAddedName, ul[houses-added] > li li {
         height: 40px;
@@ -475,14 +490,14 @@ div[ng-controller='ENACtrl'] {
       top: calc(100% - 23px);
       left: -15px;
       */
-      width: calc(100% + 30px);
+      width: calc(100% + 0px);
       height: 23px;
       border-bottom: 2px solid #c3c6c7;
-      bottom: 70px;
+      bottom: 60px;
     }
     #unitPlotColumn .tabbable .tab-content {
-      padding-bottom: 35px;
-      min-height: calc(100% - 65px);
+      padding-bottom: 60px;
+      min-height: calc(100% - 0px);
       background-color: #FFF;
     }
 
@@ -523,6 +538,7 @@ div[ng-controller='ENACtrl'] {
       right: 0;
       */
       float: right;
+      height: 20px;
     }
       #sidePlotColumn button {
         font-size: 1.1rem;
@@ -890,4 +906,69 @@ span.charListAction.isCode
 }
 span.charListAction.unit {
     right: 37px;
+}
+
+
+h4#collapseLevel {
+    padding: 0 10px;
+    font-size: 1.1em;
+    color: #858585;
+    position: absolute;
+}
+
+
+ul[houses-added].active-drag:before,
+#unitPlotColumn.active-drag:before {
+    content: "Drop as unit";
+    color: #2980b9;
+    font-size: 1.9em;
+    position: absolute;
+    z-index: 100;
+    background: rgba(41, 128, 185, 0.15);
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    padding: 90% 10px;
+    text-align: center;
+    border: dashed 3px rgba(41, 128, 185, 1);
+    font-weight: bold;
+}
+
+#unitPlotColumn.active-drag:before {
+    padding: 35% 10px;
+    content: "Drop as code";
+}
+
+
+#headerRow .col-sm-12 {
+    height: 100%;
+    display: block;
+    position: relative;
+}
+
+
+svg.sigma-svg {
+    height: 100% !important;
+}
+
+
+div#sigma {
+    height: 100% !important;
+}
+
+
+div.tab-pane {
+    height: 100% !important;
+}
+
+
+#unitPlotColumn div[data-value="Units"] canvas.sigma-measurement-canvas {
+    height: 484px;
+    display: block;
+}
+
+
+#timelineBtnWrap button {
+    height: 20px;
 }

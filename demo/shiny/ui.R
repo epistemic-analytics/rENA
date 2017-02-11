@@ -23,25 +23,29 @@ shinyUI(fluidPage(
          </filter>'),
     tags$div("ng-controller"="ENACtrl", "ng-class" = "{'showCharacters': opts.showCharacters, 'showEpisodeSummary': opts.showEpisodeSummary}",
       fluidRow(id="headerRow",
-        headerPanel("Game of Thrones ENA")
+        headerPanel("Main Character: Jaime Lannister")
       ),
       fluidRow(id="timelineRow", "ng-controller"="TimelineCtrl",
         h4("Timeline"),
-        #uiOutput('collapseTo'),
         div(
           HTML("<ena-timeline timeline='timeline'></ena-timeline>"),
           tags$span(id="timelineBtnWrap",
             tags$button(
-              tags$i(class="glyphicon glyphicon-play pull-left"), tags$span("Play"),
+              class="glyphicon glyphicon-play pull-left",
+              #tags$i(),
+              tags$span("Play"),
               "ng-click" = "play($event)", "ng-if" = "!opened.playing"),
-            tags$button(
-              tags$i(class="glyphicon glyphicon-stop pull-left"), tags$span("Stop"),
+            tags$button(class="glyphicon glyphicon-stop pull-left",
+              #tags$i(),
+              tags$span("Stop"),
               "ng-click" = "stopPlay($event)", "ng-if" = "opened.playing"),
-            tags$button(
-              tags$i(class="glyphicon glyphicon-random pull-left"), tags$span("Split"),
+            tags$button(class="glyphicon glyphicon-random pull-left",
+              #tags$i(),
+              tags$span("Split"),
               "ng-click" = "split($event)", "ng-if" = "!opened.split"),
-            tags$button(
-              tags$i(class="glyphicon glyphicon-ban-circle pull-left"), tags$span("Clear"),
+            tags$button(class="glyphicon glyphicon-ban-circle pull-left",
+              #tags$i(),
+              tags$span("Clear"),
               "ng-click" = "clearSplit($event)", "ng-if" = "opened.split")
           )
         )
@@ -55,17 +59,21 @@ shinyUI(fluidPage(
               h4('Characters'),
               tags$ul("houses-added"="",
                 "dnd-list"="addedItems", "dnd-effect-allowed"="link",
+                "ng-class" = "{ 'active-drag': activeDrag }",
                 "dnd-drop"="dropCallback(index, item, external, type)"
               )
             ),
             column(width = 8, id="unitPlotColumn", class="column",
+              "ng-class" = "{ 'active-drag': activeDrag }",
+              "dnd-list"="addedItems", "dnd-effect-allowed"="link",
+              "dnd-drop"="dropCodeCallback(index, item, external, type)",
               tabsetPanel(id="",
                 tabPanel("Units",
-                  tags$h4("Units"),
+                  tags$h4("Characters", id="collapseLevel"),
                   sigmaOutput('sigma',nodeClick = "plot1_click")
                 ),
                 tabPanel("Comparison",
-                  tags$h4("Comparison"),
+                  tags$h4("Comparison", id="collapseLevel"),
                   sigmaOutput('sigmaComparison', nodeClick = "comp_clickNode")
                 )
               ),
