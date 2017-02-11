@@ -19,8 +19,7 @@
   };
 
   Shiny.addCustomMessageHandler("allExcerpts", function(ex) {
-    console.log("All the excerpts: ", ex);
-    ENA.excerpts = ex;
+   ENA.excerpts = ex;
   });
 
   Shiny.addCustomMessageHandler("collapseTo", function(c) {
@@ -252,28 +251,52 @@
               !haveHouse
             ) {
               scope.housesAdded[item.house.house] = item.house;
+
+              var newUnits = item.house.characters.map(c=>{
+                newUnit = { character: c, code: true, unit: true, house: item.house.house  }
+                scope.$parent.unitsSelected.push(newUnit);
+                return newUnit;
+              });
+
+              scope.showCharacters = item.house.house;
+              Shiny.onInputChange("unitsSelected", scope.$parent.unitsSelected.map(u=>{return u.character}));
+              Shiny.onInputChange("unitAdded", JSON.stringify(newUnits));
             } else if (
               item.type === "character"
             ) {
               if(!haveHouse) scope.housesAdded[item.house.house] = item.house;
               var newUnit = {'character': item.character, 'house': item.house.house};
               //item.house.selected.push(newUnit);
-              scope.housesAdded[item.house.house].selected.push(newUnit);
+              //scope.housesAdded[item.house.house].selected.push(newUnit);
               scope.showCharacters = item.house.house;
 
               scope.$parent.unitsSelected.push(newUnit)
-              console.log("Now what:", scope.$parent.unitsSelected.map(u=>{return u.character}));
               Shiny.onInputChange("unitsSelected", scope.$parent.unitsSelected.map(u=>{return u.character}));
-              Shiny.onInputChange("unitAdded", item);
+              Shiny.onInputChange("unitAdded",  JSON.stringify([item]));
             }
+
+            /*
+            scope.housesAdded = scope.$parent.housesJSON
+              .filter(h=>{ return (h.selected && h.selected.length>0) })
+              .map(h=>{return {
+                house:h.selected[0].house,
+                characters: h.selected.map (c=>{return c.character})
+               }
+              })
+            */
           });
           scope.$on("units-loaded", function(event, units) {
-            scope.housesAdded = {};
+            Array.from(new Set(units.map(u=>{return u.house})))
+            scope.housesAdded = Array.from(new Set(units.map(u=>{return u.house}))).map(h=>{
+              var hs = scope.$parent.housesJSON.filter(hj=>{return hj.house === h})[0];
+              hs.selected = [];
+              return hs;
+            });
+
             units.forEach(u=>{
               scope.housesAdded[u.house] = scope.housesAdded[u.house] || scope.$parent.housesJSON.filter(h=>{return( h.house === u.house );})[0];
-              scope.housesAdded[u.house].selected = scope.housesAdded[u.house].selected || [];
+              //scope.housesAdded[u.house].selected = []; // scope.housesAdded[u.house].selected || [];
               scope.housesAdded[u.house].selected.push(u);
-              scope.housesAdded[u.house].selected = Array.from(new Set(scope.housesAdded[u.house].selected))
             });
           });
         }
@@ -334,8 +357,16 @@
           scope.toggleUnitSelected = function(char, use) {
             scope.$emit("toggle-unit", char, !use, this.$parent.house);
           }
-          scope.toggleCodeSelected = function(char) {
-            scope.$emit("toggle-code", char);
+          scope.toggleCodeSelected = function(char, use) {
+            scope.$emit("toggle-code", char, !use, this.$parent.house);
+          }
+          scope.dragHouseStarted = function() {
+            console.log("Draggin' it")
+            scope.$emit("item-drag", this);
+          }
+          scope.dragHouseEnded = function() {
+            console.log("Done Draggin' it")
+            scope.$emit("item-dragged", this);
           }
         }
       }
@@ -359,9 +390,34 @@
       $scope.housesAdded = [];
       $scope.unitsSelected = undefined;
       $scope.activeHouse = undefined;
+      $scope.activeDrag = false;
 
+      $scope.$on("item-drag", function(ev, item) {
+        console.info("Drag event")
+        $scope.dragHouseStarted();
+      });
+      $scope.$on("item-dragged", function(ev, item) {
+        console.info("Drag event")
+        $scope.dragHouseEnded();
+      });
+      $scope.dragHouseEnded = function() {
+        console.info("Ended the drag")
+        $scope.activeDrag = false;
+      }
+      $scope.dragHouseStarted = function() {
+        console.info("Started to drag")
+        $scope.activeDrag = true;
+      }
       $scope.dragHouseComplete = function() {
         console.info("Done dragging.");
+        $scope.activeDrag = false;
+      };
+      $scope.dropCodeCallback = function(index, item, external, type) {
+        console.log("Dropped a code.");
+        if(item.type==="character") {
+          $scope.codesSelected.push(item.character)
+        Shiny.onInputChange("updateCodes", JSON.stringify($scope.codesSelected));
+        }
       };
       $scope.dropCallback = function(index, item, external, type) {
         $scope.$broadcast("house-added", item);
@@ -382,8 +438,14 @@
         console.log("New untis:", newUnits);
         Shiny.onInputChange("updateUnits", JSON.stringify(newUnits));
       });
-      $scope.$on("toggle-code", function(event, char) {
-        var newCodes = $scope.codesSelected.filter(u=>{return(u!==char)})
+      $scope.$on("toggle-code", function(event, char, use) {
+        var newCodes = [];
+        if(use === true) {
+          $scope.codesSelected.push(char);
+          newCodes = $scope.codesSelected
+        } else {
+          newCodes = $scope.codesSelected.filter(u=>{return(u!==char)})
+        }
         console.log("Toggling:", char, "to off");
         Shiny.onInputChange("updateCodes", JSON.stringify(newCodes));
       });
