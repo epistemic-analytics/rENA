@@ -80,6 +80,9 @@
     .filter("Html", ["$sce", function($sce) {
       return html => $sce.trustAsHtml(html);
     }])
+    .filter("Empty", [function() {
+      return _.isEmpty;
+    }])
 
     /** Services **/
 
@@ -256,7 +259,7 @@
         link: function(scope, element, attrs) {
           scope.houseList = [];
           scope.unitsKeyed = {};
-          scope.$on("houses-changed", function(event, houses){
+          scope.$on("houses-changed", function(event, houses) {
             scope.houseList = houses;
           });
           scope.$on("units-loaded", function(event, units) {
@@ -507,7 +510,6 @@
 
       var updateEpisodeSummary = _.debounce(function() {
         if ($scope.excerpts) {
-          console.log("$scope.excerpts", $scope.excerpts);
           var seasons = {},
             organized = [];
           _.each($scope.excerpts, ex => {
@@ -518,9 +520,10 @@
                           .filter(key => ex[key] === 1 && codeIncluded(ex)).value());
             _.each(codes, name => {
               let color = getColor(name);
-              console.log("color", name, color);
-              text = text.replace(new RegExp("\\b(" + name +")\\b", "gi"),
-                "<span class=\"highlightedWord\" style=\"color: " + color + ";\">$1</span>");
+              if (color) {
+                text = text.replace(new RegExp("\\b(" + name +")\\b", "gi"),
+                  "<span class=\"highlightedWord\" style=\"color: " + color + ";\">$1</span>");
+              }
             });
             seasons[ex.season][ex.episode].push({
               "text": text,
@@ -536,7 +539,6 @@
           $scope.seasons = organized;
           $scope.openTab(_.first($scope.seasons));
           $scope.$apply();
-          console.log("seasons", organized);
         }
       }, 50);
       $scope.$on("timeline-selections", function($event, timeline) {
@@ -553,10 +555,14 @@
         return (o && o.included);
       }
       function getColor(name) {
-        if (!_.isEmpty($scope.unitsSelected) && !_.isEmpty($scope.housesAdded)) {
-          console.log("here");
+        if (!_.isEmpty($scope.housesJSON) && !_.isEmpty($scope.unitsSelected)) {
+          var char = _.find($scope.unitsSelected, u => name === u.character),
+            house = (char ? _.find($scope.housesJSON, h => h.house === char.house) : null);
+          if (house) {
+            return house.color;
+          }
         }
-        return "#00F";
+        return false;
       }
     }])
   ;
