@@ -62,7 +62,7 @@ shinyUI(fluidPage(
               )
             ),
             column(width = 8, id="unitPlotColumn", class="column",
-              "ng-class" = "{ 'active-drag': activeDrag }",
+              "ng-class" = "{ 'active-drag': activeDrag, 'hide-labels': !data.labels }",
               "dnd-list"="addedItems", "dnd-effect-allowed"="link",
               "dnd-drop"="dropCodeCallback(index, item, external, type)",
               tabsetPanel(id="",
@@ -103,7 +103,7 @@ shinyUI(fluidPage(
             )
           )
         ),
-        column(width = 4, id="sidePlotColumn", class="column", "ng-controller"="NetworkPlotsCtrl",
+        column(width = 4, id="sidePlotColumn", class="column boxShadow", "ng-controller"="NetworkPlotsCtrl",
           div( id="mainPlot",
             div(
               h5(
@@ -118,7 +118,7 @@ shinyUI(fluidPage(
 
               )
             ),
-            sigmaOutput('sigmaNet1', height="100%")
+            sigmaOutput('sigmaNet1')
           ),
           div( id="secondPlot",
             div(
@@ -141,8 +141,8 @@ shinyUI(fluidPage(
                "ng-controller" = "EpisodeSummaryCtrl", "ng-include" = "'templates/episodeSummary.html'")
       ),
       div(
-        id = "sideMinimizedArea",
-        tags$a(id = "minimizedTitle", "ng-click" = "toggleSideMinimized()",
+        id = "sideMinimizedArea", class="boxShadow", "ng-click" = "toggleSideMinimized()",
+        tags$a(id = "minimizedTitle",
                "ng-bind" = "(opts.showEpisodeSummary ? 'Characters' : 'Episode Summary')")
       )
     )
