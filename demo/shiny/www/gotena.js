@@ -18,10 +18,6 @@
     }
   };
 
-  Shiny.addCustomMessageHandler("allExcerpts", function(ex) {
-   ENA.excerpts = ex;
-  });
-
   Shiny.addCustomMessageHandler("collapseTo", function(c) {
     ENA.collapseTo = c;
   });
