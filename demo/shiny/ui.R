@@ -33,27 +33,24 @@ shinyUI(fluidPage(
           tags$span(id="timelineBtnWrap",
             tags$button(
               class="glyphicon glyphicon-play pull-left",
-              #tags$i(),
-              tags$span("Play"),
+              tags$span("Play", class="hidden-sm hidden-xs"),
               "ng-click" = "play($event)", "ng-if" = "!opened.playing"),
             tags$button(class="glyphicon glyphicon-stop pull-left",
-              #tags$i(),
-              tags$span("Stop"),
-              "ng-click" = "stopPlay($event)", "ng-if" = "opened.playing"),
-            tags$button(class="glyphicon glyphicon-random pull-left",
-              #tags$i(),
-              tags$span("Split"),
+              tags$span("Stop", class="hidden-sm hidden-xs"),
+              "ng-click" = "stopPlay($event)", "ng-if" = "opened.playing"
+            ),
+            tags$button(class="glyphicon glyphicon-resize-horizontal pull-left",
+              tags$span("Split", class="hidden-sm hidden-xs"),
               "ng-click" = "split($event)", "ng-if" = "!opened.split"),
             tags$button(class="glyphicon glyphicon-ban-circle pull-left",
-              #tags$i(),
-              tags$span("Clear"),
+              tags$span("Clear", class="hidden-sm hidden-xs"),
               "ng-click" = "clearSplit($event)", "ng-if" = "opened.split")
           )
         )
       ),
 
       fluidRow(id="mainColumnWrap",
-        column(width=8, id="centerColumn", "ng-class" = "{'col-sm-8': !opts.showEpisodeSummary, 'col-sm-6': opts.showEpisodeSummary}",
+        column(width=8, id="centerColumn", "ng-class"="{'col-xs-12 col-md-8': !opts.showEpisodeSummary, 'col-xs-6': opts.showEpisodeSummary}",
           fluidRow(id="plotRow",
             column(width=4, id="selectedColumn", class="column",
               "ng-show" = "!opts.showEpisodeSummary",
@@ -111,7 +108,10 @@ shinyUI(fluidPage(
             div(
               h5(
                 tags$span("Main Plot"),
-                tags$button(class="glyphicon glyphicon-remove",tags$span("Close"),"ng-click"="clearPlot(1)")
+                tags$button(class="glyphicon glyphicon-remove",
+                  tags$span("Close", class="hidden-sm hidden-xs"),
+                  "ng-click"="clearPlot(1)"
+                )
               ),
               h5(class="plotLabel", textOutput("unitClicked1")),
               div(
@@ -124,8 +124,13 @@ shinyUI(fluidPage(
             div(
               h5(
                 tags$span("Secondary Plot"),
-                tags$button(class="glyphicon glyphicon-remove",tags$span("Close"),"ng-click"="clearPlot(2)"),
-                tags$button(class="glyphicon glyphicon-random",tags$span("Switch"),"ng-click"="switchPlots()")
+                tags$button(class="glyphicon glyphicon-remove",
+                  tags$span("Close", class="hidden-sm hidden-xs"),
+                  "ng-click"="clearPlot(2)", "data-toggle"="tooltip",
+                  "data-placement"="top",
+                  title="Close plot"
+                ),
+                tags$button(class="glyphicon glyphicon-sort",tags$span("Switch", class="hidden-sm hidden-xs"),"ng-click"="switchPlots()")
               ),
               h5(class="plotLabel", textOutput("unitClicked2"))
             ),

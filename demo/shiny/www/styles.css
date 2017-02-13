@@ -13,6 +13,7 @@ body {
   body > .container-fluid {
     height: 100%;
     padding-right: 11px;
+    background: #c3c3c3;
   }
 
 .droparea:-drag-over {
@@ -20,7 +21,7 @@ body {
 }
 .glyphicon:before {
   position: absolute;
-  left: 3px;
+  left: 4px;
   top: 3px;
 }
 
@@ -99,9 +100,10 @@ div[ng-controller='ENACtrl'] {
   }
 
   span#timelineBtnWrap {
-    width: 90px;
-    display: inline-block;
-    vertical-align: top;
+    width: 25px;
+    display: table-cell;
+    vertical-align: bottom;
+    padding-bottom: 10px;
   }
   #timelineRow h4 {
     font-size: 1.3em;
@@ -109,10 +111,10 @@ div[ng-controller='ENACtrl'] {
     margin-bottom: 0px;
   }
   #timelineRow ena-timeline {
-    display: inline-block;
-    width: calc(100% - 100px);
+    /* width: calc(100% - 100px); */
     margin: 0px;
     height: 70px;
+    display: table-cell;
   }
   #timeline-groups {
     position: relative;
@@ -213,11 +215,12 @@ div[ng-controller='ENACtrl'] {
             }
 #sideMinimizedArea {
   position: absolute;
-  top: 165px;
+  top: 170px;
   bottom: 0;
   right: 0;
   width: 35px;
   background: #F6F8F9;
+  border-radius: 5px 0px 0 0;
 }
   .showEpisodeSummary #sideMinimizedArea {
     right: unset;
@@ -246,7 +249,7 @@ div[ng-controller='ENACtrl'] {
     margin-left: 24px;
   }
   #plotRow #unitPlotColumn.column {
-    width: calc(66.666667% - 15px);
+    /* width: calc(66.666667% - 15px); */
     padding: 0;
     /* margin: 3px 0 0; */
     height: calc(100% - 10px) !important;
@@ -258,7 +261,7 @@ div[ng-controller='ENACtrl'] {
   #centerColumn {
     height: 100%;
     padding-left: 0;
-    width: calc(66.66667% + 8px);
+    /* width: calc(66.66667% + 8px); */
     margin: 0px 3px 0 15px;
   }
   .showEpisodeSummary #centerColumn {
@@ -283,6 +286,7 @@ div[ng-controller='ENACtrl'] {
   }
     #plotRow .column:first-of-type {
       border-radius: 0 5px 0 0;
+      width: calc(33.3333% - 15px);
     }
     #plotRow .col-sm-4.column:last-of-type {
       margin-right: 0px;
@@ -538,10 +542,8 @@ div[ng-controller='ENACtrl'] {
       right: 0;
       */
       float: right;
-      height: 20px;
     }
       #sidePlotColumn button {
-        font-size: 1.1rem;
       }
     button {
       width: 85px;
@@ -819,7 +821,7 @@ div#addCharsListColumn.col-sm-12 {
 }
 
 div#addCharsListColumn.col-sm-4 {
-    width: calc(33.3333% + 2px);
+    width: calc(33.3333% + -12px);
 }
 
 ul[houses-added] > li {
@@ -866,18 +868,27 @@ i.glyphicon.glyphicon-check.isUnit {
   padding: 0;
 }
   #episodeSummaryHeader h4 {
-    display: inline-block;
+    display: block;
+    padding-right: 40px;
+  }
+  #episodeSummaryHeader h4 > span {
+    font-size: 1.3rem;
   }
   #clearEpisodeSummary {
-    font-size: 1.1rem;
+    /* font-size: 1.0rem; */
     margin-top: 10px;
     margin-right: 5px;
+    position: absolute;
+    right: 0px;
+    top: 0px;
   }
     #clearEpisodeSummary i {
       float: left;
     }
   #episodeSummaryContent {
     height: 100%;
+    font-size: 1.1rem;
+    color: #410000;
   }
     #episodeSummaryContent .seasonTabs li a {
       padding: 5px;
@@ -893,7 +904,7 @@ i.glyphicon.glyphicon-check.isUnit {
       #episodeSummaryContent .tab-content .summaryEpisodes > h4 {
           background: #E6E6E6;
           padding: 5px;
-          font-size: 16px;
+          font-size: 1.3rem;
       }
         #episodeSummaryContent .tab-content .summaryEpisodes > h4 i {
           margin-right: 30px;
@@ -991,4 +1002,38 @@ div.tab-pane {
 
 #timelineBtnWrap button {
     height: 20px;
+}
+
+
+.seasonTabs > li {
+    width: calc(100% / 6);
+}
+
+button.glyphicon {
+    width: 22px;
+    padding-left: 16px;
+    padding-right: 4px;
+    height: 20px;
+    font-size: 1.1rem;
+}
+
+button.glyphicon > span {
+    padding-right: 5px;
+}
+
+
+#timelineRow > div {
+    display: table;
+    width: 100%;
+}
+
+/* Medium devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+  span#timelineBtnWrap {
+    width: 55px;
+  }
+  button.glyphicon {
+    padding-left: 20px;
+    width: 57px;
+  }
 }
