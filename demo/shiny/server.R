@@ -516,7 +516,9 @@ shinyServer(function(input, output, session) {
         sigmaPlot(), name="mainPlot",
         drawEdges = T, drawNodes = T,
         clickNode=htmlwidgets::JS("ENA.graphs.unit.events.clickNode"),
-        doubleClickNode=htmlwidgets::JS("ENA.graphs.unit.events.doubleClickNode")
+        doubleClickNode=htmlwidgets::JS("ENA.graphs.unit.events.doubleClickNode"),
+        overNode=htmlwidgets::JS("ENA.graphs.unit.events.overNode"),
+        outNode=htmlwidgets::JS("ENA.graphs.unit.events.outNode")
       )
     );
     output$sigmaNet1 <- renderSigma(

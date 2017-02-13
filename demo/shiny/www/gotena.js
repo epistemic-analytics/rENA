@@ -49,6 +49,25 @@
       clickedAt = 0;
     }
   };
+  ENA.graphs.unit.events["overNode"] = function(hoveredData) {
+    console.log("Hovered node: ", hoveredData);
+    var
+      selected = hoveredData.data.node.id,
+      selectedLen = ENA.graphs.unit.selections.length
+    ;
+    if(selectedLen===1) {
+      Shiny.onInputChange("unitClicked2", hoveredData.data.node); //selected);
+    }
+  };
+  ENA.graphs.unit.events["outNode"] = function(hoveredData) {
+    var
+      selected = hoveredData.data.node.id,
+      selectedLen = ENA.graphs.unit.selections.length
+    ;
+    if(selectedLen===1) {
+      Shiny.onInputChange("unitClicked2", null); //selected);
+    }
+  };
   ENA.graphs.network.events["clickEdge"] = function(edge) {
     Shiny.onInputChange("edgeClicked", { camera: this.id, edge: edge, noce: Math.random() });
   };
@@ -359,6 +378,11 @@
           $scope.opts = settings;
         }
       });
+     $scope.data = {
+        units: true,
+        labels: true
+      };
+
       $scope.settings = {
         groups: [ "Season", "Episode" ]
       };
@@ -556,10 +580,7 @@
       };
     }])
     .controller("PlotOptionsCtrl", ["$scope", function($scope){
-      $scope.data = {
-        units: true,
-        labels: true
-      };
+
     }])
     .controller("EpisodeSummaryCtrl", ["$scope", "$q", function($scope, $q) {
       $scope.position = {};
