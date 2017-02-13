@@ -1037,3 +1037,16 @@ button.glyphicon > span {
     width: 57px;
   }
 }
+
+
+img.charImage {
+    margin: 1px 0 3px 7px;
+}
+
+
+a#minimizedTitle {
+    color: #3F576B;
+}
+a#minimizedTitle:hover {
+  text-decoration: none;
+}
