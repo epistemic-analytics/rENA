@@ -69,7 +69,8 @@ shinyServer(function(input, output, session) {
     settings = settings();
     set = NULL;
     setData = gotSet$get('enaData')$get('file');
-    unitNames = unitsSelected();
+    #browser();
+    unitNames = gotSet$get('enaData')$get('unitsSelected'); # unitsSelected();
 
     values$unitNames.w.meta = lapply(unitNames, function(u) {
       setData[setData$character==u,c("character", "house")][1,]
