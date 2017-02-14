@@ -6,6 +6,7 @@
   });
 
   var ENA = w.ENA = {
+    app: undefined,
     collapseTo: undefined,
     graphs: {
       unit: {
@@ -13,6 +14,11 @@
         events: { }
       },
       network: {
+        plots: {
+          "main": {},
+          "secondary": {},
+          "comparison": {}
+        },
         events: { }
       }
     }
@@ -27,12 +33,13 @@
     let now = Date.now();
     if (clicks === 0) {
       clickTimeout = setTimeout(function() {
-        var selected = clickData.data.node.id,
+        var selected = clickData.data.node.label,
           selectedLen = ENA.graphs.unit.selections.length;
 
-        if (selected && selectedLen < 2 && (!ENA.graphs.unit.selections[0] || ENA.graphs.unit.selections[0].id != selected)) {
+        if (selected && selectedLen < 2 && (!ENA.graphs.unit.selections[0] || ENA.graphs.unit.selections[0].label != selected)) {
           Shiny.onInputChange("unitClicked"+(selectedLen+1), clickData.data.node); //selected);
           ENA.graphs.unit.selections.push(clickData.data.node); //selected);
+          ENA.app.scope().$broadcast("unitClicked", ENA.graphs.unit.selections);
         }
         Shiny.onInputChange("unitsClicked", ENA.graphs.unit.selections);
 
@@ -52,16 +59,16 @@
   ENA.graphs.unit.events["overNode"] = function(hoveredData) {
     console.log("Hovered node: ", hoveredData);
     var
-      selected = hoveredData.data.node.id,
+      selected = hoveredData.data.node.label,
       selectedLen = ENA.graphs.unit.selections.length
     ;
-    if(selectedLen===1) {
+    if(selectedLen===1 && !ENA.graphs.unit.selections.filter(s=>s.label==selected).length) {
       Shiny.onInputChange("unitClicked2", hoveredData.data.node); //selected);
     }
   };
   ENA.graphs.unit.events["outNode"] = function(hoveredData) {
     var
-      selected = hoveredData.data.node.id,
+      selected = hoveredData.data.node.label,
       selectedLen = ENA.graphs.unit.selections.length
     ;
     if(selectedLen===1) {
@@ -72,7 +79,7 @@
     Shiny.onInputChange("edgeClicked", { camera: this.id, edge: edge, noce: Math.random() });
   };
   ENA.graphs.unit.events["doubleClickNode"] = function(clickData) {
-    if (!ENA.collapseTo.filter(c => c === clickData.data.node.expandTo).length) {
+    if(clickData.data.node.expandTo.length > 0) {
       ENA.collapseTo.push(clickData.data.node.expandTo);
       Shiny.onInputChange("toggleNode", JSON.stringify(clickData.data.node));
     }
@@ -82,12 +89,18 @@
   ENAapp
     .run(["Shiny","$timeout", function(Shiny, $timeout) {
       $timeout(function(){
+        ENA.app = angular.element("[ng-app='ENAapp']"),
+
         Shiny.onInputChange("updateDataRotated", true);
       });
     }])
+
     /** Factories **/
     .factory("Shiny", [ "$timeout", function($timeout) {
       return(window.Shiny);
+    }])
+    .factory("ENA", [ "$timeout", function($timeout) {
+      return(window.ENA);
     }])
 
     /** Filters **/
@@ -98,6 +111,12 @@
     }])
     .filter("Html", ["$sce", function($sce) {
       return html => $sce.trustAsHtml(html);
+    }])
+    .filter("isPlotted", [ function() {
+      return function(unit) {
+        console.log(unit, ENA.graphs.unit.selections.map(s=>s.label))
+        false
+      }
     }])
 
     /** Services **/
@@ -365,7 +384,7 @@
     }])
 
     /** Controllers **/
-    .controller("ENACtrl", ["$scope", "$timeout", "$q", function($scope, $timeout, $q) {
+    .controller("ENACtrl", ["$scope", "$timeout", "$q", "ENA", function($scope, $timeout, $q, ENA) {
       const LS_NAME = "ENA_SETTINGS";
       $scope.timeline = null;
       $scope.timeline2 = null;
@@ -378,19 +397,33 @@
           $scope.opts = settings;
         }
       });
-     $scope.data = {
+      $scope.data = {
         units: true,
         labels: true
       };
-
+      $scope.plots = {
+        comparison: undefined
+      }
       $scope.settings = {
         groups: [ "Season", "Episode" ]
       };
       $scope.housesAdded = [];
       $scope.unitsSelected = undefined;
+      $scope.unitsPlotted = [];
       $scope.activeHouse = undefined;
       $scope.activeDrag = false;
 
+      $scope.$on("unitClicked", function(ev, selections) {
+        console.log("EVENT UNIT CLICK: ", selections);
+        $scope.unitsPlotted = selections;
+        var text = "";
+        var selNames = selections.map(s=>("[data-node-id='unit."+s.label+"']"))
+        selNames.forEach((n,i)=>{
+          text+=("\n"+n+" {\n\topacity: 1.0 !important;\n\tfill: " + (["blue", "green"])[i] + "\n}\n")
+        });
+        console.log("TEXT: ", text);
+        angular.element("#unitStyles").text(text);
+      });
       $scope.$on("item-drag", function(ev, item) {
         console.info("Drag event")
         $scope.dragHouseStarted();
@@ -408,11 +441,9 @@
         $scope.activeDrag = true;
       }
       $scope.dragHouseComplete = function() {
-        console.info("Done dragging.");
         $scope.activeDrag = false;
       };
       $scope.dropCodeCallback = function(index, item, external, type) {
-        console.log("Dropped a code.");
         if(item.type==="character") {
           $scope.codesSelected.push(item.character)
         Shiny.onInputChange("updateCodes", JSON.stringify($scope.codesSelected));
@@ -452,10 +483,8 @@
         } else {
           newCodes = $scope.codesSelected.filter(u=>{return(u!==char)})
         }
-        console.log("Toggling:", char, "to off");
         Shiny.onInputChange("updateCodes", JSON.stringify(newCodes));
       });
-
       function saveSettings() {
         localStorage.setItem(LS_NAME, JSON.stringify($scope.opts));
       }
@@ -504,6 +533,13 @@
           $scope.$apply(function() {
             $scope.excerpts = ex;
             $scope.$broadcast("all-excerpts", ex);
+          });
+        });
+        Shiny.addCustomMessageHandler("comparisonChanged", function(comp) {
+          $scope.$apply(function() {
+            var compJSON = (typeof comp === "object") ? comp : JSON.parse(comp);
+            $scope.plots["comparison"] = ENA.graphs.network.plots["comparison"] = compJSON;
+            $scope.$broadcast("comparison-changed", compJSON);
           });
         });
       });
@@ -569,7 +605,6 @@
     }])
     .controller("NetworkPlotsCtrl", ["$scope", function($scope){
       $scope.clearPlot = function(wh) {
-        console.info("Clearing: ", wh);
         ENA.graphs.unit.selections.splice(wh-1,1)
         Shiny.onInputChange("unitClicked"+wh, null);
 
@@ -577,6 +612,14 @@
           Shiny.onInputChange("unitClicked"+2, null)
           Shiny.onInputChange("unitClicked"+1, ENA.graphs.unit.selections[0])
         }
+
+        $scope.$emit("unitClicked", ENA.graphs.unit.selections);
+      };
+      $scope.switchPlots = function() {
+        ENA.graphs.unit.selections = ENA.graphs.unit.selections.reverse();
+        [1,2].forEach(n=>{
+          Shiny.onInputChange("unitClicked"+n, ENA.graphs.unit.selections[n-1])
+        })
       };
     }])
     .controller("PlotOptionsCtrl", ["$scope", function($scope){

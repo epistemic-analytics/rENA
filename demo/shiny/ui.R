@@ -23,6 +23,7 @@ shinyUI(fluidPage(
          </filter>'),
     tags$div("ng-controller" = "ENACtrl", #"class" = "container-fluid",
              "ng-class" = "{'showCharacters': opts.showCharacters, 'showEpisodeSummary': opts.showEpisodeSummary}",
+      tags$style(id="unitStyles",type="text/css"),
       fluidRow(id="headerRow",
         headerPanel("Main Character: Jaime Lannister")
       ),
