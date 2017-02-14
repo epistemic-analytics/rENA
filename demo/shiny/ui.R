@@ -62,17 +62,17 @@ shinyUI(fluidPage(
               )
             ),
             column(width = 8, id="unitPlotColumn", class="column",
-              "ng-class" = "{ 'active-drag': activeDrag, 'hide-labels': !data.labels }",
+              "ng-class" = "{ 'active-drag': activeDrag, 'hide-labels': !data.labels, 'hasComparison': plots.comparison.nodes.length > 0 }",
               "dnd-list"="addedItems", "dnd-effect-allowed"="link",
               "dnd-drop"="dropCodeCallback(index, item, external, type)",
               tabsetPanel(id="",
                 tabPanel("Units",
                   tags$h4("Characters", id="collapseLevel"),
                   sigmaOutput('sigma',nodeClick = "plot1_click")
+                  ,sigmaOutput('sigmaComparison', nodeClick = "comp_clickNode")
                 ),
                 tabPanel("Comparison",
-                  tags$h4("Comparison", id="collapseLevel"),
-                  sigmaOutput('sigmaComparison', nodeClick = "comp_clickNode")
+                  tags$h4("Comparison", id="collapseLevel")
                 )
               ),
               div(id="plotOptions", "ng-controller" = "PlotOptionsCtrl",

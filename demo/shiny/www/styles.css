@@ -499,6 +499,7 @@ div[ng-controller='ENACtrl'] {
       height: 23px;
       border-bottom: 2px solid #c3c6c7;
       bottom: 60px;
+      z-index: 100;
     }
     #unitPlotColumn .tabbable .tab-content {
       padding-bottom: 60px;
@@ -592,11 +593,11 @@ div[ng-controller='ENACtrl'] {
     }
     #sigmaNet1 {}
       #sigmaNet1 line {
-        stroke: #5399c7;
+        /* stroke: #5399c7; */
       }
     #sigmaNet2 {}
       #sigmaNet2 line {
-        stroke: #eaa647;
+        /* stroke: #eaa647; */
       }
 
 #unitPlotColumn .tabbable li {
@@ -855,7 +856,7 @@ ul[houses-added] > li li {
 }
 
 #unitPlotColumn .tab-content #sigma {
-    background-color: #FFF;
+    /* background-color: #FFF; */
 }
 
 
@@ -982,12 +983,12 @@ ul[houses-added].active-drag:before,
 
 
 svg.sigma-svg {
-    height: 100% !important;
+    /* height: 100% !important; */
 }
 
 
 div#sigma {
-    height: 100% !important;
+    /* height: 100% !important; */
 }
 
 
@@ -1061,4 +1062,39 @@ a#minimizedTitle:hover {
 
 .hide-labels g#sigma-group-labels {
     display: none;
+}
+
+
+div#sigmaComparison {
+    position: absolute;
+    top: 25px;
+    z-index: 0;
+}
+
+div#sigma {
+    position: absolute;
+    top: 25px;
+    z-index: 10;
+}
+
+
+.hasComparison div#sigma #sigma-group-nodes circle, .hasComparison div#sigma #sigma-group-labels text {
+    opacity: 0.4;
+}
+
+
+.hasComparison div#sigma circle:hover,
+.hasComparison div#sigma .sigma-hover {
+    opacity: 1.0 !important;
+}
+
+
+.hasComparison #sigma g#sigma-group-labels {
+    display: none;
+}
+
+
+.hasComparison #sigma rect.sigma-hover-area {
+    stroke: #dedfe6;
+    fill: #eeeff7;
 }
