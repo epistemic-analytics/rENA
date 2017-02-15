@@ -321,6 +321,28 @@
         }
       }
     }])
+    .directive("scrollTracker", [function() {
+      return {
+        "restrict": "A",
+        "scope": true,
+        "link": function($scope, $element, $attrs) {
+          $element.on("scroll", _.throttle(function(event) {
+            let y = Math.round($element.scrollTop()),
+              $tab = _.find($element.find(".tab-pane").toArray().map(t => $(t)), $t => {
+                let top = Math.round($t.position().top),
+                  bottom = (top + Math.round($t.height()));
+                return ((bottom > 0) && top < y);
+              });
+
+            if ($tab && $tab.length) {
+              $scope.$apply(function() {
+                $scope.openTab($tab.scope().season, false);
+              });
+            }
+          }, 50));
+        }
+      };
+    }])
 
     /** Controllers **/
     .controller("ENACtrl", ["$scope", "$timeout", "$q", function($scope, $timeout, $q) {
@@ -427,16 +449,14 @@
             $scope.$broadcast("all-excerpts", ex);
           });
         });
+        Shiny.addCustomMessageHandler("unitsClicked", function(a) {
+          console.log("Clicked a node: ", a);
+        });
+        Shiny.addCustomMessageHandler("edgeClicked", function(e) {
+          console.log("Clicked an edge.", e)
+        });
       });
 
-      /*
-      Shiny.addCustomMessageHandler("unitsClicked", function(a) {
-        console.log("Clicked a node: ", a);
-      });
-      Shiny.addCustomMessageHandler("edgeClicked", function(a) {
-        console.log("Clicked an edge.")
-      });
-      */
       $scope.$watchCollection('opts', saveSettings);
     }])
     .controller("TimelineCtrl", ["$scope", "Shiny", function($scope, Shiny) {
@@ -534,9 +554,19 @@
       $scope.seasons = [];
       $scope.closed = {};
 
-      $scope.openTab = function(season) {
-        $scope.position.active = season;
-        $scope.closed = {};
+      $scope.openTab = function(season, scroll) {
+        if ($scope.position.active !== season) {
+          $scope.position.active = season;
+          if (scroll !== false) {
+            $scope.$applyAsync(function() {
+              let tab = document.querySelector("#s" + season.name + "-tab");
+              if (tab) {
+                let content = document.querySelector("#episodeSummaryContent > .tab-content");
+                content.scrollTo(0, $(content).scrollTop() + $(tab).position().top);
+              }
+            });
+          }
+        }
       };
 
       var updateEpisodeSummary = _.debounce(function() {

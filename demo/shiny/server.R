@@ -687,12 +687,12 @@ shinyServer(function(input, output, session) {
       values$plottable[[newLen]] = newListItem
     }
   });
-  # observeEvent(input$unitsClicked, {
-  #   session$sendCustomMessage("unitsClicked", input$unitsClicked);
-  # });
-  # observeEvent(input$edgeClicked, {
-  #   session$sendCustomMessage("edgeClicked", "You clicked an edge!!");
-  # });
+  observeEvent(input$unitsClicked, {
+    session$sendCustomMessage("unitsClicked", input$unitsClicked);
+  });
+  observeEvent(input$edgeClicked, {
+    session$sendCustomMessage("edgeClicked", "You clicked an edge!!");
+  });
 
   output
 })
