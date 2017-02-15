@@ -905,7 +905,20 @@ i.glyphicon.glyphicon-check.isUnit {
       overflow-x: hidden;
       border-left: 1px solid #DDD;
       padding-left: 5px;
+      position: relative;
     }
+      #episodeSummaryContent .tab-content > .tab-pane {
+        display: block;
+        border-bottom: 1px solid #CCC;
+        padding-bottom: 10px;
+        margin-top: 10px;
+      }
+        #episodeSummaryContent .tab-content > .tab-pane:last-child {
+          border-bottom: none;
+        }
+        #episodeSummaryContent .tab-content > .tab-pane  > h3 {
+          margin-top: 10px;
+        }
       #episodeSummaryContent .tab-content .summaryEpisodes > h4 {
           background: #E6E6E6;
           padding: 5px;

@@ -109,6 +109,9 @@
     .filter("Html", ["$sce", function($sce) {
       return html => $sce.trustAsHtml(html);
     }])
+    .filter("Empty", [function() {
+      return _.isEmpty;
+    }])
     .filter("isPlotted", [ function() {
       return function(unit) {
         console.log(unit, ENA.graphs.unit.selections.map(s=>s.label))
@@ -150,18 +153,16 @@
         "templateUrl": "templates/splitTimeline.html",
         "scope": true,
         "link": function($scope, $element, $attrs) {
+
           $scope.splitSelect = function($event, season, episode) {
-            var seasons = _.keys($scope.timeline),
-              firstSeason = _.first(seasons),
-              lastSeason = _.last(seasons);
             $scope.splitTimelineAt("center", season, episode);
-            $scope.splitTimelineAt("left", firstSeason, _.first($scope.timeline[firstSeason]));
-            $scope.splitTimelineAt("right", lastSeason, _.last($scope.timeline[lastSeason]));
+            $scope.opened.splitChosen = true;
             var $target = $($event.target),
               $center = $element.find(".splitGrabCenter"),
               xOffset = $target.position().left;
             $center.css("left", (xOffset - 6) + "px");
           };
+
         }
       };
     }])
@@ -217,17 +218,28 @@
               // less than season and episode is at least one from other episode
               // equal seasons and episodes at least one from other episode
               // !last in season and !first in season
-              if (which === "left") {
-                return ((s < pos.center.season && (_.first(tl[pos.center.season]) !== pos.center.episode || _.last(tl[s]) !== e)) ||
-                  (s === pos.center.season && (e + 1) < pos.center.episode));
-              } else if (which === "right") {
-                return ((s > pos.center.season && (_.last(tl[pos.center.season]) !== pos.center.episode || _.first(tl[s]) !== e)) ||
-                  (s === pos.center.season && (e - 1) > pos.center.episode));
-              } //else
-              return (((s > pos.left.season && (_.last(tl[pos.left.season]) !== pos.left.episode || _.first(tl[s]) !== e)) ||
-                        (s === pos.left.season && e > (pos.left.episode + 1)))
-                    && ((s < pos.right.season && (_.first(tl[pos.right.season]) !== pos.right.episode || _.last(tl[s]) !== e)) ||
-                        (s === pos.right.season && e < (pos.right.episode - 1))));
+              if ($scope.opened.split) {
+                if (which === "left") {
+                  return ((s < pos.center.season && (_.first(tl[pos.center.season]) !== pos.center.episode || _.last(tl[s]) !== e)) ||
+                    (s === pos.center.season && (e + 1) < pos.center.episode));
+                } else if (which === "right") {
+                  return ((s > pos.center.season && (_.last(tl[pos.center.season]) !== pos.center.episode || _.first(tl[s]) !== e)) ||
+                    (s === pos.center.season && (e - 1) > pos.center.episode));
+                } //else
+                return (((s > pos.left.season && (_.last(tl[pos.left.season]) !== pos.left.episode || _.first(tl[s]) !== e)) ||
+                          (s === pos.left.season && e > (pos.left.episode + 1)))
+                      && ((s < pos.right.season && (_.first(tl[pos.right.season]) !== pos.right.episode || _.last(tl[s]) !== e)) ||
+                          (s === pos.right.season && e < (pos.right.episode - 1))));
+              } else {
+                if (which === "left") {
+                  return ((s < pos.right.season && (_.first(tl[pos.right.season]) !== pos.right.episode || _.last(tl[s]) !== e)) ||
+                    (s === pos.right.season && (e + 1) < pos.right.episode));
+                } else if (which === "right") {
+                  return ((s > pos.left.season && (_.last(tl[pos.left.season]) !== pos.left.episode || _.first(tl[s]) !== e)) ||
+                    (s === pos.left.season && (e - 1) > pos.left.episode));
+                } //else
+                return true;
+              }
             }
           });
         }
@@ -318,7 +330,7 @@
         link: function(scope, element, attrs) {
           scope.houseList = [];
           scope.unitsKeyed = {};
-          scope.$on("houses-changed", function(event, houses){
+          scope.$on("houses-changed", function(event, houses) {
             scope.houseList = houses;
           });
           scope.$on("units-loaded", function(event, units) {
@@ -379,6 +391,28 @@
           }
         }
       }
+    }])
+    .directive("scrollTracker", [function() {
+      return {
+        "restrict": "A",
+        "scope": true,
+        "link": function($scope, $element, $attrs) {
+          $element.on("scroll", _.throttle(function(event) {
+            let y = Math.round($element.scrollTop()),
+              $tab = _.find($element.find(".tab-pane").toArray().map(t => $(t)), $t => {
+                let top = Math.round($t.position().top),
+                  bottom = (top + Math.round($t.height()));
+                return ((bottom > 0) && top < y);
+              });
+
+            if ($tab && $tab.length) {
+              $scope.$apply(function() {
+                $scope.openTab($tab.scope().season, false);
+              });
+            }
+          }, 50));
+        }
+      };
     }])
 
     /** Controllers **/
@@ -539,16 +573,14 @@
             $scope.$broadcast("comparison-changed", compJSON);
           });
         });
+        Shiny.addCustomMessageHandler("unitsClicked", function(a) {
+          console.log("Clicked a node: ", a);
+        });
+        Shiny.addCustomMessageHandler("edgeClicked", function(e) {
+          console.log("Clicked an edge.", e)
+        });
       });
 
-      /*
-      Shiny.addCustomMessageHandler("unitsClicked", function(a) {
-        console.log("Clicked a node: ", a);
-      });
-      Shiny.addCustomMessageHandler("edgeClicked", function(a) {
-        console.log("Clicked an edge.")
-      });
-      */
       $scope.$watchCollection('opts', saveSettings);
     }])
     .controller("TimelineCtrl", ["$scope", "Shiny", function($scope, Shiny) {
@@ -563,15 +595,22 @@
         "center": {}
       };
 
+      $scope.$watch('timeline', function() {
+        if (!$scope.timeline) return;
+        resetGrabbers();
+      });
+
       var updateGraphSplit = _.debounce(function() {
-        _.each($scope.timeline2, tlo => {
-          let pos = $scope.positions,
-            s = _.toInt(tlo.season),
-            e = _.toInt(tlo.episode);
-          tlo.included = ((s > pos.left.season || (s === pos.left.season && e >= pos.left.episode)) &&
-                          (s < pos.right.season || (s === pos.right.season && e <= pos.right.episode)));
+        $scope.$apply(function() {
+          let pos = $scope.positions;
+          _.each($scope.timeline2, tlo => {
+            let s = _.toInt(tlo.season),
+              e = _.toInt(tlo.episode);
+            tlo.included = ((s > pos.left.season || (s === pos.left.season && e >= pos.left.episode)) &&
+                            (s < pos.right.season || (s === pos.right.season && e <= pos.right.episode)));
+          });
+          $scope.timelineFilter();
         });
-        $scope.timelineFilter();
       }, 50);
 
       $scope.play = function() {
@@ -583,15 +622,12 @@
       $scope.split = function() {
           $scope.opened.split = true;
           $scope.opened.splitChosen = false;
+          resetGrabbers();
       };
       $scope.clearSplit = function() {
         $scope.opened.split = false;
         $scope.opened.splitChosen = false;
-        _.each($scope.positions, (o, which) => { $scope.positions[which] = {}; });
-        updateGraphSplit();
-        //this should be somewhere else... ooooooooh well
-        $(".splitGrab").css("left", "");
-        $("#timelineTopBar").css({"left": "", "right" : ""});
+        resetGrabbers();
       };
       $scope.splitTimelineAt = function(which, season, episode) {
         $scope.opened.splitChosen = true;
@@ -599,6 +635,25 @@
         $scope.positions[which].episode = _.toInt(episode);
         updateGraphSplit();
       };
+
+      function resetGrabbers(season, episode) {
+        var seasons = _.keys($scope.timeline),
+          firstSeason = _.first(seasons),
+          lastSeason = _.last(seasons);
+        $scope.positions = {
+          "left": {"season": _.toInt(firstSeason), "episode": _.toInt(_.first($scope.timeline[firstSeason])) },
+          "right": {"season": _.toInt(lastSeason), "episode": _.toInt(_.last($scope.timeline[lastSeason])) },
+          "center": {}
+        };
+        if (season && episode) {
+          $scope.positions.center.season = _.toInt(season);
+          $scope.positions.center.episode = _.toInt(episode);
+        }
+        $("#timelineTopBar").css({"left": "", "right" : ""});
+        $(".splitGrab").css("left", "");
+        updateGraphSplit();
+      };
+      $scope.resetGrabbers = resetGrabbers;
     }])
     .controller("NetworkPlotsCtrl", ["$scope","$timeout", function($scope, $timeout){
       $scope.unitsPlotted = [];
@@ -636,14 +691,23 @@
       $scope.seasons = [];
       $scope.closed = {};
 
-      $scope.openTab = function(season) {
-        $scope.position.active = season;
-        $scope.closed = {};
+      $scope.openTab = function(season, scroll) {
+        if ($scope.position.active !== season) {
+          $scope.position.active = season;
+          if (scroll !== false) {
+            $scope.$applyAsync(function() {
+              let tab = document.querySelector("#s" + season.name + "-tab");
+              if (tab) {
+                let content = document.querySelector("#episodeSummaryContent > .tab-content");
+                content.scrollTo(0, $(content).scrollTop() + $(tab).position().top);
+              }
+            });
+          }
+        }
       };
 
       var updateEpisodeSummary = _.debounce(function() {
         if ($scope.excerpts) {
-          console.log("$scope.excerpts", $scope.excerpts);
           var seasons = {},
             organized = [];
           _.each($scope.excerpts, ex => {
@@ -654,9 +718,10 @@
                           .filter(key => ex[key] === 1 && codeIncluded(ex)).value());
             _.each(codes, name => {
               let color = getColor(name);
-              console.log("color", name, color);
-              text = text.replace(new RegExp("\\b(" + name +")\\b", "gi"),
-                "<span class=\"highlightedWord\" style=\"color: " + color + ";\">$1</span>");
+              if (color) {
+                text = text.replace(new RegExp("\\b(" + name +")\\b", "gi"),
+                  "<span class=\"highlightedWord\" style=\"color: " + color + ";\">$1</span>");
+              }
             });
             seasons[ex.season][ex.episode].push({
               "text": text,
@@ -672,7 +737,6 @@
           $scope.seasons = organized;
           $scope.openTab(_.first($scope.seasons));
           $scope.$apply();
-          console.log("seasons", organized);
         }
       }, 50);
       $scope.$on("timeline-selections", function($event, timeline) {
@@ -689,10 +753,14 @@
         return (o && o.included);
       }
       function getColor(name) {
-        if (!_.isEmpty($scope.unitsSelected) && !_.isEmpty($scope.housesAdded)) {
-          console.log("here");
+        if (!_.isEmpty($scope.housesJSON) && !_.isEmpty($scope.unitsSelected)) {
+          var char = _.find($scope.unitsSelected, u => name === u.character),
+            house = (char ? _.find($scope.housesJSON, h => h.house === char.house) : null);
+          if (house) {
+            return house.color;
+          }
         }
-        return "#00F";
+        return false;
       }
     }])
   ;
