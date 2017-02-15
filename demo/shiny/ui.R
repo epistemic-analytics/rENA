@@ -83,6 +83,7 @@ shinyUI(fluidPage(
                   )
                 ),
                 tags$span(HTML("<md-switch ng-model='data.units' class='md-primary'>Units</md-switch>")),
+                tags$span(HTML("<md-switch ng-model='data.scaledUnits' ng-change='toggleScaling(this)' class='md-primary onOff'>Scaled Units</md-switch>")),
                 tags$span(HTML("<md-switch ng-model='data.labels' class='md-primary'>Labels</md-switch>"))
               )
             )
@@ -110,7 +111,7 @@ shinyUI(fluidPage(
                 tags$span("Main Plot"),
                 tags$button(class="glyphicon glyphicon-remove",
                   tags$span("Close", class="hidden-sm hidden-xs"),
-                  "ng-click"="clearPlot(1)"
+                  "ng-click"="clearPlot(1)", "ng-disabled"="unitsPlotted.length < 1"
                 )
               ),
               h5(class="plotLabel", textOutput("unitClicked1")),
@@ -126,11 +127,14 @@ shinyUI(fluidPage(
                 tags$span("Secondary Plot"),
                 tags$button(class="glyphicon glyphicon-remove",
                   tags$span("Close", class="hidden-sm hidden-xs"),
-                  "ng-click"="clearPlot(2)", "data-toggle"="tooltip",
-                  "data-placement"="top",
+                  "ng-click"="clearPlot(2)", "ng-disabled"="unitsPlotted.length < 2",
+                  "data-toggle"="tooltip", "data-placement"="top",
                   title="Close plot"
                 ),
-                tags$button(class="glyphicon glyphicon-sort",tags$span("Switch", class="hidden-sm hidden-xs"),"ng-click"="switchPlots()")
+                tags$button(class="glyphicon glyphicon-sort",
+                  tags$span("Switch", class="hidden-sm hidden-xs"),
+                  "ng-click"="switchPlots()", "ng-disabled"="unitsPlotted.length < 2"
+                )
               ),
               h5(class="plotLabel", textOutput("unitClicked2"))
             ),

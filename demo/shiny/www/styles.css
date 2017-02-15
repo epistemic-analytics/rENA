@@ -35,9 +35,10 @@ div[ng-controller='ENACtrl'] {
   box-shadow: 0px 2px 3px 1px #b3b5b6;
   z-index: 1000;
   position: relative;
-  background-image: url(images/headers/Jaime.png);
+  background-image: url(images/headers/got_banner.png);
   background-repeat: no-repeat;
   text-align: right;
+  background-size: cover;
 }
   #headerRow h1 {
     margin: 15px 0 15px 280px;
@@ -547,6 +548,7 @@ div[ng-controller='ENACtrl'] {
       float: right;
     }
       #sidePlotColumn button {
+      margin-left: 2px;
       }
     button {
       width: 85px;
@@ -1097,4 +1099,19 @@ div#sigma {
 .hasComparison #sigma rect.sigma-hover-area {
     stroke: #dedfe6;
     fill: #eeeff7;
+}
+
+
+#sidePlotColumn button[disabled] {
+    background: #CCC;
+    border: #A5A4A0;
+    color: #a5a4a4;
+    box-shadow: none;
+}
+
+#plotOptions md-switch.md-checked.onOff .md-container .md-bar:before {
+  content: "On";
+}
+#plotOptions md-switch.onOff .md-container .md-bar:before {
+  content: "Off";
 }

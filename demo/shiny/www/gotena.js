@@ -39,9 +39,9 @@
         if (selected && selectedLen < 2 && (!ENA.graphs.unit.selections[0] || ENA.graphs.unit.selections[0].label != selected)) {
           Shiny.onInputChange("unitClicked"+(selectedLen+1), clickData.data.node); //selected);
           ENA.graphs.unit.selections.push(clickData.data.node); //selected);
-          ENA.app.scope().$broadcast("unitClicked", ENA.graphs.unit.selections);
         }
         Shiny.onInputChange("unitsClicked", ENA.graphs.unit.selections);
+        ENA.app.scope().$broadcast("unitClicked", ENA.graphs.unit.selections);
 
         clearTimeout(clickTimeout);
         clicks = 0;
@@ -57,7 +57,6 @@
     }
   };
   ENA.graphs.unit.events["overNode"] = function(hoveredData) {
-    console.log("Hovered node: ", hoveredData);
     var
       selected = hoveredData.data.node.label,
       selectedLen = ENA.graphs.unit.selections.length
@@ -89,9 +88,7 @@
   ENAapp
     .run(["Shiny","$timeout", function(Shiny, $timeout) {
       $timeout(function(){
-        ENA.app = angular.element("[ng-app='ENAapp']"),
-
-        Shiny.onInputChange("updateDataRotated", true);
+        ENA.app = angular.element("[ng-app='ENAapp']");
       });
     }])
 
@@ -332,6 +329,7 @@
             units.forEach(u=> {
               scope.unitsKeyed[u.character] = u;
               scope.unitsKeyed[u.character].unit = true;
+              scope.unitsKeyed[u.character].code = true;
             })
           });
           scope.$on("codes-loaded", function(event, codes) {
@@ -399,6 +397,7 @@
       });
       $scope.data = {
         units: true,
+        scaledUnits: true,
         labels: true
       };
       $scope.plots = {
@@ -414,14 +413,12 @@
       $scope.activeDrag = false;
 
       $scope.$on("unitClicked", function(ev, selections) {
-        console.log("EVENT UNIT CLICK: ", selections);
         $scope.unitsPlotted = selections;
         var text = "";
         var selNames = selections.map(s=>("[data-node-id='unit."+s.label+"']"))
         selNames.forEach((n,i)=>{
           text+=("\n"+n+" {\n\topacity: 1.0 !important;\n\tfill: " + (["blue", "green"])[i] + "\n}\n")
         });
-        console.log("TEXT: ", text);
         angular.element("#unitStyles").text(text);
       });
       $scope.$on("item-drag", function(ev, item) {
@@ -471,7 +468,7 @@
       $scope.$on("toggle-unit", function(event, char, use, house) {
         var newUnits = $scope.unitsSelected.filter(u=>{return(u.character!==char)})
         if(use) {
-          newUnits.push({character: char, house: house.house})
+          newUnits.push({character: char, house: house.house, unit: true, code: true})
         }
         Shiny.onInputChange("updateUnits", JSON.stringify(newUnits));
       });
@@ -603,7 +600,13 @@
         updateGraphSplit();
       };
     }])
-    .controller("NetworkPlotsCtrl", ["$scope", function($scope){
+    .controller("NetworkPlotsCtrl", ["$scope","$timeout", function($scope, $timeout){
+      $scope.unitsPlotted = [];
+      $scope.$on("unitClicked", function(ev, selections) {
+        $timeout(function(){
+          $scope.unitsPlotted = selections;
+        });
+      });
       $scope.clearPlot = function(wh) {
         ENA.graphs.unit.selections.splice(wh-1,1)
         Shiny.onInputChange("unitClicked"+wh, null);
@@ -622,8 +625,11 @@
         })
       };
     }])
-    .controller("PlotOptionsCtrl", ["$scope", function($scope){
-
+    .controller("PlotOptionsCtrl", ["$scope", "Shiny", function($scope, Shiny){
+      $scope.toggleScaling = function(s) {
+        console.log("Toggle.");
+        Shiny.onInputChange("scaledUnits", s.$parent.data.scaledUnits);
+      };
     }])
     .controller("EpisodeSummaryCtrl", ["$scope", "$q", function($scope, $q) {
       $scope.position = {};
