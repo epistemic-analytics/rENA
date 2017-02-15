@@ -13,6 +13,7 @@ body {
   body > .container-fluid {
     height: 100%;
     padding-right: 11px;
+    background: #c3c3c3;
   }
 
 .droparea:-drag-over {
@@ -20,7 +21,7 @@ body {
 }
 .glyphicon:before {
   position: absolute;
-  left: 3px;
+  left: 4px;
   top: 3px;
 }
 
@@ -34,9 +35,19 @@ div[ng-controller='ENACtrl'] {
   box-shadow: 0px 2px 3px 1px #b3b5b6;
   z-index: 1000;
   position: relative;
+  background-image: url(images/headers/Jaime.png);
+  background-repeat: no-repeat;
+  text-align: right;
 }
   #headerRow h1 {
-    margin: 10px;
+    margin: 15px 0 15px 280px;
+    font-size: 1.7em;
+    font-weight: bold;
+    height: calc(100% - 24px);
+    position: relative;
+    display: block;
+    vertical-align: middle;
+    text-align: left;
   }
 #timelineRow {
   height: 105px;
@@ -89,9 +100,10 @@ div[ng-controller='ENACtrl'] {
   }
 
   span#timelineBtnWrap {
-    width: 90px;
-    display: inline-block;
-    vertical-align: top;
+    width: 25px;
+    display: table-cell;
+    vertical-align: bottom;
+    padding-bottom: 10px;
   }
   #timelineRow h4 {
     font-size: 1.3em;
@@ -99,10 +111,10 @@ div[ng-controller='ENACtrl'] {
     margin-bottom: 0px;
   }
   #timelineRow ena-timeline {
-    display: inline-block;
-    width: calc(100% - 100px);
+    /* width: calc(100% - 100px); */
     margin: 0px;
     height: 70px;
+    display: table-cell;
   }
   #timeline-groups {
     position: relative;
@@ -203,15 +215,17 @@ div[ng-controller='ENACtrl'] {
             }
 #sideMinimizedArea {
   position: absolute;
-  top: 165px;
+  top: 170px;
   bottom: 0;
   right: 0;
   width: 35px;
   background: #F6F8F9;
+  border-radius: 5px 0px 0 0;
 }
   .showEpisodeSummary #sideMinimizedArea {
     right: unset;
     left: 0;
+    border-radius: 0px 5px 0 0;
   }
   #minimizedTitle {
     transform: rotate(-90deg);
@@ -235,10 +249,10 @@ div[ng-controller='ENACtrl'] {
   .showEpisodeSummary #mainColumnWrap {
     margin-left: 24px;
   }
-  #unitPlotColumn {
-    width: calc(66.666667% - 15px);
+  #plotRow #unitPlotColumn.column {
+    /* width: calc(66.666667% - 15px); */
     padding: 0;
-    margin: 3px 0 0;
+    /* margin: 3px 0 0; */
     height: calc(100% - 10px) !important;
     background-color: #FFF;
   }
@@ -248,7 +262,7 @@ div[ng-controller='ENACtrl'] {
   #centerColumn {
     height: 100%;
     padding-left: 0;
-    width: calc(66.66667% + 8px);
+    /* width: calc(66.66667% + 8px); */
     margin: 0px 3px 0 15px;
   }
   .showEpisodeSummary #centerColumn {
@@ -273,6 +287,7 @@ div[ng-controller='ENACtrl'] {
   }
     #plotRow .column:first-of-type {
       border-radius: 0 5px 0 0;
+      width: calc(33.3333% - 15px);
     }
     #plotRow .col-sm-4.column:last-of-type {
       margin-right: 0px;
@@ -296,9 +311,14 @@ div[ng-controller='ENACtrl'] {
       list-style: none;
       margin: 0;
       padding: 0;
-      min-height: 100px;
+      min-height: calc(100% - 0px);
       color: #FFF;
       font-weight: bold;
+      top: 0px;
+      position: absolute;
+      width: 100%;
+      left: 0;
+      padding: 40px 10px;
     }
       ul[houses-added] > li > div.houseAddedName, ul[houses-added] > li li {
         height: 40px;
@@ -475,14 +495,15 @@ div[ng-controller='ENACtrl'] {
       top: calc(100% - 23px);
       left: -15px;
       */
-      width: calc(100% + 30px);
+      width: calc(100% + 0px);
       height: 23px;
       border-bottom: 2px solid #c3c6c7;
-      bottom: 70px;
+      bottom: 60px;
+      z-index: 100;
     }
     #unitPlotColumn .tabbable .tab-content {
-      padding-bottom: 35px;
-      min-height: calc(100% - 65px);
+      padding-bottom: 60px;
+      min-height: calc(100% - 0px);
       background-color: #FFF;
     }
 
@@ -505,7 +526,8 @@ div[ng-controller='ENACtrl'] {
         padding: 20px 0 0;
       }
     #sidePlotColumn svg.sigma-svg {
-      height: calc(100% + 15px) !important;
+      height: calc(100% + 30px) !important;
+      top: 30px;
     }
     #sidePlotColumn .plotLabel{
       position: absolute;
@@ -525,7 +547,6 @@ div[ng-controller='ENACtrl'] {
       float: right;
     }
       #sidePlotColumn button {
-        font-size: 1.1rem;
       }
     button {
       width: 85px;
@@ -572,11 +593,11 @@ div[ng-controller='ENACtrl'] {
     }
     #sigmaNet1 {}
       #sigmaNet1 line {
-        stroke: #5399c7;
+        /* stroke: #5399c7; */
       }
     #sigmaNet2 {}
       #sigmaNet2 line {
-        stroke: #eaa647;
+        /* stroke: #eaa647; */
       }
 
 #unitPlotColumn .tabbable li {
@@ -803,7 +824,7 @@ div#addCharsListColumn.col-sm-12 {
 }
 
 div#addCharsListColumn.col-sm-4 {
-    width: calc(33.3333% + 2px);
+    width: calc(33.3333% + -12px);
 }
 
 ul[houses-added] > li {
@@ -835,7 +856,7 @@ ul[houses-added] > li li {
 }
 
 #unitPlotColumn .tab-content #sigma {
-    background-color: #FFF;
+    /* background-color: #FFF; */
 }
 
 
@@ -850,18 +871,27 @@ i.glyphicon.glyphicon-check.isUnit {
   padding: 0;
 }
   #episodeSummaryHeader h4 {
-    display: inline-block;
+    display: block;
+    padding-right: 40px;
+  }
+  #episodeSummaryHeader h4 > span {
+    font-size: 1.3rem;
   }
   #clearEpisodeSummary {
-    font-size: 1.1rem;
+    /* font-size: 1.0rem; */
     margin-top: 10px;
     margin-right: 5px;
+    position: absolute;
+    right: 0px;
+    top: 0px;
   }
     #clearEpisodeSummary i {
       float: left;
     }
   #episodeSummaryContent {
     height: 100%;
+    font-size: 1.1rem;
+    color: #410000;
   }
     #episodeSummaryContent .seasonTabs li a {
       padding: 5px;
@@ -890,7 +920,7 @@ i.glyphicon.glyphicon-check.isUnit {
       #episodeSummaryContent .tab-content .summaryEpisodes > h4 {
           background: #E6E6E6;
           padding: 5px;
-          font-size: 16px;
+          font-size: 1.3rem;
       }
         #episodeSummaryContent .tab-content .summaryEpisodes > h4 i {
           margin-right: 30px;
@@ -924,3 +954,160 @@ i.glyphicon.glyphicon-check.isUnit {
   .charListAction.unit {
       right: 37px;
   }
+
+
+h4#collapseLevel {
+    padding: 0 10px;
+    font-size: 1.1em;
+    color: #858585;
+    position: absolute;
+}
+
+
+ul[houses-added].active-drag:before,
+#unitPlotColumn.active-drag:before {
+    content: "Drop as unit";
+    color: #2980b9;
+    font-size: 1.9em;
+    position: absolute;
+    z-index: 100;
+    background: rgba(41, 128, 185, 0.15);
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    padding: 90% 10px;
+    text-align: center;
+    border: dashed 3px rgba(41, 128, 185, 1);
+    font-weight: bold;
+}
+
+#unitPlotColumn.active-drag:before {
+    padding: 35% 10px;
+    content: "Drop as code";
+}
+
+
+#headerRow .col-sm-12 {
+    height: 100%;
+    display: block;
+    position: relative;
+}
+
+
+svg.sigma-svg {
+    /* height: 100% !important; */
+}
+
+
+div#sigma {
+    /* height: 100% !important; */
+}
+
+
+div.tab-pane {
+    height: 100% !important;
+}
+
+
+#unitPlotColumn div[data-value="Units"] canvas.sigma-measurement-canvas {
+    height: 484px;
+    display: block;
+}
+
+
+#timelineBtnWrap button {
+    height: 20px;
+}
+
+
+.seasonTabs > li {
+    width: calc(100% / 6);
+}
+
+button.glyphicon {
+    width: 22px;
+    padding-left: 16px;
+    padding-right: 4px;
+    height: 20px;
+    font-size: 1.1rem;
+}
+
+button.glyphicon > span {
+    padding-right: 5px;
+}
+
+
+#timelineRow > div {
+    display: table;
+    width: 100%;
+}
+
+/* Medium devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+  span#timelineBtnWrap {
+    width: 55px;
+  }
+  button.glyphicon {
+    padding-left: 20px;
+    width: 57px;
+  }
+}
+
+
+img.charImage {
+    margin: 1px 0 3px 7px;
+}
+
+
+a#minimizedTitle {
+    color: #3F576B;
+}
+a#minimizedTitle:hover {
+  text-decoration: none;
+}
+
+
+.boxShadow {
+    box-shadow: 0px 0px 5px 1px #adacac;
+}
+
+
+.hide-labels g#sigma-group-labels {
+    display: none;
+}
+
+
+div#sigmaComparison {
+    position: absolute;
+    top: 25px;
+    z-index: 0;
+}
+
+div#sigma {
+    position: absolute;
+    top: 25px;
+    z-index: 10;
+}
+
+
+.hasComparison div#sigma #sigma-group-nodes circle, .hasComparison div#sigma #sigma-group-labels text {
+    opacity: 0.4;
+}
+
+
+.hasComparison div#sigma circle:hover,
+.hasComparison div#sigma .sigma-hover {
+    opacity: 1.0 !important;
+}
+
+
+.hasComparison #sigma g#sigma-group-labels {
+    display: none;
+}
+
+
+.hasComparison #sigma rect.sigma-hover-area {
+    stroke: #dedfe6;
+    fill: #eeeff7;
+}

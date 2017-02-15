@@ -1,21 +1,5 @@
 library(data.table)
 
-filename = "../../data/GoT-ENA-ego-heads-v3.csv"
-if(file.exists(filename)) {
-  GoT = read.csv(filename)
-  gotData = ENAdata$new(
-    GoT,
-    unitsBy = c("season", "episode", "character"),
-    units = NULL, conversationsBy = c("unique_id"),
-    codeNames = c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Tyrion','Bronn','Brienne','Tywin','Bran'),
-    unitsSelected = c("Jaime","Ned"),
-    windowSize = 0,
-    exact.match = T
-  );
-  gotSet = ENAset$new(gotData, sphereNorm = T)
-  gotSet$process();
-}
-
 extractName <- function(name) {
   last(strsplit(name, ".", fixed=T)[[1]])
 }
@@ -35,10 +19,11 @@ shinyServer(function(input, output, session) {
       seasons$included = T;
       seasons;
     }
-  }
+  };
+
   values <- reactiveValues(
     timelineFiltered = NULL,
-    codesSelected = c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Tyrion','Bronn','Brienne','Tywin','Bran'),
+    codesSelected = gsub("\\.","_", c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Tyrion','Bronn','Brienne','Tywin','Bran')),
     settings = list(
       "allowUpdate" = F,
       "conversationsBy" = c("season", "episode"),
@@ -56,23 +41,7 @@ shinyServer(function(input, output, session) {
         by=list(character=c("Ned")),
         uuid=uuid::UUIDgenerate(),
         from=NULL
-       )
-      # ,list(
-      #    by=list(character=c("Jaime"),season=c(2)),
-      #    collapseTo=c("character","season")
-      #  )
-      # ,list(
-      #   by=list(character=c("Jaime"),season=c()),
-      #   uuid=uuid::UUIDgenerate()
-      # )
-      #,list(
-      #  by=list(character=c("Jaime"),season=c(1:6),episode=c(1:10))
-      #)
-      #,
-      # list(
-      #   by=list(character="Jaime"),
-      #   collapseTo=c("character","season","episode")
-      # )
+      )
     )
   );
   values$nodeSize = 3;
@@ -83,19 +52,17 @@ shinyServer(function(input, output, session) {
   thisSet <- reactive({
     settings = settings();
     set = NULL;
-    #browser();
     setData = gotSet$get('enaData')$get('file');
-    #values$codesSelected = gotSet$get("enaData")$get("codeNames");
+    unitNames = gotSet$get('enaData')$get('unitsSelected');
 
-    unitNames = unitsSelected();
     values$unitNames.w.meta = lapply(unitNames, function(u) {
-      setData[setData$character==u,which(lapply(setData[which(setData$character==u),], function(x) { length(unique(x)) == 1 && all(is.character(as.vector(x)))} ) == T)][1,]
+      setData[setData$character==u,c("character", "house")][1,]
     });
+
     if(settings$allowUpdate == T) {
       print("Updating the set.");
       set = gotSet$update("data",
         unitsSelected=unitNames,
-        #codeNames=input$codesSelected
         codeNames=values$codesSelected
       );
       values$resetMainData = T;
@@ -112,29 +79,10 @@ shinyServer(function(input, output, session) {
   codesSelected <- reactive({
     values$codesSelected
   });
-  unitsSelected <- reactive({
-    #set = thisSet();
-    #setData = set$get("enaData")$get("file");
-    #unitNames = values$settings$unitsSelected; #c("Jaime") #, "Cersei"); #set$get("enaData")$get("unitsSelected");
-    #unitNames.w.meta = lapply(unitNames, function(u) {
-    #  setData[setData$character==u,which(lapply(setData[which(setData$character==u),], function(x) { length(unique(x)) == 1 && all(is.character(as.vector(x)))} ) == T)][1,]
-    #})
-
-    #unitNames.w.meta
-    #browser();
-    #file.dt = data.table(thisSet()$get('enaData')$get('file'));
-    #thisHouse = unique(file.dt[which(file.dt$character == as.vector(val[x]$character)),]$house);
-    unitNames = unique(unlist(Map(function(x) { x$by$character }, values$plottable)))
-    #lapply((unitNames), function(u) { u })
-    #@lapply((unitNames), function(u) { list(character = u) })
-    #browser()
-    unitNames
-  });
   housesListChars <- function() {
-    #set = thisSet();
-    setData = values$enaFile; #set$get("enaData")$get("file");
+    setData = values$enaFile;
     housesList.w.chars = lapply(housesList, function(x) {
-      x$characters = unique(setData[which(x$house==setData$house),]$character)
+      x$characters = as.list(unique(setData[which(x$house==setData$house),]$character))
       x
     });
     housesList.w.chars
@@ -150,10 +98,8 @@ shinyServer(function(input, output, session) {
     values$settings
   });
   collapseTo = reactive({
-    #browser()
     thisSet()$get('enaData')$get('unitsBy')
-
-  })
+  });
   getFullData <- function() {
     val = data.frame(thisSet()$data$centered$rotated);
 
@@ -167,34 +113,19 @@ shinyServer(function(input, output, session) {
   };
   collapseFullData <- function(data, collapse, sep=".", cols = c("x","y")) {
     d = data[, lapply(.SD, mean), by = c(collapse), .SDcols = cols];
-    #browser()
-    #d$rownames = apply(d[,collapse, with = F], 1, paste, collapse=sep)
     d$rownames = d[,{apply(.SD,1,function(x){paste(trimws(x),collapse=sep)})},with=T,.SDcols=collapse]
     setcolorder(d, c(cols, setdiff(colnames(d), cols)))
     d
   }
   dataRotated <- reactive({
-    if(
-      is.null(values$settings$collapseTo)
-    ) {
+    if(is.null(values$settings$collapseTo) ) {
       return(NULL)
     }
-    # val = data.frame(thisSet()$data$centered$rotated);
-    #
-    # filters = attr(thisSet()$get('enaData')$get(), "filters");
-    # valDT = data.table(val, filters);
-    # rownames(valDT) = rownames(val);
-    # colnames(valDT)[1] = "x";
-    # colnames(valDT)[2] = "y";
-    print("geting the dataRotated()");
-    valDT = getFullData()
-    #valDT = values$mainPlotData;
 
+    valDT = getFullData();
     valMeaned = collapseFullData(valDT, c(values$settings$collapseTo));
     rownames(valMeaned) = apply(valMeaned[,values$settings$collapseTo, with = F], 1, paste, collapse=".")
-
     df = data.table(valMeaned[,c("x","y"),with=F],valMeaned[,c(colnames(valMeaned)[!colnames(valMeaned) %in% c('x','y')]),with=F]);
-
     rownames(df) = rownames(valMeaned);
     df$rownames = rownames(valMeaned);
 
@@ -228,67 +159,26 @@ shinyServer(function(input, output, session) {
       list(size=0, type=NA)
     }
   };
-  updatePlot <- function(selectionObj, selectionObj2 = NULL) {
+  updatePlot <- function(selectionObj, selectionObj2 = NULL, color = "#5399c7") {
     set = thisSet();
-    selection = selectionObj$id;
 
-    if(!is.character(selection)) {
-      selectionName = rownames(selection)[1];
-    } else {
-      selectionName = selection;
-    }
-    unitSelected_name = selectionObj$id; # FIXME extractName(selectionName);
+    unitSelected_name = selectionObj$label;
     useData = set$data$normed;
-    #dR = dataRotated();
     dR = getPlottableData();
     useData2 = data.frame(useData, attr(set$get('enaData')$get(), "filters"))
     useData2DT = data.table(useData2);
     useData2DT$handle = useData2DT[,{ apply(.SD,1,function(x){paste(trimws(x),collapse=".")})},with=T,.SDcols=unlist(selectionObj$by)]
-    browser(expr=debug);
 
-    if(all(dR$rownames != selectionObj$id)) {
+    if(all(dR$rownames != selectionObj$label)) {
       print("Network selection not found in current plot.")
       return(NULL)
     }
 
-    #NOT SURE IF NEEDED (up to NEW VERSION)
-      dRfilt = dR[, .SD[rownames == selectionObj$id], by="rownames", .SDcols = c(values$settings$collapseTo), with=T]
-      unitRow_allDF = useData2DT[dRfilt, colSums(.SD[, sapply(.SD, is.numeric), with=F]) ,on=values$settings$collapseTo];
-      unitRow_all = unitRow_allDF[!names(unitRow_allDF) %in% values$settings$grouping]
-
-      unitRow_all2 = NULL;
-      unitSelected_name2 = NULL;
-
-      unitRow = unitRow_all[unitRow_all != 0];
-
-      unitRow_colors = unitRow;
-      unitRow_colors[] = "#eaa647";
-      if(!is.null(unitRow_all2)) {
-        unitRow_colors[unitRow_all  > unitRow_all2] = "#eaa647"; # TODO -> make config'd
-        unitRow_colors[unitRow_all  < unitRow_all2] = "#5399c7"; # TODO -> make config'd
-      }
-      unitRow[which(unitRow < 0, arr.ind=TRUE)] = unitRow[which(unitRow < 0, arr.ind=TRUE)] * -1;
-
-      unitRow_nodes = unlist(lapply(strsplit( names(unitRow), "...", fixed=T ), function(x) { return(x[x != selectionObj$character ]) }));
-      # if(!is.null(unitSelected_name2)) {
-      #   unitRow_nodes = c(unitRow_nodes[unitRow_nodes != unitSelected_name2], unitSelected_name2)
-      # }
-      #browser()
-      unitMatrix = matrix(0, ncol=nrow(set$nodes$positions$scaled$positions), nrow=nrow(set$nodes$positions$scaled$positions));
-      rownames(unitMatrix) = rownames(set$nodes$positions$scaled$positions);
-      colnames(unitMatrix) = rownames(unitMatrix);
-      unitMatrix[c(selectionObj$character),unitRow_nodes] = unitRow;
-      unitMatrix[unitRow_nodes, c(selectionObj$character)] = unitRow;
-      net3 = NULL;#network(unitMatrix, directed=F);
-    #END: NOT SURE IF NEEDED (up to NEW VERSION)
-
-
     ### NEW VERSION
-    uns = c(selectionObj$id, selectionObj2$id);
-    filters = attr(thisSet()$get('enaData')$get(), "filters");
+    uns = c(selectionObj$label, selectionObj2$label);
     sdcols=colnames(useData2DT)[sapply(useData2DT, is.numeric)];
     minDT = useData2DT[handle %in% uns,lapply(.SD,sum,na.rm=T),by=c(values$settings$collapseTo), .SDcols=sdcols];
-    minDTc =minDT[,apply(.SD,2,makeCompNode, types=c("#eaa647","#5399c7")),.SDcols=sdcols, with = T];
+    minDTc =minDT[,apply(.SD,2,makeCompNode, types=c(color)),.SDcols=sdcols, with = T];
     minDTsizes = minDTc[1,!is.na(minDTc[2,]), with=F];
     minDTcolors = minDTc[2,!is.na(minDTc[2,]), with=F];
     minDTsizes = minDTsizes[,which(!names(minDTcolors) %in% values$settings$grouping),with=F];
@@ -298,12 +188,6 @@ shinyServer(function(input, output, session) {
     minDTnodes = minDTnodes[,{ cols=strsplit(colnames(.SD), "...", fixed=T); m=as.matrix(.SD[,,with=F]); lapply(1:length(cols),function(x){ c(m[1,x],m[2,x],cols[[x]]) }); },];
 
     return(list(
-      "name" = unitSelected_name,
-      "net" = net3, "label" = rownames(set$nodes$positions$scaled$positions),
-      "edgeSize" = minDTsizes, "edgeColors" = minDTcolors,
-      "matrix" = unitMatrix, "nodes" = unitRow_nodes,
-
-      #NEEDED FOR SURE
       "mode" = set$nodes$positions$scaled$positions,
       "fullNodes" = minDTnodes
     ));
@@ -332,49 +216,15 @@ shinyServer(function(input, output, session) {
       label=paste(x[3,],x[4,],sep=".");
       list(
         label=label, id=label,
-        size=as.numeric(x[1,][[1]])*log(input$edgeZoom)+0.1,
+        size=abs(as.numeric(x[1,][[1]])*log(input$edgeZoom)+0.1),
         color=as.character(x[2,]),
         source=x[3,], target=x[4,],
         type="animate"
       );
     }));
+    r.list2$edges = r.list2$edges[,sort.list(as.vector(unlist(r.list2$edges[3,,with=T])), decreasing=T), with=F]
     r.list2
   }
-  createSigmaNet = function(val) {
-    val$mode = as.data.frame(val$mode);
-    val$mode[,1] = val$mode[,1] * 10; #Expand
-    val$mode[,2] = val$mode[,2] * -10; #Expand and rotate
-    val$mode[,3] = rownames(val$mode);
-    val$mode[,4] = rownames(val$mode);
-    colnames(val$mode) <- c("x","y","id","label");
-
-    r.list2 = list();
-    r.list2.nodes = lapply(1:nrow(val$mode), function(x) {
-      list(
-        label = rownames(val$mode)[x],
-        id = rownames(val$mode)[x],
-        x = val$mode[x,1],
-        y = val$mode[x,2],
-        size = 0.1
-      );
-    });
-    r.list2$nodes = r.list2.nodes;
-
-    connections = val$matrix[val$name, val$nodes];
-    r.list2.edges = lapply(1:length(connections), function(x) {
-      thisName = paste(val$name, names(connections)[x], sep=".");
-      list(
-        label = thisName,
-        id = thisName,
-        source = val$name, target = names(connections)[x],
-        size = connections[[x]]*input$edgeZoom,
-        color = val$edgeColors[[x]],
-        type = "animate"
-      );
-    });
-
-    r.list2
-  };
 
   mainPlotData = reactive({
     if(is.null(values$mainPlotData)) {
@@ -398,13 +248,13 @@ shinyServer(function(input, output, session) {
       dt.collapsed = collapseFullData(dt.filtered, names(x$by),cols=c("x","y"))
       dt.collapsed$uuid = x$uuid
       dt.collapsed
-    }), fill=T)
+    }), fill=T);
 
-        #Ensure all columns remain
+    #Ensure all columns remain
     rbindlist(list(dtAll, read.table(text="",col.names=c(colnames(dt),"uuid"))), fill=T)
   })
   sigmaPlot = reactive({
-    mainPlotData = getPlottableData(); #mainPlotData();
+    mainPlotData = getPlottableData();
     if(is.null(values$mainPlotData)) {
       print("No data found for main plot.")
       return(NULL);
@@ -420,10 +270,10 @@ shinyServer(function(input, output, session) {
     r.list2 = list(
       nodes = list(),
       edges = list(),
-      axisBounds = rep(max(allData[,.(x,y)])*10,2),  #as.numeric(apply(allData[,.(x,y)], 2, max) * 10), #apply(abs(set$nodes$positions$scaled$positions), 2, max),
+      axisBounds = rep(max(allData[,.(x,y)])*10,2),
       percents = percents[1:2]
     );
-    #browser()
+
     f = thisSet()$get('enaData')$get('file');
     r.list2.nodes = lapply(1:nrow(mainPlotData), function(x) {
       nd = rowToNode(mainPlotData, x, values$settings$collapseTo, type="node", size = 1, file = f);
@@ -431,25 +281,19 @@ shinyServer(function(input, output, session) {
     })
     r.list2$nodes = r.list2.nodes;
 
-    #meansBy = c(head(values$settings$collapseTo, length(values$settings$collapseTo)-1));
     rjson::toJSON(r.list2);
   });
   rowToNode = function(val, x, by, type="node", size=1, file =NULL) {
     file.dt = data.table(file)
-    #f = thisSet()$get('enaData')$get('file')
-    #thisHouse = as.character(unique(file[file$character == val[x]$character,]$house));
     thisHouse = unique(file.dt[which(file.dt$character == as.vector(val[x]$character)),]$house);
-    #browser();
     list(
       label = val[x]$rownames,
-      id = val[x]$rownames,
+      id = paste("unit",val[x]$rownames, sep="."),
       character = val[x]$character, # FIXME
       x = val$x[x],
       y = val$y[x],
       size = 1 / length(by),
       type = type,
-      #by = last(by),
-      #expandTo = values$settings$grouping[which(values$settings$grouping == last(by)) + 1],
       by = values$settings$grouping[!is.na(val[x,values$settings$grouping, with=F])],
       expandTo = head(values$settings$grouping[is.na(val[x,values$settings$grouping, with=F])], 1),
       uuid = val[x]$uuid,
@@ -473,7 +317,7 @@ shinyServer(function(input, output, session) {
   });
   sigmaNet2 = reactive({
     if(!is.null(input$unitClicked2)) {
-      val = updatePlot(input$unitClicked2);
+      val = updatePlot(input$unitClicked2, color = "#eaa647");
       values$network2 = val;
       valToPlot = createSigmaNet2(val);
       valToPlot$nodes = lapply(valToPlot$nodes, function(n) { n$color = "#4d4d4d"; n });
@@ -484,22 +328,21 @@ shinyServer(function(input, output, session) {
     values$sigmaNet2
   });
   sigmaNetComp = reactive({
-    print("Getting comparison.");
     if(
       !is.null(input$unitClicked1) &&
       !is.null(input$unitClicked2)
     ) {
-      #val = updatePlot(input$unitClicked1, input$unitClicked2);
       val = list(
         mode = values$network1$mode,
-        matrix = data.table::copy(values$network1$matrix),
         name = paste(values$network1$name, values$network2$name, sep="."),
         nodes = unique(c(values$network1$nodes, values$network2$nodes)),
         edgeColors = NULL
       )
-      val$matrix[] = 0;
-      val$matrix = data.table(val$matrix, keep.rownames = T)
-      combs = rbindlist(list(values$network1$edgeSize, values$network2$edgeSize), fill=T);
+      eS1 = data.table::copy(values$network1$fullNodes[1,]);
+      eS2 = data.table::copy(values$network2$fullNodes[1,]);
+      colnames(eS1) = apply(values$network1$fullNodes[3:4], 2, paste, collapse="...");
+      colnames(eS2) = apply(values$network2$fullNodes[3:4], 2, paste, collapse="...");
+      combs = rbindlist(list(eS1, eS2), fill=T);
       is.na(combs) <- combs == "NULL";
       combs[is.na(combs)] = 0;
       combs = combs[, lapply(.SD, function(x) { x[[1]] - x[[2]]; }), .SDcols=names(combs)];
@@ -510,14 +353,15 @@ shinyServer(function(input, output, session) {
       val$fullNodes = rbindlist(list(combs,val$edgeColors, blankRowDT, blankRowDT), use.names=T);
       for(xN in names(combs)) {
         x = unlist(strsplit(xN, "...", fixed = T));
-        val$matrix[which(val$matrix$rn==x[2]), x[1]] = combs[,xN,with=F]
-        val$matrix[which(val$matrix$rn==x[1]), x[2]] = combs[,xN,with=F]
-        val$fullNodes[3:4,xN] = x;
+        val$fullNodes[3:4,xN] = (x);
       }
       valToPlot = createSigmaNet2(val);
+
       valToPlot$nodes = lapply(valToPlot$nodes, function(n) { n$color = "#4d4d4d"; n });
       values$sigmaNetComp = rjson::toJSON(valToPlot);
-    }else {
+    } else if (!is.null(input$unitClicked1)) {
+      values$sigmaNetComp = values$sigmaNet1
+    } else {
       values$sigmaNetComp = list(nodes = list(), edges = list())
     }
     values$sigmaNetComp
@@ -531,7 +375,9 @@ shinyServer(function(input, output, session) {
         sigmaPlot(), name="mainPlot",
         drawEdges = T, drawNodes = T,
         clickNode=htmlwidgets::JS("ENA.graphs.unit.events.clickNode"),
-        doubleClickNode=htmlwidgets::JS("ENA.graphs.unit.events.doubleClickNode")
+        doubleClickNode=htmlwidgets::JS("ENA.graphs.unit.events.doubleClickNode"),
+        overNode=htmlwidgets::JS("ENA.graphs.unit.events.overNode"),
+        outNode=htmlwidgets::JS("ENA.graphs.unit.events.outNode")
       )
     );
     output$sigmaNet1 <- renderSigma(
@@ -548,14 +394,11 @@ shinyServer(function(input, output, session) {
   #####
 
   output$unitClicked1 <- renderText({
-    input$unitClicked1$id
+    input$unitClicked1$label
   });
   output$unitClicked2 <- renderText({
-    input$unitClicked2$id
+    input$unitClicked2$label
   });
-  # output$unitsClicked <- renderText({
-  #   input$unitsClicked;
-  # });
   output$collapseToText <- renderText({
     collapseTo()
   })
@@ -574,8 +417,11 @@ shinyServer(function(input, output, session) {
     )
   });
   observe({
-    session$sendCustomMessage("housesJSON", rjson::toJSON(housesListChars())); #housesListJSON);
-  })
+    session$sendCustomMessage("housesJSON", rjson::toJSON(housesListChars()));
+  });
+  observe({
+    session$sendCustomMessage("comparisonChanged", values$sigmaNetComp);
+  });
   observe({
     session$sendCustomMessage("collapseTo", jsonlite::toJSON(values$settings$collapseTo));
 
@@ -591,6 +437,7 @@ shinyServer(function(input, output, session) {
     values$mainPlotData = dataRotated();
   });
   observeEvent(input$codesSelected, {
+    browser();
     values$codesSelected=input$codesSelected
     session$sendCustomMessage("codesSelected", rjson::toJSON(codesSelected()));
   });
@@ -598,14 +445,19 @@ shinyServer(function(input, output, session) {
     values$settings$unitsSelected = input$unitsSelected;
   });
   observeEvent(input$unitAdded, {
-    newLen = length(values$plottable) + 1;
-    values$plottable[[newLen]] = list(
-      by=list(
-        character=input$unitAdded$character
-      ),
-      uuid=uuid::UUIDgenerate(),
-      from=NULL
-    )
+    newUnits = rjson::fromJSON(input$unitAdded);
+    lapply(newUnits, function(x) {
+      newLen = length(values$plottable) + 1;
+
+      values$plottable[[newLen]] = list(
+        by=list(
+          character=x$character
+        ),
+        uuid=uuid::UUIDgenerate(),
+        from=NULL
+      )
+    });
+    NULL
   })
   observeEvent(input$collapseTo, {
     values$settings$collapseTo = jsonlite::fromJSON(input$collapseTo);
@@ -621,13 +473,11 @@ shinyServer(function(input, output, session) {
     unitsList = list();
     for(i in 1:nrow(upUnits)) {
       unitsList[[i]] = data.frame(character=upUnits[i,1], house=upUnits[i,2]);
-      #browser();
       if(!any(values$codesSelected == upUnits[i,1])) {
         values$codesSelected[length(values$codesSelected)+1] = upUnits[i,1]
       }
     }
     session$sendCustomMessage("unitsSelected", rjson::toJSON(unitsList));
-    #session$sendCustomMessage("unitsSelected", rjson::toJSON(units2));
   });
   observeEvent(input$updateCodes, {
     upCodes = jsonlite::fromJSON(input$updateCodes);
@@ -647,12 +497,12 @@ shinyServer(function(input, output, session) {
     if(length(toRemove) > 0) {
       if(length(labelParts) > 1) {
         if(any(values$plottable[[toRemove]]$by$season == labelParts[2])) {
-          values$plottable[[toRemove]]$by$season = values$plottable[[toRemove]]$by$season[values$plottable[[toRemove]]$by$season != labelParts[2]]
+          values$plottable[[toRemove]]$by$season = as.integer(values$plottable[[toRemove]]$by$season[values$plottable[[toRemove]]$by$season != labelParts[2]])
           if(length(values$plottable[[toRemove]]$by$season) == 0) {
             values$plottable[[toRemove]] <- NULL;
           }
         } else {
-          values$plottable[[toRemove]]$by$season = c(values$plottable[[toRemove]]$by$season, labelParts[2]);
+          values$plottable[[toRemove]]$by$season = as.integer(c(values$plottable[[toRemove]]$by$season, labelParts[2]));
         }
       } else {
         values$plottable[[toRemove]] <- NULL;
@@ -662,8 +512,8 @@ shinyServer(function(input, output, session) {
       newListItem = list(
         by=list(
           character=itJ$character,
-          season=labelParts[2],
-          episode=labelParts[3]
+          season=as.integer(labelParts[2]),
+          episode=as.integer(labelParts[3])
         ),
         uuid=uuid::UUIDgenerate(),
         from=itJ$uuid
@@ -683,6 +533,12 @@ shinyServer(function(input, output, session) {
         }
       }
 
+      if(any(names(aaV) == "season")) {
+        aaV$season = as.integer(aaV$season)
+      }
+      if(any(names(aaV) == "episode")) {
+        aaV$episode = as.integer(aaV$episode)
+      }
       newListItem$by = aaV;
       values$plottable[[newLen]] = newListItem
     }

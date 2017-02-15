@@ -6,6 +6,7 @@
   });
 
   var ENA = w.ENA = {
+    app: undefined,
     collapseTo: undefined,
     graphs: {
       unit: {
@@ -13,6 +14,11 @@
         events: { }
       },
       network: {
+        plots: {
+          "main": {},
+          "secondary": {},
+          "comparison": {}
+        },
         events: { }
       }
     }
@@ -27,12 +33,13 @@
     let now = Date.now();
     if (clicks === 0) {
       clickTimeout = setTimeout(function() {
-        var selected = clickData.data.node.id,
+        var selected = clickData.data.node.label,
           selectedLen = ENA.graphs.unit.selections.length;
 
-        if (selected && selectedLen < 2 && (!ENA.graphs.unit.selections[0] || ENA.graphs.unit.selections[0].id != selected)) {
+        if (selected && selectedLen < 2 && (!ENA.graphs.unit.selections[0] || ENA.graphs.unit.selections[0].label != selected)) {
           Shiny.onInputChange("unitClicked"+(selectedLen+1), clickData.data.node); //selected);
           ENA.graphs.unit.selections.push(clickData.data.node); //selected);
+          ENA.app.scope().$broadcast("unitClicked", ENA.graphs.unit.selections);
         }
         Shiny.onInputChange("unitsClicked", ENA.graphs.unit.selections);
 
@@ -49,11 +56,30 @@
       clickedAt = 0;
     }
   };
+  ENA.graphs.unit.events["overNode"] = function(hoveredData) {
+    console.log("Hovered node: ", hoveredData);
+    var
+      selected = hoveredData.data.node.label,
+      selectedLen = ENA.graphs.unit.selections.length
+    ;
+    if(selectedLen===1 && !ENA.graphs.unit.selections.filter(s=>s.label==selected).length) {
+      Shiny.onInputChange("unitClicked2", hoveredData.data.node); //selected);
+    }
+  };
+  ENA.graphs.unit.events["outNode"] = function(hoveredData) {
+    var
+      selected = hoveredData.data.node.label,
+      selectedLen = ENA.graphs.unit.selections.length
+    ;
+    if(selectedLen===1) {
+      Shiny.onInputChange("unitClicked2", null); //selected);
+    }
+  };
   ENA.graphs.network.events["clickEdge"] = function(edge) {
     Shiny.onInputChange("edgeClicked", { camera: this.id, edge: edge, noce: Math.random() });
   };
   ENA.graphs.unit.events["doubleClickNode"] = function(clickData) {
-    if (!ENA.collapseTo.filter(c => c === clickData.data.node.expandTo).length) {
+    if(clickData.data.node.expandTo.length > 0) {
       ENA.collapseTo.push(clickData.data.node.expandTo);
       Shiny.onInputChange("toggleNode", JSON.stringify(clickData.data.node));
     }
@@ -63,12 +89,18 @@
   ENAapp
     .run(["Shiny","$timeout", function(Shiny, $timeout) {
       $timeout(function(){
+        ENA.app = angular.element("[ng-app='ENAapp']"),
+
         Shiny.onInputChange("updateDataRotated", true);
       });
     }])
+
     /** Factories **/
     .factory("Shiny", [ "$timeout", function($timeout) {
       return(window.Shiny);
+    }])
+    .factory("ENA", [ "$timeout", function($timeout) {
+      return(window.ENA);
     }])
 
     /** Filters **/
@@ -82,6 +114,12 @@
     }])
     .filter("Empty", [function() {
       return _.isEmpty;
+    }])
+    .filter("isPlotted", [ function() {
+      return function(unit) {
+        console.log(unit, ENA.graphs.unit.selections.map(s=>s.label))
+        false
+      }
     }])
 
     /** Services **/
@@ -236,25 +274,52 @@
             item.house.selected = item.house.selected || [];
             if (item.type === "house" && !haveHouse) {
               scope.housesAdded[item.house.house] = item.house;
-            } else if (item.type === "character") {
-              if (!haveHouse) scope.housesAdded[item.house.house] = item.house;
+
+              var newUnits = item.house.characters.map(c=>{
+                newUnit = { character: c, code: true, unit: true, house: item.house.house  }
+                scope.$parent.unitsSelected.push(newUnit);
+                return newUnit;
+              });
+
+              scope.showCharacters = item.house.house;
+              Shiny.onInputChange("unitsSelected", scope.$parent.unitsSelected.map(u=>{return u.character}));
+              Shiny.onInputChange("unitAdded", JSON.stringify(newUnits));
+            } else if (
+              item.type === "character"
+            ) {
+              if(!haveHouse) scope.housesAdded[item.house.house] = item.house;
               var newUnit = {'character': item.character, 'house': item.house.house};
               //item.house.selected.push(newUnit);
-              scope.housesAdded[item.house.house].selected.push(newUnit);
+              //scope.housesAdded[item.house.house].selected.push(newUnit);
               scope.showCharacters = item.house.house;
 
               scope.$parent.unitsSelected.push(newUnit)
               Shiny.onInputChange("unitsSelected", scope.$parent.unitsSelected.map(u=>{return u.character}));
-              Shiny.onInputChange("unitAdded", item);
+              Shiny.onInputChange("unitAdded",  JSON.stringify([item]));
             }
+
+            /*
+            scope.housesAdded = scope.$parent.housesJSON
+              .filter(h=>{ return (h.selected && h.selected.length>0) })
+              .map(h=>{return {
+                house:h.selected[0].house,
+                characters: h.selected.map (c=>{return c.character})
+               }
+              })
+            */
           });
           scope.$on("units-loaded", function(event, units) {
-            scope.housesAdded = {};
+            Array.from(new Set(units.map(u=>{return u.house})))
+            scope.housesAdded = Array.from(new Set(units.map(u=>{return u.house}))).map(h=>{
+              var hs = scope.$parent.housesJSON.filter(hj=>{return hj.house === h})[0];
+              hs.selected = [];
+              return hs;
+            });
+
             units.forEach(u=>{
               scope.housesAdded[u.house] = scope.housesAdded[u.house] || scope.$parent.housesJSON.filter(h=>{return( h.house === u.house );})[0];
-              scope.housesAdded[u.house].selected = scope.housesAdded[u.house].selected || [];
+              //scope.housesAdded[u.house].selected = []; // scope.housesAdded[u.house].selected || [];
               scope.housesAdded[u.house].selected.push(u);
-              scope.housesAdded[u.house].selected = Array.from(new Set(scope.housesAdded[u.house].selected))
             });
           });
         }
@@ -315,8 +380,16 @@
           scope.toggleUnitSelected = function(char, use) {
             scope.$emit("toggle-unit", char, !use, this.$parent.house);
           }
-          scope.toggleCodeSelected = function(char) {
-            scope.$emit("toggle-code", char);
+          scope.toggleCodeSelected = function(char, use) {
+            scope.$emit("toggle-code", char, !use, this.$parent.house);
+          }
+          scope.dragHouseStarted = function() {
+            console.log("Draggin' it")
+            scope.$emit("item-drag", this);
+          }
+          scope.dragHouseEnded = function() {
+            console.log("Done Draggin' it")
+            scope.$emit("item-dragged", this);
           }
         }
       }
@@ -345,7 +418,7 @@
     }])
 
     /** Controllers **/
-    .controller("ENACtrl", ["$scope", "$timeout", "$q", function($scope, $timeout, $q) {
+    .controller("ENACtrl", ["$scope", "$timeout", "$q", "ENA", function($scope, $timeout, $q, ENA) {
       const LS_NAME = "ENA_SETTINGS";
       $scope.timeline = null;
       $scope.timeline2 = null;
@@ -358,15 +431,57 @@
           $scope.opts = settings;
         }
       });
+      $scope.data = {
+        units: true,
+        labels: true
+      };
+      $scope.plots = {
+        comparison: undefined
+      }
       $scope.settings = {
         groups: [ "Season", "Episode" ]
       };
       $scope.housesAdded = [];
       $scope.unitsSelected = undefined;
+      $scope.unitsPlotted = [];
       $scope.activeHouse = undefined;
+      $scope.activeDrag = false;
 
+      $scope.$on("unitClicked", function(ev, selections) {
+        console.log("EVENT UNIT CLICK: ", selections);
+        $scope.unitsPlotted = selections;
+        var text = "";
+        var selNames = selections.map(s=>("[data-node-id='unit."+s.label+"']"))
+        selNames.forEach((n,i)=>{
+          text+=("\n"+n+" {\n\topacity: 1.0 !important;\n\tfill: " + (["blue", "green"])[i] + "\n}\n")
+        });
+        console.log("TEXT: ", text);
+        angular.element("#unitStyles").text(text);
+      });
+      $scope.$on("item-drag", function(ev, item) {
+        console.info("Drag event")
+        $scope.dragHouseStarted();
+      });
+      $scope.$on("item-dragged", function(ev, item) {
+        console.info("Drag event")
+        $scope.dragHouseEnded();
+      });
+      $scope.dragHouseEnded = function() {
+        console.info("Ended the drag")
+        $scope.activeDrag = false;
+      }
+      $scope.dragHouseStarted = function() {
+        console.info("Started to drag")
+        $scope.activeDrag = true;
+      }
       $scope.dragHouseComplete = function() {
-        console.info("Done dragging.");
+        $scope.activeDrag = false;
+      };
+      $scope.dropCodeCallback = function(index, item, external, type) {
+        if(item.type==="character") {
+          $scope.codesSelected.push(item.character)
+        Shiny.onInputChange("updateCodes", JSON.stringify($scope.codesSelected));
+        }
       };
       $scope.dropCallback = function(index, item, external, type) {
         $scope.$broadcast("house-added", item);
@@ -394,11 +509,16 @@
         }
         Shiny.onInputChange("updateUnits", JSON.stringify(newUnits));
       });
-      $scope.$on("toggle-code", function(event, char) {
-        var newCodes = $scope.codesSelected.filter(u=>u!==char);
+      $scope.$on("toggle-code", function(event, char, use) {
+        var newCodes = [];
+        if(use === true) {
+          $scope.codesSelected.push(char);
+          newCodes = $scope.codesSelected
+        } else {
+          newCodes = $scope.codesSelected.filter(u=>{return(u!==char)})
+        }
         Shiny.onInputChange("updateCodes", JSON.stringify(newCodes));
       });
-
       function saveSettings() {
         localStorage.setItem(LS_NAME, JSON.stringify($scope.opts));
       }
@@ -447,6 +567,13 @@
           $scope.$apply(function() {
             $scope.excerpts = ex;
             $scope.$broadcast("all-excerpts", ex);
+          });
+        });
+        Shiny.addCustomMessageHandler("comparisonChanged", function(comp) {
+          $scope.$apply(function() {
+            var compJSON = (typeof comp === "object") ? comp : JSON.parse(comp);
+            $scope.plots["comparison"] = ENA.graphs.network.plots["comparison"] = compJSON;
+            $scope.$broadcast("comparison-changed", compJSON);
           });
         });
         Shiny.addCustomMessageHandler("unitsClicked", function(a) {
@@ -533,7 +660,6 @@
     }])
     .controller("NetworkPlotsCtrl", ["$scope", function($scope){
       $scope.clearPlot = function(wh) {
-        console.info("Clearing: ", wh);
         ENA.graphs.unit.selections.splice(wh-1,1)
         Shiny.onInputChange("unitClicked"+wh, null);
 
@@ -541,13 +667,18 @@
           Shiny.onInputChange("unitClicked"+2, null)
           Shiny.onInputChange("unitClicked"+1, ENA.graphs.unit.selections[0])
         }
+
+        $scope.$emit("unitClicked", ENA.graphs.unit.selections);
+      };
+      $scope.switchPlots = function() {
+        ENA.graphs.unit.selections = ENA.graphs.unit.selections.reverse();
+        [1,2].forEach(n=>{
+          Shiny.onInputChange("unitClicked"+n, ENA.graphs.unit.selections[n-1])
+        })
       };
     }])
     .controller("PlotOptionsCtrl", ["$scope", function($scope){
-      $scope.data = {
-        units: true,
-        labels: true
-      };
+
     }])
     .controller("EpisodeSummaryCtrl", ["$scope", "$q", function($scope, $q) {
       $scope.position = {};
