@@ -324,10 +324,10 @@
     }])
     .directive("houseList", [function(){
       return {
-        restrict: 'EA',
-        scope: {},
-        templateUrl: "templates/houseList.html",
-        link: function(scope, element, attrs) {
+        "restrict": 'EA',
+        "scope": {},
+        "templateUrl": "templates/houseList.html",
+        "link": function(scope, element, attrs) {
           scope.houseList = [];
           scope.unitsKeyed = {};
           scope.$on("houses-changed", function(event, houses) {

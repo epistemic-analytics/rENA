@@ -26,7 +26,7 @@ shinyServer(function(input, output, session) {
     unitsSelected = c("Jaime", "Ned"),
     codesSelected = gsub("\\.","_", c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Tyrion','Tywin','Bran')),
     settings = list(
-      "allowUpdate" = T,
+      "allowUpdate" = F,
       "conversationsBy" = c("season", "episode"),
       "grouping" = c("character","season", "episode"),
       "collapseTo" = c("character")

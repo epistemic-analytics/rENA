@@ -898,6 +898,7 @@ i.glyphicon.glyphicon-check.isUnit {
     #episodeSummaryContent .seasonTabs li a {
       padding: 5px;
       cursor: pointer;
+      text-align: center;
     }
     #episodeSummaryContent .tab-content {
       height: calc(100% - 78px);
@@ -1001,16 +1002,9 @@ svg.sigma-svg {
     /* height: 100% !important; */
 }
 
-
 div#sigma {
     /* height: 100% !important; */
 }
-
-
-div.tab-pane {
-    height: 100% !important;
-}
-
 
 #unitPlotColumn div[data-value="Units"] canvas.sigma-measurement-canvas {
     height: 484px;
@@ -1079,6 +1073,9 @@ a#minimizedTitle:hover {
     display: none;
 }
 
+#centerColumn .tab-pane {
+  height: 100%;
+}
 
 div#sigmaComparison {
     position: absolute;
