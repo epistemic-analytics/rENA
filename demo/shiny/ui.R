@@ -21,7 +21,7 @@ shinyUI(fluidPage(
     HTML('<filter id="blurMe">
             <feColorMatrix in="SourceGraphic" type="saturate" values="0.1" />
          </filter>'),
-    tags$div("ng-controller" = "ENACtrl", #"class" = "container-fluid",
+    tags$div("ng-controller" = "ENACtrl",
              "ng-class" = "{'showCharacters': opts.showCharacters, 'showEpisodeSummary': opts.showEpisodeSummary}",
       tags$style(id="unitStyles",type="text/css"),
       fluidRow(id="headerRow"
@@ -30,21 +30,36 @@ shinyUI(fluidPage(
         h4("Timeline"),
         div(
           HTML("<ena-timeline timeline='timeline'></ena-timeline>"),
-          tags$span(id="timelineBtnWrap",
-            tags$button(
-              class="glyphicon glyphicon-play pull-left",
-              tags$span("Play", class="hidden-sm hidden-xs"),
-              "ng-click" = "play($event)", "ng-if" = "!opened.playing"),
-            tags$button(class="glyphicon glyphicon-stop pull-left",
-              tags$span("Stop", class="hidden-sm hidden-xs"),
-              "ng-click" = "stopPlay($event)", "ng-if" = "opened.playing"
-            ),
-            tags$button(class="glyphicon glyphicon-resize-horizontal pull-left",
-              tags$span("Split", class="hidden-sm hidden-xs"),
-              "ng-click" = "split($event)", "ng-if" = "!opened.split"),
-            tags$button(class="glyphicon glyphicon-ban-circle pull-left",
-              tags$span("Clear", class="hidden-sm hidden-xs"),
-              "ng-click" = "clearSplit($event)", "ng-if" = "opened.split")
+          withTags(
+            span(id="timelineBtnWrap",
+              span(
+                button('class'="glyphicon glyphicon-play pull-left", 'title'="Play Seasons",
+                  'ng-click'="play($event)", 'ng-if'="!opened.playing",
+                  HTML("<md-tooltip md-direction='left'>Play Seasons</md-tooltip>"),
+                  tags$span("Seasons", class="hidden-sm hidden-xs")
+                ),
+                button('class'="glyphicon glyphicon-play pull-left", 'title'="Play Episodes",
+                  'ng-click'="play($event)", 'ng-if'="!opened.playing",
+                  HTML("<md-tooltip md-direction='left'>Play Episodes</md-tooltip>"),
+                  tags$span("Episodes", class="hidden-sm hidden-xs")
+                )
+              ),
+              button('class'="glyphicon glyphicon-stop pull-left",
+                'ng-click'="stopPlay($event)",'ng-if'="opened.playing",
+                HTML("<md-tooltip md-direction='left'>Stop Playing</md-tooltip>"),
+                tags$span("Stop", class="hidden-sm hidden-xs")
+              ),
+              button('class'="glyphicon glyphicon-resize-horizontal pull-left",
+                'ng-click'="split($event)", 'ng-if'="!opened.split",
+                HTML("<md-tooltip md-direction='left'>Split Timeline</md-tooltip>"),
+                tags$span("Split Timeline", class="hidden-sm hidden-xs")
+              ),
+              button('class'="glyphicon glyphicon-ban-circle pull-left",
+                'ng-click'="clearSplit($event)",'ng-if'="opened.split",
+                HTML("<md-tooltip md-direction='left'>Clear Timeline</md-tooltip>"),
+                tags$span("Clear Timeline", class="hidden-sm hidden-xs")
+              )
+            )
           )
         )
       ),
