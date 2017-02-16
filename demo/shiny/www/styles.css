@@ -937,7 +937,9 @@ i.glyphicon.glyphicon-check.isUnit {
           /*color: blue;*/
           font-weight: bold;
         }
-
+          #episodeSummaryContent .tab-content .excerpt .highlightedWord:hover {
+            text-decoration: underline;
+          }
 .charListAction {
     position: absolute;
     background-color: #dedede;
@@ -1105,6 +1107,10 @@ div#sigma {
     display: none;
 }
 
+svg.sigma-svg .sigma-label.hovered {
+  font-weight: bold;
+  font-size: 12px;
+}
 
 .hasComparison #sigma rect.sigma-hover-area {
     stroke: #dedfe6;

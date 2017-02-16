@@ -57,12 +57,11 @@
     }
   };
   ENA.graphs.unit.events["overNode"] = function(hoveredData) {
-    var
-      selected = hoveredData.data.node.label,
-      selectedLen = ENA.graphs.unit.selections.length
-    ;
-    if(selectedLen===1 && !ENA.graphs.unit.selections.filter(s=>s.label==selected).length) {
-      Shiny.onInputChange("unitClicked2", hoveredData.data.node); //selected);
+    var selected = hoveredData.data.node.label,
+      selectedLen = ENA.graphs.unit.selections.length;
+    //console.log("hover", selected);
+    if (selectedLen === 1 && !ENA.graphs.unit.selections.some(s => s.label==selected)) {
+      Shiny.onInputChange("unitClicked2", hoveredData.data.node);
     }
   };
   ENA.graphs.unit.events["outNode"] = function(hoveredData) {
@@ -410,7 +409,22 @@
                 $scope.openTab($tab.scope().season, false);
               });
             }
-          }, 50));
+          }, 150));
+        }
+      };
+    }])
+    .directive("hoverNames", [function() {
+      return {
+        "restrict": "A",
+        //"scope": true,
+        "link": function($scope, $element, $attrs) {
+          $element.on("mouseenter", ".highlightedWord", function($event) {
+            let $el = $($event.target);
+            $scope.hoverName($el.text(), $el[0].style.color);
+          }).on("mouseleave", ".highlightedWord", function($event) {
+            let $el = $($event.target);
+            $scope.unhoverName($el.text());
+          });
         }
       };
     }])
@@ -704,6 +718,16 @@
             });
           }
         }
+      };
+
+      $scope.hoverName = function(name, color) {
+        let $e = $(".sigma-label[data-label-target*='" + name + "']").addClass("hovered");
+        if (color) {
+          $e.attr("fill", color);
+        }
+      };
+      $scope.unhoverName = function(name) {
+        $(".sigma-label[data-label-target*='" + name + "']").removeClass("hovered").attr("fill", "#000");
       };
 
       var updateEpisodeSummary = _.debounce(function() {

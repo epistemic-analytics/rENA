@@ -68,8 +68,8 @@ shinyUI(fluidPage(
               tabsetPanel(id="",
                 tabPanel("Units",
                   tags$h4("Characters", id="collapseLevel"),
-                  sigmaOutput('sigma',nodeClick = "plot1_click")
-                  ,sigmaOutput('sigmaComparison', nodeClick = "comp_clickNode")
+                  sigmaOutput('sigma',nodeClick = "plot1_click"),
+                  sigmaOutput('sigmaComparison', nodeClick = "comp_clickNode")
                 ),
                 tabPanel("Comparison",
                   tags$h4("Comparison", id="collapseLevel")
