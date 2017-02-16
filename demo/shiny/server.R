@@ -134,13 +134,9 @@ shinyServer(function(input, output, session) {
     valDT = getFullData();
 
     browser(expr=debug);
-    timelineBy = settings()$conversationsBy;
-    timelineBy = timelineBy[timelineBy %in% colnames(df)]
 
     timelineFiltered = values$timelineFiltered;
     if(!is.null(timelineFiltered)) {
-      #df = df[.(timelineFiltered[timelineFiltered$included == T,timelineBy]), nomatch=0];
-      #browser()
       setkeyv(valDT,c("season","episode"))
       valDT = valDT[.(timelineFiltered[timelineFiltered$included==T,c("season","episode")]), nomatch=0]
     }
@@ -181,6 +177,14 @@ shinyServer(function(input, output, session) {
     useData2 = data.frame(useData, attr(set$get('enaData')$get(), "filters"))
     useData2DT = data.table(useData2);
     useData2DT$handle = useData2DT[,{ apply(.SD,1,function(x){paste(trimws(x),collapse=".")})},with=T,.SDcols=unlist(selectionObj$by)]
+
+    timelineFiltered = values$timelineFiltered;
+    if(!is.null(timelineFiltered)) {
+      #browser();
+
+      setkeyv(useData2DT,c("season","episode"))
+      useData2DT = useData2DT[.(timelineFiltered[timelineFiltered$included==T,c("season","episode")]), nomatch=0]
+    }
 
     if(all(dR$rownames != selectionObj$label)) {
       print("Network selection not found in current plot.")
