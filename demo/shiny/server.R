@@ -126,24 +126,25 @@ shinyServer(function(input, output, session) {
     }
 
     valDT = getFullData();
+
+    browser(expr=debug);
+    timelineBy = settings()$conversationsBy;
+    timelineBy = timelineBy[timelineBy %in% colnames(df)]
+
+    timelineFiltered = values$timelineFiltered;
+    if(!is.null(timelineFiltered)) {
+      #df = df[.(timelineFiltered[timelineFiltered$included == T,timelineBy]), nomatch=0];
+      #browser()
+      setkeyv(valDT,c("season","episode"))
+      valDT = valDT[.(timelineFiltered[timelineFiltered$included==T,c("season","episode")]), nomatch=0]
+    }
+
     valMeaned = collapseFullData(valDT, c(values$settings$collapseTo));
     rownames(valMeaned) = apply(valMeaned[,values$settings$collapseTo, with = F], 1, paste, collapse=".")
     df = data.table(valMeaned[,c("x","y"),with=F],valMeaned[,c(colnames(valMeaned)[!colnames(valMeaned) %in% c('x','y')]),with=F]);
     rownames(df) = rownames(valMeaned);
     df$rownames = rownames(valMeaned);
 
-    browser(expr=debug);
-    timelineBy = settings()$conversationsBy;
-    timelineBy = timelineBy[timelineBy %in% colnames(df)]
-
-    if(!is.null(timelineBy) && length(timelineBy > 0)) {
-      setkeyv(df,timelineBy)
-    }
-
-    timelineFiltered = values$timelineFiltered;
-    if(!is.null(timelineFiltered)) {
-      df = df[.(timelineFiltered[timelineFiltered$included == T,timelineBy]), nomatch=0];
-    }
 
     df
   });
@@ -245,14 +246,19 @@ shinyServer(function(input, output, session) {
   });
   getPlottableData = reactive({
     dt = getFullData();
-
+    if(!is.null(values$timelineFiltered)) {
+      #df = df[.(timelineFiltered[timelineFiltered$included == T,timelineBy]), nomatch=0];
+      #browser()
+      setkeyv(dt,c("season","episode"))
+      dt = dt[.(values$timelineFiltered[values$timelineFiltered$included==T,c("season","episode")]), nomatch=0]
+    }
+    #browser();
     dtAll = rbindlist(lapply(values$plottable, function(x) {
       for(name in names(x$by)) {
         if(is.null(x$by[[name]]) || is.na(x$by[[name]])) {
           x$by[[name]] = as.vector(unique( dt[,name,with=F][[1]] ))
         }
       }
-
       srch3 = data.table(expand.grid(x$by[names(x$by)]));
       setkeyv(srch3, cols=names(x$by));
       dt.filtered = dt[srch3, .SD[!is.na(.SD$x)] ,on=names(x$by), with=T]
