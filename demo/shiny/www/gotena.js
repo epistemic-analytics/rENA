@@ -775,39 +775,8 @@
           $scope.openTab(_.first($scope.seasons));
           $scope.$apply();
         }
-      }, 50);
-      updateEpisodeSummary();
-
-      $scope.$on("timeline-selections", function($event, timeline) {
-        updateEpisodeSummary();
-      });
-      $scope.$on("all-excerpts", function($event, ex) {
-        updateEpisodeSummary();
-      });
-      $scope.$on("hover-edge", function($event, edge) {
-        hoveredEdge = edge;
-        filterByEdge(edge);
-      });
-      $scope.$on("unhover-edge", function($event, edge) {
-        if (!clickedEdge) {
-          clickedEdge = null;
-          hoveredEdge = null;
-          $scope.seasons = allSeasons;
-          $scope.openTab(_.first($scope.seasons));
-          $scope.$apply();
-        } else if (edge.id !== clickedEdge.id) {
-          hoveredEdge = null;
-          filterByEdge(clickedEdge);
-        }
-      });
-      $scope.$on("click-edge", function($event, edge) {
-        clickedEdge = edge;
-        if (!hoveredEdge || edge.id !== hoveredEdge.id) {
-          filterByEdge(edge);
-        }
-      });
-
-      function filterByEdge(edge) {
+      }, 50),
+      filterByEdge = _.debounce(function(edge) {
         var filteredSeasons = [];
         _.each(allSeasons, s => {
 
@@ -841,7 +810,41 @@
         $scope.seasons = filteredSeasons;
         $scope.openTab(_.first($scope.seasons));
         $scope.$apply();
-      }
+      }, 50);
+      updateEpisodeSummary();
+
+      $scope.$on("timeline-selections", function($event, timeline) {
+        updateEpisodeSummary();
+        if (clickedEdge) {
+          filterByEdge(clickedEdge);
+        }
+      });
+      $scope.$on("all-excerpts", function($event, ex) {
+        updateEpisodeSummary();
+      });
+      $scope.$on("hover-edge", function($event, edge) {
+        hoveredEdge = edge;
+        filterByEdge(edge);
+      });
+      $scope.$on("unhover-edge", function($event, edge) {
+        if (!clickedEdge) {
+          clickedEdge = null;
+          hoveredEdge = null;
+          $scope.seasons = allSeasons;
+          $scope.openTab(_.first($scope.seasons));
+          $scope.$apply();
+        } else if (edge.id !== clickedEdge.id) {
+          hoveredEdge = null;
+          filterByEdge(clickedEdge);
+        }
+      });
+      $scope.$on("click-edge", function($event, edge) {
+        clickedEdge = edge;
+        if (!hoveredEdge || edge.id !== hoveredEdge.id) {
+          filterByEdge(edge);
+        }
+      });
+
       function codeIncluded(ex) {
         if (_.isEmpty($scope.timeline2)) return true;
         var o = _.find($scope.timeline2, t => t.season === ex.season && t.episode === ex.episode);
