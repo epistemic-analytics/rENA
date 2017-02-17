@@ -421,8 +421,9 @@ shinyServer(function(input, output, session) {
         clickNode=htmlwidgets::JS("ENA.graphs.unit.events.clickNode"),
         doubleClickNode=htmlwidgets::JS("ENA.graphs.unit.events.doubleClickNode"),
         overNode=htmlwidgets::JS("ENA.graphs.unit.events.overNode"),
-        outNode=htmlwidgets::JS("ENA.graphs.unit.events.outNode")
-        ,overEdge=htmlwidgets::JS("ENA.graphs.unit.events.overEdge")
+        outNode=htmlwidgets::JS("ENA.graphs.unit.events.outNode"),
+        overEdge=htmlwidgets::JS("ENA.graphs.unit.events.overEdge"),
+        outEdge=htmlwidgets::JS("ENA.graphs.unit.events.outEdge")
       )
     );
     output$sigmaNet1 <- renderSigma(
@@ -433,7 +434,8 @@ shinyServer(function(input, output, session) {
         name="edgePlot1",
         clickNode=htmlwidgets::JS("ENA.graphs.network.events.clickNode"),
         clickEdge=htmlwidgets::JS("ENA.graphs.network.events.clickEdge"),
-        overEdge=htmlwidgets::JS("ENA.graphs.unit.events.overEdge")
+        overEdge=htmlwidgets::JS("ENA.graphs.unit.events.overEdge"),
+        outEdge=htmlwidgets::JS("ENA.graphs.unit.events.outEdge")
       )
     );
     output$sigmaNet2 <- renderSigma(
@@ -444,7 +446,8 @@ shinyServer(function(input, output, session) {
         name="edgePlot2",
         clickNode=htmlwidgets::JS("ENA.graphs.network.events.clickNode"),
         clickEdge=htmlwidgets::JS("ENA.graphs.network.events.clickEdge"),
-        overEdge=htmlwidgets::JS("ENA.graphs.unit.events.overEdge")
+        overEdge=htmlwidgets::JS("ENA.graphs.unit.events.overEdge"),
+        outEdge=htmlwidgets::JS("ENA.graphs.unit.events.outEdge")
       )
     );
     output$sigmaComparison <- renderSigma(

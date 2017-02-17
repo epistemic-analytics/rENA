@@ -73,7 +73,10 @@
     }
   };
   ENA.graphs.unit.events["overEdge"] = function(edgeData) {
-    ENA.app.scope().$broadcast("hover-edge", edgeData.data);
+    ENA.app.scope().$broadcast("hover-edge", edgeData.data.edge);
+  };
+  ENA.graphs.unit.events["outEdge"] = function(edgeData) {
+    ENA.app.scope().$broadcast("unhover-edge", edgeData.data.edge);
   };
   ENA.graphs.unit.events["doubleClickNode"] = function(clickData) {
     if(clickData.data.node.expandTo.length > 0) {
@@ -85,6 +88,7 @@
   //network events
   ENA.graphs.network.events["clickEdge"] = function(edge) {
     Shiny.onInputChange("edgeClicked", { camera: this.id, edge: edge, nonce: Math.random() });
+    ENA.app.scope().$broadcast("click-edge", edge);
   };
 
   var ENAapp = angular.module("ENAapp", ['ngMaterial','dndLists']);
@@ -592,9 +596,9 @@
             $scope.$broadcast("comparison-changed", compJSON);
           });
         });
-        Shiny.addCustomMessageHandler("unitsClicked", function(a) {
-          console.log("Clicked a node: ", a);
-        });
+        //Shiny.addCustomMessageHandler("unitsClicked", function(a) {
+        //  console.log("Clicked a node: ", a);
+        //});
         //Shiny.addCustomMessageHandler("edgeClicked", function(e) {
         //  console.log("Clicked an edge.", e);
         //});
@@ -706,6 +710,10 @@
       };
     }])
     .controller("EpisodeSummaryCtrl", ["$scope", "$q", function($scope, $q) {
+      var hoveredEdge = null,
+        clickedEdge = null,
+        allSeasons = null;
+
       $scope.position = {};
       $scope.seasons = [];
       $scope.closed = {};
@@ -746,11 +754,11 @@
               codes = (_.chain(ex).keys(ex).without("season", "episode", "excerpt")
                           .filter(key => ex[key] === 1 && codeIncluded(ex)).value());
             _.each(codes, name => {
-              let color = getColor(name);
-              if (color) {
-                text = text.replace(new RegExp("\\b(" + name +")\\b", "gi"),
-                  "<span class=\"highlightedWord\" style=\"color: " + color + ";\">$1</span>");
-              }
+              let color = (getColor(name) || "#00F");
+              //if (color) {
+              text = text.replace(new RegExp("\\b(" + name +")\\b", "gi"),
+                "<span class=\"highlightedWord\" style=\"color: " + color + ";\">$1</span>");
+              //}
             });
             seasons[ex.season][ex.episode].push({
               "text": text,
@@ -763,11 +771,13 @@
               "episodes": _.map(episodes, (excerpts, episode) => ({"name": episode, "excerpts": excerpts}))
             });
           });
-          $scope.seasons = organized;
+          allSeasons = $scope.seasons = organized;
           $scope.openTab(_.first($scope.seasons));
           $scope.$apply();
         }
       }, 50);
+      updateEpisodeSummary();
+
       $scope.$on("timeline-selections", function($event, timeline) {
         updateEpisodeSummary();
       });
@@ -775,16 +785,62 @@
         updateEpisodeSummary();
       });
       $scope.$on("hover-edge", function($event, edge) {
-        console.log("hover-edge", edge);
-        findConnections(edge);
+        hoveredEdge = edge;
+        filterByEdge(edge);
       });
-      updateEpisodeSummary();
+      $scope.$on("unhover-edge", function($event, edge) {
+        if (!clickedEdge) {
+          clickedEdge = null;
+          hoveredEdge = null;
+          $scope.seasons = allSeasons;
+          $scope.openTab(_.first($scope.seasons));
+          $scope.$apply();
+        } else if (edge.id !== clickedEdge.id) {
+          hoveredEdge = null;
+          filterByEdge(clickedEdge);
+        }
+      });
+      $scope.$on("click-edge", function($event, edge) {
+        clickedEdge = edge;
+        if (!hoveredEdge || edge.id !== hoveredEdge.id) {
+          filterByEdge(edge);
+        }
+      });
 
-      function findConnections(edge) {
+      function filterByEdge(edge) {
         var filteredSeasons = [];
-        _.each($scope.seasons, s => {
+        _.each(allSeasons, s => {
 
+          var episodes = [];
+          _.each(s.episodes, e => {
+            var excerpts = [];
+            _.each(e.excerpts, ex => {
+              let target = _.some(ex.codes, c => c === edge.target),
+                source = _.some(ex.codes, c => c === edge.source);
+              if (target && source) {
+                excerpts.push(ex);
+              }
+            });
+
+            if (excerpts.length) {
+              episodes.push({
+                "name": e.name,
+                "excerpts": excerpts
+              });
+            }
+          });
+
+          if (episodes.length) {
+            filteredSeasons.push({
+              "name": s.name,
+              "episodes": episodes
+            });
+          }
         });
+
+        $scope.seasons = filteredSeasons;
+        $scope.openTab(_.first($scope.seasons));
+        $scope.$apply();
       }
       function codeIncluded(ex) {
         if (_.isEmpty($scope.timeline2)) return true;
