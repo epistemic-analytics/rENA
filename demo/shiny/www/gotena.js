@@ -59,8 +59,7 @@
   ENA.graphs.unit.events["overNode"] = function(hoveredData) {
     var selected = hoveredData.data.node.label,
       selectedLen = ENA.graphs.unit.selections.length;
-    //console.log("hover", selected);
-    if (selectedLen === 1 && !ENA.graphs.unit.selections.some(s => s.label==selected)) {
+    if (selectedLen === 1 && !ENA.graphs.unit.selections.some(s => s.label == selected)) {
       Shiny.onInputChange("unitClicked2", hoveredData.data.node);
     }
   };
@@ -73,14 +72,18 @@
       Shiny.onInputChange("unitClicked2", null); //selected);
     }
   };
-  ENA.graphs.network.events["clickEdge"] = function(edge) {
-    Shiny.onInputChange("edgeClicked", { camera: this.id, edge: edge, noce: Math.random() });
+  ENA.graphs.unit.events["overEdge"] = function(edgeData) {
+    ENA.app.scope().$broadcast("hover-edge", edgeData.data);
   };
   ENA.graphs.unit.events["doubleClickNode"] = function(clickData) {
     if(clickData.data.node.expandTo.length > 0) {
       ENA.collapseTo.push(clickData.data.node.expandTo);
       Shiny.onInputChange("toggleNode", JSON.stringify(clickData.data.node));
     }
+  };
+  //network events
+  ENA.graphs.network.events["clickEdge"] = function(edge) {
+    Shiny.onInputChange("edgeClicked", { camera: this.id, edge: edge, noce: Math.random() });
   };
 
   var ENAapp = angular.module("ENAapp", ['ngMaterial','dndLists']);
@@ -530,6 +533,7 @@
         }
         Shiny.onInputChange("updateCodes", JSON.stringify(newCodes));
       });
+
       function saveSettings() {
         localStorage.setItem(LS_NAME, JSON.stringify($scope.opts));
       }
@@ -590,9 +594,9 @@
         Shiny.addCustomMessageHandler("unitsClicked", function(a) {
           console.log("Clicked a node: ", a);
         });
-        Shiny.addCustomMessageHandler("edgeClicked", function(e) {
-          console.log("Clicked an edge.", e)
-        });
+        //Shiny.addCustomMessageHandler("edgeClicked", function(e) {
+        //  console.log("Clicked an edge.", e);
+        //});
       });
 
       $scope.$watchCollection('opts', saveSettings);
@@ -769,8 +773,18 @@
       $scope.$on("all-excerpts", function($event, ex) {
         updateEpisodeSummary();
       });
+      $scope.$on("hover-edge", function($event, edge) {
+        console.log("hover-edge", edge);
+        findConnections(edge);
+      });
       updateEpisodeSummary();
 
+      function findConnections(edge) {
+        var filteredSeasons = [];
+        _.each($scope.seasons, s => {
+
+        });
+      }
       function codeIncluded(ex) {
         if (_.isEmpty($scope.timeline2)) return true;
         var o = _.find($scope.timeline2, t => t.season === ex.season && t.episode === ex.episode);
