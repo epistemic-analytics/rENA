@@ -25,6 +25,7 @@ shinyServer(function(input, output, session) {
     timelineFiltered = NULL,
     unitsSelected = c("Jaime", "Ned"),
     codesSelected = gsub("\\.","_", c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Tyrion','Tywin','Bran')),
+    scaleRatio = 1,
     settings = list(
       "allowUpdate" = F,
       "conversationsBy" = c("season", "episode"),
@@ -74,6 +75,7 @@ shinyServer(function(input, output, session) {
     }
     values$timeline = getTimeline(set, values$settings$conversationsBy);
     values$enaFile = data.table(set$get("enaData")$get("file"));
+
     return(set);
   });
   unitsSelectedMeta <- reactive({
@@ -104,13 +106,17 @@ shinyServer(function(input, output, session) {
     thisSet()$get('enaData')$get('unitsBy')
   });
   getFullData <- function() {
-    val = data.frame(thisSet()$data$centered$rotated);
+    set = thisSet();
+    val = data.frame(set$data$centered$rotated);
 
-    filters = attr(thisSet()$get('enaData')$get(), "filters");
+    filters = attr(set$get('enaData')$get(), "filters");
     valDT = data.table(val, filters);
     rownames(valDT) = rownames(val);
     colnames(valDT)[1] = "x";
     colnames(valDT)[2] = "y";
+
+    p = max(abs(set$nodes$positions$scaled$positions));
+    values$scaleRatio = p / max(abs(valDT[,.(x,y)]))
 
     valDT
   };
@@ -128,13 +134,9 @@ shinyServer(function(input, output, session) {
     valDT = getFullData();
 
     browser(expr=debug);
-    timelineBy = settings()$conversationsBy;
-    timelineBy = timelineBy[timelineBy %in% colnames(df)]
 
     timelineFiltered = values$timelineFiltered;
     if(!is.null(timelineFiltered)) {
-      #df = df[.(timelineFiltered[timelineFiltered$included == T,timelineBy]), nomatch=0];
-      #browser()
       setkeyv(valDT,c("season","episode"))
       valDT = valDT[.(timelineFiltered[timelineFiltered$included==T,c("season","episode")]), nomatch=0]
     }
@@ -176,6 +178,14 @@ shinyServer(function(input, output, session) {
     useData2DT = data.table(useData2);
     useData2DT$handle = useData2DT[,{ apply(.SD,1,function(x){paste(trimws(x),collapse=".")})},with=T,.SDcols=unlist(selectionObj$by)]
 
+    timelineFiltered = values$timelineFiltered;
+    if(!is.null(timelineFiltered)) {
+      #browser();
+
+      setkeyv(useData2DT,c("season","episode"))
+      useData2DT = useData2DT[.(timelineFiltered[timelineFiltered$included==T,c("season","episode")]), nomatch=0]
+    }
+
     if(all(dR$rownames != selectionObj$label)) {
       print("Network selection not found in current plot.")
       return(NULL)
@@ -201,8 +211,8 @@ shinyServer(function(input, output, session) {
   }
   createSigmaNet2= function(val) {
     val$mode = as.data.frame(val$mode);
-    val$mode[,1] = val$mode[,1] * 1; #Expand
-    val$mode[,2] = val$mode[,2] * -1; #Expand and rotate
+    val$mode[,1] = val$mode[,1] * 10; #Expand
+    val$mode[,2] = val$mode[,2] * -10; #Expand and rotate
     val$mode[,3] = rownames(val$mode);
     val$mode[,4] = rownames(val$mode);
     colnames(val$mode) <- c("x","y","id","label");
@@ -246,13 +256,13 @@ shinyServer(function(input, output, session) {
   });
   getPlottableData = reactive({
     dt = getFullData();
+
+    # Filter the data to plot by the timeline selections
     if(!is.null(values$timelineFiltered)) {
-      #df = df[.(timelineFiltered[timelineFiltered$included == T,timelineBy]), nomatch=0];
-      #browser()
       setkeyv(dt,c("season","episode"))
       dt = dt[.(values$timelineFiltered[values$timelineFiltered$included==T,c("season","episode")]), nomatch=0]
     }
-    #browser();
+
     dtAll = rbindlist(lapply(values$plottable, function(x) {
       for(name in names(x$by)) {
         if(is.null(x$by[[name]]) || is.na(x$by[[name]])) {
@@ -267,39 +277,42 @@ shinyServer(function(input, output, session) {
       dt.collapsed
     }), fill=T);
 
-    #Ensure all columns remain
+    # Ensure all columns remain
     rbindlist(list(dtAll, read.table(text="",col.names=c(colnames(dt),"uuid"))), fill=T)
-  })
+  });
+
   sigmaPlot = reactive({
     mainPlotData = getPlottableData();
     if(is.null(values$mainPlotData)) {
       print("No data found for main plot.")
       return(NULL);
     }
-    mainPlotData$x = mainPlotData$x * 10; # Expand
-    mainPlotData$y = mainPlotData$y * -10; # Expand and Rotate
+    xyCols = c("x","y");
+    scaleRatio = 1;
+
+    if(values$scaledUnits == T) {
+      scaleRatio = values$scaleRatio;
+    }
+    mainPlotData$x = mainPlotData$x * 10 * scaleRatio; # Expand
+    mainPlotData$y = mainPlotData$y * -10 * scaleRatio; # Expand and Rotate
     mainPlotData$id = rownames(mainPlotData);
     mainPlotData$label = rownames(mainPlotData);
 
     set = thisSet();
     percents = (set$data$centered$latent / sum(set$data$centered$latent)) * 100;
     allData = getFullData();
+
     r.list2 = list(
       nodes = list(),
       edges = list(),
-      axisBounds = rep(max(abs(set$nodes$positions$scaled$positions), max(abs(allData[,.(x,y)]))),2)*10,
+      axisBounds = rep(max(abs(set$nodes$positions$scaled$positions), max(abs(allData[,.(x,y)]))),2)*10, #*scaleRatio,
       percents = percents[1:2]
     );
 
-    if(values$scaledUnits == T) {
-      #scaleRatio = max(abs(allData[,.(x,y)])) / max(abs(set$nodes$positions$scaled$positions));
-      scaleRatio = max(abs(set$nodes$positions$scaled$positions)) / max(abs(allData[,.(x,y)]))
-      mainPlotData[,c("x","y")] = mainPlotData[,.(x,y)] * (1+scaleRatio)
-      #mainPlotData[,c("x","y")] = scale(mainPlotData[,.(x,y)], center = F, rep(scaleRatio,2));
-    }
     f = thisSet()$get('enaData')$get('file');
     r.list2.nodes = lapply(1:nrow(mainPlotData), function(x) {
-      nd = rowToNode(mainPlotData, x, values$settings$collapseTo, type="node", size = 1, file = f);
+      by = values$settings$grouping[which(!is.na(mainPlotData[x, values$settings$grouping,with=F]))]
+      nd = rowToNode(mainPlotData, x, by, type="node", size = 1, file = f);
       nd
     })
 
@@ -310,20 +323,26 @@ shinyServer(function(input, output, session) {
   rowToNode = function(val, x, by, type="node", size=1, file =NULL) {
     file.dt = data.table(file)
     thisHouse = unique(file.dt[which(file.dt$character == as.vector(val[x]$character)),]$house);
-    list(
+    nodeList = list(
       label = val[x]$rownames,
       id = paste("unit",val[x]$rownames, sep="."),
       character = val[x]$character, # FIXME
       x = val$x[x],
       y = val$y[x],
-      size = 1 / length(by),
-      type = type,
+      size = (1 / length(by)) * 2,
+      type = "node",
       by = values$settings$grouping[!is.na(val[x,values$settings$grouping, with=F])],
       expandTo = head(values$settings$grouping[is.na(val[x,values$settings$grouping, with=F])], 1),
       uuid = val[x]$uuid,
       house = thisHouse,
       color = housesList[sapply(housesList, get, x="house") == thisHouse][[1]]$color
     )
+
+    if(length(by) == 1) {
+      nodeList$type = "circle";
+      nodeList$image = list(url = paste("images/characters/",tolower(val[x]$character),".jpg",sep=""),clip=1.0,scale=1.5);
+    }
+    nodeList
   };
   sigmaNet1 = reactive({
     if(!is.null(input$unitClicked1)) {
@@ -533,7 +552,6 @@ shinyServer(function(input, output, session) {
   observeEvent(input$toggleNode, {
     itJ = jsonlite::fromJSON(input$toggleNode);
     toRemove=numeric();
-
     labelParts = strsplit(itJ$label,"\\.",perl=TRUE)[[1]];
     for(i in 1:length(values$plottable)) {
       x = values$plottable[[i]];

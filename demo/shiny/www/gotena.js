@@ -78,12 +78,13 @@
   ENA.graphs.unit.events["doubleClickNode"] = function(clickData) {
     if(clickData.data.node.expandTo.length > 0) {
       ENA.collapseTo.push(clickData.data.node.expandTo);
+      clickData.data.node.nonce = Math.random();
       Shiny.onInputChange("toggleNode", JSON.stringify(clickData.data.node));
     }
   };
   //network events
   ENA.graphs.network.events["clickEdge"] = function(edge) {
-    Shiny.onInputChange("edgeClicked", { camera: this.id, edge: edge, noce: Math.random() });
+    Shiny.onInputChange("edgeClicked", { camera: this.id, edge: edge, nonce: Math.random() });
   };
 
   var ENAapp = angular.module("ENAapp", ['ngMaterial','dndLists']);
