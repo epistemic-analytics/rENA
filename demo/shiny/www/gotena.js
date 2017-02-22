@@ -91,7 +91,7 @@
     ENA.app.scope().$broadcast("click-edge", edge);
   };
 
-  var ENAapp = angular.module("ENAapp", ['ngMaterial','dndLists']);
+  var ENAapp = angular.module("ENAapp", ['ngMaterial', 'dndLists']);
   ENAapp
     .run(["Shiny","$timeout", function(Shiny, $timeout) {
       $timeout(function(){
@@ -477,14 +477,61 @@
         },
         "templateUrl": "templates/colorPicker.html",
         "link": function($scope, $element, $attrs) {
-          $scope.active = {
-            "main": false,
-            "alt": false
-          };
-          $scope.chooseColor = function(main) {
-            console.log("choose color for main:", main);
+          $scope.active = { "main": true, "isOpen": true };
+          $scope.colors = [
+            "#305F42",
+            "#52AA6E",
+            "#61BE83",
+            "#5A0502",
+            "#860602",
+            "#B40803",
+            "#472C52",
+            "#6C427B",
+            "#9057A4",
+            "#2771A3",
+            "#3497DB",
+            "#5DACE1",
+            "#FF9300",
+            "#FFAA33",
+            "#FFBE66",
+            "#000000",
+            "#222222",
+            "#366947",
+            "#5F201E",
+            "#D43862",
+            "#DF6A89",
+            "#21162E",
+            "#362B58",
+            "#6C55B1",
+            "#143D5B",
+            "#1C5279",
+            "#7797AE",
+            "#BE3D09",
+            "#FF520D",
+            "#FF976D"
+          ];
+
+          $element.find("#spectrumColorPicker").spectrum({
+            "color": ($scope.active.main ? $scope.topColor : $scope.bottomColor),
+            "flat": true,
+            "showInput": false,
+            "allowEmpty": false,
+            "showInitial": false,
+            "showButtons": false,
+            "preferredFormat": "hex",
+          }).on("change", function(ev) {
+            console.log("change", ev);
+          });
+
+          $scope.selectColor = function(color) {
+            if ($scope.active.main) {
+              $scope.topColor = color;
+            } else {
+              $scope.bottomColor = color;
+            }
+          }
+          $scope.activate = function(main) {
             $scope.active.main = main;
-            $scope.active.alt = !main;
           };
         }
       };

@@ -820,7 +820,7 @@ li.activeHouse .houseCharList {
   }
 .color-circle-popover {
   width: 325px;
-  height: 300px;
+  height: 350px;
   max-width: unset;
 }
   .color-circle-popover .popover-content {
@@ -838,18 +838,61 @@ li.activeHouse .houseCharList {
   }
     .color-circle-popover .area-label {
       font-weight: bold;
-      font-size: 8px;
+      font-size: 9px;
     }
     .color-circle-popover .currentColors {
-      margin-top: 15px;
+      /*margin-top: 15px;*/
     }
-      .color-circle-popover .currentColors > div {
-        display: inline-block;
-        width: calc(50% - 5px);
-        text-align: center;
+      .color-circle-popover .currentColors .mainAndAlt {
+        /*margin: 10px 0;*/
       }
-        .color-circle-popover .currentColors .full-circle {
-          margin: auto;
+        .color-circle-popover .currentColors .mainAndAlt > div {
+          display: inline-block;
+          width: calc(50% - 5px);
+          text-align: center;
+        }
+          .color-circle-popover .currentColors .full-circle {
+            margin: auto;
+          }
+    .color-circle-popover #colorPickerArea {
+      margin: 15px 0;
+    }
+      .color-circle-popover #colorPickerArea .colorSwatch {
+        margin: auto;
+        width: 172px;
+        margin-top: 10px;
+      }
+      .color-circle-popover #colorPickerArea .colorSwatch .sp-container {
+        background: none;
+        border: none;
+      }
+        .color-circle-popover #colorPickerArea .colorSwatch .sp-picker-container {
+          border: none;
+          padding-left: 0;
+          padding-right: 0;
+          padding-top: 0;
+          padding: 0;
+          margin: 0;
+        }
+      .color-circle-popover #colorPickerArea .colorPreset {
+        display: inline-block;
+        width: 15px;
+        height: 20px;
+        border: 1px solid #CCC;
+        vertical-align: top;
+      }
+      .color-circle-popover #colorPickerArea .hexColor {
+        text-align: right;
+        position: relative;
+      }
+        .color-circle-popover #colorPickerArea .hexColor input {
+          vertical-align: bottom;
+        }
+        .color-circle-popover #colorPickerArea .hexColor .currentExample {
+          display: inline-block;
+          height: 26px;
+          width: 24px;
+          vertical-align: bottom;
         }
 
 .houseCharList > div {
