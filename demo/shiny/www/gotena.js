@@ -259,21 +259,21 @@
         transclude: true,
         templateUrl: "templates/housesAdded.html",
         link: function(scope, element, attrs) {
+          scope.colors = {
+            "top": "#5399C7",
+            "bottom": "#EAA647"
+          };
           scope.housesAdded = [];
-          scope.showCharacters;
+          scope.showCharacters = null;
 
           scope.toggleShowCharacters = function(house) {
-            if(scope.showCharacters === house) scope.showCharacters = undefined
-            else scope.showCharacters = house;
+            scope.showCharacters = (scope.showCharacters === house ? null : house);
           };
 
           scope.$on("house-added", function(event, item){
-            var
-              currentHouses = scope.housesAdded, //.map(h=>{ return h }),
-              currentHouse = currentHouse = currentHouses[item.house.house],
-              haveHouse = !!currentHouse, // && currentHouse.length > 0,
-              haveUnit = currentHouse && currentHouse.selected.filter(u=>{ return u === item.character })
-            ;
+            var currentHouses = scope.housesAdded,
+              currentHouse = currentHouses[item.house.house],
+              haveHouse = !!currentHouse;
 
             item.house.selected = item.house.selected || [];
             if (item.type === "house" && !haveHouse) {
@@ -288,10 +288,8 @@
               scope.showCharacters = item.house.house;
               Shiny.onInputChange("unitsSelected", scope.$parent.unitsSelected.map(u=>{return u.character}));
               Shiny.onInputChange("unitAdded", JSON.stringify(newUnits));
-            } else if (
-              item.type === "character"
-            ) {
-              if(!haveHouse) scope.housesAdded[item.house.house] = item.house;
+            } else if (item.type === "character") {
+              if (!haveHouse) scope.housesAdded[item.house.house] = item.house;
               var newUnit = {'character': item.character, 'house': item.house.house};
               //item.house.selected.push(newUnit);
               //scope.housesAdded[item.house.house].selected.push(newUnit);
@@ -433,6 +431,61 @@
             let $el = $($event.target);
             $scope.unhoverName($el.text());
           });
+        }
+      };
+    }])
+    .directive("colorCircle", ["$compile", function($compile) {
+      const COLOR_CIRCLE_TEMP = `<span class="top-color semi-circle" ng-style="{'background-color': topColor}"></span><span
+          class="bottom-color semi-circle" ng-style="{'background-color': bottomColor}"></span>`;
+      return {
+        "restrict": "A",
+        "scope": {
+          "topColor": "=",
+          "bottomColor": "="
+        },
+        "template": COLOR_CIRCLE_TEMP,
+        "link": function($scope, $element, $attrs) {
+          $element.on("click", function($event) {
+            $scope.$apply(function() {
+              $("[color-circle]").not($element).popover("hide");
+              $element.popover("toggle");
+            });
+          });
+          $element.popover({
+            "trigger": "manual",
+            "container": "body",
+            "content": function() {
+              return $compile(`<color-picker top-color="topColor" bottom-color="bottomColor" />`)($scope);
+            },
+            "html": true,
+            "placement": "right",
+            "template": `<div class="popover color-circle-popover">
+              <div class="arrow"></div>
+              <div class="popover-content"></div>
+            </div>`
+          });
+        }
+      };
+    }])
+    .directive("colorPicker", [function() {
+      return {
+        "restrict": "E",
+        "replace": true,
+        "scope": {
+          "topColor": "=",
+          "bottomColor": "="
+        },
+        "templateUrl": "templates/colorPicker.html",
+        "link": function($scope, $element, $attrs) {
+          $scope.active = {
+            "main": false,
+            "alt": false
+          };
+          $scope.chooseColor = function(main) {
+            console.log("choose color for main:", main);
+            $scope.active.main = main;
+            $scope.active.alt = !main;
+          };
         }
       };
     }])
@@ -744,6 +797,7 @@
       };
 
       var updateEpisodeSummary = _.debounce(function() {
+        //TODO: filter excerpts by $scope.timeline
         if ($scope.excerpts) {
           var seasons = {},
             organized = [];
@@ -755,10 +809,8 @@
                           .filter(key => ex[key] === 1 && codeIncluded(ex)).value());
             _.each(codes, name => {
               let color = (getColor(name) || "#00F");
-              //if (color) {
               text = text.replace(new RegExp("\\b(" + name +")\\b", "gi"),
                 "<span class=\"highlightedWord\" style=\"color: " + color + ";\">$1</span>");
-              //}
             });
             seasons[ex.season][ex.episode].push({
               "text": text,
