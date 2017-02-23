@@ -371,10 +371,7 @@ shinyServer(function(input, output, session) {
     values$sigmaNet2
   });
   sigmaNetComp = reactive({
-    if(
-      !is.null(input$unitClicked1) &&
-      !is.null(input$unitClicked2)
-    ) {
+    if (!is.null(input$unitClicked1) && !is.null(input$unitClicked2)) {
       val = list(
         mode = values$network1$mode,
         name = paste(values$network1$name, values$network2$name, sep="."),
@@ -615,9 +612,9 @@ shinyServer(function(input, output, session) {
   observeEvent(input$unitsClicked, {
     session$sendCustomMessage("unitsClicked", input$unitsClicked);
   });
-  #observeEvent(input$edgeClicked, {
-  #  session$sendCustomMessage("edgeClicked", "You clicked an edge!!");
-  #});
+  observeEvent(input$colorsUpdated, {
+    #session$sendCustomMessage
+  });
 
   output
 })
