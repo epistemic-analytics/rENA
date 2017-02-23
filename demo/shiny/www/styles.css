@@ -788,25 +788,25 @@ li.activeHouse .houseCharList {
   height: 20px;
   cursor: pointer;
 }
-  [houses-added] [color-circle] .semi-circle {
-    display: block;
-    width: 20px;
-    height: 10px;
-    border: 2px solid #FFF;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
+.semi-circle {
+  display: block;
+  width: 20px;
+  height: 10px;
+  border: 2px solid #FFF;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+  .semi-circle.top-color {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom: 1px solid #FFF;
   }
-    [houses-added] [color-circle] .semi-circle.top-color {
-      border-top-left-radius: 10px;
-      border-top-right-radius: 10px;
-      border-bottom: 1px solid #FFF;
-    }
-    [houses-added] [color-circle] .semi-circle.bottom-color {
-      border-bottom-left-radius: 10px;
-      border-bottom-right-radius: 10px;
-      border-top: 1px solid #FFF;
-    }
+  .semi-circle.bottom-color {
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-top: 1px solid #FFF;
+  }
 
 .full-circle {
     display: block;
@@ -816,7 +816,7 @@ li.activeHouse .houseCharList {
     border-radius: 40px;
 }
   .full-circle.active {
-    border: 2px solid #CCC;
+    border: 2px solid #B3B3B3;
   }
 .color-circle-popover {
   width: 325px;
@@ -882,7 +882,7 @@ li.activeHouse .houseCharList {
         vertical-align: top;
       }
       .color-circle-popover #colorPickerArea .hexColor {
-        text-align: right;
+        text-align: center;
         position: relative;
       }
         .color-circle-popover #colorPickerArea .hexColor input {
@@ -894,6 +894,40 @@ li.activeHouse .houseCharList {
           width: 24px;
           vertical-align: bottom;
         }
+  .color-circle-popover #recommendedColors ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background: #F1F1F1;
+    margin-top: 5px;
+  }
+    .color-circle-popover #recommendedColors ul > li {
+      padding: 0;
+    }
+    .color-circle-popover #recommendedColors ul > li .presetColors {
+      width: 44px;
+      margin: auto;
+      border: 2px solid transparent;
+      border-radius: 40px;
+    }
+      .color-circle-popover #recommendedColors ul > li .presetColors.active {
+        border: 2px solid #B9B9B9;
+        border-radius: 40px;
+      }
+    .color-circle-popover #recommendedColors ul > li .semi-circle {
+      width: 40px;
+      height: 20px;
+    }
+      .color-circle-popover #recommendedColors ul > li .semi-circle.top-color {
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+        border-bottom: 2px solid #FFF;
+      }
+      .color-circle-popover #recommendedColors ul > li .semi-circle.bottom-color {
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: 20px;
+        border-top: 2px solid #FFF;
+      }
 
 .houseCharList > div {
     width: 100%;

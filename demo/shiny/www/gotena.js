@@ -457,6 +457,7 @@
             "content": function() {
               return $compile(`<color-picker top-color="topColor" bottom-color="bottomColor" />`)($scope);
             },
+            "animation": false,
             "html": true,
             "placement": "right",
             "template": `<div class="popover color-circle-popover">
@@ -479,39 +480,26 @@
         "link": function($scope, $element, $attrs) {
           $scope.active = { "main": true, "isOpen": true };
           $scope.colors = [
-            "#305F42",
-            "#52AA6E",
-            "#61BE83",
-            "#5A0502",
-            "#860602",
-            "#B40803",
-            "#472C52",
-            "#6C427B",
-            "#9057A4",
-            "#2771A3",
-            "#3497DB",
-            "#5DACE1",
-            "#FF9300",
-            "#FFAA33",
-            "#FFBE66",
-            "#000000",
-            "#222222",
-            "#366947",
-            "#5F201E",
-            "#D43862",
-            "#DF6A89",
-            "#21162E",
-            "#362B58",
-            "#6C55B1",
-            "#143D5B",
-            "#1C5279",
-            "#7797AE",
-            "#BE3D09",
-            "#FF520D",
-            "#FF976D"
+            "#305F42", "#52AA6E", "#61BE83", "#5A0502",
+            "#860602", "#B40803", "#472C52", "#6C427B",
+            "#9057A4", "#2771A3", "#3497DB", "#5DACE1",
+            "#FF9300", "#FFAA33", "#FFBE66", "#000000",
+            "#222222", "#366947", "#5F201E", "#D43862",
+            "#DF6A89", "#21162E", "#362B58", "#6C55B1",
+            "#143D5B", "#1C5279", "#7797AE", "#BE3D09",
+            "#FF520D", "#FF976D"
+          ];
+          $scope.colorPairs = [
+            ["#5399C7", "#EAA647"],
+            ["#E74B3B", "#52AA6E"],
+            ["#013D7E", "#99BD3A"],
+            ["#EEB821", "#ED468B"],
+            ["#92278F", "#70BE91"],
+            ["#019FAD", "#572503"],
+            ["#F15862", "#999999"]
           ];
 
-          $element.find("#spectrumColorPicker").spectrum({
+          var $sc = $element.find("#spectrumColorPicker").spectrum({
             "color": ($scope.active.main ? $scope.topColor : $scope.bottomColor),
             "flat": true,
             "showInput": false,
@@ -519,9 +507,22 @@
             "showInitial": false,
             "showButtons": false,
             "preferredFormat": "hex",
-          }).on("change", function(ev) {
-            console.log("change", ev);
-          });
+          }).on("move.spectrum", _.debounce(function(ev) {
+            let color = $sc.spectrum("get").toHexString();
+            if (color && color !== ($scope.active.main ? $scope.topColor : $scope.bottomColor)) {
+              $scope.$apply(function() {
+                $scope.selectColor(color);
+              });
+            }
+          }, 10));
+
+          $scope.$watch('active.main', updateColorPicker);
+          $scope.$watch('topColor', updateColorPicker);
+          $scope.$watch('bottomColor', updateColorPicker);
+
+          function updateColorPicker() {
+            $sc.spectrum("set", ($scope.active.main ? $scope.topColor : $scope.bottomColor));
+          }
 
           $scope.selectColor = function(color) {
             if ($scope.active.main) {
@@ -530,8 +531,15 @@
               $scope.bottomColor = color;
             }
           }
+          $scope.selectPreset = function(pair) {
+            $scope.topColor = pair[0];
+            $scope.bottomColor = pair[1];
+          };
           $scope.activate = function(main) {
             $scope.active.main = main;
+          };
+          $scope.pairActive = function(pair) {
+            return (pair[0] === $scope.topColor && pair[1] === $scope.bottomColor);
           };
         }
       };
