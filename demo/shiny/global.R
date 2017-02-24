@@ -3,8 +3,8 @@ debug <- F;
 print("Global file loaded.")
 
 housesList = list(
-  list(house="Stark", color="#4c4c4c", img = T),
-  list(house="Lannister", color="#a41d1e", img = T),
+  list(house="Stark", color="#4c4c4c", colors=c("#2980b9","#e5901a"), img = T),
+  list(house="Lannister", color="#a41d1e", colors=c("#e74c3c","#52aa6f"), img = T),
   list(house="Baratheon", color="#c4c452", img = T),
   list(house="Targaryen", color="#2c2f30", img = T),
   list(house="Martell", color="#f0863a", img = T),
@@ -50,7 +50,7 @@ if(file.exists(filename)) {
     unitsBy = c("season", "episode", "character"),
     units = NULL, conversationsBy = c("unique_id"),
     codeNames = gsub("\\.", "_", c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Tyrion','Bronn','Brienne','Tywin','Bran')),
-    unitsSelected = c("Jaime","Ned"),
+    unitsSelected = c("Jaime"),
     windowSize = 0,
     exact.match = T
   );

@@ -14,6 +14,14 @@ shinyUI(fluidPage(
     tags$script(src="bower_components/angular-material/angular-material.min.js"),
     tags$script(src="bower_components/angular-drag-and-drop-lists/angular-drag-and-drop-lists.js"),
     tags$script(src="bower_components/underscore/underscore-min.js"),
+    # tags$script(src="sigma-1.2.0/sigma.js"),
+    # tags$script(src="sigma-1.2.0/plugins/sigma.parsers.gexf.min.js"),
+    # tags$script(src="sigma-1.2.0/custom/sigma.svg.edges.animate.js"),
+    # tags$script(src="sigma-1.2.0/custom/sigma.plugins.animate2.js"),
+    # tags$script(src="sigma-1.2.0/custom/sigma.plugins.animate.js"),
+    # tags$script(src="sigma-1.2.0/custom/sigma.plugins.animateEdges.js"),
+    # tags$script(src="sigma-1.2.0/custom/sigma.plugins.axisLines.js"),
+    # tags$script(src="sigma-1.2.0/plugins/sigma.renderers.customShapes.min.js"),
     tags$script(src="gotena.js")
   ),
 
@@ -21,6 +29,9 @@ shinyUI(fluidPage(
     HTML('<filter id="blurMe">
             <feColorMatrix in="SourceGraphic" type="saturate" values="0.1" />
          </filter>'),
+    # tags$div(
+    #   textOutput("plotNodes")
+    # ),
     tags$div("ng-controller" = "ENACtrl",
              "ng-class" = "{'showCharacters': opts.showCharacters, 'showEpisodeSummary': opts.showEpisodeSummary}",
       tags$style(id="unitStyles",type="text/css"),
@@ -83,8 +94,11 @@ shinyUI(fluidPage(
               tabsetPanel(id="",
                 tabPanel("Units",
                   tags$h4("Characters", id="collapseLevel"),
-                  sigmaOutput('sigma',nodeClick = "plot1_click")
-                  ,sigmaOutput('sigmaComparison', nodeClick = "comp_clickNode")
+                  tags$div(id="sigmaPlot", "ng-controller"="MainPlotCtrl",
+                    HTML("<sigma-node-plot plot-networks=true plot-units=true \"></sigma-node-plot>")
+                  )
+                  #,sigmaOutput('sigma',nodeClick = "plot1_click")
+                  #,sigmaOutput('sigmaComparison', nodeClick = "comp_clickNode")
                 ),
                 tabPanel("Comparison",
                   tags$h4("Comparison", id="collapseLevel")
@@ -110,7 +124,7 @@ shinyUI(fluidPage(
                 tags$div(id="addCharsAction", "ng-click" = "toggleCharacters()",
                   tags$h6("Add Characters"),
                   tags$i(class="glyphicon",
-                         "ng-class" = "{'glyphicon-plus-sign': !opts.showCharacters, 'glyphicon-remove-sign': opts.showCharacters}")
+                    "ng-class" = "{'glyphicon-plus-sign': !opts.showCharacters, 'glyphicon-remove-sign': opts.showCharacters}")
                 )
               ),
               tags$div(id="addCharsListWrap", "ng-show"="opts.showCharacters",
@@ -129,12 +143,12 @@ shinyUI(fluidPage(
                   "ng-click"="clearPlot(1)", "ng-disabled"="unitsPlotted.length < 1"
                 )
               ),
-              h5(class="plotLabel", textOutput("unitClicked1")),
-              div(
-
-              )
-            ),
-            sigmaOutput('sigmaNet1')
+              h5(class="plotLabel", textOutput("unitClicked1"))
+            )
+            #,sigmaOutput('sigmaNet1')
+            ,tags$div(id="sigmaPlotNetwork1", #"ng-controller"="",
+              HTML("<sigma-node-plot plot-networks=true===true ></sigma-node-plot>")
+            )
           ),
           div( id="secondPlot",
             div(
@@ -152,8 +166,8 @@ shinyUI(fluidPage(
                 )
               ),
               h5(class="plotLabel", textOutput("unitClicked2"))
-            ),
-            sigmaOutput('sigmaNet2')
+            )
+            ,sigmaOutput('sigmaNet1')
           )
         ),
         column(width = 2, id = "episodeSummary", class="column", "ng-if" = "opts.showEpisodeSummary",
