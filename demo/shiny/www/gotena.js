@@ -57,12 +57,10 @@
     }
   };
   ENA.graphs.unit.events["overNode"] = function(hoveredData) {
-    var
-      selected = hoveredData.data.node.label,
-      selectedLen = ENA.graphs.unit.selections.length
-    ;
-    if(selectedLen===1 && !ENA.graphs.unit.selections.filter(s=>s.label==selected).length) {
-      Shiny.onInputChange("unitClicked2", hoveredData.data.node); //selected);
+    var selected = hoveredData.data.node.label,
+      selectedLen = ENA.graphs.unit.selections.length;
+    if (selectedLen === 1 && !ENA.graphs.unit.selections.some(s => s.label == selected)) {
+      Shiny.onInputChange("unitClicked2", hoveredData.data.node);
     }
   };
   ENA.graphs.unit.events["outNode"] = function(hoveredData) {
@@ -74,8 +72,11 @@
       Shiny.onInputChange("unitClicked2", null); //selected);
     }
   };
-  ENA.graphs.network.events["clickEdge"] = function(edge) {
-    Shiny.onInputChange("edgeClicked", { camera: this.id, edge: edge, nonce: Math.random() });
+  ENA.graphs.unit.events["overEdge"] = function(edgeData) {
+    ENA.app.scope().$broadcast("hover-edge", edgeData.data.edge);
+  };
+  ENA.graphs.unit.events["outEdge"] = function(edgeData) {
+    ENA.app.scope().$broadcast("unhover-edge", edgeData.data.edge);
   };
   ENA.graphs.unit.events["doubleClickNode"] = function(clickData) {
     if(clickData.data.node.expandTo.length > 0) {
@@ -84,8 +85,13 @@
       Shiny.onInputChange("toggleNode", JSON.stringify(clickData.data.node));
     }
   };
+  //network events
+  ENA.graphs.network.events["clickEdge"] = function(edge) {
+    Shiny.onInputChange("edgeClicked", { camera: this.id, edge: edge, nonce: Math.random() });
+    ENA.app.scope().$broadcast("click-edge", edge);
+  };
 
-  var ENAapp = angular.module("ENAapp", ['ngMaterial','dndLists']);
+  var ENAapp = angular.module("ENAapp", ['ngMaterial', 'dndLists']);
   ENAapp
     .run(["Shiny","$timeout", function(Shiny, $timeout) {
       $timeout(function(){
@@ -497,21 +503,21 @@
         transclude: true,
         templateUrl: "templates/housesAdded.html",
         link: function(scope, element, attrs) {
+          scope.colors = {
+            "top": "#5399C7",
+            "bottom": "#EAA647"
+          };
           scope.housesAdded = [];
-          scope.showCharacters;
+          scope.showCharacters = null;
 
           scope.toggleShowCharacters = function(house) {
-            if(scope.showCharacters === house) scope.showCharacters = undefined
-            else scope.showCharacters = house;
+            scope.showCharacters = (scope.showCharacters === house ? null : house);
           };
 
           scope.$on("house-added", function(event, item){
-            var
-              currentHouses = scope.housesAdded, //.map(h=>{ return h }),
-              currentHouse = currentHouse = currentHouses[item.house.house],
-              haveHouse = !!currentHouse, // && currentHouse.length > 0,
-              haveUnit = currentHouse && currentHouse.selected.filter(u=>{ return u === item.character })
-            ;
+            var currentHouses = scope.housesAdded,
+              currentHouse = currentHouses[item.house.house],
+              haveHouse = !!currentHouse;
 
             item.house.selected = item.house.selected || [];
             if (item.type === "house" && !haveHouse) {
@@ -526,10 +532,8 @@
               scope.showCharacters = item.house.house;
               Shiny.onInputChange("unitsSelected", scope.$parent.unitsSelected.map(u=>{return u.character}));
               Shiny.onInputChange("unitAdded", JSON.stringify(newUnits));
-            } else if (
-              item.type === "character"
-            ) {
-              if(!haveHouse) scope.housesAdded[item.house.house] = item.house;
+            } else if (item.type === "character") {
+              if (!haveHouse) scope.housesAdded[item.house.house] = item.house;
               var newUnit = {'character': item.character, 'house': item.house.house};
               //item.house.selected.push(newUnit);
               //scope.housesAdded[item.house.house].selected.push(newUnit);
@@ -569,10 +573,10 @@
     }])
     .directive("houseList", [function(){
       return {
-        restrict: 'EA',
-        scope: {},
-        templateUrl: "templates/houseList.html",
-        link: function(scope, element, attrs) {
+        "restrict": 'EA',
+        "scope": {},
+        "templateUrl": "templates/houseList.html",
+        "link": function(scope, element, attrs) {
           scope.houseList = [];
           scope.unitsKeyed = {};
           scope.$on("houses-changed", function(event, houses) {
@@ -655,7 +659,132 @@
                 $scope.openTab($tab.scope().season, false);
               });
             }
-          }, 50));
+          }, 150));
+        }
+      };
+    }])
+    .directive("hoverNames", [function() {
+      return {
+        "restrict": "A",
+        //"scope": true,
+        "link": function($scope, $element, $attrs) {
+          $element.on("mouseenter", ".highlightedWord", function($event) {
+            let $el = $($event.target);
+            $scope.hoverName($el.text(), $el[0].style.color);
+          }).on("mouseleave", ".highlightedWord", function($event) {
+            let $el = $($event.target);
+            $scope.unhoverName($el.text());
+          });
+        }
+      };
+    }])
+    .directive("colorCircle", ["$compile", function($compile) {
+      const COLOR_CIRCLE_TEMP = `<span class="top-color semi-circle" ng-style="{'background-color': topColor}"></span><span
+          class="bottom-color semi-circle" ng-style="{'background-color': bottomColor}"></span>`;
+      return {
+        "restrict": "A",
+        "scope": {
+          "topColor": "=",
+          "bottomColor": "="
+        },
+        "template": COLOR_CIRCLE_TEMP,
+        "link": function($scope, $element, $attrs) {
+          $element.on("click", function($event) {
+            $scope.$apply(function() {
+              $("[color-circle]").not($element).popover("hide");
+              $element.popover("toggle");
+            });
+          });
+          $element.popover({
+            "trigger": "manual",
+            "container": "body",
+            "content": function() {
+              return $compile(`<color-picker top-color="topColor" bottom-color="bottomColor" />`)($scope);
+            },
+            "animation": false,
+            "html": true,
+            "placement": "right",
+            "template": `<div class="popover color-circle-popover">
+              <div class="arrow"></div>
+              <div class="popover-content"></div>
+            </div>`
+          });
+        }
+      };
+    }])
+    .directive("colorPicker", [function() {
+      return {
+        "restrict": "E",
+        "replace": true,
+        "scope": {
+          "topColor": "=",
+          "bottomColor": "="
+        },
+        "templateUrl": "templates/colorPicker.html",
+        "link": function($scope, $element, $attrs) {
+          $scope.active = { "main": true, "isOpen": true };
+          $scope.colors = [
+            "#305F42", "#52AA6E", "#61BE83", "#5A0502",
+            "#860602", "#B40803", "#472C52", "#6C427B",
+            "#9057A4", "#2771A3", "#3497DB", "#5DACE1",
+            "#FF9300", "#FFAA33", "#FFBE66", "#000000",
+            "#222222", "#366947", "#5F201E", "#D43862",
+            "#DF6A89", "#21162E", "#362B58", "#6C55B1",
+            "#143D5B", "#1C5279", "#7797AE", "#BE3D09",
+            "#FF520D", "#FF976D"
+          ];
+          $scope.colorPairs = [
+            ["#5399C7", "#EAA647"],
+            ["#E74B3B", "#52AA6E"],
+            ["#013D7E", "#99BD3A"],
+            ["#EEB821", "#ED468B"],
+            ["#92278F", "#70BE91"],
+            ["#019FAD", "#572503"],
+            ["#F15862", "#999999"]
+          ];
+
+          var $sc = $element.find("#spectrumColorPicker").spectrum({
+            "color": ($scope.active.main ? $scope.topColor : $scope.bottomColor),
+            "flat": true,
+            "showInput": false,
+            "allowEmpty": false,
+            "showInitial": false,
+            "showButtons": false,
+            "preferredFormat": "hex",
+          }).on("move.spectrum", _.debounce(function(ev) {
+            let color = $sc.spectrum("get").toHexString();
+            if (color && color !== ($scope.active.main ? $scope.topColor : $scope.bottomColor)) {
+              $scope.$apply(function() {
+                $scope.selectColor(color);
+              });
+            }
+          }, 10));
+
+          $scope.$watch('active.main', updateColorPicker);
+          $scope.$watch('topColor', updateColorPicker);
+          $scope.$watch('bottomColor', updateColorPicker);
+
+          function updateColorPicker() {
+            $sc.spectrum("set", ($scope.active.main ? $scope.topColor : $scope.bottomColor));
+          }
+
+          $scope.selectColor = function(color) {
+            if ($scope.active.main) {
+              $scope.topColor = color;
+            } else {
+              $scope.bottomColor = color;
+            }
+          }
+          $scope.selectPreset = function(pair) {
+            $scope.topColor = pair[0];
+            $scope.bottomColor = pair[1];
+          };
+          $scope.activate = function(main) {
+            $scope.active.main = main;
+          };
+          $scope.pairActive = function(pair) {
+            return (pair[0] === $scope.topColor && pair[1] === $scope.bottomColor);
+          };
         }
       };
     }])
@@ -762,6 +891,7 @@
         }
         Shiny.onInputChange("updateCodes", JSON.stringify(newCodes));
       });
+
       function saveSettings() {
         localStorage.setItem(LS_NAME, JSON.stringify($scope.opts));
       }
@@ -849,12 +979,12 @@
             $scope.$broadcast("comparison-changed", compJSON);
           });
         });
-        Shiny.addCustomMessageHandler("unitsClicked", function(a) {
-          console.log("Clicked a node: ", a);
-        });
-        Shiny.addCustomMessageHandler("edgeClicked", function(e) {
-          console.log("Clicked an edge.", e)
-        });
+        //Shiny.addCustomMessageHandler("unitsClicked", function(a) {
+        //  console.log("Clicked a node: ", a);
+        //});
+        //Shiny.addCustomMessageHandler("edgeClicked", function(e) {
+        //  console.log("Clicked an edge.", e);
+        //});
       });
 
       $scope.$watchCollection('opts', saveSettings);
@@ -966,6 +1096,10 @@
       };
     }])
     .controller("EpisodeSummaryCtrl", ["$scope", "$q", function($scope, $q) {
+      var hoveredEdge = null,
+        clickedEdge = null,
+        allSeasons = null;
+
       $scope.position = {};
       $scope.seasons = [];
       $scope.closed = {};
@@ -985,7 +1119,18 @@
         }
       };
 
+      $scope.hoverName = function(name, color) {
+        let $e = $(".sigma-label[data-label-target*='" + name + "']").addClass("hovered");
+        if (color) {
+          $e.attr("fill", color);
+        }
+      };
+      $scope.unhoverName = function(name) {
+        $(".sigma-label[data-label-target*='" + name + "']").removeClass("hovered").attr("fill", "#000");
+      };
+
       var updateEpisodeSummary = _.debounce(function() {
+        //TODO: filter excerpts by $scope.timeline
         if ($scope.excerpts) {
           var seasons = {},
             organized = [];
@@ -996,11 +1141,9 @@
               codes = (_.chain(ex).keys(ex).without("season", "episode", "excerpt")
                           .filter(key => ex[key] === 1 && codeIncluded(ex)).value());
             _.each(codes, name => {
-              let color = getColor(name);
-              if (color) {
-                text = text.replace(new RegExp("\\b(" + name +")\\b", "gi"),
-                  "<span class=\"highlightedWord\" style=\"color: " + color + ";\">$1</span>");
-              }
+              let color = (getColor(name) || "#00F");
+              text = text.replace(new RegExp("\\b(" + name +")\\b", "gi"),
+                "<span class=\"highlightedWord\" style=\"color: " + color + ";\">$1</span>");
             });
             seasons[ex.season][ex.episode].push({
               "text": text,
@@ -1013,18 +1156,79 @@
               "episodes": _.map(episodes, (excerpts, episode) => ({"name": episode, "excerpts": excerpts}))
             });
           });
-          $scope.seasons = organized;
+          allSeasons = $scope.seasons = organized;
           $scope.openTab(_.first($scope.seasons));
           $scope.$apply();
         }
+      }, 50),
+      filterByEdge = _.debounce(function(edge) {
+        var filteredSeasons = [];
+        _.each(allSeasons, s => {
+
+          var episodes = [];
+          _.each(s.episodes, e => {
+            var excerpts = [];
+            _.each(e.excerpts, ex => {
+              let target = _.some(ex.codes, c => c === edge.target),
+                source = _.some(ex.codes, c => c === edge.source);
+              if (target && source) {
+                excerpts.push(ex);
+              }
+            });
+
+            if (excerpts.length) {
+              episodes.push({
+                "name": e.name,
+                "excerpts": excerpts
+              });
+            }
+          });
+
+          if (episodes.length) {
+            filteredSeasons.push({
+              "name": s.name,
+              "episodes": episodes
+            });
+          }
+        });
+
+        $scope.seasons = filteredSeasons;
+        $scope.openTab(_.first($scope.seasons));
+        $scope.$apply();
       }, 50);
+      updateEpisodeSummary();
+
       $scope.$on("timeline-selections", function($event, timeline) {
         updateEpisodeSummary();
+        if (clickedEdge) {
+          filterByEdge(clickedEdge);
+        }
       });
       $scope.$on("all-excerpts", function($event, ex) {
         updateEpisodeSummary();
       });
-      updateEpisodeSummary();
+      $scope.$on("hover-edge", function($event, edge) {
+        hoveredEdge = edge;
+        filterByEdge(edge);
+      });
+      $scope.$on("unhover-edge", function($event, edge) {
+        if (!clickedEdge) {
+          clickedEdge = null;
+          hoveredEdge = null;
+          $scope.seasons = allSeasons;
+          $scope.openTab(_.first($scope.seasons));
+          $scope.$apply();
+        } else if (edge.id !== clickedEdge.id) {
+          hoveredEdge = null;
+          filterByEdge(clickedEdge);
+        }
+      });
+      $scope.$on("click-edge", function($event, edge) {
+        clickedEdge = edge;
+        if (!hoveredEdge || edge.id !== hoveredEdge.id) {
+          filterByEdge(edge);
+        }
+      });
 
       function codeIncluded(ex) {
         if (_.isEmpty($scope.timeline2)) return true;

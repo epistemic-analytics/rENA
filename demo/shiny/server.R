@@ -27,7 +27,7 @@ shinyServer(function(input, output, session) {
     codesSelected = gsub("\\.","_", c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Tyrion','Tywin','Bran')),
     scaleRatio = 1,
     settings = list(
-      "allowUpdate" = T,
+      "allowUpdate" = F,
       "conversationsBy" = c("season", "episode"),
       "grouping" = c("character","season", "episode"),
       "collapseTo" = c("character")
@@ -387,10 +387,7 @@ shinyServer(function(input, output, session) {
     values$sigmaNet2
   });
   sigmaNetComp = reactive({
-    if(
-      !is.null(input$unitClicked1) &&
-      !is.null(input$unitClicked2)
-    ) {
+    if (!is.null(input$unitClicked1) && !is.null(input$unitClicked2)) {
       val = list(
         mode = values$network1$mode,
         name = paste(values$network1$name, values$network2$name, sep="."),
@@ -429,21 +426,43 @@ shinyServer(function(input, output, session) {
   #####
   # Begin: Plots
   #####
-    # output$sigma <- renderSigma(
-    #   sigma(
-    #     sigmaPlot(), name="mainPlot",
-    #     drawEdges = T, drawNodes = T,
-    #     clickNode=htmlwidgets::JS("ENA.graphs.unit.events.clickNode"),
-    #     doubleClickNode=htmlwidgets::JS("ENA.graphs.unit.events.doubleClickNode"),
-    #     overNode=htmlwidgets::JS("ENA.graphs.unit.events.overNode"),
-    #     outNode=htmlwidgets::JS("ENA.graphs.unit.events.outNode")
-    #   )
-    # );
+    output$sigma <- renderSigma(
+      sigma(
+        sigmaPlot(),
+        name="mainPlot",
+        drawEdges = T,
+        drawNodes = T,
+        clickNode=htmlwidgets::JS("ENA.graphs.unit.events.clickNode"),
+        doubleClickNode=htmlwidgets::JS("ENA.graphs.unit.events.doubleClickNode"),
+        overNode=htmlwidgets::JS("ENA.graphs.unit.events.overNode"),
+        outNode=htmlwidgets::JS("ENA.graphs.unit.events.outNode"),
+        overEdge=htmlwidgets::JS("ENA.graphs.unit.events.overEdge"),
+        outEdge=htmlwidgets::JS("ENA.graphs.unit.events.outEdge")
+      )
+    );
     output$sigmaNet1 <- renderSigma(
-      sigma(sigmaNet1(),drawEdges = T, drawNodes = T, name="edgePlot1", clickNode=htmlwidgets::JS("ENA.graphs.network.events.clickNode"), clickEdge=htmlwidgets::JS("ENA.graphs.network.events.clickEdge"))
+      sigma(
+        sigmaNet1(),
+        drawEdges = T,
+        drawNodes = T,
+        name="edgePlot1",
+        clickNode=htmlwidgets::JS("ENA.graphs.network.events.clickNode"),
+        clickEdge=htmlwidgets::JS("ENA.graphs.network.events.clickEdge"),
+        overEdge=htmlwidgets::JS("ENA.graphs.unit.events.overEdge"),
+        outEdge=htmlwidgets::JS("ENA.graphs.unit.events.outEdge")
+      )
     );
     output$sigmaNet2 <- renderSigma(
-      sigma(sigmaNet2(),drawEdges = T, drawNodes = T, name="edgePlot2", clickNode=htmlwidgets::JS("ENA.graphs.network.events.clickNode"), clickEdge=htmlwidgets::JS("ENA.graphs.network.events.clickEdge"))
+      sigma(
+        sigmaNet2(),
+        drawEdges = T,
+        drawNodes = T,
+        name="edgePlot2",
+        clickNode=htmlwidgets::JS("ENA.graphs.network.events.clickNode"),
+        clickEdge=htmlwidgets::JS("ENA.graphs.network.events.clickEdge"),
+        overEdge=htmlwidgets::JS("ENA.graphs.unit.events.overEdge"),
+        outEdge=htmlwidgets::JS("ENA.graphs.unit.events.outEdge")
+      )
     );
     output$sigmaComparison <- renderSigma(
       sigma(sigmaNetComp(),drawEdges = T, drawNodes = T, name="edgePlotComp")
@@ -677,8 +696,8 @@ shinyServer(function(input, output, session) {
     session$sendCustomMessage("unitsClicked", input$unitsClicked);
     session$sendCustomMessage("newPlottableData", jsonlite::toJSON(plotNodes(), auto_unbox = T))
   });
-  observeEvent(input$edgeClicked, {
-    session$sendCustomMessage("edgeClicked", "You clicked an edge!!");
+  observeEvent(input$colorsUpdated, {
+    #session$sendCustomMessage
   });
 
   observeEvent(input$getPlotData, {

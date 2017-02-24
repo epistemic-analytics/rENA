@@ -780,10 +780,156 @@ li.activeHouse .houseCharList {
     position: absolute;
     bottom: 17px;
     left: 50%;
-    /* height: 100%; */
     top: auto;
 }
+[houses-added] [color-circle] {
+  position: absolute;
+  right: 20px;
+  top: 10px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+.semi-circle {
+  display: block;
+  width: 20px;
+  height: 10px;
+  border: 2px solid #FFF;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+  .semi-circle.top-color {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom: 1px solid #FFF;
+  }
+  .semi-circle.bottom-color {
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-top: 1px solid #FFF;
+  }
 
+.full-circle {
+    display: block;
+    width: 40px;
+    height: 40px;
+    box-sizing: border-box;
+    border-radius: 40px;
+}
+  .full-circle.active {
+    border: 2px solid #B3B3B3;
+  }
+.color-circle-popover {
+  width: 325px;
+  height: 350px;
+  max-width: unset;
+}
+  .color-circle-popover .popover-content {
+    padding: 10px;
+  }
+  .color-circle-popover .popover-content .row > div:first-child {
+    padding-right: 0;
+    margin-right: 0;
+    padding-left: 10px;
+  }
+  .color-circle-popover .popover-content .row > div:last-child {
+    padding-left: 0;
+    margin-left: 0;
+    padding-right: 10px;
+  }
+    .color-circle-popover .area-label {
+      font-weight: bold;
+      font-size: 9px;
+    }
+    .color-circle-popover .currentColors {
+      /*margin-top: 15px;*/
+    }
+      .color-circle-popover .currentColors .mainAndAlt {
+        /*margin: 10px 0;*/
+      }
+        .color-circle-popover .currentColors .mainAndAlt > div {
+          display: inline-block;
+          width: calc(50% - 5px);
+          text-align: center;
+        }
+          .color-circle-popover .currentColors .full-circle {
+            margin: auto;
+          }
+    .color-circle-popover #colorPickerArea {
+      margin: 15px 0;
+    }
+      .color-circle-popover #colorPickerArea .colorSwatch {
+        margin: auto;
+        width: 172px;
+        margin-top: 10px;
+      }
+      .color-circle-popover #colorPickerArea .colorSwatch .sp-container {
+        background: none;
+        border: none;
+      }
+        .color-circle-popover #colorPickerArea .colorSwatch .sp-picker-container {
+          border: none;
+          padding-left: 0;
+          padding-right: 0;
+          padding-top: 0;
+          padding: 0;
+          margin: 0;
+        }
+      .color-circle-popover #colorPickerArea .colorPreset {
+        display: inline-block;
+        width: 15px;
+        height: 20px;
+        border: 1px solid #CCC;
+        vertical-align: top;
+      }
+      .color-circle-popover #colorPickerArea .hexColor {
+        text-align: center;
+        position: relative;
+      }
+        .color-circle-popover #colorPickerArea .hexColor input {
+          vertical-align: bottom;
+        }
+        .color-circle-popover #colorPickerArea .hexColor .currentExample {
+          display: inline-block;
+          height: 26px;
+          width: 24px;
+          vertical-align: bottom;
+        }
+  .color-circle-popover #recommendedColors ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background: #F1F1F1;
+    margin-top: 5px;
+  }
+    .color-circle-popover #recommendedColors ul > li {
+      padding: 0;
+    }
+    .color-circle-popover #recommendedColors ul > li .presetColors {
+      width: 44px;
+      margin: auto;
+      border: 2px solid transparent;
+      border-radius: 40px;
+    }
+      .color-circle-popover #recommendedColors ul > li .presetColors.active {
+        border: 2px solid #B9B9B9;
+        border-radius: 40px;
+      }
+    .color-circle-popover #recommendedColors ul > li .semi-circle {
+      width: 40px;
+      height: 20px;
+    }
+      .color-circle-popover #recommendedColors ul > li .semi-circle.top-color {
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+        border-bottom: 2px solid #FFF;
+      }
+      .color-circle-popover #recommendedColors ul > li .semi-circle.bottom-color {
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: 20px;
+        border-top: 2px solid #FFF;
+      }
 
 .houseCharList > div {
     width: 100%;
@@ -901,6 +1047,7 @@ i.glyphicon.glyphicon-check.isUnit {
     #episodeSummaryContent .seasonTabs li a {
       padding: 5px;
       cursor: pointer;
+      text-align: center;
     }
     #episodeSummaryContent .tab-content {
       height: calc(100% - 78px);
@@ -939,7 +1086,9 @@ i.glyphicon.glyphicon-check.isUnit {
           /*color: blue;*/
           font-weight: bold;
         }
-
+          #episodeSummaryContent .tab-content .excerpt .highlightedWord:hover {
+            text-decoration: underline;
+          }
 .charListAction {
     position: absolute;
     background-color: #dedede;
@@ -1005,7 +1154,6 @@ svg.sigma-svg {
     display: block;
     height: calc(100% - 60px) !important;
 }
-
 
 div#sigma {
     /* height: 100% !important; */
@@ -1097,6 +1245,9 @@ a#minimizedTitle:hover {
     display: none;
 }
 
+#centerColumn .tab-pane {
+  height: 100%;
+}
 
 div#sigmaComparison {
     position: absolute;
@@ -1128,6 +1279,10 @@ div#sigma {
     display: none;
 }
 
+svg.sigma-svg .sigma-label.hovered {
+  font-weight: bold;
+  font-size: 12px;
+}
 
 .hasComparison #sigma rect.sigma-hover-area {
     stroke: #dedfe6;

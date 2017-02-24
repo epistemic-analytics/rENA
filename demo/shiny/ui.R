@@ -7,12 +7,14 @@ extractName <- function(name) {
 shinyUI(fluidPage(
   tags$head(
     tags$link(rel="stylesheet", href="bower_components/angular-material/angular-material.min.css"),
+    tags$link(rel="stylesheet", href="bower_components/spectrum/spectrum.css"),
     tags$script(src="bower_components/angular/angular.min.js"),
     tags$script(src="bower_components/angular-aria/angular-aria.min.js"),
     tags$script(src="bower_components/angular-animate/angular-animate.min.js"),
     tags$script(src="bower_components/angular-messages/angular-messages.min.js"),
     tags$script(src="bower_components/angular-material/angular-material.min.js"),
     tags$script(src="bower_components/angular-drag-and-drop-lists/angular-drag-and-drop-lists.js"),
+    tags$script(src="bower_components/spectrum/spectrum.js"),
     tags$script(src="bower_components/underscore/underscore-min.js"),
     # tags$script(src="sigma-1.2.0/sigma.js"),
     # tags$script(src="sigma-1.2.0/plugins/sigma.parsers.gexf.min.js"),
