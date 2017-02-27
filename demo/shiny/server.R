@@ -174,6 +174,7 @@ shinyServer(function(input, output, session) {
   };
   updatePlot <- function(selectionObj, selectionObj2 = NULL, color = "#5399c7") {
     set = thisSet();
+    print(paste("color: ", color, sep=" "));
 
     unitSelected_name = selectionObj$label;
     useData = set$data$normed;
@@ -689,7 +690,8 @@ shinyServer(function(input, output, session) {
         nd = rowToNode(newItems, x, by, type="node", size = 1, file = values$enaFile, scaleRatio = scaleRatio);
         nd
       });
-      session$sendCustomMessage("newPlottableData", jsonlite::toJSON(list(nodes=newNodes,network=list(nodes=list(),edges=list())), auto_unbox = T))
+      session$sendCustomMessage("newPlottableData", jsonlite::toJSON(
+        list(nodes=newNodes, network=list(nodes=list(), edges=list())), auto_unbox = T))
     }
   });
   observeEvent(input$unitsClicked, {

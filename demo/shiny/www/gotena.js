@@ -133,7 +133,7 @@
     .directive("sigmaNodePlot", ["$timeout", function($timeout){
       return {
         restrict: 'E',
-        template: '<div class="sigma-plot" ng-class=\'{"has-network": hasNetwork===true }\'></div>',
+        template: `<div class="sigma-plot" ng-class="{'has-network': hasNetwork === true}"></div>`,
         scope: {
           plotNetworks: "=",
           plotUnits: "=",
@@ -273,7 +273,7 @@
                 }
               }
             ;
-            scope.sig.graph.nodes().filter(nn=>nn["node.parent.uuid"]===data).forEach(n=>{
+            scope.sig.graph.nodes().filter(nn=>nn["node.parent.uuid"]===data).forEach(n => {
               n.tox = parentNode[0].x;
               n.toy = parentNode[0].y;
               n.tosize = n.size;
@@ -283,14 +283,18 @@
 
             animateNodes(toAnimate);
           });
-          scope.$on("plottable-data-update", function(event,originalData,reset) {
+          scope.$on("plottable-data-update", function(event, originalData, reset) {
             var
                hasParent
               ,data = angular.copy(originalData)
               ,toAnimate
             ;
-            if(reset === true) resetCamera(data.axisBounds);
+            if(reset === true) {
+              resetCamera(data.axisBounds);
+            }
+
             scope.$apply(()=>scope.hasNetwork = (data.network.edges.length > 0));
+            console.log("plottable-data-update");
 
             toAnimate = {
                nodes: []
@@ -301,9 +305,9 @@
                 ;
 
                 if(scope.plotNetworks) {
-                  scope.sig.graph.edges().map(e=>e.id).filter( function( el ) {
-                    return data.network.edges.map(e=>e.id).indexOf( el ) < 0;
-                  }).forEach(e=>scope.sig.graph.dropEdge(e));
+                  scope.sig.graph.edges().map(e=>e.id).filter(el => {
+                    return data.network.edges.map(e=>e.id).indexOf(el) < 0;
+                  }).forEach(e => scope.sig.graph.dropEdge(e));
 
                   scope.sig.graph.nodes()
                     .filter(n=>n.nodeType==="code")
@@ -320,6 +324,7 @@
 
                     e.size = _e.size;
                     e.color = _e.color;
+                    //TODO: color
 
                     if(!curEdge)
                       scope.sig.graph.addEdge(e);
@@ -435,6 +440,7 @@
               $episode = null,
               $top = $("#timelineTopBar"),
               timelineWidth = $("#timelineAdjustersWrapper").width();
+
             $(window).on("mousemove.enaGrab", _.throttle(function($event) {
               $event.preventDefault();
               var x = Math.round($event.pageX),
@@ -499,14 +505,10 @@
     .directive("housesAdded", [function(){
       return {
         restrict: 'EA',
-        scope: {},
+        scope: true,
         transclude: true,
         templateUrl: "templates/housesAdded.html",
         link: function(scope, element, attrs) {
-          scope.colors = {
-            "top": "#5399C7",
-            "bottom": "#EAA647"
-          };
           scope.housesAdded = [];
           scope.showCharacters = null;
 
@@ -514,7 +516,8 @@
             scope.showCharacters = (scope.showCharacters === house ? null : house);
           };
 
-          scope.$on("house-added", function(event, item){
+          scope.$on("house-added", function(event, item) {
+            console.log("house added", item);
             var currentHouses = scope.housesAdded,
               currentHouse = currentHouses[item.house.house],
               haveHouse = !!currentHouse;
@@ -525,47 +528,37 @@
 
               var newUnits = item.house.characters.map(c=>{
                 newUnit = { character: c, code: true, unit: true, house: item.house.house  }
-                scope.$parent.unitsSelected.push(newUnit);
+                scope.unitsSelected.push(newUnit);
                 return newUnit;
               });
 
               scope.showCharacters = item.house.house;
-              Shiny.onInputChange("unitsSelected", scope.$parent.unitsSelected.map(u=>{return u.character}));
+              Shiny.onInputChange("unitsSelected", scope.unitsSelected.map(u=> u.character));
               Shiny.onInputChange("unitAdded", JSON.stringify(newUnits));
             } else if (item.type === "character") {
               if (!haveHouse) scope.housesAdded[item.house.house] = item.house;
               var newUnit = {'character': item.character, 'house': item.house.house};
-              //item.house.selected.push(newUnit);
-              //scope.housesAdded[item.house.house].selected.push(newUnit);
               scope.showCharacters = item.house.house;
 
-              scope.$parent.unitsSelected.push(newUnit)
-              Shiny.onInputChange("unitsSelected", scope.$parent.unitsSelected.map(u=>{return u.character}));
+              scope.unitsSelected.push(newUnit)
+              Shiny.onInputChange("unitsSelected", scope.unitsSelected.map(u=> u.character));
               Shiny.onInputChange("unitAdded",  JSON.stringify([item]));
             }
-
-            /*
-            scope.housesAdded = scope.$parent.housesJSON
-              .filter(h=>{ return (h.selected && h.selected.length>0) })
-              .map(h=>{return {
-                house:h.selected[0].house,
-                characters: h.selected.map (c=>{return c.character})
-               }
-              })
-            */
           });
+
           scope.$on("units-loaded", function(event, units) {
-            Array.from(new Set(units.map(u=>{return u.house})))
-            scope.housesAdded = Array.from(new Set(units.map(u=>{return u.house}))).map(h=>{
-              var hs = scope.$parent.housesJSON.filter(hj=>{return hj.house === h})[0];
+            scope.housesAdded = Array.from(new Set(units.map(u => u.house))).map(h => {
+              let hs = _.find(scope.housesJSON, hj => hj.house === h);
               hs.selected = [];
               return hs;
             });
 
-            units.forEach(u=>{
-              scope.housesAdded[u.house] = scope.housesAdded[u.house] || scope.$parent.housesJSON.filter(h=>{return( h.house === u.house );})[0];
-              //scope.housesAdded[u.house].selected = []; // scope.housesAdded[u.house].selected || [];
-              scope.housesAdded[u.house].selected.push(u);
+            units.forEach(u => {
+              let h = _.find(scope.housesJSON, h => h.house === u.house);
+              if (scope.opts.houseColors[h.house]) {
+                h.colors = scope.opts.houseColors[h.house].colors;
+              }
+              h.selected.push(u);
             });
           });
         }
@@ -666,7 +659,6 @@
     .directive("hoverNames", [function() {
       return {
         "restrict": "A",
-        //"scope": true,
         "link": function($scope, $element, $attrs) {
           $element.on("mouseenter", ".highlightedWord", function($event) {
             let $el = $($event.target);
@@ -685,7 +677,8 @@
         "restrict": "A",
         "scope": {
           "topColor": "=",
-          "bottomColor": "="
+          "bottomColor": "=",
+          "house": "="
         },
         "template": COLOR_CIRCLE_TEMP,
         "link": function($scope, $element, $attrs) {
@@ -695,6 +688,11 @@
               $element.popover("toggle");
             });
           });
+
+          $scope.$watchGroup([() => $scope.topColor, () => $scope.bottomColor], function(colors) {
+              $scope.$emit("house-colors-changed", $scope.house);
+          });
+
           $element.popover({
             "trigger": "manual",
             "container": "body",
@@ -758,7 +756,7 @@
                 $scope.selectColor(color);
               });
             }
-          }, 10));
+          }, 50));
 
           $scope.$watch('active.main', updateColorPicker);
           $scope.$watch('topColor', updateColorPicker);
@@ -769,10 +767,12 @@
           }
 
           $scope.selectColor = function(color) {
-            if ($scope.active.main) {
-              $scope.topColor = color;
-            } else {
-              $scope.bottomColor = color;
+            if (color !== $scope.topColor && color !== $scope.bottomColor) {
+              if ($scope.active.main) {
+                $scope.topColor = color;
+              } else {
+                $scope.bottomColor = color;
+              }
             }
           }
           $scope.selectPreset = function(pair) {
@@ -796,11 +796,12 @@
       $scope.timeline2 = null;
       $scope.opts = {
         "showCharacters": true,
-        "showEpisodeSummary": false
+        "showEpisodeSummary": false,
+        "houseColors": {}
       };
       loadSettings().then(settings => {
         if (!_.isEmpty(settings)) {
-          $scope.opts = settings;
+          _.extend($scope.opts, settings);
         }
       });
       $scope.data = {
@@ -821,6 +822,12 @@
       $scope.activeHouse = undefined;
       $scope.activeDrag = false;
 
+      $scope.$on("house-colors-changed", function(ev, house) {
+        $scope.opts.houseColors[house.house] = ($scope.opts.houseColors[house.house] || {});
+        $scope.opts.houseColors[house.house].colors = house.colors;
+        saveSettings();
+        //TODO: update plot/new colors
+      });
       $scope.$on("unitClicked", function(ev, selections) {
         $scope.unitsPlotted = selections;
         var text = "";
@@ -907,18 +914,20 @@
       }
 
       $timeout(function() {
-        Shiny.onInputChange("getPlotData",{});
+        Shiny.onInputChange("getPlotData", {});
         Shiny.addCustomMessageHandler("mainPlotData", function(data) {
           var
               broadcast = false
              ,newData = JSON.parse(data)
           ;
-          if(typeof $scope.data.mainplot === "undefined" || (newData.nodes && $scope.data.mainplot.nodes.length!==newData.nodes.length)){
+
+          if(typeof $scope.data.mainplot === "undefined" ||
+              (newData.nodes && $scope.data.mainplot.nodes.length!==newData.nodes.length)) {
             broadcast = true;
           }
           $scope.data.mainplot = newData;
           if(broadcast === true){
-            console.log("Have the data.")
+            console.info("Have the data.")
             $scope.$broadcast("plottable-data-update", JSON.parse(data), true);
           }
         });
@@ -935,6 +944,7 @@
           $scope.$broadcast("plottable-remove-nodes", data);
         })
         Shiny.addCustomMessageHandler("newPlottableData", function(data) {
+          console.log("new plottable data", data);
           $scope.$broadcast("plottable-data-update", data, false);
         });
         Shiny.addCustomMessageHandler("unitsSelected", function(units) {
@@ -979,12 +989,6 @@
             $scope.$broadcast("comparison-changed", compJSON);
           });
         });
-        //Shiny.addCustomMessageHandler("unitsClicked", function(a) {
-        //  console.log("Clicked a node: ", a);
-        //});
-        //Shiny.addCustomMessageHandler("edgeClicked", function(e) {
-        //  console.log("Clicked an edge.", e);
-        //});
       });
 
       $scope.$watchCollection('opts', saveSettings);
