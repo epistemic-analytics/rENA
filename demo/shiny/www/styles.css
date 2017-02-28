@@ -1330,10 +1330,6 @@ sigma-node-plot#plot-6 {
 }
 
 
-div.sigma-plot {
-    height: 100%;
-    display: block;
-}
 
 sigma-node-plot {
     display: block;
@@ -1345,8 +1341,31 @@ div#sigmaPlot {
     min-height: calc(100% - 60px) !important;
     display: inline;
 }
+#sigmaPlot div.sigma-plot {
+    height: 100%;
+}
 
 
 div#sigmaPlotNetwork1 {
     height: 100%;
+}
+#sidePlotColumn canvas.sigma-measurement-canvas {
+    height: calc(100% - 0px) !important;
+}
+#sidePlotColumn .sigma-plot {
+    height: calc(100% - 0px);
+    display: block;
+}
+#sigmaPlot canvas.sigma-measurement-canvas {
+    height: calc(100% - 60px) !important;
+}
+
+#sigmaPlot div.sigma-plot {
+    height: calc(100% - 60px);
+    display: block;
+}
+
+
+g.sigma-node-group.activeNode {
+    opacity: 1.0;
 }

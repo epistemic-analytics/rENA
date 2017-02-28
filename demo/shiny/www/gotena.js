@@ -40,7 +40,7 @@
           Shiny.onInputChange("unitClicked"+(selectedLen+1), clickData.data.node); //selected);
           ENA.graphs.unit.selections.push(clickData.data.node); //selected);
         }
-        Shiny.onInputChange("unitsClicked", ENA.graphs.unit.selections);
+        Shiny.onInputChange("unitsClicked", { nodes: ENA.graphs.unit.selections, type: "animate", nonce: Math.random() });
         ENA.app.scope().$broadcast("unitClicked", ENA.graphs.unit.selections);
 
         clearTimeout(clickTimeout);
@@ -59,17 +59,25 @@
   ENA.graphs.unit.events["overNode"] = function(hoveredData) {
     var selected = hoveredData.data.node.label,
       selectedLen = ENA.graphs.unit.selections.length;
-    if (selectedLen === 1 && !ENA.graphs.unit.selections.some(s => s.label == selected)) {
+
+    if (selectedLen === 1 && ENA.graphs.unit.selections[0].id !== hoveredData.data.node.id) {
+      //ENA.graphs.unit.selections.push(hoveredData.data.node);
       Shiny.onInputChange("unitClicked2", hoveredData.data.node);
+      Shiny.onInputChange("unitsClicked", { nodes: [ENA.graphs.unit.selections[0],hoveredData.data.node], type: "def", nonce: Math.random() });
     }
   };
   ENA.graphs.unit.events["outNode"] = function(hoveredData) {
     var
       selected = hoveredData.data.node.label,
-      selectedLen = ENA.graphs.unit.selections.length
+      selectedLen
     ;
-    if(selectedLen===1) {
-      Shiny.onInputChange("unitClicked2", null); //selected);
+    selectedLen = ENA.graphs.unit.selections.length;
+
+    if(selectedLen===1 && ENA.graphs.unit.selections[0].id !== hoveredData.data.node.id) {
+      ENA.graphs.unit.selections = [ENA.graphs.unit.selections[0]] //.filter(s=>s.label!==selected);
+      Shiny.onInputChange("unitClicked2", null);
+      Shiny.onInputChange("unitsClicked", { nodes: [ENA.graphs.unit.selections[0]], type: "def", nonce: Math.random() });
+      ENA.app.scope().$broadcast("plot.clear2", ENA.graphs.unit.selections);
     }
   };
   ENA.graphs.unit.events["overEdge"] = function(edgeData) {
@@ -130,250 +138,6 @@
 
 
     /** Directives **/
-    .directive("sigmaNodePlot", ["$timeout", function($timeout){
-      return {
-        restrict: 'E',
-        template: '<div class="sigma-plot" ng-class=\'{"has-network": hasNetwork===true }\'></div>',
-        scope: {
-          plotNetworks: "=",
-          plotUnits: "=",
-        },
-        link: function(scope, element, attrs) {
-          scope.sig = null;
-          scope.hasNetwork = false;
-          scope.hasUnits = false;
-
-          var
-             data = {
-               axisBounds: [-20]
-             }
-            ,i, o, nodesToPlot = []
-            ,g = { nodes: [] }
-            ,plotter = angular.element(element).find(".sigma-plot")
-            ,plotterID = Math.round(Math.random()*1000)
-          ;
-
-          function resetCamera(bounds) {
-            plotterID = Math.round(Math.random()*1000);
-            plotter.attr("id", "plot-"+plotterID);
-
-            if(scope.sig !== null) {
-              scope.sig.graph.clear();
-              scope.sig.refresh();
-              plotter.find(" > *").remove()
-              scope.sig.kill();
-            }
-
-            scope.sig = new sigma({
-              renderers: [{
-                container: document.getElementById("plot-"+plotterID),
-                type: 'svg'
-              }],
-              settings : {
-                backgroundColor: "#FFFFFF",
-                sideMargin: 0,
-                animationsTime: 500,
-                zoomMin: 1,
-                zoomMax: 1,
-                enableCamera: false,
-                minNodeSize: 0.1,
-                maxNodeSize: 5,
-
-                // Edge settings
-                minEdgeSize: 0,
-                maxEdgeSize: 10,
-                batchEdgesDrawing: true,
-                webglEdgesBatchSize: 1,
-
-                // Label settings
-                labelThreshold: 1,
-                defaultLabelSize: 10
-              }
-            });
-            if(typeof bounds !== "undefined") {
-              scope.sig.settings('bounds',{
-                minX: -bounds[0],
-                maxX: bounds[0],
-                minY: -bounds[0],
-                maxY: bounds[0],
-                sizeMax: 1,
-                weightMax: -Infinity
-              });
-            }
-            CustomShapes.init(scope.sig);
-
-            scope.sig.bind("clickNode", ENA.graphs.unit.events.clickNode)
-            scope.sig.bind("doubleClickNode", ENA.graphs.unit.events.doubleClickNode)
-            scope.sig.addAxisLines({color: "#CCCCCC", bounds: bounds}); //data.axisBounds);
-            scope.sig.refresh();
-          }
-          function animateNodes(toAnimate) {
-            if(toAnimate.nodes.length > 0) {
-              sigma.plugins.animate(
-                scope.sig,
-                {x: 'tox', y:'toy', size: 'tosize', color: 'tocolor'},
-                toAnimate
-              );
-              scope.sig.refresh();
-            }
-          }
-
-          scope.$on("plottable-show-nodes", function(event, ids) {
-            var
-               nodes = scope.sig.graph.nodes().filter(n=>ids.filter(i=>i===n["plottable.uuid"]).length>0)
-              ,toAnimate = {
-                nodes: [],
-                onComplete: function(){
-                  console.log("Unhide the nodes");
-                }
-              }
-            ;
-            nodes.forEach(n=>{
-              n.tosize = n.originalsize || 1;
-              n.tocolor = n.originalcolor || "#000000";
-              n.tox = n.x;
-              n.toy = n.y;
-              n.hidden = false;
-              toAnimate.nodes.push(n.id);
-            });
-            animateNodes(toAnimate);
-          });
-          scope.$on("plottable-hide-nodes", function(event, ids) {
-            var
-               nodes = scope.sig.graph.nodes().filter(n=>ids.filter(i=>i===n["plottable.uuid"]).length>0)
-              ,toAnimate = {
-                nodes: [],
-                onComplete: function() {
-                  nodes.map(n=>{n.hidden=true;})
-                  scope.sig.refresh();
-                }
-              }
-            ;
-            nodes.forEach(n=>{
-              n.originalsize = n.size;
-              n.originalcolor = n.color;
-              n.tosize = 0;
-              n.tox = n.x;
-              n.toy = n.y;
-              n.tocolor = "#FFFFFF";
-              toAnimate.nodes.push(n.id);
-            });
-            //$timeout(function() {
-              animateNodes(toAnimate);
-            //},1000)
-          });
-          scope.$on("plottable-remove-nodes", function(event, data){
-            var
-              parentNode = scope.sig.graph.nodes().filter(n=>n["node.uuid"]===data)
-              ,toAnimate = {
-                nodes: [ ],
-                onComplete: function(){
-                  this.nodes.forEach(n=>scope.sig.graph.dropNode(n));
-                  scope.sig.refresh();
-                }
-              }
-            ;
-            scope.sig.graph.nodes().filter(nn=>nn["node.parent.uuid"]===data).forEach(n=>{
-              n.tox = parentNode[0].x;
-              n.toy = parentNode[0].y;
-              n.tosize = n.size;
-              n.tocolor = n.color;
-              toAnimate.nodes.push(n.id);
-            });
-
-            animateNodes(toAnimate);
-          });
-          scope.$on("plottable-data-update", function(event,originalData,reset) {
-            var
-               hasParent
-              ,data = angular.copy(originalData)
-              ,toAnimate
-            ;
-            if(reset === true) resetCamera(data.axisBounds);
-            scope.$apply(()=>scope.hasNetwork = (data.network.edges.length > 0));
-
-            toAnimate = {
-               nodes: []
-              ,onComplete: function() {
-                var
-                   curEdge
-                  ,_e
-                ;
-
-                if(scope.plotNetworks) {
-                  scope.sig.graph.edges().map(e=>e.id).filter( function( el ) {
-                    return data.network.edges.map(e=>e.id).indexOf( el ) < 0;
-                  }).forEach(e=>scope.sig.graph.dropEdge(e));
-
-                  scope.sig.graph.nodes()
-                    .filter(n=>n.nodeType==="code")
-                    .map(e=>e.id).filter( function( el ) {
-                      return data.network.nodes.map(e=>e.id).indexOf( el ) < 0;
-                    })
-                    .forEach(e=>scope.sig.graph.dropNode(e))
-                  ;
-
-                  data.network.edges.forEach(function(e,i) {
-                    curEdge = scope.sig.graph.edges(e.id);
-                    _e = angular.copy(e);
-                    e = curEdge || e;
-
-                    e.size = _e.size;
-                    e.color = _e.color;
-
-                    if(!curEdge)
-                      scope.sig.graph.addEdge(e);
-                  });
-
-                  _e = undefined;
-                  scope.sig.refresh();
-
-                  sigma.plugins.animateEdges(scope.sig, scope.sig.graph.edges(), scope.sig.settings);
-                }
-              }
-            }
-
-            if(scope.plotUnits)
-              nodesToPlot = nodesToPlot.concat(data.nodes);
-            if(scope.plotNetworks)
-              nodesToPlot = nodesToPlot.concat(data.network.nodes);
-
-            nodesToPlot.forEach(function(n,i) {
-              var
-                 _g = scope.sig.graph
-                ,hasParent = _g.nodes().filter(nn=>nn["node.uuid"]===n["node.parent.uuid"])
-                ,curNode = _g.nodes(n.id)
-                ,_n = angular.copy(n)
-                ,n = curNode || n
-                ,isNew = !curNode
-              ;
-
-              n.tox = _n.x;
-              n.toy = _n.y;
-              n.tocolor = _n.color; // n.character to lookup the color
-              n.tosize = _n.originalsize = _n.size;
-              n.hidden = false;
-              if(curNode) {
-                n.x = curNode.x
-                n.y = curNode.y
-              } else if(hasParent.length > 0) {
-                n.x = hasParent[0].x;
-                n.y = hasParent[0].y;
-              } else {
-                n.x = 0;
-                n.y = 0;
-              }
-              toAnimate.nodes.push(n.id);
-
-              if(isNew) scope.sig.graph.addNode(n)
-              _n = undefined;
-            });
-            scope.sig.refresh();
-            animateNodes(toAnimate);
-          });
-        }
-      }
-    }])
     .directive("enaTimeline", [function(){
       return {
         restrict: 'E',
@@ -821,10 +585,17 @@
       $scope.activeHouse = undefined;
       $scope.activeDrag = false;
 
+      $scope.$on("call.plot.clear",function(ev,wh) {
+        $scope.$broadcast("plot.clear"+wh);
+      });
       $scope.$on("unitClicked", function(ev, selections) {
         $scope.unitsPlotted = selections;
         var text = "";
-        var selNames = selections.map(s=>("[data-node-id='unit."+s.label+"']"))
+        var selNames = selections.map(s=>(".sigma-node-group circle.sigma-node[data-node-id='unit."+s.label+"']"))
+        angular.element("g.activeNode").removeClass("activeNode");
+        selections.forEach(s=>
+          angular.element("g[data-node-id='unit."+s.label+"']").addClass("activeNode")
+        )
         selNames.forEach((n,i)=>{
           text+=("\n"+n+" {\n\topacity: 1.0 !important;\n\tfill: " + (["blue", "green"])[i] + "\n}\n")
         });
@@ -1074,14 +845,15 @@
       $scope.clearPlot = function(wh) {
         ENA.graphs.unit.selections.splice(wh-1,1)
         Shiny.onInputChange("unitClicked"+wh, null);
-
+        $scope.$emit("call.plot.clear",wh);
         if (wh === 1 && ENA.graphs.unit.selections.length > 0) {
           Shiny.onInputChange("unitClicked"+2, null)
           Shiny.onInputChange("unitClicked"+1, ENA.graphs.unit.selections[0])
         }
 
-        Shiny.onInputChange("unitsClicked", { nonce: Math.random(), value: ENA.graphs.unit.selections });
+        Shiny.onInputChange("unitsClicked", { nonce: Math.random(), nodes: ENA.graphs.unit.selections, type: "def" });
         $scope.$emit("unitClicked", ENA.graphs.unit.selections);
+
       };
       $scope.switchPlots = function() {
         ENA.graphs.unit.selections = ENA.graphs.unit.selections.reverse();
