@@ -536,11 +536,16 @@ shinyServer(function(input, output, session) {
     values$settings$collapseTo = jsonlite::fromJSON(input$collapseTo);
   });
   observeEvent(input$timelineFiltered, {
+    #browser();
     values$timelineFiltered = jsonlite::fromJSON(input$timelineFiltered);
+    #session$sendCustomMessage("newPlottableData", rjson::toJSON(plotNodes()));
+    values$mainPlotData = getPlottableData();
+    session$sendCustomMessage("newPlottableData", jsonlite::toJSON(plotNodes(), auto_unbox = T))
   });
   observeEvent(input$scaledUnits, {
     values$scaledUnits = input$scaledUnits;
-    session$sendCustomMessage("newPlottableData", rjson::toJSON(plotNodes()));
+    #session$sendCustomMessage("newPlottableData", rjson::toJSON(plotNodes()));
+    session$sendCustomMessage("newPlottableData", jsonlite::toJSON(plotNodes(), auto_unbox = T))
   });
   observeEvent(input$updateUnits, {
     upUnits = jsonlite::fromJSON(input$updateUnits);
