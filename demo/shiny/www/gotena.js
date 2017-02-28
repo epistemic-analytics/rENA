@@ -127,6 +127,18 @@
     }])
 
     /** Services **/
+    .service("Helper", [function() {
+      return {
+        "setTopBarGradient": function($top, $center) {
+          let pos = $top.position().left,
+            center = $center.position().left,
+            topBarSplit = (center - pos) + 22;
+          $top.css("background", ("linear-gradient(to right, #000 " + topBarSplit +
+            "px, #FFFFFF " + topBarSplit + "px, #FFFFFF " + (topBarSplit + 1) +
+            "px, #808080 " + (topBarSplit + 1) + "px)"));
+        }
+      };
+    }])
 
 
     /** Directives **/
@@ -294,7 +306,7 @@
             }
 
             scope.$apply(()=>scope.hasNetwork = (data.network.edges.length > 0));
-            console.log("plottable-data-update");
+            //console.log("plottable-data-update");
 
             toAnimate = {
                nodes: []
@@ -403,7 +415,7 @@
         }
       }
     }])
-    .directive("enaSplitTimeline", [function() {
+    .directive("enaSplitTimeline", ["Helper", "$timeout", function(Helper, $timeout) {
       return {
         "restrict": "A",
         "templateUrl": "templates/splitTimeline.html",
@@ -413,16 +425,19 @@
           $scope.splitSelect = function($event, season, episode) {
             $scope.splitTimelineAt("center", season, episode);
             $scope.opened.splitChosen = true;
-            var $target = $($event.target),
-              $center = $element.find(".splitGrabCenter"),
-              xOffset = $target.position().left;
+            var $center = $element.find(".splitGrabCenter"),
+              xOffset = $($event.target).position().left,
+              $top = $("#timelineTopBar");
             $center.css("left", (xOffset - 6) + "px");
+            $timeout(function() {
+              Helper.setTopBarGradient($top, $center);
+            }, 50);
           };
 
         }
       };
     }])
-    .directive("splitGrab", [function() {
+    .directive("splitGrab", ["Helper", function(Helper) {
       return {
         "restrict": "A",
         "template": `<span class="splitGrabOuter">
@@ -433,6 +448,7 @@
           $element.on("mousedown.enaGrab", function($event) {
             $event.preventDefault();
             var $timeline = $("#timeline-groups"),
+                $splitGrabCenter = $("#timelineAdjusters .splitGrab.splitGrabCenter"),
                 cl = $element.closest(".splitGrab")[0].classList,
                 which = (cl.contains("splitGrabCenter") ? "center" :
                   (cl.contains("splitGrabLeft") ? "left" : "right")),
@@ -450,12 +466,20 @@
                       width = $e.outerWidth();
                   return (x <= (left + width) && x >= left && noOverlap(which, $e));
                 });
+
               if (episode) {
                 $episode = $(episode);
                 let left = ($episode.position().left - 6);
+
                 $element.closest(".splitGrab").css("left", left + "px");
-                updateTopBar(which, left, $top, timelineWidth);
+
+                //topbar
+                if (which !== "center") {
+                  $top.css(which, (which === "left" ? left : timelineWidth - left - 23) + "px"); //23 == grabber width
+                }
+                Helper.setTopBarGradient($top, $splitGrabCenter);
               }
+
             }, 50)).on("mouseup.enaGrab", function($event) {
               $(window).off("mouseup.enaGrab").off("mousemove.enaGrab");
               if ($episode) {
@@ -463,9 +487,6 @@
               }
             });
 
-            function updateTopBar(which, left, $top, width) {
-              $top.css(which, (which === "left" ? left : width - left - 23) + "px"); //23 == grabber width
-            }
             function noOverlap(which, $episode) {
               let scope = $episode.scope(),
                 s = _.toInt(scope.season),
@@ -517,7 +538,7 @@
           };
 
           scope.$on("house-added", function(event, item) {
-            console.log("house added", item);
+            //console.log("house added", item);
             var currentHouses = scope.housesAdded,
               currentHouse = currentHouses[item.house.house],
               haveHouse = !!currentHouse;
@@ -940,11 +961,11 @@
           $scope.$broadcast("plottable-show-nodes", showNodes);
         });
         Shiny.addCustomMessageHandler("removeChildNodes", function(data){
-          console.log("Data: ", data);
+          //console.log("Data: ", data);
           $scope.$broadcast("plottable-remove-nodes", data);
         })
         Shiny.addCustomMessageHandler("newPlottableData", function(data) {
-          console.log("new plottable data", data);
+          //console.log("new plottable data", data);
           $scope.$broadcast("plottable-data-update", data, false);
         });
         Shiny.addCustomMessageHandler("unitsSelected", function(units) {
@@ -1059,7 +1080,7 @@
           $scope.positions.center.season = _.toInt(season);
           $scope.positions.center.episode = _.toInt(episode);
         }
-        $("#timelineTopBar").css({"left": "", "right" : ""});
+        $("#timelineTopBar").css({"left": "", "right" : "", "background": ""});
         $(".splitGrab").css("left", "");
         updateGraphSplit();
       };
