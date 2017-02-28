@@ -477,7 +477,9 @@
                 if (which !== "center") {
                   $top.css(which, (which === "left" ? left : timelineWidth - left - 23) + "px"); //23 == grabber width
                 }
-                Helper.setTopBarGradient($top, $splitGrabCenter);
+                if ($scope.opened.split && $scope.opened.splitChosen) {
+                  Helper.setTopBarGradient($top, $splitGrabCenter);
+                }
               }
 
             }, 50)).on("mouseup.enaGrab", function($event) {

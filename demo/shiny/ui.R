@@ -45,7 +45,7 @@ shinyUI(fluidPage(
           HTML("<ena-timeline timeline='timeline'></ena-timeline>"),
           withTags(
             span(id="timelineBtnWrap",
-              span(
+              span("class"="clearfix",
                 button('class'="glyphicon glyphicon-play pull-left", 'title'="Play Seasons",
                   'ng-click'="play($event)", 'ng-if'="!opened.playing",
                   HTML("<md-tooltip md-direction='left'>Play Seasons</md-tooltip>"),
@@ -57,20 +57,22 @@ shinyUI(fluidPage(
                   tags$span("Episodes", class="hidden-sm hidden-xs")
                 )
               ),
-              button('class'="glyphicon glyphicon-stop pull-left",
-                'ng-click'="stopPlay($event)",'ng-if'="opened.playing",
-                HTML("<md-tooltip md-direction='left'>Stop Playing</md-tooltip>"),
-                tags$span("Stop", class="hidden-sm hidden-xs")
-              ),
-              button('class'="glyphicon glyphicon-resize-horizontal pull-left",
-                'ng-click'="split($event)", 'ng-if'="!opened.split",
-                HTML("<md-tooltip md-direction='left'>Split Timeline</md-tooltip>"),
-                tags$span("Split Timeline", class="hidden-sm hidden-xs")
-              ),
-              button('class'="glyphicon glyphicon-ban-circle pull-left",
-                'ng-click'="clearSplit($event)",'ng-if'="opened.split",
-                HTML("<md-tooltip md-direction='left'>Clear Timeline</md-tooltip>"),
-                tags$span("Clear Timeline", class="hidden-sm hidden-xs")
+              span('class'="clearfix bigTimelineButtons",
+                button('class'="glyphicon glyphicon-stop pull-left",
+                  'ng-click'="stopPlay($event)",'ng-if'="opened.playing",
+                  HTML("<md-tooltip md-direction='left'>Stop Playing</md-tooltip>"),
+                  tags$span("Stop", class="hidden-sm hidden-xs")
+                ),
+                button('class'="glyphicon glyphicon-resize-horizontal pull-left",
+                  'ng-click'="split($event)", 'ng-if'="!opened.split",
+                  HTML("<md-tooltip md-direction='left'>Split Timeline</md-tooltip>"),
+                  tags$span("Split Timeline", class="hidden-sm hidden-xs")
+                ),
+                button('class'="glyphicon glyphicon-ban-circle pull-left",
+                  'ng-click'="clearSplit($event)",'ng-if'="opened.split",
+                  HTML("<md-tooltip md-direction='left'>Clear Timeline</md-tooltip>"),
+                  tags$span("Clear Timeline", class="hidden-sm hidden-xs")
+                )
               )
             )
           )
