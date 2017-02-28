@@ -57,10 +57,16 @@
     }
   };
   ENA.graphs.unit.events["overNode"] = function(hoveredData) {
-    var selected = hoveredData.data.node.label,
-      selectedLen = ENA.graphs.unit.selections.length;
+    var
+      node = hoveredData.data.node,
+      selected = node.label,
+      selectedLen = ENA.graphs.unit.selections.length
+    ;
 
-    if (selectedLen === 1 && ENA.graphs.unit.selections[0].id !== hoveredData.data.node.id) {
+    if (
+      node.nodeType !== "code" &&
+      selectedLen === 1 && ENA.graphs.unit.selections[0].id !== hoveredData.data.node.id
+    ) {
       //ENA.graphs.unit.selections.push(hoveredData.data.node);
       Shiny.onInputChange("unitClicked2", hoveredData.data.node);
       Shiny.onInputChange("unitsClicked", { nodes: [ENA.graphs.unit.selections[0],hoveredData.data.node], type: "def", nonce: Math.random() });
@@ -68,12 +74,14 @@
   };
   ENA.graphs.unit.events["outNode"] = function(hoveredData) {
     var
+      node = hoveredData.data.node,
       selected = hoveredData.data.node.label,
       selectedLen
     ;
     selectedLen = ENA.graphs.unit.selections.length;
 
-    if(selectedLen===1 && ENA.graphs.unit.selections[0].id !== hoveredData.data.node.id) {
+    if(
+      node.nodeType !== "code" && selectedLen===1 && ENA.graphs.unit.selections[0].id !== hoveredData.data.node.id) {
       ENA.graphs.unit.selections = [ENA.graphs.unit.selections[0]] //.filter(s=>s.label!==selected);
       Shiny.onInputChange("unitClicked2", null);
       Shiny.onInputChange("unitsClicked", { nodes: [ENA.graphs.unit.selections[0]], type: "def", nonce: Math.random() });
