@@ -571,14 +571,14 @@ div[ng-controller='ENACtrl'] {
         top: -1px;
         position: relative;
       }
-    #sidePlotColumn #sigmaNet2 {
+    #sidePlotColumn #sigmaPlotNetwork2 sigma-node-plot {
       outline: 1px solid #f0f0f0;
     }
     #sidePlotColumn .shiny-plot-output {
       padding-top: 10px;
     }
 
-    #sidePlotColumn #sigmaNet1 {
+    #sidePlotColumn #sigmaPlotNetwork1 sigma-node-plot {
       outline: 5px solid #f0f0f0;
     }
     #sidePlotColumn div#mainPlot {
