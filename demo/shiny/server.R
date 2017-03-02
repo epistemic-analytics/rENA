@@ -27,7 +27,7 @@ shinyServer(function(input, output, session) {
     codesSelected = gsub("\\.","_", c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Tyrion','Tywin','Bran')),
     scaleRatio = 1,
     settings = list(
-      "allowUpdate" = F,
+      "allowUpdate" = T,
       "conversationsBy" = c("season", "episode"),
       "grouping" = c("character","season", "episode"),
       "collapseTo" = c("character")
@@ -237,25 +237,20 @@ shinyServer(function(input, output, session) {
     r.list2$edges = lapply(1:length(val$fullNodes), function(n) {
       d = as.data.frame(t(val$fullNodes[,n,with=F]));
       label=paste(d[,3],d[,4],sep=".");
-      # list(
-      #   label=label, id=label,
-      #   size=abs(as.numeric(x[1,][[1]])*log(input$edgeZoom)+0.1),
-      #   color=as.character(x[2,]),
-      #   source=x[3,], target=x[4,],
-      #   type="animate"
-      # );
-      #d = data.frame(t(val$fullNodes[,n,with=F]))
       d$label = label;
       d$id = label;
-      d$type = "animate";
+      d$type = input$unitsClicked$type; #"animate";
       colnames(d) = c("size","color","source","target","label","id","type")
       d
     })
     r.list2$edges = rbindlist(r.list2$edges);
-
-    r.list2$edges = r.list2$edges[order(-rank(unlist(size))),] #r.list2$edges[,sort.list(as.vector(unlist(r.list2$edges[3,,with=T])), decreasing=T), with=F]
-    #nodeCoords = data.table(t(as.data.frame(lapply(r.list2$nodes, function(n) { return(c(x=n$x,y=n$y)) }))));
-    #r.list2$axisBounds = rep(max(nodeCoords[,.(x,y)])*2,2);
+    r.list2$edges[, size := abs(as.numeric(as.matrix(size)))];
+    r.list2$edges = r.list2$edges[order(-rank(unlist(size))),];
+    eSizeSum = sum(r.list2$edges$size)
+    r.list2$nodes = lapply(r.list2$nodes, function(cn) {
+      cn$size=r.list2$edges[source==cn$id|target==cn$id, sum(size)] / eSizeSum;
+      cn;
+    });
     r.list2$axisBounds = rep(max(abs(val$mode[,c('x','y')])),2);
     r.list2
   }
@@ -324,6 +319,8 @@ shinyServer(function(input, output, session) {
         nd
       }),
       network = mainNetwork,
+      network1 = sigmaNet1(),
+      network2 = sigmaNet2(),
       axisBounds = rep(max(abs(set$nodes$positions$scaled$positions), max(abs(allData[,.(x,y)]))),2)*10
     );
   })
@@ -362,6 +359,7 @@ shinyServer(function(input, output, session) {
     nodeList
   };
   sigmaNet1 = reactive({
+    #browser();
     if(!is.null(input$unitClicked1)) {
       val = updatePlot(input$unitClicked1);
       if(!is.null(val$mode)) {
@@ -395,6 +393,7 @@ shinyServer(function(input, output, session) {
         nodes = unique(c(values$network1$nodes, values$network2$nodes)),
         edgeColors = NULL
       )
+      sigmaNet2();
       eS1 = data.table::copy(values$network1$fullNodes[1,]);
       eS2 = data.table::copy(values$network2$fullNodes[1,]);
       colnames(eS1) = apply(values$network1$fullNodes[3:4], 2, paste, collapse="...");
@@ -415,9 +414,9 @@ shinyServer(function(input, output, session) {
       valToPlot = createSigmaNet2(val);
 
       valToPlot$nodes = lapply(valToPlot$nodes, function(n) { n$color = "#4d4d4d"; n$nodeType="code"; n });
-      values$sigmaNetComp = valToPlot; #rjson::toJSON(valToPlot);
+      values$sigmaNetComp = valToPlot;
     } else if (!is.null(input$unitClicked1)) {
-      values$sigmaNetComp = values$sigmaNet1
+      values$sigmaNetComp = sigmaNet1();
     } else {
       values$sigmaNetComp = list(nodes = list(), edges = list())
     }
@@ -427,47 +426,47 @@ shinyServer(function(input, output, session) {
   #####
   # Begin: Plots
   #####
-    output$sigma <- renderSigma(
-      sigma(
-        sigmaPlot(),
-        name="mainPlot",
-        drawEdges = T,
-        drawNodes = T,
-        clickNode=htmlwidgets::JS("ENA.graphs.unit.events.clickNode"),
-        doubleClickNode=htmlwidgets::JS("ENA.graphs.unit.events.doubleClickNode"),
-        overNode=htmlwidgets::JS("ENA.graphs.unit.events.overNode"),
-        outNode=htmlwidgets::JS("ENA.graphs.unit.events.outNode"),
-        overEdge=htmlwidgets::JS("ENA.graphs.unit.events.overEdge"),
-        outEdge=htmlwidgets::JS("ENA.graphs.unit.events.outEdge")
-      )
-    );
-    output$sigmaNet1 <- renderSigma(
-      sigma(
-        sigmaNet1(),
-        drawEdges = T,
-        drawNodes = T,
-        name="edgePlot1",
-        clickNode=htmlwidgets::JS("ENA.graphs.network.events.clickNode"),
-        clickEdge=htmlwidgets::JS("ENA.graphs.network.events.clickEdge"),
-        overEdge=htmlwidgets::JS("ENA.graphs.unit.events.overEdge"),
-        outEdge=htmlwidgets::JS("ENA.graphs.unit.events.outEdge")
-      )
-    );
-    output$sigmaNet2 <- renderSigma(
-      sigma(
-        sigmaNet2(),
-        drawEdges = T,
-        drawNodes = T,
-        name="edgePlot2",
-        clickNode=htmlwidgets::JS("ENA.graphs.network.events.clickNode"),
-        clickEdge=htmlwidgets::JS("ENA.graphs.network.events.clickEdge"),
-        overEdge=htmlwidgets::JS("ENA.graphs.unit.events.overEdge"),
-        outEdge=htmlwidgets::JS("ENA.graphs.unit.events.outEdge")
-      )
-    );
-    output$sigmaComparison <- renderSigma(
-      sigma(sigmaNetComp(),drawEdges = T, drawNodes = T, name="edgePlotComp")
-    );
+    # output$sigma <- renderSigma(
+    #   sigma(
+    #     sigmaPlot(),
+    #     name="mainPlot",
+    #     drawEdges = T,
+    #     drawNodes = T,
+    #     clickNode=htmlwidgets::JS("ENA.graphs.unit.events.clickNode"),
+    #     doubleClickNode=htmlwidgets::JS("ENA.graphs.unit.events.doubleClickNode"),
+    #     overNode=htmlwidgets::JS("ENA.graphs.unit.events.overNode"),
+    #     outNode=htmlwidgets::JS("ENA.graphs.unit.events.outNode"),
+    #     overEdge=htmlwidgets::JS("ENA.graphs.unit.events.overEdge"),
+    #     outEdge=htmlwidgets::JS("ENA.graphs.unit.events.outEdge")
+    #   )
+    # );
+    # output$sigmaNet1 <- renderSigma(
+    #   sigma(
+    #     sigmaNet1(),
+    #     drawEdges = T,
+    #     drawNodes = T,
+    #     name="edgePlot1",
+    #     clickNode=htmlwidgets::JS("ENA.graphs.network.events.clickNode"),
+    #     clickEdge=htmlwidgets::JS("ENA.graphs.network.events.clickEdge"),
+    #     overEdge=htmlwidgets::JS("ENA.graphs.unit.events.overEdge"),
+    #     outEdge=htmlwidgets::JS("ENA.graphs.unit.events.outEdge")
+    #   )
+    # );
+    # output$sigmaNet2 <- renderSigma(
+    #   sigma(
+    #     sigmaNet2(),
+    #     drawEdges = T,
+    #     drawNodes = T,
+    #     name="edgePlot2",
+    #     clickNode=htmlwidgets::JS("ENA.graphs.network.events.clickNode"),
+    #     clickEdge=htmlwidgets::JS("ENA.graphs.network.events.clickEdge"),
+    #     overEdge=htmlwidgets::JS("ENA.graphs.unit.events.overEdge"),
+    #     outEdge=htmlwidgets::JS("ENA.graphs.unit.events.outEdge")
+    #   )
+    # );
+    # output$sigmaComparison <- renderSigma(
+    #   sigma(sigmaNetComp(),drawEdges = T, drawNodes = T, name="edgePlotComp")
+    # );
   #####
   # End: Plots
   #####
@@ -538,11 +537,16 @@ shinyServer(function(input, output, session) {
     values$settings$collapseTo = jsonlite::fromJSON(input$collapseTo);
   });
   observeEvent(input$timelineFiltered, {
+    #browser();
     values$timelineFiltered = jsonlite::fromJSON(input$timelineFiltered);
+    #session$sendCustomMessage("newPlottableData", rjson::toJSON(plotNodes()));
+    values$mainPlotData = getPlottableData();
+    session$sendCustomMessage("newPlottableData", jsonlite::toJSON(plotNodes(), auto_unbox = T))
   });
   observeEvent(input$scaledUnits, {
     values$scaledUnits = input$scaledUnits;
-    session$sendCustomMessage("newPlottableData", rjson::toJSON(plotNodes()));
+    #session$sendCustomMessage("newPlottableData", rjson::toJSON(plotNodes()));
+    session$sendCustomMessage("newPlottableData", jsonlite::toJSON(plotNodes(), auto_unbox = T))
   });
   observeEvent(input$updateUnits, {
     upUnits = jsonlite::fromJSON(input$updateUnits);
@@ -690,12 +694,17 @@ shinyServer(function(input, output, session) {
         nd = rowToNode(newItems, x, by, type="node", size = 1, file = values$enaFile, scaleRatio = scaleRatio);
         nd
       });
-      session$sendCustomMessage("newPlottableData", jsonlite::toJSON(
-        list(nodes=newNodes, network=list(nodes=list(), edges=list())), auto_unbox = T))
+      session$sendCustomMessage("newPlottableData", jsonlite::toJSON(list(
+        nodes=newNodes,
+        network=list(nodes=list(),edges=list()),
+        network1=list(nodes=list(),edges=list()),
+        network2=list(nodes=list(),edges=list())
+      ), auto_unbox = T))
     }
   });
   observeEvent(input$unitsClicked, {
-    session$sendCustomMessage("unitsClicked", input$unitsClicked);
+    #session$sendCustomMessage("unitsClicked", input$unitsClicked$nodes);
+    #browser();
     session$sendCustomMessage("newPlottableData", jsonlite::toJSON(plotNodes(), auto_unbox = T))
   });
   observeEvent(input$colorsUpdated, {

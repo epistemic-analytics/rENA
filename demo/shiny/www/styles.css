@@ -579,14 +579,14 @@ div[ng-controller='ENACtrl'] {
         top: -1px;
         position: relative;
       }
-    #sidePlotColumn #sigmaNet2 {
+    #sidePlotColumn #sigmaPlotNetwork2 sigma-node-plot {
       outline: 1px solid #f0f0f0;
     }
     #sidePlotColumn .shiny-plot-output {
       padding-top: 10px;
     }
 
-    #sidePlotColumn #sigmaNet1 {
+    #sidePlotColumn #sigmaPlotNetwork1 sigma-node-plot {
       outline: 5px solid #f0f0f0;
     }
     #sidePlotColumn div#mainPlot {
@@ -1347,10 +1347,6 @@ sigma-node-plot#plot-6 {
 }
 
 
-div.sigma-plot {
-    height: 100%;
-    display: block;
-}
 
 sigma-node-plot {
     display: block;
@@ -1362,8 +1358,31 @@ div#sigmaPlot {
     min-height: calc(100% - 60px) !important;
     display: inline;
 }
+#sigmaPlot div.sigma-plot {
+    height: 100%;
+}
 
 
 div#sigmaPlotNetwork1 {
     height: 100%;
+}
+#sidePlotColumn canvas.sigma-measurement-canvas {
+    height: calc(100% - 0px) !important;
+}
+#sidePlotColumn .sigma-plot {
+    height: calc(100% - 0px);
+    display: block;
+}
+#sigmaPlot canvas.sigma-measurement-canvas {
+    height: calc(100% - 60px) !important;
+}
+
+#sigmaPlot div.sigma-plot {
+    height: calc(100% - 60px);
+    display: block;
+}
+
+
+g.sigma-node-group.activeNode {
+    opacity: 1.0;
 }

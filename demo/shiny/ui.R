@@ -5,26 +5,29 @@ extractName <- function(name) {
   substring(name, regexec("[\\d]\\.[\\d]\\.(.*)", name, perl = T)[[1]][2]);
 }
 shinyUI(fluidPage(
-  tags$head(
-    tags$link(rel="stylesheet", href="bower_components/angular-material/angular-material.min.css"),
-    tags$link(rel="stylesheet", href="bower_components/spectrum/spectrum.css"),
-    tags$script(src="bower_components/angular/angular.min.js"),
-    tags$script(src="bower_components/angular-aria/angular-aria.min.js"),
-    tags$script(src="bower_components/angular-animate/angular-animate.min.js"),
-    tags$script(src="bower_components/angular-messages/angular-messages.min.js"),
-    tags$script(src="bower_components/angular-material/angular-material.min.js"),
-    tags$script(src="bower_components/angular-drag-and-drop-lists/angular-drag-and-drop-lists.js"),
-    tags$script(src="bower_components/spectrum/spectrum.js"),
-    tags$script(src="bower_components/underscore/underscore-min.js"),
-    # tags$script(src="sigma-1.2.0/sigma.js"),
-    # tags$script(src="sigma-1.2.0/plugins/sigma.parsers.gexf.min.js"),
-    # tags$script(src="sigma-1.2.0/custom/sigma.svg.edges.animate.js"),
-    # tags$script(src="sigma-1.2.0/custom/sigma.plugins.animate2.js"),
-    # tags$script(src="sigma-1.2.0/custom/sigma.plugins.animate.js"),
-    # tags$script(src="sigma-1.2.0/custom/sigma.plugins.animateEdges.js"),
-    # tags$script(src="sigma-1.2.0/custom/sigma.plugins.axisLines.js"),
-    # tags$script(src="sigma-1.2.0/plugins/sigma.renderers.customShapes.min.js"),
-    tags$script(src="gotena.js")
+  withTags(
+    head(
+      link(rel="stylesheet", href="bower_components/angular-material/angular-material.min.css"),
+      link(rel="stylesheet", href="bower_components/spectrum/spectrum.css"),
+      script(src="bower_components/angular/angular.min.js"),
+      script(src="bower_components/angular-aria/angular-aria.min.js"),
+      script(src="bower_components/angular-animate/angular-animate.min.js"),
+      script(src="bower_components/angular-messages/angular-messages.min.js"),
+      script(src="bower_components/angular-material/angular-material.min.js"),
+      script(src="bower_components/angular-drag-and-drop-lists/angular-drag-and-drop-lists.js"),
+      script(src="bower_components/spectrum/spectrum.js"),
+      script(src="bower_components/underscore/underscore-min.js"),
+      script(src="lib/sigma-1.2.0/sigma.js"),
+      script(src="lib/sigma-1.2.0/plugins/sigma.parsers.gexf.min.js"),
+      script(src="lib/sigma-1.2.0/custom/sigma.svg.edges.animate.js"),
+      script(src="lib/sigma-1.2.0/custom/sigma.plugins.animate2.js"),
+      script(src="lib/sigma-1.2.0/custom/sigma.plugins.animate.js"),
+      script(src="lib/sigma-1.2.0/custom/sigma.plugins.animateEdges.js"),
+      script(src="lib/sigma-1.2.0/custom/sigma.plugins.axisLines.js"),
+      script(src="lib/sigma-1.2.0/plugins/sigma.renderers.customShapes.min.js"),
+      script(src="gotena.js"),
+      script(src="js/gotena.directives.js")
+    )
   ),
 
   tags$body("ng-app"="ENAapp",
@@ -37,8 +40,7 @@ shinyUI(fluidPage(
     tags$div("ng-controller" = "ENACtrl",
              "ng-class" = "{'showCharacters': opts.showCharacters, 'showEpisodeSummary': opts.showEpisodeSummary}",
       tags$style(id="unitStyles",type="text/css"),
-      fluidRow(id="headerRow"
-      ),
+      fluidRow(id="headerRow"),
       fluidRow(id="timelineRow", "ng-controller"="TimelineCtrl",
         h4("Timeline"),
         div(
@@ -150,8 +152,8 @@ shinyUI(fluidPage(
               h5(class="plotLabel", textOutput("unitClicked1"))
             )
             #,sigmaOutput('sigmaNet1')
-            ,tags$div(id="sigmaPlotNetwork1", #"ng-controller"="",
-              HTML("<sigma-node-plot plot-networks=true===true ></sigma-node-plot>")
+            ,tags$div(id="sigmaPlotNetwork1"#, #"ng-controller"="",
+              ,HTML("<sigma-node-plot plot-networks=true plot-selection=1 ></sigma-node-plot>")
             )
           ),
           div( id="secondPlot",
@@ -171,7 +173,10 @@ shinyUI(fluidPage(
               ),
               h5(class="plotLabel", textOutput("unitClicked2"))
             )
-            ,sigmaOutput('sigmaNet1')
+            #,sigmaOutput('sigmaNet1')
+            ,tags$div(id="sigmaPlotNetwork2"#, #"ng-controller"="",
+              ,HTML("<sigma-node-plot plot-networks=true plot-selection=2 ></sigma-node-plot>")
+            )
           )
         ),
         column(width = 2, id = "episodeSummary", class="column", "ng-if" = "opts.showEpisodeSummary",
