@@ -174,7 +174,6 @@ shinyServer(function(input, output, session) {
   };
   updatePlot <- function(selectionObj, selectionObj2 = NULL, color = "#5399c7") {
     set = thisSet();
-    print(paste("color: ", color, sep=" "));
 
     unitSelected_name = selectionObj$label;
     useData = set$data$normed;

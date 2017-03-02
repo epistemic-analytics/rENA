@@ -6,7 +6,7 @@ if("sigma" %in% installed.packages() == F) {
   print("Installing Shiny Sigma")
   #devtools::install_url("https://git.doit.wisc.edu/clmarquart/shiny-sigma/repository/archive.zip");
   #devtools::install_local("~/Workspaces/RStudio2/sigma/")
-  devtools::install_local("C:/Users/Vincent/dev/shiny-sigma/");
+  #devtools::install_local("C:/Users/Vincent/dev/shiny-sigma/");
 }
 library(sigma);
 
@@ -21,4 +21,4 @@ if(!is.logical(haveGoTSet) || haveGoTSet != "gotSet") {
     load(file = "./demo/gotSet.RData")
   }
 }
-runApp("./demo/shiny", port=7705, launch.browser = F)
+runApp("./demo/shiny", port=7705, launch.browser = F);

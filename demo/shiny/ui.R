@@ -101,7 +101,7 @@ shinyUI(fluidPage(
                 tabPanel("Units",
                   tags$h4("Characters", id="collapseLevel"),
                   tags$div(id="sigmaPlot", "ng-controller"="MainPlotCtrl",
-                    HTML("<sigma-node-plot plot-networks=true plot-units=true \"></sigma-node-plot>")
+                    HTML("<sigma-node-plot plot-networks=\"true\" plot-units=\"true\" \"></sigma-node-plot>")
                   )
                   #,sigmaOutput('sigma',nodeClick = "plot1_click")
                   #,sigmaOutput('sigmaComparison', nodeClick = "comp_clickNode")
@@ -153,7 +153,7 @@ shinyUI(fluidPage(
             )
             #,sigmaOutput('sigmaNet1')
             ,tags$div(id="sigmaPlotNetwork1"#, #"ng-controller"="",
-              ,HTML("<sigma-node-plot plot-networks=true plot-selection=1 ></sigma-node-plot>")
+              ,HTML("<sigma-node-plot plot-networks=\"true\" plot-selection=\"1\" ></sigma-node-plot>")
             )
           ),
           div( id="secondPlot",
@@ -175,7 +175,7 @@ shinyUI(fluidPage(
             )
             #,sigmaOutput('sigmaNet1')
             ,tags$div(id="sigmaPlotNetwork2"#, #"ng-controller"="",
-              ,HTML("<sigma-node-plot plot-networks=true plot-selection=2 ></sigma-node-plot>")
+              ,HTML("<sigma-node-plot plot-networks=\"true\" plot-selection=\"2\" ></sigma-node-plot>")
             )
           )
         ),

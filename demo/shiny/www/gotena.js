@@ -331,9 +331,6 @@
 
             units.forEach(u => {
               let h = _.find(scope.housesJSON, h => h.house === u.house);
-              if (scope.opts.houseColors[h.house]) {
-                h.colors = scope.opts.houseColors[h.house].colors;
-              }
               h.selected.push(u);
             });
           });
@@ -602,10 +599,10 @@
         $scope.$broadcast("plot.clear"+wh);
       });
       $scope.$on("house-colors-changed", function(ev, house) {
-        $scope.opts.houseColors[house.house] = ($scope.opts.houseColors[house.house] || {});
-        $scope.opts.houseColors[house.house].colors = house.colors;
+        $scope.opts.houseColors[house.house] = house.colors;
         saveSettings();
         //TODO: update plot/new colors
+        //$scope.$broadcast("plottable-data-update")
       });
       $scope.$on("unitClicked", function(ev, selections) {
         $scope.unitsPlotted = selections;
@@ -745,6 +742,11 @@
         Shiny.addCustomMessageHandler("housesJSON", function(houses) {
           $scope.$apply(function() {
             $scope.housesJSON = JSON.parse(houses);
+            _.each($scope.housesJSON, h => {
+              if ($scope.opts.houseColors[h.house]) {
+                h.colors = $scope.opts.houseColors[h.house];
+              }
+            });
             $scope.$broadcast("houses-changed", $scope.housesJSON);
           });
         });
@@ -789,9 +791,6 @@
         "center": {}
       };
 
-      //$scope.$on("timeline-selections", function(event, tl) {
-      //  $scope.timeline2 = tl;
-      //});
       $scope.checkTimelineSection = function(season, episode) {
         if ($scope.timeline2) {
           let obj = _.find($scope.timeline2, t => t.season == season && t.episode == episode);
@@ -809,11 +808,12 @@
         if (!$scope.timeline) return;
         resetGrabbers();
       });
-      $scope.$watchCollection('unitsSelected', updateBackground);
-
+      //TODO: fix this
+      //$scope.$watchCollection('unitsSelected', updateBackground);
       $scope.episodeColor = function(s, e) {
-        let active = $scope.checkTimelineSection(s, e);
-        return (active ? episodeBackgroundColor : "");
+        //let active = $scope.checkTimelineSection(s, e);
+        //return (active ? episodeBackgroundColor : "");
+        return "";
       };
 
       function updateBackground() {
