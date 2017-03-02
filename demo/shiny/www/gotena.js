@@ -397,21 +397,7 @@
         scope: true,
         templateUrl: "templates/timeline.html",
         link: function(scope, element, attrs) {
-          scope.$on("timeline-selections", function(event, tl) {
-            scope.timeline2 = tl;
-          });
-          scope.checkTimelineSection = function(season, episode) {
-            if (scope.timeline2) {
-              let obj = _.find(scope.timeline2, t => t.season == season && t.episode == episode);
-              return obj.included;
-            }
-            return true;
-          };
-          scope.toggleTimeline = function(season, episode) {
-            var toInc = _.find(scope.timeline2, t => t.season == season && t.episode == episode);
-            toInc.included = !toInc.included;
-            scope.timelineFilter();
-          };
+
         }
       }
     }])
@@ -1017,6 +1003,7 @@
       $scope.$watchCollection('opts', saveSettings);
     }])
     .controller("TimelineCtrl", ["$scope", "Shiny", function($scope, Shiny) {
+      var episodeBackgroundColor = "";
       $scope.opened = {
         "split": false,
         "splitChosen": false,
@@ -1028,10 +1015,52 @@
         "center": {}
       };
 
+      //$scope.$on("timeline-selections", function(event, tl) {
+      //  $scope.timeline2 = tl;
+      //});
+      $scope.checkTimelineSection = function(season, episode) {
+        if ($scope.timeline2) {
+          let obj = _.find($scope.timeline2, t => t.season == season && t.episode == episode);
+          return obj.included;
+        }
+        return true;
+      };
+      $scope.toggleTimeline = function(season, episode) {
+        var toInc = _.find($scope.timeline2, t => t.season == season && t.episode == episode);
+        toInc.included = !toInc.included;
+        $scope.timelineFilter();
+      };
+
       $scope.$watch('timeline', function() {
         if (!$scope.timeline) return;
         resetGrabbers();
       });
+      $scope.$watchCollection('unitsSelected', updateBackground);
+
+      $scope.episodeColor = function(s, e) {
+        let active = $scope.checkTimelineSection(s, e);
+        return (active ? episodeBackgroundColor : "");
+      };
+
+      function updateBackground() {
+        var houses = [],
+          backgroundStr = "linear-gradient(to bottom";
+        _.each($scope.unitsSelected, u => {
+          let h = _.find($scope.housesJSON, h => h.house === u.house);
+          if (houses.indexOf(h) === -1) {
+            houses.push(h);
+          }
+        });
+        var perc = (100 / (houses.length * 2));
+        _.each(houses, (h, i) => {
+          let p = (perc * (i + 1));
+          backgroundStr += ("," + h.colors[0] + " " + p + "%, " + h.colors[1] + " " + p + "%");
+        });
+        backgroundStr += ")";
+        if (houses.length) {
+          episodeBackgroundColor = backgroundStr;
+        }
+      }
 
       var updateGraphSplit = _.debounce(function() {
         $scope.$apply(function() {
