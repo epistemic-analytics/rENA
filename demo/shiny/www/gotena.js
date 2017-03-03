@@ -135,6 +135,11 @@
     .filter("Empty", [function() {
       return _.isEmpty;
     }])
+    .filter("NotEmpty", [function() {
+      return function(o) {
+        return !_.isEmpty(o);
+      };
+    }])
     .filter("isPlotted", [ function() {
       return function(unit) {
         console.log(unit, ENA.graphs.unit.selections.map(s=>s.label))
@@ -166,9 +171,7 @@
         restrict: 'E',
         scope: true,
         templateUrl: "templates/timeline.html",
-        link: function(scope, element, attrs) {
-
-        }
+        link: function(scope, element, attrs) {}
       }
     }])
     .directive("enaSplitTimeline", ["Helper", "$timeout", function(Helper, $timeout) {

@@ -93,6 +93,7 @@
             scope.sig.addAxisLines({color: "#CCCCCC", bounds: bounds}); //data.axisBounds);
             scope.sig.refresh();
           }
+
           function animateNodes(toAnimate) {
             if(toAnimate.nodes.length > 0) {
               sigma.plugins.animate(

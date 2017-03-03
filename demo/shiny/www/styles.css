@@ -1007,7 +1007,10 @@ ul[houses-added] > li li {
 #timelineRow .timeline-subgroup li.timelineActive {
     background-color: #9abed5;
 }
-
+  #timelineRow .timeline-subgroup li.timelineActive.splitCenter ~ li.timelineActive,
+  #timelineRow .timeline-group.afterSplit .timeline-subgroup li.timelineActive {
+    background-color: #EECA97;
+  }
 
 .sigma-plot > svg > g,
 .sigma > svg > g {
