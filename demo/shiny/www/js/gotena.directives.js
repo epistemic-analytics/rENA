@@ -9,7 +9,7 @@
   if(!ENA) throw "ENA is undefined";
 
   ENAapp
-    .directive("sigmaNodePlot", ["$timeout", function($timeout){
+    .directive("sigmaNodePlot", ["$timeout", "ENA", function($timeout, ENA){
       return {
         restrict: 'E',
         template: '<div class="sigma-plot" ng-class=\'{"has-network": hasNetwork===true }\'></div>',
