@@ -141,8 +141,10 @@
             }
           });
           scope.$on("plot.clear"+plotSelection, function(ev) {
+            console.log("Clearing plot: ", plotSelection)
             var
-               toAnimate = {
+               edgesToAnimate = []
+              ,toAnimate = {
                   nodes: []
                  ,onComplete: function() {
                    this.nodes.forEach(n=>n.hidden=true);
@@ -150,22 +152,58 @@
                    scope.sig.refresh();
                  }
                }
+              ,hideNodes = function() {
+                scope.sig.graph.nodes()
+                  .filter(n=>n.nodeType==="code")
+                  .forEach(n=>{
+                    if(n.nodeType==="code") {
+                      n.tosize = 0;
+                      n.tocolor = scope.sig.settings("backgroundColor");
+                      toAnimate.nodes.push(n);
+                    } else {
+                      //n.originalx = n.x;
+                      //n.originaly = n.y;
+                      //n.tox = 0;
+                      //n.toy = 0;
+                      //toAnimate.nodes.push(n);
+                    }
+                  })
+                ;
+                animateNodes(toAnimate);
+              }
             ;
 
-            scope.sig.graph.nodes()
-              .filter(n=>n.nodeType==="code")
-              .forEach(n=>{
-                n.tosize = 0;
-                n.originalx = n.x;
-                n.originaly = n.y;
-                n.tox = 0;
-                n.toy = 0;
-                n.tocolor = scope.sig.settings("backgroundColor");
-                toAnimate.nodes.push(n);
+            //scope.sig.graph.edges()
+            scope.sig.graph.edges(scope.plotData["network"+plotSelection].edges.map(e=>e.id))
+              .forEach(e=>{
+                e.tosize = 0;
+                e.tocolor = scope.sig.settings("backgroundColor");
+                edgesToAnimate.push(e.id);
               })
             ;
+            if(edgesToAnimate.length > 0) {
+              sigma.plugins.animateEdges(
+                scope.sig,
+                {
+                  edges: edgesToAnimate,
+                  duration: 100
+                },
+                { size: 'tosize', color: 'tocolor'},
+                function() {
+                  console.log("Done with edges.");
+                  hideNodes();
+                }
+              );
+            } else {
+              hideNodes();
+            }
 
-            animateNodes(toAnimate);
+            if(
+              //plotSelection===2 ||
+              (plotSelection === 1 && ENA.graphs.unit.selections.length===0)
+            ) {
+              scope.$emit("call.plot.clear",'');
+            }
           });
           scope.$on("plottable-show-nodes", function(event, ids) {
             var
