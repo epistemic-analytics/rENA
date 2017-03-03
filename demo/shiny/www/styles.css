@@ -1290,7 +1290,7 @@ svg.sigma-svg .sigma-label.hovered {
 }
 
 
-#sidePlotColumn button[disabled] {
+button[disabled] {
     background: #CCC;
     border: #A5A4A0;
     color: #a5a4a4;
@@ -1368,4 +1368,17 @@ div#sigmaPlotNetwork1 {
 
 g.sigma-node-group.activeNode {
     opacity: 1.0;
+}
+
+
+.arrow-up {
+  width: 0;
+  height: 0;
+  border-width: 0 8px 13px;
+  border-style: solid;
+  border-color: transparent transparent #2980b9;
+  left: 6px;
+  position: relative;
+  border-radius: 2px;
+  top: 5px;
 }
