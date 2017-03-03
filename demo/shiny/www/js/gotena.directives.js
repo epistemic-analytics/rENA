@@ -296,8 +296,6 @@
                 if ($scope.unitsPlotted[index]) {
                   let h = Helper.findHouse($scope.housesJSON, $scope.unitsPlotted[index].house);
                   e.color = h.colors[index];
-                } else {
-                  console.warn("no index found", index, e);
                 }
               } else {
                 //main plot
@@ -306,8 +304,6 @@
                   if (unitIndex > -1) {
                     let h = Helper.findHouse($scope.housesJSON, $scope.unitsPlotted[unitIndex].house);
                     e.color = h.colors[unitIndex];
-                  } else {
-                    console.warn("no unitIndex found", unitIndex, e);
                   }
                 } else {
                   //TODO:
