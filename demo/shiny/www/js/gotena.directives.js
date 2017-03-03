@@ -9,13 +9,13 @@
   if(!ENA) throw "ENA is undefined";
 
   ENAapp
-    .directive("sigmaNodePlot", ["$timeout", function($timeout){
+    .directive("sigmaNodePlot", ["$timeout", "Helper", function($timeout, Helper) {
       return {
         restrict: 'E',
         template: `<div class="sigma-plot" ng-class="{'has-network': hasNetwork}"></div>`,
         scope: true,
         link: function(scope, $element, $attrs) {
-          var $scope = scope;
+          const $scope = scope;
           scope.plotNetworks = ($attrs.plotNetworks === "true");
           scope.plotUnits = ($attrs.plotUnits === "true");
 
@@ -131,6 +131,7 @@
 
             animateNodes(toAnimate);
           });
+
           scope.$on("plottable-show-nodes", function(event, ids) {
             var
                nodes = scope.sig.graph.nodes().filter(n=>ids.filter(i=>i===n["plottable.uuid"]).length>0)
@@ -151,6 +152,7 @@
             });
             animateNodes(toAnimate);
           });
+
           scope.$on("plottable-hide-nodes", function(event, ids) {
             var
                nodes = scope.sig.graph.nodes().filter(n=>ids.filter(i=>i===n["plottable.uuid"]).length>0)
@@ -175,7 +177,8 @@
               animateNodes(toAnimate);
             //},1000)
           });
-          scope.$on("plottable-remove-nodes", function(event, data){
+
+          scope.$on("plottable-remove-nodes", function(event, data) {
             var
               parentNode = scope.sig.graph.nodes().filter(n=>n["node.uuid"]===data)
               ,toAnimate = {
@@ -196,6 +199,7 @@
 
             animateNodes(toAnimate);
           });
+
           scope.$on("plottable-data-update", function(event, originalData, reset) {
             var
                hasParent
@@ -211,22 +215,26 @@
               if (plotSelNum > 0) {
                 let index = (plotSelNum - 1);
                 if ($scope.unitsPlotted[index]) {
-                  let h = _.find($scope.housesJSON, h => h.house === $scope.unitsPlotted[index].house);
+                  let h = Helper.findHouse($scope.housesJSON, $scope.unitsPlotted[index].house);
                   e.color = h.colors[index];
+                } else {
+                  console.warn("no index found", index, e);
                 }
               } else {
                 //main plot
                 if ($scope.unitsPlotted.length <= 1 || $scope.unitsPlotted[0].house === $scope.unitsPlotted[1].house) {
-                  let h = _.find($scope.housesJSON, h => h.house === $scope.unitsPlotted[0].house),
-                    unitIndex = _.findIndex($scope.unitsPlotted, u => u.character === e.source);
+                  let unitIndex = _.findIndex($scope.unitsPlotted, u => (u.character === e.source || u.character === e.target));
                   if (unitIndex > -1) {
+                    let h = Helper.findHouse($scope.housesJSON, $scope.unitsPlotted[unitIndex].house);
                     e.color = h.colors[unitIndex];
+                  } else {
+                    console.warn("no unitIndex found", unitIndex, e);
                   }
                 } else {
                   //TODO:
                   //two different houses
-                  let h1 = _.find($scope.housesJSON, h => h.house === $scope.unitsPlotted[0].house),
-                    h2 = _.find($scope.housesJSON, h => h.house === $scope.unitsPlotted[1].house);
+                  let h1 = Helper.findHouse($scope.housesJSON, $scope.unitsPlotted[0].house),
+                    h2 = Helper.findHouse($scope.housesJSON, $scope.unitsPlotted[1].house);
                   console.log("h1,h2", h1, h2);
                 }
               }
@@ -312,11 +320,7 @@
             if(scope.plotNetworks)
               nodesToPlot = nodesToPlot.concat(data["network"+plotSelection].nodes);
 
-            existingEdges = scope.sig.graph.edges()
-              .filter(el=>
-                data["network"+plotSelection].edges.map(e=>e.id).indexOf( el.id ) >= 0
-              )
-            ;
+            existingEdges = scope.sig.graph.edges().filter(el => data["network"+plotSelection].edges.map(e=>e.id).indexOf(el.id) >= 0);
             if (existingEdges.length > 0) {
               var existingEdges2 = existingEdges.map(e=>{
                 newEdge = data["network"+plotSelection].edges.find(ee=>ee.id===e.id);
@@ -370,7 +374,9 @@
             });
             //scope.sig.refresh();
             animateNodes(toAnimate);
+            $scope.$apply();
           });
+
         }
       }
     }])

@@ -152,6 +152,9 @@
           $top.css("background", ("linear-gradient(to right, #000 " + topBarSplit +
             "px, #FFFFFF " + topBarSplit + "px, #FFFFFF " + (topBarSplit + 1) +
             "px, #808080 " + (topBarSplit + 1) + "px)"));
+        },
+        "findHouse": function(houses, houseName) {
+          return _.find(houses, h => h.house === houseName);
         }
       };
     }])
@@ -455,12 +458,37 @@
         },
         "template": COLOR_CIRCLE_TEMP,
         "link": function($scope, $element, $attrs) {
+          var isOpen = false;
           $element.on("click", function($event) {
+            $event.preventDefault();
+            $event.stopPropagation();
             $scope.$apply(function() {
+              isOpen = !isOpen;
               $("[color-circle]").not($element).popover("hide");
               $element.popover("toggle");
+              if (!isOpen) {
+                $(window).off("click.colorPicker");
+              } else {
+                setupOffClick();
+              }
             });
+            return false;
           });
+
+          function setupOffClick() {
+            $(window).on("click.colorPicker", function(ev) {
+              if ($(ev.target).closest(".color-circle-popover").length === 0) {
+                ev.preventDefault();
+                ev.stopPropagation();
+                $scope.$apply(function() {
+                  $element.popover("hide");
+                  $(window).off("click.colorPicker");
+                  isOpen = false;
+                });
+                return false;
+              }
+            });
+          }
 
           $scope.$watchGroup([() => $scope.topColor, () => $scope.bottomColor], function(colors) {
               $scope.$emit("house-colors-changed", $scope.house);
