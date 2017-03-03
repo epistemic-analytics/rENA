@@ -103,6 +103,43 @@
             }
           }
 
+          scope.$on("plot.stop", function(event) {
+            $timeout.cancel(scope.isPlaying);
+          });
+          scope.$on("plot.play", function(ev){
+            if(plotSelection == ''){
+              var
+                 toPlay = ENA.graphs.unit.selections[0]
+                ,matcher = /unit\.[^\.]*\.([\d]+)/
+                ,currentId = parseInt(matcher.exec(toPlay.id)[1])
+                ,nextNode
+                ,playTimeout
+              ;
+
+              function playNext( nextToPlay ) {
+                  console.log("Playing node:", nextToPlay);
+                  nextNode = scope.sig.graph.nodes("unit."+toPlay.character+"."+(nextToPlay))
+                  Shiny.onInputChange("unitClicked1", nextNode);
+                  ENA.graphs.unit.selections = [nextNode];
+                  Shiny.onInputChange("unitsClicked", { nodes: ENA.graphs.unit.selections, type: "def", nonce: Math.random() });
+
+                  if(nextToPlay<=6) {
+                    scope.isPlaying = $timeout(function(){
+                      playNext(nextToPlay+1)
+                    }, 2000);
+                    scope.isPlaying.then(()=>console.log("Done."),()=>console.log("Cancelled."))
+                  } else {
+                    $timeout.cancel(scope.isPlaying);
+
+                    scope.$emit("call.plot.stop");
+                    Shiny.onInputChange("unitClicked1", toPlay);
+                    ENA.graphs.unit.selections = [toPlay];
+                    Shiny.onInputChange("unitsClicked", { nodes: ENA.graphs.unit.selections, type: "def", nonce: Math.random() });
+                  }
+              }
+              playNext(currentId+1);
+            }
+          });
           scope.$on("plot.clear"+plotSelection, function(ev) {
             var
                toAnimate = {
