@@ -100,12 +100,6 @@ div[ng-controller='ENACtrl'] {
     font-size: 0.8em;
   }
 
-  span#timelineBtnWrap {
-    width: 25px;
-    display: table-cell;
-    vertical-align: bottom;
-    padding-bottom: 10px;
-  }
   #timelineRow h4 {
     font-size: 1.3em;
     display: inline-block;
@@ -146,7 +140,7 @@ div[ng-controller='ENACtrl'] {
         content: " ";
       }
   #splitTimeline {
-    margin-top: 5px;
+    margin-top: 10px;
     position: relative;
   }
     #splitTimelineEpisodes {
@@ -171,15 +165,19 @@ div[ng-controller='ENACtrl'] {
         border-top: 3px solid transparent;
       }
         #timelineTopBar {
-          border-top: 3px solid #000;
           position: absolute;
           top: 0;
           left: 0;
           right: 0;
+          height: 6px;
+          background: #000;
         }
+          .split-chosen #timelineTopBar {
+            background: linear-gradient(to right, #000 50%, #808080 50%);
+          }
       #splitTimeline .splitGrab {
         position: absolute;
-        top: -2px;
+        top: 1px;
         bottom: 0;
         cursor: ew-resize;
       }
@@ -189,18 +187,28 @@ div[ng-controller='ENACtrl'] {
         #splitTimeline .splitGrabRight {
           right: 0;
         }
+          #splitTimeline .split-chosen .splitGrabRight .splitGrabOuter {
+            background: #808080;
+          }
         #splitTimeline .splitGrabCenter {
           left: calc(50% - 27px);
+          display: none;
         }
+          #splitTimeline .split-chosen .splitGrabCenter {
+            display: block;
+          }
           #splitTimeline .splitGrabCenter span[split-grab=""] .splitGrabOuter {
-            width: 19px;
+            width: 22px;
           }
             #splitTimeline .splitGrabCenter span[split-grab=""] .splitGrabInner:first-child {
-              padding-left: 5px;
+              padding-left: 6px;
             }
           #splitTimeline .splitGrabCenter span[split-grab=""]:last-child {
-            margin-left: 8px;
+            margin-left: 1px;
           }
+            #splitTimeline .splitGrabCenter span[split-grab=""]:last-child .splitGrabOuter {
+              background: #808080;
+            }
           .splitGrabOuter {
             background: #000;
             display: inline-block;
@@ -1173,9 +1181,18 @@ canvas.sigma-measurement-canvas {
 }
 
 
-#timelineBtnWrap button {
-    height: 20px;
+#timelineBtnWrap {
+  width: 25px;
+  display: table-cell;
+  vertical-align: bottom;
+  padding-bottom: 4px;
 }
+  #timelineBtnWrap button {
+      height: 20px;
+  }
+  #timelineBtnWrap .bigTimelineButtons {
+    margin-top: 7px;
+  }
 
 
 .seasonTabs > li {

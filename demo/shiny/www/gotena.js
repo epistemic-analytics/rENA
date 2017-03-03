@@ -167,6 +167,18 @@
     }])
 
     /** Services **/
+    .service("Helper", [function() {
+      return {
+        "setTopBarGradient": function($top, $center) {
+          let pos = $top.position().left,
+            center = $center.position().left,
+            topBarSplit = (center - pos) + 22;
+          $top.css("background", ("linear-gradient(to right, #000 " + topBarSplit +
+            "px, #FFFFFF " + topBarSplit + "px, #FFFFFF " + (topBarSplit + 1) +
+            "px, #808080 " + (topBarSplit + 1) + "px)"));
+        }
+      };
+    }])
 
 
     /** Directives **/
@@ -176,25 +188,11 @@
         scope: true,
         templateUrl: "templates/timeline.html",
         link: function(scope, element, attrs) {
-          scope.$on("timeline-selections", function(event, tl) {
-            scope.timeline2 = tl;
-          });
-          scope.checkTimelineSection = function(season, episode) {
-            if (scope.timeline2) {
-              let obj = _.find(scope.timeline2, t => t.season == season && t.episode == episode);
-              return obj.included;
-            }
-            return true;
-          };
-          scope.toggleTimeline = function(season, episode) {
-            var toInc = _.find(scope.timeline2, t => t.season == season && t.episode == episode);
-            toInc.included = !toInc.included;
-            scope.timelineFilter();
-          };
+
         }
       }
     }])
-    .directive("enaSplitTimeline", [function() {
+    .directive("enaSplitTimeline", ["Helper", "$timeout", function(Helper, $timeout) {
       return {
         "restrict": "A",
         "templateUrl": "templates/splitTimeline.html",
@@ -204,16 +202,19 @@
           $scope.splitSelect = function($event, season, episode) {
             $scope.splitTimelineAt("center", season, episode);
             $scope.opened.splitChosen = true;
-            var $target = $($event.target),
-              $center = $element.find(".splitGrabCenter"),
-              xOffset = $target.position().left;
+            var $center = $element.find(".splitGrabCenter"),
+              xOffset = $($event.target).position().left,
+              $top = $("#timelineTopBar");
             $center.css("left", (xOffset - 6) + "px");
+            $timeout(function() {
+              Helper.setTopBarGradient($top, $center);
+            }, 50);
           };
 
         }
       };
     }])
-    .directive("splitGrab", [function() {
+    .directive("splitGrab", ["Helper", function(Helper) {
       return {
         "restrict": "A",
         "template": `<span class="splitGrabOuter">
@@ -224,6 +225,7 @@
           $element.on("mousedown.enaGrab", function($event) {
             $event.preventDefault();
             var $timeline = $("#timeline-groups"),
+                $splitGrabCenter = $("#timelineAdjusters .splitGrab.splitGrabCenter"),
                 cl = $element.closest(".splitGrab")[0].classList,
                 which = (cl.contains("splitGrabCenter") ? "center" :
                   (cl.contains("splitGrabLeft") ? "left" : "right")),
@@ -231,6 +233,7 @@
               $episode = null,
               $top = $("#timelineTopBar"),
               timelineWidth = $("#timelineAdjustersWrapper").width();
+
             $(window).on("mousemove.enaGrab", _.throttle(function($event) {
               $event.preventDefault();
               var x = Math.round($event.pageX),
@@ -240,12 +243,22 @@
                       width = $e.outerWidth();
                   return (x <= (left + width) && x >= left && noOverlap(which, $e));
                 });
+
               if (episode) {
                 $episode = $(episode);
                 let left = ($episode.position().left - 6);
+
                 $element.closest(".splitGrab").css("left", left + "px");
-                updateTopBar(which, left, $top, timelineWidth);
+
+                //topbar
+                if (which !== "center") {
+                  $top.css(which, (which === "left" ? left : timelineWidth - left - 23) + "px"); //23 == grabber width
+                }
+                if ($scope.opened.split && $scope.opened.splitChosen) {
+                  Helper.setTopBarGradient($top, $splitGrabCenter);
+                }
               }
+
             }, 50)).on("mouseup.enaGrab", function($event) {
               $(window).off("mouseup.enaGrab").off("mousemove.enaGrab");
               if ($episode) {
@@ -253,9 +266,6 @@
               }
             });
 
-            function updateTopBar(which, left, $top, width) {
-              $top.css(which, (which === "left" ? left : width - left - 23) + "px"); //23 == grabber width
-            }
             function noOverlap(which, $episode) {
               let scope = $episode.scope(),
                 s = _.toInt(scope.season),
@@ -295,14 +305,10 @@
     .directive("housesAdded", [function(){
       return {
         restrict: 'EA',
-        scope: {},
+        scope: true,
         transclude: true,
         templateUrl: "templates/housesAdded.html",
         link: function(scope, element, attrs) {
-          scope.colors = {
-            "top": "#5399C7",
-            "bottom": "#EAA647"
-          };
           scope.housesAdded = [];
           scope.showCharacters = null;
 
@@ -310,7 +316,8 @@
             scope.showCharacters = (scope.showCharacters === house ? null : house);
           };
 
-          scope.$on("house-added", function(event, item){
+          scope.$on("house-added", function(event, item) {
+            //console.log("house added", item);
             var currentHouses = scope.housesAdded,
               currentHouse = currentHouses[item.house.house],
               haveHouse = !!currentHouse;
@@ -321,47 +328,34 @@
 
               var newUnits = item.house.characters.map(c=>{
                 newUnit = { character: c, code: true, unit: true, house: item.house.house  }
-                scope.$parent.unitsSelected.push(newUnit);
+                scope.unitsSelected.push(newUnit);
                 return newUnit;
               });
 
               scope.showCharacters = item.house.house;
-              Shiny.onInputChange("unitsSelected", scope.$parent.unitsSelected.map(u=>{return u.character}));
+              Shiny.onInputChange("unitsSelected", scope.unitsSelected.map(u=> u.character));
               Shiny.onInputChange("unitAdded", JSON.stringify(newUnits));
             } else if (item.type === "character") {
               if (!haveHouse) scope.housesAdded[item.house.house] = item.house;
               var newUnit = {'character': item.character, 'house': item.house.house};
-              //item.house.selected.push(newUnit);
-              //scope.housesAdded[item.house.house].selected.push(newUnit);
               scope.showCharacters = item.house.house;
 
-              scope.$parent.unitsSelected.push(newUnit)
-              Shiny.onInputChange("unitsSelected", scope.$parent.unitsSelected.map(u=>{return u.character}));
+              scope.unitsSelected.push(newUnit)
+              Shiny.onInputChange("unitsSelected", scope.unitsSelected.map(u=> u.character));
               Shiny.onInputChange("unitAdded",  JSON.stringify([item]));
             }
-
-            /*
-            scope.housesAdded = scope.$parent.housesJSON
-              .filter(h=>{ return (h.selected && h.selected.length>0) })
-              .map(h=>{return {
-                house:h.selected[0].house,
-                characters: h.selected.map (c=>{return c.character})
-               }
-              })
-            */
           });
+
           scope.$on("units-loaded", function(event, units) {
-            Array.from(new Set(units.map(u=>{return u.house})))
-            scope.housesAdded = Array.from(new Set(units.map(u=>{return u.house}))).map(h=>{
-              var hs = scope.$parent.housesJSON.filter(hj=>{return hj.house === h})[0];
+            scope.housesAdded = Array.from(new Set(units.map(u => u.house))).map(h => {
+              let hs = _.find(scope.housesJSON, hj => hj.house === h);
               hs.selected = [];
               return hs;
             });
 
-            units.forEach(u=>{
-              scope.housesAdded[u.house] = scope.housesAdded[u.house] || scope.$parent.housesJSON.filter(h=>{return( h.house === u.house );})[0];
-              //scope.housesAdded[u.house].selected = []; // scope.housesAdded[u.house].selected || [];
-              scope.housesAdded[u.house].selected.push(u);
+            units.forEach(u => {
+              let h = _.find(scope.housesJSON, h => h.house === u.house);
+              h.selected.push(u);
             });
           });
         }
@@ -462,7 +456,6 @@
     .directive("hoverNames", [function() {
       return {
         "restrict": "A",
-        //"scope": true,
         "link": function($scope, $element, $attrs) {
           $element.on("mouseenter", ".highlightedWord", function($event) {
             let $el = $($event.target);
@@ -481,7 +474,8 @@
         "restrict": "A",
         "scope": {
           "topColor": "=",
-          "bottomColor": "="
+          "bottomColor": "=",
+          "house": "="
         },
         "template": COLOR_CIRCLE_TEMP,
         "link": function($scope, $element, $attrs) {
@@ -491,6 +485,11 @@
               $element.popover("toggle");
             });
           });
+
+          $scope.$watchGroup([() => $scope.topColor, () => $scope.bottomColor], function(colors) {
+              $scope.$emit("house-colors-changed", $scope.house);
+          });
+
           $element.popover({
             "trigger": "manual",
             "container": "body",
@@ -554,7 +553,7 @@
                 $scope.selectColor(color);
               });
             }
-          }, 10));
+          }, 50));
 
           $scope.$watch('active.main', updateColorPicker);
           $scope.$watch('topColor', updateColorPicker);
@@ -565,10 +564,12 @@
           }
 
           $scope.selectColor = function(color) {
-            if ($scope.active.main) {
-              $scope.topColor = color;
-            } else {
-              $scope.bottomColor = color;
+            if (color !== $scope.topColor && color !== $scope.bottomColor) {
+              if ($scope.active.main) {
+                $scope.topColor = color;
+              } else {
+                $scope.bottomColor = color;
+              }
             }
           }
           $scope.selectPreset = function(pair) {
@@ -592,11 +593,12 @@
       $scope.timeline2 = null;
       $scope.opts = {
         "showCharacters": true,
-        "showEpisodeSummary": false
+        "showEpisodeSummary": false,
+        "houseColors": {}
       };
       loadSettings().then(settings => {
         if (!_.isEmpty(settings)) {
-          $scope.opts = settings;
+          _.extend($scope.opts, settings);
         }
       });
       $scope.data = {
@@ -627,6 +629,12 @@
       });
       $scope.$on("call.plot.clear",function(ev,wh) {
         $scope.$broadcast("plot.clear"+wh);
+      });
+      $scope.$on("house-colors-changed", function(ev, house) {
+        $scope.opts.houseColors[house.house] = house.colors;
+        saveSettings();
+        //TODO: update plot/new colors
+        //$scope.$broadcast("plottable-data-update")
       });
       $scope.$on("unitClicked", function(ev, selections) {
         $scope.unitsPlotted = selections;
@@ -718,18 +726,20 @@
       }
 
       $timeout(function() {
-        Shiny.onInputChange("getPlotData",{});
+        Shiny.onInputChange("getPlotData", {});
         Shiny.addCustomMessageHandler("mainPlotData", function(data) {
           var
               broadcast = false
              ,newData = JSON.parse(data)
           ;
-          if(typeof $scope.data.mainplot === "undefined" || (newData.nodes && $scope.data.mainplot.nodes.length!==newData.nodes.length)){
+
+          if(typeof $scope.data.mainplot === "undefined" ||
+              (newData.nodes && $scope.data.mainplot.nodes.length!==newData.nodes.length)) {
             broadcast = true;
           }
           $scope.data.mainplot = newData;
           if(broadcast === true){
-            console.log("Have the data.")
+            console.info("Have the data.")
             $scope.$broadcast("plottable-data-update", JSON.parse(data), true);
           }
         });
@@ -742,10 +752,11 @@
           $scope.$broadcast("plottable-show-nodes", showNodes);
         });
         Shiny.addCustomMessageHandler("removeChildNodes", function(data){
-          console.log("Data: ", data);
+          //console.log("Data: ", data);
           $scope.$broadcast("plottable-remove-nodes", data);
         })
         Shiny.addCustomMessageHandler("newPlottableData", function(data) {
+          //console.log("new plottable data", data);
           $scope.$broadcast("plottable-data-update", data, false);
         });
         Shiny.addCustomMessageHandler("unitsSelected", function(units) {
@@ -768,6 +779,11 @@
         Shiny.addCustomMessageHandler("housesJSON", function(houses) {
           $scope.$apply(function() {
             $scope.housesJSON = JSON.parse(houses);
+            _.each($scope.housesJSON, h => {
+              if ($scope.opts.houseColors[h.house]) {
+                h.colors = $scope.opts.houseColors[h.house];
+              }
+            });
             $scope.$broadcast("houses-changed", $scope.housesJSON);
           });
         });
@@ -795,17 +811,12 @@
             $scope.$broadcast("comparison-changed", compJSON);
           });
         });
-        //Shiny.addCustomMessageHandler("unitsClicked", function(a) {
-        //  console.log("Clicked a node: ", a);
-        //});
-        //Shiny.addCustomMessageHandler("edgeClicked", function(e) {
-        //  console.log("Clicked an edge.", e);
-        //});
       });
 
       $scope.$watchCollection('opts', saveSettings);
     }])
     .controller("TimelineCtrl", ["$scope", "Shiny","ENA", function($scope, Shiny, ENA) {
+      var episodeBackgroundColor = "";
       $scope.opened = {
         "split": false,
         "splitChosen": false,
@@ -818,6 +829,19 @@
       };
       $scope.ENA = ENA;
 
+      $scope.checkTimelineSection = function(season, episode) {
+        if ($scope.timeline2) {
+          let obj = _.find($scope.timeline2, t => t.season == season && t.episode == episode);
+          return obj.included;
+        }
+        return true;
+      };
+      $scope.toggleTimeline = function(season, episode) {
+        var toInc = _.find($scope.timeline2, t => t.season == season && t.episode == episode);
+        toInc.included = !toInc.included;
+        $scope.timelineFilter();
+      };
+
       $scope.$watch('timeline', function() {
         if (!$scope.timeline) return;
         resetGrabbers();
@@ -826,6 +850,33 @@
         $scope.hasSeason = ENA.graphs.unit.selections.map(u=>u.by[u.by.length-1]).some(u=>u==="season");
         $scope.hasEpisode= ENA.graphs.unit.selections.map(u=>u.by[u.by.length-1]).some(u=>u==="episode");
       });
+      //TODO: fix this
+      //$scope.$watchCollection('unitsSelected', updateBackground);
+      $scope.episodeColor = function(s, e) {
+        //let active = $scope.checkTimelineSection(s, e);
+        //return (active ? episodeBackgroundColor : "");
+        return "";
+      };
+
+      function updateBackground() {
+        var houses = [],
+          backgroundStr = "linear-gradient(to bottom";
+        _.each($scope.unitsSelected, u => {
+          let h = _.find($scope.housesJSON, h => h.house === u.house);
+          if (houses.indexOf(h) === -1) {
+            houses.push(h);
+          }
+        });
+        var perc = (100 / (houses.length * 2));
+        _.each(houses, (h, i) => {
+          let p = (perc * (i + 1));
+          backgroundStr += ("," + h.colors[0] + " " + p + "%, " + h.colors[1] + " " + p + "%");
+        });
+        backgroundStr += ")";
+        if (houses.length) {
+          episodeBackgroundColor = backgroundStr;
+        }
+      }
 
       var updateGraphSplit = _.debounce(function() {
         $scope.$apply(function() {
@@ -881,7 +932,7 @@
           $scope.positions.center.season = _.toInt(season);
           $scope.positions.center.episode = _.toInt(episode);
         }
-        $("#timelineTopBar").css({"left": "", "right" : ""});
+        $("#timelineTopBar").css({"left": "", "right" : "", "background": ""});
         $(".splitGrab").css("left", "");
         updateGraphSplit();
       };

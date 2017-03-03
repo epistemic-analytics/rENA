@@ -12,13 +12,13 @@
     .directive("sigmaNodePlot", ["$timeout", "ENA", function($timeout, ENA){
       return {
         restrict: 'E',
-        template: '<div class="sigma-plot" ng-class=\'{"has-network": hasNetwork===true }\'></div>',
-        scope: {
-          plotNetworks: "=",
-          plotUnits: "=",
-          plotSelection: "="
-        },
-        link: function(scope, element, attrs) {
+        template: `<div class="sigma-plot" ng-class="{'has-network': hasNetwork}"></div>`,
+        scope: true,
+        link: function(scope, $element, $attrs) {
+          var $scope = scope;
+          scope.plotNetworks = ($attrs.plotNetworks === "true");
+          scope.plotUnits = ($attrs.plotUnits === "true");
+
           scope.sig = null;
           scope.hasNetwork = false;
           scope.hasUnits = false;
@@ -30,10 +30,11 @@
              data = {
                axisBounds: [-20]
              }
-            ,plotSelection = scope.plotSelection || ''
+            ,plotSelection = ($attrs.plotSelection || '')
+            ,plotSelNum = _.toInt(plotSelection || "0")
             ,i, o
             ,g = { nodes: [] }
-            ,plotter = angular.element(element).find(".sigma-plot")
+            ,plotter = $element.find(".sigma-plot")
             ,plotterID = Math.round(Math.random()*1000)
           ;
 
@@ -273,7 +274,7 @@
 
             animateNodes(toAnimate);
           });
-          scope.$on("plottable-data-update", function(event,originalData,reset) {
+          scope.$on("plottable-data-update", function(event, originalData, reset) {
             var
                hasParent
               ,data = scope.plotData = angular.copy(originalData)
@@ -282,6 +283,32 @@
             ;
             if(reset === true) resetCamera(data.axisBounds);
             scope.$apply(()=>scope.hasNetwork = (data["network"+plotSelection].edges.length > 0));
+
+            //replace colors
+            _.each(data['network' + plotSelection].edges, e => {
+              if (plotSelNum > 0) {
+                let index = (plotSelNum - 1);
+                if ($scope.unitsPlotted[index]) {
+                  let h = _.find($scope.housesJSON, h => h.house === $scope.unitsPlotted[index].house);
+                  e.color = h.colors[index];
+                }
+              } else {
+                //main plot
+                if ($scope.unitsPlotted.length <= 1 || $scope.unitsPlotted[0].house === $scope.unitsPlotted[1].house) {
+                  let h = _.find($scope.housesJSON, h => h.house === $scope.unitsPlotted[0].house),
+                    unitIndex = _.findIndex($scope.unitsPlotted, u => u.character === e.source);
+                  if (unitIndex > -1) {
+                    e.color = h.colors[unitIndex];
+                  }
+                } else {
+                  //TODO:
+                  //two different houses
+                  let h1 = _.find($scope.housesJSON, h => h.house === $scope.unitsPlotted[0].house),
+                    h2 = _.find($scope.housesJSON, h => h.house === $scope.unitsPlotted[1].house);
+                  console.log("h1,h2", h1, h2);
+                }
+              }
+            });
 
             var
                curEdge

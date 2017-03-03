@@ -47,8 +47,7 @@ shinyUI(fluidPage(
           HTML("<ena-timeline timeline='timeline'></ena-timeline>"),
           withTags(
             span(id="timelineBtnWrap",
-              span(
-                # span("Sel: {{hasSeasons}}"),
+              span("class"="clearfix",
                 button('class'="glyphicon glyphicon-play pull-left", 'title'="Play Seasons",
                   'ng-disabled'='!hasSeason',
                   'ng-click'="play($event,'seasons')", 'ng-if'="!opened.playing",
@@ -62,20 +61,22 @@ shinyUI(fluidPage(
                   tags$span("Episodes", class="hidden-sm hidden-xs")
                 )
               ),
-              button('class'="glyphicon glyphicon-stop pull-left",
-                'ng-click'="stopPlay($event)",'ng-if'="opened.playing",
-                HTML("<md-tooltip md-direction='left'>Stop Playing</md-tooltip>"),
-                tags$span("Stop", class="hidden-sm hidden-xs")
-              ),
-              button('class'="glyphicon glyphicon-resize-horizontal pull-left",
-                'ng-click'="split($event)", 'ng-if'="!opened.split",
-                HTML("<md-tooltip md-direction='left'>Split Timeline</md-tooltip>"),
-                tags$span("Split Timeline", class="hidden-sm hidden-xs")
-              ),
-              button('class'="glyphicon glyphicon-ban-circle pull-left",
-                'ng-click'="clearSplit($event)",'ng-if'="opened.split",
-                HTML("<md-tooltip md-direction='left'>Clear Timeline</md-tooltip>"),
-                tags$span("Clear Timeline", class="hidden-sm hidden-xs")
+              span('class'="clearfix bigTimelineButtons",
+                button('class'="glyphicon glyphicon-stop pull-left",
+                  'ng-click'="stopPlay($event)",'ng-if'="opened.playing",
+                  HTML("<md-tooltip md-direction='left'>Stop Playing</md-tooltip>"),
+                  tags$span("Stop", class="hidden-sm hidden-xs")
+                ),
+                button('class'="glyphicon glyphicon-resize-horizontal pull-left",
+                  'ng-click'="split($event)", 'ng-if'="!opened.split",
+                  HTML("<md-tooltip md-direction='left'>Split Timeline</md-tooltip>"),
+                  tags$span("Split Timeline", class="hidden-sm hidden-xs")
+                ),
+                button('class'="glyphicon glyphicon-ban-circle pull-left",
+                  'ng-click'="clearSplit($event)",'ng-if'="opened.split",
+                  HTML("<md-tooltip md-direction='left'>Clear Timeline</md-tooltip>"),
+                  tags$span("Clear Timeline", class="hidden-sm hidden-xs")
+                )
               )
             )
           )
@@ -102,7 +103,7 @@ shinyUI(fluidPage(
                 tabPanel("Units",
                   tags$h4("Characters", id="collapseLevel"),
                   tags$div(id="sigmaPlot", "ng-controller"="MainPlotCtrl",
-                    HTML("<sigma-node-plot plot-networks=true plot-units=true \"></sigma-node-plot>")
+                    HTML("<sigma-node-plot plot-networks=\"true\" plot-units=\"true\" \"></sigma-node-plot>")
                   )
                   #,sigmaOutput('sigma',nodeClick = "plot1_click")
                   #,sigmaOutput('sigmaComparison', nodeClick = "comp_clickNode")
@@ -154,7 +155,7 @@ shinyUI(fluidPage(
             )
             #,sigmaOutput('sigmaNet1')
             ,tags$div(id="sigmaPlotNetwork1"#, #"ng-controller"="",
-              ,HTML("<sigma-node-plot plot-networks=true plot-selection=1 ></sigma-node-plot>")
+              ,HTML("<sigma-node-plot plot-networks=\"true\" plot-selection=\"1\" ></sigma-node-plot>")
             )
           ),
           div( id="secondPlot",
@@ -176,7 +177,7 @@ shinyUI(fluidPage(
             )
             #,sigmaOutput('sigmaNet1')
             ,tags$div(id="sigmaPlotNetwork2"#, #"ng-controller"="",
-              ,HTML("<sigma-node-plot plot-networks=true plot-selection=2 ></sigma-node-plot>")
+              ,HTML("<sigma-node-plot plot-networks=\"true\" plot-selection=\"2\" ></sigma-node-plot>")
             )
           )
         ),
