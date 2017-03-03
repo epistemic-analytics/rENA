@@ -9,7 +9,7 @@
   if(!ENA) throw "ENA is undefined";
 
   ENAapp
-    .directive("sigmaNodePlot", ["$timeout", "ENA", function($timeout, ENA){
+    .directive("sigmaNodePlot", ["$timeout", "ENA", "Helper", function($timeout, ENA, Helper) {
       return {
         restrict: 'E',
         template: `<div class="sigma-plot" ng-class="{'has-network': hasNetwork}"></div>`,
@@ -434,6 +434,7 @@
             animateNodes(toAnimate);
             $scope.$apply();
           });
+
           scope.$on("mean-data-update", function(event,means) {
             if(scope.plotUnits) {
               means.forEach(m=>{
@@ -443,16 +444,18 @@
                   clip: 1.0,
                   scale: 1.5
                 };
-                scope.sig.graph.addNode(m)
+                scope.sig.graph.addNode(m);
               });
               scope.sig.refresh();
             }
           });
+
           scope.$on("meanOpened", function(event, mean){
             if(plotSelection==='') {
               console.log("Mean opened: ", mean);
             }
           });
+
           scope.$on("meanClosed", function(event, mean){
             if(plotSelection==='') {
               console.log("Mean closed: ", mean);
