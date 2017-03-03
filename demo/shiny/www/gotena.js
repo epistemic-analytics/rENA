@@ -11,6 +11,8 @@
     graphs: {
       unit: {
         selections: [],
+        openMeans: [],
+        hovered: undefined,
         events: { }
       },
       network: {
@@ -32,17 +34,37 @@
   ENA.graphs.unit.events["clickNode"] = function(clickData) {
     let now = Date.now();
     if (clicks === 0) {
+      if(
+        ENA.graphs.unit.selections.map(u=>u.label).indexOf(clickData.data.node.label) >= 0
+      ) return;
+
       clickTimeout = setTimeout(function() {
         var selected = clickData.data.node.label,
           selectedLen = ENA.graphs.unit.selections.length;
 
-        if (selected && selectedLen < 2 && (!ENA.graphs.unit.selections[0] || ENA.graphs.unit.selections[0].label != selected)) {
-          Shiny.onInputChange("unitClicked"+(selectedLen+1), clickData.data.node); //selected);
-          ENA.graphs.unit.selections.push(clickData.data.node); //selected);
+        if(clickData.data.node.nodeType === "mean") {
+          var foundMean = ENA.graphs.unit.openMeans.map(u=>u.label).indexOf(clickData.data.node.label);
+          if(foundMean >= 0) {
+            delete ENA.graphs.unit.openMeans[foundMean];
+            ENA.graphs.unit.openMeans = ENA.graphs.unit.openMeans.filter(m=>m);
+            ENA.app.scope().$broadcast("meanClosed", clickData.data.node);
+          } else {
+            ENA.graphs.unit.openMeans.push(clickData.data.node);
+            ENA.app.scope().$broadcast("meanOpened", clickData.data.node);
+          }
+        } else {
+          if(ENA.graphs.unit.hovered !== undefined) {
+            ENA.graphs.unit.selections.push(ENA.graphs.unit.hovered);
+            ENA.app.scope().$broadcast("unitClicked", ENA.graphs.unit.selections);
+          } else {
+            if (selected && selectedLen < 2 ) { //&&(!ENA.graphs.unit.selections[0]||ENA.graphs.unit.selections[0].label != selected)) {
+              Shiny.onInputChange("unitClicked"+(selectedLen+1), clickData.data.node); //selected);
+              ENA.graphs.unit.selections.push(clickData.data.node); //selected);
+            }
+            Shiny.onInputChange("unitsClicked", { nodes: ENA.graphs.unit.selections, type: "animate", nonce: Math.random() });
+            ENA.app.scope().$broadcast("unitClicked", ENA.graphs.unit.selections);
+          }
         }
-        Shiny.onInputChange("unitsClicked", { nodes: ENA.graphs.unit.selections, type: "animate", nonce: Math.random() });
-        ENA.app.scope().$broadcast("unitClicked", ENA.graphs.unit.selections);
-
         clearTimeout(clickTimeout);
         clicks = 0;
         clickedAt = 0;
@@ -69,6 +91,7 @@
     ) {
       //ENA.graphs.unit.selections.push(hoveredData.data.node);
       Shiny.onInputChange("unitClicked2", hoveredData.data.node);
+      ENA.graphs.unit.hovered = hoveredData.data.node;
       Shiny.onInputChange("unitsClicked", { nodes: [ENA.graphs.unit.selections[0],hoveredData.data.node], type: "def", nonce: Math.random() });
     }
   };
@@ -85,6 +108,7 @@
       ENA.graphs.unit.selections = [ENA.graphs.unit.selections[0]] //.filter(s=>s.label!==selected);
       Shiny.onInputChange("unitClicked2", null);
       Shiny.onInputChange("unitsClicked", { nodes: [ENA.graphs.unit.selections[0]], type: "def", nonce: Math.random() });
+      ENA.graphs.unit.hovered = undefined;
       ENA.app.scope().$broadcast("plot.clear2", ENA.graphs.unit.selections);
     }
   };
@@ -592,7 +616,15 @@
       $scope.unitsPlotted = [];
       $scope.activeHouse = undefined;
       $scope.activeDrag = false;
+      $scope.hasSeason = false;
+      $scope.hasEpisode = false;
 
+      $scope.$on("call.plot.stop", function(ev){
+        $scope.$broadcast("plot.stop");
+      });
+      $scope.$on("call.play.by.episode", function(ev){
+        $scope.$broadcast("plot.play");
+      });
       $scope.$on("call.plot.clear",function(ev,wh) {
         $scope.$broadcast("plot.clear"+wh);
       });
@@ -768,7 +800,7 @@
 
       $scope.$watchCollection('opts', saveSettings);
     }])
-    .controller("TimelineCtrl", ["$scope", "Shiny", function($scope, Shiny) {
+    .controller("TimelineCtrl", ["$scope", "Shiny","ENA", function($scope, Shiny, ENA) {
       $scope.opened = {
         "split": false,
         "splitChosen": false,
@@ -779,10 +811,15 @@
         "left": {},
         "center": {}
       };
+      $scope.ENA = ENA;
 
       $scope.$watch('timeline', function() {
         if (!$scope.timeline) return;
         resetGrabbers();
+      });
+      $scope.$watch('ENA.graphs.unit.selections.length',function(e) {
+        $scope.hasSeason = ENA.graphs.unit.selections.map(u=>u.by[u.by.length-1]).some(u=>u==="season");
+        $scope.hasEpisode= ENA.graphs.unit.selections.map(u=>u.by[u.by.length-1]).some(u=>u==="episode");
       });
 
       var updateGraphSplit = _.debounce(function() {
@@ -798,8 +835,13 @@
         });
       }, 50);
 
-      $scope.play = function() {
+      $scope.$on("plot.stop", function(event) {
+        $scope.opened.playing = false;
+      });
+      $scope.play = function(event, wh) {
         $scope.opened.playing = true;
+        console.log("Playing: ", wh);
+        $scope.$emit("call.play.by.episode");
       };
       $scope.stopPlay = function() {
         $scope.opened.playing = false;
@@ -861,7 +903,6 @@
 
         Shiny.onInputChange("unitsClicked", { nonce: Math.random(), nodes: ENA.graphs.unit.selections, type: "def" });
         $scope.$emit("unitClicked", ENA.graphs.unit.selections);
-
       };
       $scope.switchPlots = function() {
         ENA.graphs.unit.selections = ENA.graphs.unit.selections.reverse();
