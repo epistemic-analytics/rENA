@@ -3,6 +3,9 @@ library(data.table)
 extractName <- function(name) {
   last(strsplit(name, ".", fixed=T)[[1]])
 }
+emptyNetwork <- function() list(nodes = list(), edges = list());
+xyCols = c("x","y");
+
 shinyServer(function(input, output, session) {
   getTimeline <- function(set,timelineBy,nest=T) {
     seasons=unique(set$get('enaData')$get('file')[timelineBy]);
@@ -21,6 +24,7 @@ shinyServer(function(input, output, session) {
     }
   };
 
+  parentUUID=uuid::UUIDgenerate();
   values <- reactiveValues(
     timelineFiltered = data.frame(season=rep(1:6, each=10), episode=1:10, included=T),
     unitsSelected = c("Jaime","Cersei"),
@@ -38,7 +42,7 @@ shinyServer(function(input, output, session) {
       list(
         hidden=F,
         by=list(character=c("Jaime")),
-        plottableUUID=uuid::UUIDgenerate(),
+        plottableUUID=parentUUID,
         plottableParentUUID=NULL,
         nodeParentUUID=NULL
       ),
@@ -52,23 +56,22 @@ shinyServer(function(input, output, session) {
     )
   );
   values$nodeSize = 3;
-  values$sigmaNet1 = list(nodes = list(), edges = list());
-  values$sigmaNet2 = list(nodes = list(), edges = list());
-  values$sigmaNetComp = list(nodes = list(), edges = list());
+  values$sigmaNet1 = emptyNetwork();
+  values$sigmaNet2 = emptyNetwork();
+  values$sigmaNetComp = emptyNetwork();
 
+  settings <- reactive({ values$settings });
   thisSet <- reactive({
     settings = settings();
     set = NULL;
     setData = gotSet$get('enaData')$get('file');
-    unitNames = values$unitsSelected; #gotSet$get('enaData')$get('unitsSelected');
+    unitNames = values$unitsSelected;
 
-    print("Getting the set.");
     values$unitNames.w.meta = lapply(unitNames, function(u) {
       setData[setData$character==u,c("character", "house")][1,]
     });
 
     if(settings$allowUpdate == T) {
-      print("Updating the set.");
       set = gotSet$update("data",
         unitsSelected=unitNames,
         codeNames=values$codesSelected
@@ -103,9 +106,6 @@ shinyServer(function(input, output, session) {
     getTimeline(thisSet(),settings()$conversationsBy, FALSE)
   });
 
-  settings <- reactive({
-    values$settings
-  });
   collapseTo = reactive({
     thisSet()$get('enaData')$get('unitsBy')
   });
@@ -126,6 +126,9 @@ shinyServer(function(input, output, session) {
   };
   collapseFullData <- function(data, collapse, sep=".", cols = c("x","y")) {
     d = data[, lapply(.SD, mean), by = c(collapse), .SDcols = cols];
+
+    # This needs to have an option for accumulation, currently it is separte
+    # -> For each unique `by`, find all previous as well
     d$rownames = d[,{apply(.SD,1,function(x){paste(trimws(x),collapse=sep)})},with=T,.SDcols=collapse]
     setcolorder(d, c(cols, setdiff(colnames(d), cols)))
     d
@@ -154,9 +157,7 @@ shinyServer(function(input, output, session) {
 
     df
   });
-  # observe({
-  #   values$mainPlotData = dataRotated()
-  # });
+
   makeCompNode <- function(vals, types=c("A","B") ) {
     if(length(vals) == 1) {
       if(vals[1] == 0) {
@@ -248,6 +249,7 @@ shinyServer(function(input, output, session) {
     eSizeSum = sum(r.list2$edges$size)
     r.list2$nodes = lapply(r.list2$nodes, function(cn) {
       cn$size=r.list2$edges[source==cn$id|target==cn$id, sum(size)] / eSizeSum;
+      #if(cn$size>0) cn$size = cn$size + 0.5;
       cn;
     });
     r.list2$axisBounds = rep(max(abs(val$mode[,c('x','y')])),2);
@@ -256,7 +258,6 @@ shinyServer(function(input, output, session) {
 
   mainPlotData <- reactive({
     if(is.null(values$mainPlotData)) {
-      #values$mainPlotData = dataRotated();
       values$mainPlotData = getPlottableData();
     }
     values$mainPlotData;
@@ -300,7 +301,6 @@ shinyServer(function(input, output, session) {
     set = thisSet();
     allData = getFullData();
     mainPlotData = mainPlotData(); #getPlottableData();
-    xyCols = c("x","y");
 
     scaleRatio = 1;
     if(values$scaledUnits == T) {
@@ -311,10 +311,10 @@ shinyServer(function(input, output, session) {
     mainPlotData$label = rownames(mainPlotData);
 
     mainNetwork = sigmaNetComp();
-    list(
+    retList = list(
       nodes = lapply(1:nrow(mainPlotData), function(x) {
         by = values$settings$grouping[which(!is.na(mainPlotData[x, values$settings$grouping,with=F]))]
-        nd = rowToNode(mainPlotData, x, by, type="node", size = 1, file = values$enaFile, scaleRatio = scaleRatio);
+        nd = rowToNode(mainPlotData, x, by, type="unit", size = 1, file = values$enaFile, scaleRatio = scaleRatio);
         nd
       }),
       network = mainNetwork,
@@ -322,10 +322,38 @@ shinyServer(function(input, output, session) {
       network2 = sigmaNet2(),
       axisBounds = rep(max(abs(set$nodes$positions$scaled$positions), max(abs(allData[,.(x,y)]))),2)*10
     );
-  })
-  rowToNode = function(val, x, by, type="node", size=1, file =NULL, scaleRatio = 1) {
-    file.dt = data.table(file)
-    thisHouse = unique(file.dt[which(file.dt$character == as.vector(val[x]$character)),]$house);
+
+    session$sendCustomMessage("houseMeans", jsonlite::toJSON(getPlotMeans(mainPlotData, scaleRatio), auto_unbox = T));
+
+    retList
+  });
+  getPlotMeans = function(data, scaleRatio) {
+    print("Gettings means.");
+    data[, house := houseForCharacter(character)];
+    means = data[, lapply(.SD, mean), by = c("house"), .SDcols = xyCols];
+
+    nodes = lapply(1:nrow(means), function(x) {
+      val = means[x];
+      list(
+        label=val$house,
+        id=val$house,
+        x=val$x * 10 * scaleRatio,
+        y=val$y * 10 * scaleRatio,
+        size = 3,
+        nodeType = "mean",
+        node.uuid = uuid::UUIDgenerate(),
+        color = housesList[sapply(housesList, get, x="house") == val$house][[1]]$color
+      )
+    })
+    nodes;
+  }
+  houseForCharacter <- function(char){
+    file.dt = data.table(values$enaFile)
+    thisHouse = unlist(lapply(as.character(char), function(x) {unique(file.dt[which(file.dt$character == x),]$house)}))
+    thisHouse;
+  }
+  rowToNode = function(val, x, by, type="unit", size=1, file =NULL, scaleRatio = 1) {
+    thisHouse = houseForCharacter(as.vector(val[x]$character));
     nodeList = list(
       label = val[x]$rownames,
       id = paste("unit",val[x]$rownames, sep="."),
@@ -334,7 +362,7 @@ shinyServer(function(input, output, session) {
       x = val$x[x] * 10 * scaleRatio, #Expand
       y = val$y[x] * -10 * scaleRatio, #Expand and Rotate
       size = (1 / length(by)) * 2,
-      nodeType = "unit",
+      nodeType = type,
       by = values$settings$grouping[!is.na(val[x,values$settings$grouping, with=F])],
       expandTo = head(values$settings$grouping[is.na(val[x,values$settings$grouping, with=F])], 1),
       node.uuid = val[x]$node.uuid,
@@ -358,7 +386,6 @@ shinyServer(function(input, output, session) {
     nodeList
   };
   sigmaNet1 = reactive({
-    #browser();
     if(!is.null(input$unitClicked1)) {
       val = updatePlot(input$unitClicked1);
       if(!is.null(val$mode)) {
@@ -368,7 +395,7 @@ shinyServer(function(input, output, session) {
         values$sigmaNet1 = valToPlot;
       }
     } else {
-      values$sigmaNet1 = list(nodes = list(), edges = list())
+      values$sigmaNet1 = emptyNetwork();
     }
     values$sigmaNet1
   });
@@ -380,7 +407,7 @@ shinyServer(function(input, output, session) {
       valToPlot$nodes = lapply(valToPlot$nodes, function(n) { n$color = "#4d4d4d"; n$nodeType="code"; n });
       values$sigmaNet2 = valToPlot;
     }else {
-      values$sigmaNet2 = list(nodes = list(), edges = list())
+      values$sigmaNet2 = emptyNetwork();
     }
     values$sigmaNet2
   });
@@ -417,82 +444,14 @@ shinyServer(function(input, output, session) {
     } else if (!is.null(input$unitClicked1)) {
       values$sigmaNetComp = sigmaNet1();
     } else {
-      values$sigmaNetComp = list(nodes = list(), edges = list())
+      values$sigmaNetComp = emptyNetwork();
     }
     values$sigmaNetComp
   });
 
-  #####
-  # Begin: Plots
-  #####
-    # output$sigma <- renderSigma(
-    #   sigma(
-    #     sigmaPlot(),
-    #     name="mainPlot",
-    #     drawEdges = T,
-    #     drawNodes = T,
-    #     clickNode=htmlwidgets::JS("ENA.graphs.unit.events.clickNode"),
-    #     doubleClickNode=htmlwidgets::JS("ENA.graphs.unit.events.doubleClickNode"),
-    #     overNode=htmlwidgets::JS("ENA.graphs.unit.events.overNode"),
-    #     outNode=htmlwidgets::JS("ENA.graphs.unit.events.outNode"),
-    #     overEdge=htmlwidgets::JS("ENA.graphs.unit.events.overEdge"),
-    #     outEdge=htmlwidgets::JS("ENA.graphs.unit.events.outEdge")
-    #   )
-    # );
-    # output$sigmaNet1 <- renderSigma(
-    #   sigma(
-    #     sigmaNet1(),
-    #     drawEdges = T,
-    #     drawNodes = T,
-    #     name="edgePlot1",
-    #     clickNode=htmlwidgets::JS("ENA.graphs.network.events.clickNode"),
-    #     clickEdge=htmlwidgets::JS("ENA.graphs.network.events.clickEdge"),
-    #     overEdge=htmlwidgets::JS("ENA.graphs.unit.events.overEdge"),
-    #     outEdge=htmlwidgets::JS("ENA.graphs.unit.events.outEdge")
-    #   )
-    # );
-    # output$sigmaNet2 <- renderSigma(
-    #   sigma(
-    #     sigmaNet2(),
-    #     drawEdges = T,
-    #     drawNodes = T,
-    #     name="edgePlot2",
-    #     clickNode=htmlwidgets::JS("ENA.graphs.network.events.clickNode"),
-    #     clickEdge=htmlwidgets::JS("ENA.graphs.network.events.clickEdge"),
-    #     overEdge=htmlwidgets::JS("ENA.graphs.unit.events.overEdge"),
-    #     outEdge=htmlwidgets::JS("ENA.graphs.unit.events.outEdge")
-    #   )
-    # );
-    # output$sigmaComparison <- renderSigma(
-    #   sigma(sigmaNetComp(),drawEdges = T, drawNodes = T, name="edgePlotComp")
-    # );
-  #####
-  # End: Plots
-  #####
+  output$unitClicked1 <- renderText({ input$unitClicked1$label });
+  output$unitClicked2 <- renderText({ input$unitClicked2$label });
 
-  output$unitClicked1 <- renderText({
-    input$unitClicked1$label
-  });
-  output$unitClicked2 <- renderText({
-    input$unitClicked2$label
-  });
-  output$collapseToText <- renderText({
-    collapseTo()
-  })
-  output$collapseTo <- renderUI({
-    selectizeInput('collapseTo', 'Collapse by',
-      selected = collapseTo(),
-      choices = unique(colnames(thisSet()$get("enaData")$get("file"))),
-      multiple = TRUE
-    )
-  });
-  output$unitSelector <- renderUI({
-    selectizeInput( 'unitsSelected', 'Units',
-      selected = thisSet()$get("enaData")$get("unitsBy"),
-      choices = unique(thisSet()$get("enaData")$get("file")$character),
-      multiple = TRUE
-    )
-  });
   observe({
     session$sendCustomMessage("housesJSON", rjson::toJSON(housesListChars()));
   });
@@ -655,7 +614,6 @@ shinyServer(function(input, output, session) {
         plottableUUID=uuid::UUIDgenerate(),
         plottableParentUUID=itJ$plottable.uuid,
         nodeParentUUID=itJ$node.uuid
-        #,tree=c(itJ$uuid)
       );
       aa=values$settings$grouping[1:(last(which(values$settings$grouping %in% itJ$by)) + 1)]
       aaV=vector(mode="list", length=length(aa))
@@ -695,23 +653,21 @@ shinyServer(function(input, output, session) {
       });
       session$sendCustomMessage("newPlottableData", jsonlite::toJSON(list(
         nodes=newNodes,
-        network=list(nodes=list(),edges=list()),
-        network1=list(nodes=list(),edges=list()),
-        network2=list(nodes=list(),edges=list())
+        network=emptyNetwork(),
+        network1=emptyNetwork(),
+        network2=emptyNetwork()
       ), auto_unbox = T))
     }
   });
   observeEvent(input$unitsClicked, {
-    #session$sendCustomMessage("unitsClicked", input$unitsClicked$nodes);
-    #browser();
     session$sendCustomMessage("newPlottableData", jsonlite::toJSON(plotNodes(), auto_unbox = T))
   });
   observeEvent(input$colorsUpdated, {
     #session$sendCustomMessage
   });
-
   observeEvent(input$getPlotData, {
     session$sendCustomMessage("mainPlotData", rjson::toJSON(plotNodes()))
   });
+
   output
 })
