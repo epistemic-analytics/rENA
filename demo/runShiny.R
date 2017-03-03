@@ -5,9 +5,9 @@ library(shiny);
 if("sigma" %in% installed.packages() == F) {
   print("Installing Shiny Sigma")
   #devtools::install_url("https://git.doit.wisc.edu/clmarquart/shiny-sigma/repository/archive.zip");
-  devtools::install_local("~/Workspaces/RStudio2/sigma/")
+  #devtools::install_local("~/Workspaces/RStudio2/sigma/")
 }
-library(sigma);
+#library(sigma);
 
 build = T;
 

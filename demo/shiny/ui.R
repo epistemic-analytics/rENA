@@ -48,13 +48,16 @@ shinyUI(fluidPage(
           withTags(
             span(id="timelineBtnWrap",
               span(
+                # span("Sel: {{hasSeasons}}"),
                 button('class'="glyphicon glyphicon-play pull-left", 'title'="Play Seasons",
-                  'ng-click'="play($event)", 'ng-if'="!opened.playing",
+                  'ng-disabled'='!hasSeason',
+                  'ng-click'="play($event,'seasons')", 'ng-if'="!opened.playing",
                   HTML("<md-tooltip md-direction='left'>Play Seasons</md-tooltip>"),
                   tags$span("Seasons", class="hidden-sm hidden-xs")
                 ),
                 button('class'="glyphicon glyphicon-play pull-left", 'title'="Play Episodes",
-                  'ng-click'="play($event)", 'ng-if'="!opened.playing",
+                  'ng-disabled'='!hasEpisode',
+                  'ng-click'="play($event,'episodes')", 'ng-if'="!opened.playing",
                   HTML("<md-tooltip md-direction='left'>Play Episodes</md-tooltip>"),
                   tags$span("Episodes", class="hidden-sm hidden-xs")
                 )
