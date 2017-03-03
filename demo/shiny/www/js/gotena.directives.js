@@ -22,6 +22,9 @@
           scope.sig = null;
           scope.hasNetwork = false;
           scope.hasUnits = false;
+          scope.isPlaying = null;
+          scope.plotData = null;
+          scope.meanClicked = false;
 
           var
              data = {
@@ -57,7 +60,7 @@
                 zoomMin: 1,
                 zoomMax: 1,
                 enableCamera: false,
-                minNodeSize: 0.1,
+                minNodeSize: 0,
                 maxNodeSize: 5,
 
                 // Edge settings
@@ -68,7 +71,7 @@
                 edgeAnimation: "outward",
 
                 // Label settings
-                labelThreshold: 1,
+                labelThreshold: 0.00001,
                 defaultLabelSize: 10
               }
             });
