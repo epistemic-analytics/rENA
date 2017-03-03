@@ -1037,10 +1037,10 @@ i.glyphicon.glyphicon-check.isUnit {
     padding-right: 40px;
   }
   #episodeSummaryHeader h4 > span {
-    font-size: 1.3rem;
+    font-size: 18px;
+    font-weight: bold;
   }
   #clearEpisodeSummary {
-    /* font-size: 1.0rem; */
     margin-top: 10px;
     margin-right: 5px;
     position: absolute;
@@ -1053,13 +1053,27 @@ i.glyphicon.glyphicon-check.isUnit {
   #episodeSummaryContent {
     height: 100%;
     font-size: 1.1rem;
-    color: #410000;
+    /*color: #410000;*/
+    color: #838383;
   }
     #episodeSummaryContent .seasonTabs li a {
-      padding: 5px;
+      padding: 0;
+      padding-top: 1px;
       cursor: pointer;
       text-align: center;
+      background-color: #CCCCCC;
+      border-radius: 0;
+      margin-right: 1px;
+      color: #000;
     }
+      #episodeSummaryContent .seasonTabs li.active a {
+        background-color: #F4F6F7;
+        font-weight: bold;
+      }
+      #episodeSummaryContent .seasonTabs li:not(.active) a:hover {
+        border-color: transparent;
+        font-weight: bold;
+      }
     #episodeSummaryContent .tab-content {
       height: calc(100% - 78px);
       overflow: auto;
@@ -1079,16 +1093,25 @@ i.glyphicon.glyphicon-check.isUnit {
         }
         #episodeSummaryContent .tab-content > .tab-pane  > h3 {
           margin-top: 10px;
+          font-size: 14px;
+          font-style: italic;
+          font-weight: bold;
+          text-decoration: underline;
+          color: #000;
         }
       #episodeSummaryContent .tab-content .summaryEpisodes > h4 {
           background: #E6E6E6;
           padding: 5px;
-          font-size: 1.3rem;
+          font-size: 12px;
+          font-weight: bold;
+          color: #000;
       }
         #episodeSummaryContent .tab-content .summaryEpisodes > h4 i {
           margin-right: 30px;
           cursor: pointer;
-          top: 0;
+          top: -2px;
+          font-weight: normal;
+          font-size: 14px;
         }
       #episodeSummaryContent .tab-content .excerpt:not(:last-child) {
         margin-bottom: 15px;
