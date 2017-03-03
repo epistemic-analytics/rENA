@@ -397,6 +397,30 @@
             });
             animateNodes(toAnimate);
           });
+          scope.$on("mean-data-update", function(event,means) {
+            if(scope.plotUnits) {
+              means.forEach(m=>{
+                m.type = "circle";
+                m.image = {
+                  url: ("images/sigils/"+m.label.toLowerCase()+".png"),
+                  clip: 1.0,
+                  scale: 1.5
+                };
+                scope.sig.graph.addNode(m)
+              });
+              scope.sig.refresh();
+            }
+          });
+          scope.$on("meanOpened", function(event, mean){
+            if(plotSelection==='') {
+              console.log("Mean opened: ", mean);
+            }
+          });
+          scope.$on("meanClosed", function(event, mean){
+            if(plotSelection==='') {
+              console.log("Mean closed: ", mean);
+            }
+          });
         }
       }
     }])

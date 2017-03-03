@@ -760,6 +760,11 @@
             $scope.$broadcast("codes-loaded", $scope.codesSelected);
           });
         });
+        Shiny.addCustomMessageHandler("houseMeans", function(means) {
+          $scope.$apply(function() {
+            $scope.$broadcast("mean-data-update", means);
+          });
+        });
         Shiny.addCustomMessageHandler("housesJSON", function(houses) {
           $scope.$apply(function() {
             $scope.housesJSON = JSON.parse(houses);
