@@ -9,13 +9,13 @@
   if(!ENA) throw "ENA is undefined";
 
   ENAapp
-    .directive("sigmaNodePlot", ["$timeout", "ENA", function($timeout, ENA){
+    .directive("sigmaNodePlot", ["$timeout", "ENA", "Helper", function($timeout, ENA, Helper) {
       return {
         restrict: 'E',
         template: `<div class="sigma-plot" ng-class="{'has-network': hasNetwork}"></div>`,
         scope: true,
         link: function(scope, $element, $attrs) {
-          var $scope = scope;
+          const $scope = scope;
           scope.plotNetworks = ($attrs.plotNetworks === "true");
           scope.plotUnits = ($attrs.plotUnits === "true");
 
@@ -96,6 +96,7 @@
             scope.sig.addAxisLines({color: "#CCCCCC", bounds: bounds}); //data.axisBounds);
             scope.sig.refresh();
           }
+
           function animateNodes(toAnimate) {
             if(toAnimate.nodes.length > 0) {
               sigma.plugins.animate(
@@ -209,6 +210,7 @@
               scope.$emit("call.plot.clear",'');
             }
           });
+
           scope.$on("plottable-show-nodes", function(event, ids) {
             var
                nodes = scope.sig.graph.nodes().filter(n=>ids.filter(i=>i===n["plottable.uuid"]).length>0)
@@ -229,6 +231,7 @@
             });
             animateNodes(toAnimate);
           });
+
           scope.$on("plottable-hide-nodes", function(event, ids) {
             var
                nodes = scope.sig.graph.nodes().filter(n=>ids.filter(i=>i===n["plottable.uuid"]).length>0)
@@ -253,7 +256,8 @@
               animateNodes(toAnimate);
             //},1000)
           });
-          scope.$on("plottable-remove-nodes", function(event, data){
+
+          scope.$on("plottable-remove-nodes", function(event, data) {
             var
               parentNode = scope.sig.graph.nodes().filter(n=>n["node.uuid"]===data)
               ,toAnimate = {
@@ -274,6 +278,7 @@
 
             animateNodes(toAnimate);
           });
+
           scope.$on("plottable-data-update", function(event, originalData, reset) {
             var
                hasParent
@@ -289,22 +294,22 @@
               if (plotSelNum > 0) {
                 let index = (plotSelNum - 1);
                 if ($scope.unitsPlotted[index]) {
-                  let h = _.find($scope.housesJSON, h => h.house === $scope.unitsPlotted[index].house);
+                  let h = Helper.findHouse($scope.housesJSON, $scope.unitsPlotted[index].house);
                   e.color = h.colors[index];
                 }
               } else {
                 //main plot
                 if ($scope.unitsPlotted.length <= 1 || $scope.unitsPlotted[0].house === $scope.unitsPlotted[1].house) {
-                  let h = _.find($scope.housesJSON, h => h.house === $scope.unitsPlotted[0].house),
-                    unitIndex = _.findIndex($scope.unitsPlotted, u => u.character === e.source);
+                  let unitIndex = _.findIndex($scope.unitsPlotted, u => (u.character === e.source || u.character === e.target));
                   if (unitIndex > -1) {
+                    let h = Helper.findHouse($scope.housesJSON, $scope.unitsPlotted[unitIndex].house);
                     e.color = h.colors[unitIndex];
                   }
                 } else {
                   //TODO:
                   //two different houses
-                  let h1 = _.find($scope.housesJSON, h => h.house === $scope.unitsPlotted[0].house),
-                    h2 = _.find($scope.housesJSON, h => h.house === $scope.unitsPlotted[1].house);
+                  let h1 = Helper.findHouse($scope.housesJSON, $scope.unitsPlotted[0].house),
+                    h2 = Helper.findHouse($scope.housesJSON, $scope.unitsPlotted[1].house);
                   console.log("h1,h2", h1, h2);
                 }
               }
@@ -432,7 +437,9 @@
               _n = undefined;
             });
             animateNodes(toAnimate);
+            $scope.$apply();
           });
+
           scope.$on("mean-data-update", function(event,means) {
             if(!scope.sig) return;
             if(scope.plotUnits) {
@@ -460,16 +467,17 @@
                   clip: 1.0,
                   scale: 1.5
                 };
-
                 if(isNew) {
                   scope.sig.graph.addNode(m)
                 }
+
               });
               if(scope.sig) {
                 scope.sig.refresh();
               }
             }
           });
+
           scope.$on("meanOpened", function(event, mean){
             var toAnimate={
               nodes: []
@@ -492,6 +500,7 @@
               animateNodes(toAnimate);
             }
           });
+
           scope.$on("meanClosed", function(event, mean){
             var toAnimate={
               nodes: []

@@ -167,6 +167,11 @@
     .filter("Empty", [function() {
       return _.isEmpty;
     }])
+    .filter("NotEmpty", [function() {
+      return function(o) {
+        return !_.isEmpty(o);
+      };
+    }])
     .filter("isPlotted", [ function() {
       return function(unit) {
         console.log(unit, ENA.graphs.unit.selections.map(s=>s.label))
@@ -184,6 +189,9 @@
           $top.css("background", ("linear-gradient(to right, #000 " + topBarSplit +
             "px, #FFFFFF " + topBarSplit + "px, #FFFFFF " + (topBarSplit + 1) +
             "px, #808080 " + (topBarSplit + 1) + "px)"));
+        },
+        "findHouse": function(houses, houseName) {
+          return _.find(houses, h => h.house === houseName);
         }
       };
     }])
@@ -195,9 +203,7 @@
         restrict: 'E',
         scope: true,
         templateUrl: "templates/timeline.html",
-        link: function(scope, element, attrs) {
-
-        }
+        link: function(scope, element, attrs) {}
       }
     }])
     .directive("enaSplitTimeline", ["Helper", "$timeout", function(Helper, $timeout) {
@@ -487,12 +493,37 @@
         },
         "template": COLOR_CIRCLE_TEMP,
         "link": function($scope, $element, $attrs) {
+          var isOpen = false;
           $element.on("click", function($event) {
+            $event.preventDefault();
+            $event.stopPropagation();
             $scope.$apply(function() {
+              isOpen = !isOpen;
               $("[color-circle]").not($element).popover("hide");
               $element.popover("toggle");
+              if (!isOpen) {
+                $(window).off("click.colorPicker");
+              } else {
+                setupOffClick();
+              }
             });
+            return false;
           });
+
+          function setupOffClick() {
+            $(window).on("click.colorPicker", function(ev) {
+              if ($(ev.target).closest(".color-circle-popover").length === 0) {
+                ev.preventDefault();
+                ev.stopPropagation();
+                $scope.$apply(function() {
+                  $element.popover("hide");
+                  $(window).off("click.colorPicker");
+                  isOpen = false;
+                });
+                return false;
+              }
+            });
+          }
 
           $scope.$watchGroup([() => $scope.topColor, () => $scope.bottomColor], function(colors) {
               $scope.$emit("house-colors-changed", $scope.house);
