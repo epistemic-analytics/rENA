@@ -11,7 +11,7 @@
     graphs: {
       unit: {
         selections: [],
-        openMeans: [],
+        openMeans: [ "Lannister" ],
         hovered: undefined,
         events: { }
       },
@@ -43,16 +43,11 @@
           selectedLen = ENA.graphs.unit.selections.length;
 
         if(clickData.data.node.nodeType === "mean") {
-          var foundMean = ENA.graphs.unit.openMeans.map(u=>u.label).indexOf(clickData.data.node.label);
-          if(foundMean >= 0) {
-            delete ENA.graphs.unit.openMeans[foundMean];
-            ENA.graphs.unit.openMeans = ENA.graphs.unit.openMeans.filter(m=>m);
-            ENA.app.scope().$broadcast("meanClosed", clickData.data.node);
-          } else {
-            ENA.graphs.unit.openMeans.push(clickData.data.node);
-            ENA.app.scope().$broadcast("meanOpened", clickData.data.node);
-          }
-        } else {
+          console.log("Plot the mean equiload...");
+          clickData.data.node['by'] = "house";
+          Shiny.onInputChange("meanClicked", clickData.data.node);
+          ENA.graphs.unit.selections.push(clickData.data.node);
+        } else  {
           if(ENA.graphs.unit.hovered !== undefined) {
             ENA.graphs.unit.selections.push(ENA.graphs.unit.hovered);
             ENA.app.scope().$broadcast("unitClicked", ENA.graphs.unit.selections);
@@ -119,12 +114,25 @@
     ENA.app.scope().$broadcast("unhover-edge", edgeData.data.edge);
   };
   ENA.graphs.unit.events["doubleClickNode"] = function(clickData) {
-    if(clickData.data.node.expandTo.length > 0) {
-      ENA.collapseTo.push(clickData.data.node.expandTo);
-      clickData.data.node.nonce = Math.random();
-      Shiny.onInputChange("toggleNode", JSON.stringify(clickData.data.node));
+    var node = clickData.data.node;
+    if(node.nodeType === "unit" && node.expandTo.length > 0) {
+      ENA.collapseTo.push(node.expandTo);
+      node.nonce = Math.random();
+      Shiny.onInputChange("toggleNode", JSON.stringify(node));
+    } else if (node.nodeType === "mean"){
+      console.log("Mean should expand");
+      var foundMean = ENA.graphs.unit.openMeans.map(u=>u.label).indexOf(clickData.data.node.label);
+      if(foundMean >= 0) {
+        delete ENA.graphs.unit.openMeans[foundMean];
+        ENA.graphs.unit.openMeans = ENA.graphs.unit.openMeans.filter(m=>m);
+        ENA.app.scope().$broadcast("meanClosed", clickData.data.node);
+      } else {
+        ENA.graphs.unit.openMeans.push(clickData.data.node);
+        ENA.app.scope().$broadcast("meanOpened", clickData.data.node);
+      }
     }
   };
+
   //network events
   ENA.graphs.network.events["clickEdge"] = function(edge) {
     Shiny.onInputChange("edgeClicked", { camera: this.id, edge: edge, nonce: Math.random() });

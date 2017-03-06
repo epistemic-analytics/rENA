@@ -29,7 +29,7 @@ unitNames_Jaime = c('1.1.Jaime','3.1.Jaime','5.1.Jaime','7.1.Jaime','10.1.Jaime'
 
 GoT = read.csv("./data/GoT-ENA-ego-heads-v3.csv")
 
-gotData = ENAdata$new(GoT, unitsBy = c("season", "episode", "character"), units = NULL, conversationsBy = c("unique_id"), codeNames = codeNames_Jaime, unitsSelected = c("Jaime","Ned"), windowSize = 0, exact.match = T );
+gotData = ENAdata$new(GoT, unitsBy = c("season", "episode", "character", "house"), units = NULL, conversationsBy = c("unique_id"), codeNames = codeNames_Jaime, unitsSelected = c("Jaime","Ned"), windowSize = 0, exact.match = T );
 
 #runIt <- function() {
 gotSet = ENAset$new(gotData, sphereNorm = T)

@@ -47,7 +47,7 @@ if(file.exists(filename)) {
   GoT = read.csv(filename)
   gotData = ENAdata$new(
     GoT,
-    unitsBy = c("season", "episode", "character"),
+    unitsBy = c("season", "episode", "character", "house"),
     units = NULL, conversationsBy = c("unique_id"),
     codeNames = gsub("\\.", "_", c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Tyrion','Bronn','Brienne','Tywin','Bran')),
     unitsSelected = c("Jaime"),

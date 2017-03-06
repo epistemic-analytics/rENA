@@ -1,4 +1,4 @@
-(function(w, $, angular, Shiny, undefined) { "use strict";
+(function(w, $, angular, Shiny, _, undefined) { "use strict";
 
   var
      ENAapp = angular.module("ENAapp")
@@ -319,10 +319,12 @@
               ,_e
               ,newEdge
             ;
-            toAnimate = {  // Animation of nodes complete, draw network
+            toAnimate = {
                nodes: []
               ,onComplete: function() { if(scope.plotNetworks ) {
-                var nodesBoing=[],nn;
+                // Animation of nodes/existing edges complete, draw
+                // new edges and grow/shrink code nodes
+                var nodesBoing=[], nn;
 
                 if(data["network"+plotSelection].nodes.length !== 0) {
                   toRemove = scope.sig.graph.edges()
@@ -395,18 +397,18 @@
                 ,isNew = !curNode
               ;
 
-              n.tox = _n.x;
-              n.toy = _n.y;
-              n.tocolor = _n.color;
-              n.tosize = n.originalsize = _n.size;
               if(!n.originalsize) {
                 n.originalsize = _n.size;
               }
+
+              n.tox = n.originalx = _n.x;
+              n.toy = n.originaly = _n.y;
+              n.tocolor = _n.color;
+              n.tosize = n.originalsize = _n.size;
               if(_n.nodeType === "code" && _n.size > 0){
                 n.size = 0;
                 n.tosize += (n.tosize * 0.4);
               }
-              n.hidden = false;
               if(curNode) {
                 n.x = curNode.x
                 n.y = curNode.y
@@ -417,7 +419,14 @@
                 n.x = _n.x;
                 n.y = _n.y;
               }
-              toAnimate.nodes.push(n.id);
+
+              console.log("Check to see if house is exploded")
+              if(n.nodeType==="unit" && !ENA.graphs.unit.openMeans.find(m=>m===n.house)) {
+                n.hidden = true;
+              } else {
+                toAnimate.nodes.push(n.id);
+                n.hidden = false;
+              }
 
               if(isNew) scope.sig.graph.addNode(n)
               _n = undefined;
@@ -425,27 +434,80 @@
             animateNodes(toAnimate);
           });
           scope.$on("mean-data-update", function(event,means) {
+            if(!scope.sig) return;
             if(scope.plotUnits) {
+              var _m, isNew = true;
               means.forEach(m=>{
+                _m = scope.sig.graph.nodes(m.id);
+                if(!!_m) {
+                  isNew = false;
+                  _m = m;
+                }
+
                 m.type = "circle";
+                m.originalx = m.x;
+                m.originaly = m.y;
+                m.originalsize = m.size;
+                m.originalcolor = m.color;
+                m.tosize = m.size;
+                m.tox = m.x;
+                m.toy = m.y;
+                //m.x = 0;
+                //m.y = 0;
+                //m.size = 0;
                 m.image = {
                   url: ("images/sigils/"+m.label.toLowerCase()+".png"),
                   clip: 1.0,
                   scale: 1.5
                 };
-                scope.sig.graph.addNode(m)
+
+                if(isNew) {
+                  scope.sig.graph.addNode(m)
+                }
               });
-              scope.sig.refresh();
+              if(scope.sig) {
+                scope.sig.refresh();
+              }
             }
           });
           scope.$on("meanOpened", function(event, mean){
+            var toAnimate={
+              nodes: []
+            };
             if(plotSelection==='') {
               console.log("Mean opened: ", mean);
+              scope.sig.graph.nodes()
+                .filter(n=>n.house===mean.label)
+                .forEach(n=>{
+                  n.hidden=false;
+                  n.x = mean.x;
+                  n.y = mean.y;
+                  n.size = 0;
+                  n.tosize = n.originalsize;
+                  n.tox = n.originalx;
+                  n.toy = n.originaly;
+                  toAnimate.nodes.push(n.id);
+                });
+              ;
+              animateNodes(toAnimate);
             }
           });
           scope.$on("meanClosed", function(event, mean){
+            var toAnimate={
+              nodes: []
+            };
             if(plotSelection==='') {
               console.log("Mean closed: ", mean);
+              scope.sig.graph.nodes()
+                .filter(n=>n.house===mean.label)
+                .forEach(n=>{
+                  n.tox = mean.x;
+                  n.toy = mean.y;
+                  n.tosize = 0;
+                  toAnimate.nodes.push(n.id);
+                });
+              ;
+              animateNodes(toAnimate);
             }
           });
         }
@@ -453,4 +515,4 @@
     }])
   ;
 
-})(window, jQuery, angular, Shiny);
+})(window, jQuery, angular, Shiny, _);
