@@ -60,37 +60,6 @@ shinyServer(function(input, output, session) {
   values$sigmaNet2 = emptyNetwork();
   values$sigmaNetComp = emptyNetwork();
 
-  settings <- reactive({ values$settings });
-  thisSet <- reactive({
-    settings = settings();
-    set = NULL;
-    setData = gotSet$get('enaData')$get('file');
-    unitNames = values$unitsSelected;
-
-    values$unitNames.w.meta = lapply(unitNames, function(u) {
-      setData[setData$character==u,c("character", "house")][1,]
-    });
-
-    if(settings$allowUpdate == T) {
-      set = gotSet$update("data",
-        unitsSelected=unitNames,
-        codeNames=values$codesSelected
-      );
-      values$resetMainData = T;
-    } else {
-      set = gotSet;
-    }
-    values$timeline = getTimeline(set, values$settings$conversationsBy);
-    values$enaFile = data.table(set$get("enaData")$get("file"));
-
-    return(set);
-  });
-  unitsSelectedMeta <- reactive({
-    values$unitNames.w.meta
-  });
-  codesSelected <- reactive({
-    values$codesSelected
-  });
   housesListChars <- function() {
     setData = values$enaFile;
     housesList.w.chars = lapply(housesList, function(x) {
@@ -99,14 +68,6 @@ shinyServer(function(input, output, session) {
     });
     housesList.w.chars
   };
-  timeline <- reactive({
-    getTimeline(thisSet(),settings()$conversationsBy, TRUE)
-  });
-  timelineFilter <- reactive({
-    getTimeline(thisSet(),settings()$conversationsBy, FALSE)
-  });
-
-  #collapseTo = reactive({ thisSet()$get('enaData')$get('unitsBy'); });
   getFullData <- function() {
     set = thisSet();
     val = data.frame(set$data$centered$rotated);
@@ -131,31 +92,6 @@ shinyServer(function(input, output, session) {
     setcolorder(d, c(cols, setdiff(colnames(d), cols)))
     d
   }
-  # dataRotated <- reactive({
-  #   if(is.null(values$settings$collapseTo) ) {
-  #     return(NULL)
-  #   }
-  #
-  #   valDT = getFullData();
-  #
-  #   browser(expr=debug);
-  #
-  #   timelineFiltered = values$timelineFiltered;
-  #   if(!is.null(timelineFiltered)) {
-  #     setkeyv(valDT,c("season","episode"))
-  #     valDT = valDT[.(timelineFiltered[timelineFiltered$included==T,c("season","episode")]), nomatch=0]
-  #   }
-  #
-  #   valMeaned = collapseFullData(valDT, c(values$settings$collapseTo));
-  #   rownames(valMeaned) = apply(valMeaned[,values$settings$collapseTo, with = F], 1, paste, collapse=".")
-  #   df = data.table(valMeaned[,c("x","y"),with=F],valMeaned[,c(colnames(valMeaned)[!colnames(valMeaned) %in% c('x','y')]),with=F]);
-  #   rownames(df) = rownames(valMeaned);
-  #   df$rownames = rownames(valMeaned);
-  #
-  #
-  #   df
-  # });
-
   makeCompNode <- function(vals, types=c("A","B") ) {
     if(length(vals) == 1) {
       if(vals[1] == 0) {
@@ -252,13 +188,24 @@ shinyServer(function(input, output, session) {
     r.list2$axisBounds = rep(max(abs(val$mode[,c('x','y')])),2);
     r.list2
   }
-
-  mainPlotData <- reactive({
-    if(is.null(values$mainPlotData)) {
-      values$mainPlotData = getPlottableData();
-    }
-    values$mainPlotData;
-  });
+  getPlotMeans = function(data, scaleRatio) {
+    means = data[, lapply(.SD, mean), by = c("house"), .SDcols = xyCols];
+    nodes = lapply(1:nrow(means), function(x) {
+      val = means[x];
+      list(
+        label=val$house,
+        id=val$house,
+        house=val$house,
+        x=val$x * 10 * scaleRatio,
+        y=val$y * -10 * scaleRatio,
+        size = 3,
+        nodeType = "mean",
+        node.uuid = uuid::UUIDgenerate(),
+        color = housesList[sapply(housesList, get, x="house") == val$house][[1]]$color
+      )
+    })
+    nodes;
+  }
   getPlottableData = function(plottable = values$plottable) { #reactive({
     dt = getFullData();
 
@@ -295,54 +242,6 @@ shinyServer(function(input, output, session) {
     # Ensure all columns remain
     rbindlist(list(dtAll, read.table(text="",col.names=c(colnames(dt)))), fill=T)
   };
-  plotNodes = reactive({
-    set = thisSet();
-    allData = getFullData();
-    mainPlotData = mainPlotData(); #getPlottableData();
-
-    scaleRatio = 1;
-    if(values$scaledUnits == T) {
-      scaleRatio = values$scaleRatio;
-    }
-
-    mainPlotData$id = rownames(mainPlotData);
-    mainPlotData$label = rownames(mainPlotData);
-
-    mainNetwork = sigmaNetComp();
-    retList = list(
-      nodes = lapply(1:nrow(mainPlotData), function(x) {
-        by = values$settings$grouping[which(!is.na(mainPlotData[x, values$settings$grouping,with=F]))]
-        nd = rowToNode(mainPlotData, x, by, type="unit", size = 1, file = values$enaFile, scaleRatio = scaleRatio);
-        nd
-      }),
-      network = mainNetwork,
-      network1 = values$sigmaNet1, #sigmaNet1(),
-      network2 = sigmaNet2(),
-      axisBounds = rep(max(abs(set$nodes$positions$scaled$positions), max(abs(allData[,.(x,y)]))),2)*10
-    );
-
-    session$sendCustomMessage("houseMeans", jsonlite::toJSON(getPlotMeans(mainPlotData, scaleRatio), auto_unbox = T));
-
-    retList
-  });
-  getPlotMeans = function(data, scaleRatio) {
-    means = data[, lapply(.SD, mean), by = c("house"), .SDcols = xyCols];
-
-    nodes = lapply(1:nrow(means), function(x) {
-      val = means[x];
-      list(
-        label=val$house,
-        id=val$house,
-        x=val$x * 10 * scaleRatio,
-        y=val$y * 10 * scaleRatio,
-        size = 3,
-        nodeType = "mean",
-        node.uuid = uuid::UUIDgenerate(),
-        color = housesList[sapply(housesList, get, x="house") == val$house][[1]]$color
-      )
-    })
-    nodes;
-  }
   houseForCharacter <- function(char){
     file.dt = data.table(values$enaFile)
     thisHouse = unlist(lapply(as.character(char), function(x) {unique(file.dt[which(file.dt$character == x),]$house)}))
@@ -381,6 +280,76 @@ shinyServer(function(input, output, session) {
     }
     nodeList
   };
+
+  settings <- reactive({ values$settings });
+  thisSet <- reactive({
+    settings = settings();
+    set = NULL;
+    setData = gotSet$get('enaData')$get('file');
+    unitNames = values$unitsSelected;
+
+    values$unitNames.w.meta = lapply(unitNames, function(u) {
+      setData[setData$character==u,c("character", "house")][1,]
+    });
+
+    if(settings$allowUpdate == T) {
+      set = gotSet$update("data",
+        unitsSelected=unitNames,
+        codeNames=values$codesSelected
+      );
+      values$resetMainData = T;
+    } else {
+      set = gotSet;
+    }
+    values$timeline = getTimeline(set, values$settings$conversationsBy);
+    values$enaFile = data.table(set$get("enaData")$get("file"));
+
+    return(set);
+  });
+  unitsSelectedMeta <- reactive({
+    values$unitNames.w.meta
+  });
+  codesSelected <- reactive({
+    values$codesSelected
+  });
+  timeline <- reactive({
+    getTimeline(thisSet(),settings()$conversationsBy, TRUE)
+  });
+  timelineFilter <- reactive({
+    getTimeline(thisSet(),settings()$conversationsBy, FALSE)
+  });
+
+  mainPlotData <- reactive({
+    if(is.null(values$mainPlotData)) {
+      values$mainPlotData = getPlottableData();
+    }
+    values$mainPlotData;
+  });
+  plotNodes = reactive({
+    set = thisSet();
+    allData = getFullData();
+    mainPlotData = mainPlotData(); #getPlottableData();
+
+    scaleRatio = 1;
+    if(values$scaledUnits == T) {
+      scaleRatio = values$scaleRatio;
+    }
+
+    mainNetwork = sigmaNetComp();
+    retList = list(
+      nodes = lapply(1:nrow(mainPlotData), function(x) {
+        by = values$settings$grouping[which(!is.na(mainPlotData[x, values$settings$grouping,with=F]))]
+        nd = rowToNode(mainPlotData, x, by, type="unit", size = 1, file = values$enaFile, scaleRatio = scaleRatio);
+        nd
+      }),
+      network = mainNetwork,
+      network1 = values$sigmaNet1, #sigmaNet1(),
+      network2 = sigmaNet2(),
+      axisBounds = rep(max(abs(set$nodes$positions$scaled$positions), max(abs(allData[,.(x,y)]))),2)*10
+    );
+
+    retList
+  });
   sigmaNet1 = reactive({
     if(!is.null(input$unitClicked1)) {
       val = updatePlot(input$unitClicked1);
@@ -448,16 +417,11 @@ shinyServer(function(input, output, session) {
   output$unitClicked1 <- renderText({ input$unitClicked1$label });
   output$unitClicked2 <- renderText({ input$unitClicked2$label });
 
-  observe({
-    session$sendCustomMessage("housesJSON", rjson::toJSON(housesListChars()));
-  });
-  observe({
-    session$sendCustomMessage("comparisonChanged", values$sigmaNetComp);
-  });
+  observe({ session$sendCustomMessage("housesJSON", rjson::toJSON(housesListChars())); });
+  observe({ session$sendCustomMessage("comparisonChanged", values$sigmaNetComp); });
   observe({
     session$sendCustomMessage("collapseTo", jsonlite::toJSON(values$settings$collapseTo));
 
-    session$sendCustomMessage("timelineNested", timeline());
     session$sendCustomMessage("timelineFilter", jsonlite::toJSON(timelineFilter()));
 
     session$sendCustomMessage("unitsSelected", rjson::toJSON(unitsSelectedMeta()));
@@ -466,7 +430,6 @@ shinyServer(function(input, output, session) {
       values$enaFile[match(unique(excerpt_id), values$enaFile$excerpt_id), c("season", "episode", values$codesSelected, "excerpt"), with=F]));
   });
   observeEvent(input$meanClicked, {
-    print("Show mean equiload.");
     useNetwork = ifelse(is.null(values$network1),"1","2");
     if(!is.null(input$meanClicked)) {
       values$settings$collapseTo = c("house");
@@ -510,20 +473,18 @@ shinyServer(function(input, output, session) {
     });
     NULL
   })
-  observeEvent(input$collapseTo, {
-    values$settings$collapseTo = jsonlite::fromJSON(input$collapseTo);
-  });
   observeEvent(input$timelineFiltered, {
-    #browser();
     values$timelineFiltered = jsonlite::fromJSON(input$timelineFiltered);
     #session$sendCustomMessage("newPlottableData", rjson::toJSON(plotNodes()));
     values$mainPlotData = getPlottableData();
     session$sendCustomMessage("newPlottableData", jsonlite::toJSON(plotNodes(), auto_unbox = T))
+    session$sendCustomMessage("houseMeans", jsonlite::toJSON(getPlotMeans(values$mainPlotData, values$scaleRatio), auto_unbox = T))
   });
   observeEvent(input$scaledUnits, {
     values$scaledUnits = input$scaledUnits;
     #session$sendCustomMessage("newPlottableData", rjson::toJSON(plotNodes()));
     session$sendCustomMessage("newPlottableData", jsonlite::toJSON(plotNodes(), auto_unbox = T))
+    session$sendCustomMessage("houseMeans", jsonlite::toJSON(getPlotMeans(values$mainPlotData, values$scaleRatio), auto_unbox = T))
   });
   observeEvent(input$updateUnits, {
     upUnits = jsonlite::fromJSON(input$updateUnits);
@@ -551,7 +512,9 @@ shinyServer(function(input, output, session) {
     }
 
     values$mainPlotData = getPlottableData();
-    session$sendCustomMessage("mainPlotData", rjson::toJSON(plotNodes()));
+    #session$sendCustomMessage("mainPlotData", rjson::toJSON(plotNodes()));
+    session$sendCustomMessage("newPlottableData", jsonlite::toJSON(plotNodes(), auto_unbox = T))
+    session$sendCustomMessage("houseMeans", jsonlite::toJSON(getPlotMeans(values$mainPlotData, values$scaleRatio), auto_unbox = T))
     session$sendCustomMessage("unitsSelected", rjson::toJSON(unitsList));
   });
   observeEvent(input$updateCodes, {
@@ -681,12 +644,45 @@ shinyServer(function(input, output, session) {
   observeEvent(input$unitsClicked, {
     session$sendCustomMessage("newPlottableData", jsonlite::toJSON(plotNodes(), auto_unbox = T))
   });
-  observeEvent(input$colorsUpdated, {
-    #session$sendCustomMessage
-  });
   observeEvent(input$getPlotData, {
     session$sendCustomMessage("mainPlotData", rjson::toJSON(plotNodes()))
+    session$sendCustomMessage("houseMeans", jsonlite::toJSON(getPlotMeans(values$mainPlotData, values$scaleRatio), auto_unbox = T))
   });
+
+  # observeEvent(input$colorsUpdated, {
+  #   #session$sendCustomMessage
+  # });
+  #collapseTo = reactive({ thisSet()$get('enaData')$get('unitsBy'); });
+  # observe({
+  #   #session$sendCustomMessage("timelineNested", timeline());
+  # });
+  # observeEvent(input$collapseTo, {
+  #   values$settings$collapseTo = jsonlite::fromJSON(input$collapseTo);
+  # });
+  # dataRotated <- reactive({
+  #   if(is.null(values$settings$collapseTo) ) {
+  #     return(NULL)
+  #   }
+  #
+  #   valDT = getFullData();
+  #
+  #   browser(expr=debug);
+  #
+  #   timelineFiltered = values$timelineFiltered;
+  #   if(!is.null(timelineFiltered)) {
+  #     setkeyv(valDT,c("season","episode"))
+  #     valDT = valDT[.(timelineFiltered[timelineFiltered$included==T,c("season","episode")]), nomatch=0]
+  #   }
+  #
+  #   valMeaned = collapseFullData(valDT, c(values$settings$collapseTo));
+  #   rownames(valMeaned) = apply(valMeaned[,values$settings$collapseTo, with = F], 1, paste, collapse=".")
+  #   df = data.table(valMeaned[,c("x","y"),with=F],valMeaned[,c(colnames(valMeaned)[!colnames(valMeaned) %in% c('x','y')]),with=F]);
+  #   rownames(df) = rownames(valMeaned);
+  #   df$rownames = rownames(valMeaned);
+  #
+  #
+  #   df
+  # });
 
   output
 })

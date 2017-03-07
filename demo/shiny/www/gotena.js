@@ -47,6 +47,7 @@
           clickData.data.node['by'] = "house";
           Shiny.onInputChange("meanClicked", clickData.data.node);
           ENA.graphs.unit.selections.push(clickData.data.node);
+          ENA.app.scope().$broadcast("meanClicked", ENA.graphs.unit.selections);
         } else  {
           if(ENA.graphs.unit.hovered !== undefined) {
             ENA.graphs.unit.selections.push(ENA.graphs.unit.hovered);
@@ -724,8 +725,10 @@
         $scope.opts.showCharacters = !$scope.opts.showCharacters;
       };
 
-      $scope.timelineFilter = function() {
-        Shiny.onInputChange("timelineFiltered", JSON.stringify($scope.timeline2));
+      $scope.timelineFilter = function(changed) {
+        if(changed!==false) {
+          Shiny.onInputChange("timelineFiltered", JSON.stringify($scope.timeline2));
+        }
         //TODO: remove this when 'inputFiltered' returns something from server
         $scope.$applyAsync(function() {
           $scope.$broadcast("timeline-selections", $scope.timeline2);
@@ -882,8 +885,11 @@
       };
 
       $scope.$watch('timeline', function() {
-        if (!$scope.timeline) return;
-        resetGrabbers();
+        if (!$scope.timeline)
+          $scope.timeline = [...Array(7).keys()].splice(1).reduce((a,i)=>{ a[i] = [...Array(11).keys()].splice(1); return a; }, {});
+        else {
+          resetGrabbers();
+        }
       });
       $scope.$watch('ENA.graphs.unit.selections.length',function(e) {
         $scope.hasSeason = ENA.graphs.unit.selections.map(u=>u.by[u.by.length-1]).some(u=>u==="season");
@@ -917,7 +923,7 @@
         }
       }
 
-      var updateGraphSplit = _.debounce(function() {
+      var updateGraphSplit = _.debounce(function(changed) {
         $scope.$apply(function() {
           let pos = $scope.positions;
           _.each($scope.timeline2, tlo => {
@@ -926,7 +932,7 @@
             tlo.included = ((s > pos.left.season || (s === pos.left.season && e >= pos.left.episode)) &&
                             (s < pos.right.season || (s === pos.right.season && e <= pos.right.episode)));
           });
-          $scope.timelineFilter();
+          $scope.timelineFilter(changed);
         });
       }, 50);
 
@@ -973,7 +979,7 @@
         }
         $("#timelineTopBar").css({"left": "", "right" : "", "background": ""});
         $(".splitGrab").css("left", "");
-        updateGraphSplit();
+        updateGraphSplit(false);
       };
       $scope.resetGrabbers = resetGrabbers;
     }])
@@ -982,6 +988,11 @@
     }])
     .controller("NetworkPlotsCtrl", ["$scope","$timeout", function($scope, $timeout){
       $scope.unitsPlotted = [];
+      $scope.$on("meanClicked", function(ev, selections) {
+        $timeout(function(){
+          $scope.unitsPlotted = selections;
+        });
+      });
       $scope.$on("unitClicked", function(ev, selections) {
         $timeout(function(){
           $scope.unitsPlotted = selections;

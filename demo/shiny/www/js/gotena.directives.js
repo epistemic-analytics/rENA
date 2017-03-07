@@ -146,7 +146,6 @@
             }
           });
           scope.$on("plot.clear"+plotSelection, function(ev) {
-            console.log("Clearing plot: ", plotSelection)
             var
                edgesToAnimate = []
               ,toAnimate = {
@@ -195,7 +194,6 @@
                 },
                 { size: 'tosize', color: 'tocolor'},
                 function() {
-                  console.log("Done with edges.");
                   hideNodes();
                 }
               );
@@ -205,7 +203,7 @@
 
             if(
               //plotSelection===2 ||
-              (plotSelection === 1 && ENA.graphs.unit.selections.length===0)
+              (parseInt(plotSelection) === 1 && ENA.graphs.unit.selections.length===0)
             ) {
               scope.$emit("call.plot.clear",'');
             }
@@ -425,7 +423,6 @@
                 n.y = _n.y;
               }
 
-              console.log("Check to see if house is exploded")
               if(n.nodeType==="unit" && !ENA.graphs.unit.openMeans.find(m=>m===n.house)) {
                 n.hidden = true;
               } else {
@@ -441,39 +438,51 @@
           });
 
           scope.$on("mean-data-update", function(event,means) {
+            var toAnimate = {
+              nodes: []
+            };
             if(!scope.sig) return;
             if(scope.plotUnits) {
               var _m, isNew = true;
               means.forEach(m=>{
                 _m = scope.sig.graph.nodes(m.id);
-                if(!!_m) {
-                  isNew = false;
-                  _m = m;
-                }
 
                 m.type = "circle";
-                m.originalx = m.x;
-                m.originaly = m.y;
-                m.originalsize = m.size;
-                m.originalcolor = m.color;
-                m.tosize = m.size;
-                m.tox = m.x;
-                m.toy = m.y;
-                //m.x = 0;
-                //m.y = 0;
+                if(!!_m) {
+                  isNew = false;
+                  _m.tox = m.x;
+                  _m.toy = m.y;
+                } else {
+                  isNew = true;
+                  _m = m
+                  _m.originalx = m.x;
+                  _m.originaly = m.y;
+                  _m.tox = m.x;
+                  _m.toy = m.y;
+                  _m.originalsize = m.size;
+                  _m.originalcolor = m.color;
+                  _m.x = 0;
+                  _m.y = 0;
+                }
+
+                _m.tosize = m.size;
+                _m.tocolor = m.color;
+
                 //m.size = 0;
-                m.image = {
+                _m.image = {
                   url: ("images/sigils/"+m.label.toLowerCase()+".png"),
                   clip: 1.0,
                   scale: 1.5
                 };
                 if(isNew) {
-                  scope.sig.graph.addNode(m)
+                  scope.sig.graph.addNode(_m)
                 }
 
+                toAnimate.nodes.push(_m.id);
               });
               if(scope.sig) {
-                scope.sig.refresh();
+                //scope.sig.refresh();
+                animateNodes(toAnimate);
               }
             }
           });
