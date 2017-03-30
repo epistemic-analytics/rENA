@@ -3,4 +3,5 @@
 #' @useDynLib rENA
 #' @importFrom Rcpp sourceCpp
 #' @name rENA
-NULL
+
+UNIT_NAMES = "ena.unit.names"

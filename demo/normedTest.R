@@ -10,4 +10,4 @@ rotatedTest = matrix(c(
 ,-0.0990,0.0100,-0.0096,0.9530
 ),nrow=4);
 
-print(get_optimized_node_pos(normedTest, rotatedTest, num_dims = 4, num_samples = 3)$centroids)
+print(get_optimized_node_pos_c(normedTest, rotatedTest, num_dims = 4, num_samples = 3)$centroids)

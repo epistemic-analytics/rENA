@@ -9,11 +9,13 @@ Author: Cody L Marquart [aut, cre]
 Maintainer: Cody L Marquart <cody.marquart@wisc.edu>
 License: GPL (>= 2)
 LazyData: TRUE
-LinkingTo: Rcpp, RcppArmadillo
+LinkingTo: Rcpp, RcppArmadillo, RcppParallel
 Imports:
     Rcpp,
     RcppArmadillo,
-    RcppParallel
+    RcppParallel,
+    R6,
+    methods
 Suggests:
     microbenchmark
 RoxygenNote: 5.0.1

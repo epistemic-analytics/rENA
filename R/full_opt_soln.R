@@ -1,7 +1,7 @@
 full_opt_soln = function(unscaled, normed, rotated, dims=2, maxit = 1000) {
   single_optim <- function(dim) {
     result <- suppressWarnings(optim(par = c(1,1),
-                                     fn = soln_calc,
+                                     fn = soln_calc_c,
                                      gr = NULL,
                                      unscaled[, dim], rotated[, dim], normed, dim-1, # ... add'l parameters
                                      method = "Nelder-Mead",

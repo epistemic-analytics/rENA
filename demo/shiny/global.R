@@ -32,7 +32,7 @@ Rcpp::sourceCpp('../../src/ref_window_df.cpp')
 Rcpp::sourceCpp('../../src/vector_to_ut.cpp');
 source("../../R/accumulate.R");
 source('../../R/do_optimization.R');
-source('../../R/do_scale.R');
+source('../../R/full_opt_soln.R');
 source("../../R/ENAdata.R");
 source("../../R/ENAset.R");
 
@@ -51,8 +51,7 @@ if(file.exists(filename)) {
     units = NULL, conversationsBy = c("unique_id"),
     codeNames = gsub("\\.", "_", c('Arya','Jaime','Cersei','Robert.Baratheon','Joffrey','Tommen','Robb','Catelyn','Ned','Tyrion','Bronn','Brienne','Tywin','Bran')),
     unitsSelected = c("Jaime"),
-    windowSize = 0,
-    exact.match = T
+    windowSize = 0
   );
   gotSet = ENAset$new(gotData, sphereNorm = T)
   gotSet$process();

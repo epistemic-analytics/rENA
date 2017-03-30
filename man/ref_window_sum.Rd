@@ -4,7 +4,7 @@
 \alias{ref_window_sum}
 \title{ref_window_sum}
 \usage{
-ref_window_sum(df)
+ref_window_sum(df, binary = TRUE)
 }
 \arguments{
 \item{v}{- A dataframe}

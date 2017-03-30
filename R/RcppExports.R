@@ -32,16 +32,20 @@ rowSumsC <- function(x) {
     .Call('rENA_rowSumsC', PACKAGE = 'rENA', x)
 }
 
-fixIt <- function(df) {
-    .Call('rENA_fixIt', PACKAGE = 'rENA', df)
+toNumericMatrix <- function(x) {
+    .Call('rENA_toNumericMatrix', PACKAGE = 'rENA', x)
 }
 
-sphere_norm <- function(m) {
-    .Call('rENA_sphere_norm', PACKAGE = 'rENA', m)
+c_cor <- function(mat) {
+    .Call('rENA_c_cor', PACKAGE = 'rENA', mat)
 }
 
-dont_sphere_norm <- function(m) {
-    .Call('rENA_dont_sphere_norm', PACKAGE = 'rENA', m)
+sphere_norm_c <- function(dfM) {
+    .Call('rENA_sphere_norm_c', PACKAGE = 'rENA', dfM)
+}
+
+dont_sphere_norm_c <- function(dfM) {
+    .Call('rENA_dont_sphere_norm_c', PACKAGE = 'rENA', dfM)
 }
 
 normIt <- function(df) {
@@ -52,12 +56,8 @@ pca <- function(m, dims = 2L) {
     .Call('rENA_pca', PACKAGE = 'rENA', m, dims)
 }
 
-centerData <- function(values) {
-    .Call('rENA_centerData', PACKAGE = 'rENA', values)
-}
-
-centerDataRotated <- function(centeredValues, rotated) {
-    .Call('rENA_centerDataRotated', PACKAGE = 'rENA', centeredValues, rotated)
+center_data_c <- function(values) {
+    .Call('rENA_center_data_c', PACKAGE = 'rENA', values)
 }
 
 eq_pos <- function(names, labels, rotated, plusOne) {
@@ -72,20 +72,12 @@ getcor <- function(dists, normed, x, NtriOne, NtriTwo, KtriOne, KtriTwo, dim = 0
     .Call('rENA_getcor', PACKAGE = 'rENA', dists, normed, x, NtriOne, NtriTwo, KtriOne, KtriTwo, dim)
 }
 
-single_optim <- function(normed, dists, rotated, NtriOne, NtriTwo, KtriOne, KtriTwo, dim = 0L, N = 0.0) {
-    .Call('rENA_single_optim', PACKAGE = 'rENA', normed, dists, rotated, NtriOne, NtriTwo, KtriOne, KtriTwo, dim, N)
-}
-
 getN <- function(normed) {
     .Call('rENA_getN', PACKAGE = 'rENA', normed)
 }
 
 getK <- function(normed) {
     .Call('rENA_getK', PACKAGE = 'rENA', normed)
-}
-
-do_opt <- function(normed, dists, rotated, num_samples = 100L, num_dims = 2L) {
-    .Call('rENA_do_opt', PACKAGE = 'rENA', normed, dists, rotated, num_samples, num_dims)
 }
 
 getRotationDistances <- function(rotated) {
@@ -136,8 +128,17 @@ remove_zero_rows <- function(toFilter) {
     .Call('rENA_remove_zero_rows', PACKAGE = 'rENA', toFilter)
 }
 
-remove_zero_rows2 <- function(toFilter, indices) {
-    .Call('rENA_remove_zero_rows2', PACKAGE = 'rENA', toFilter, indices)
+remove_zero_rows_by <- function(toFilter, indices) {
+    .Call('rENA_remove_zero_rows_by', PACKAGE = 'rENA', toFilter, indices)
+}
+
+#' @title ref_window_df2
+#' @name ref_window_df2
+#' @param v - A dataframe
+#' @param nms - A vector of characters used for colnames of returned DataFrame
+#' @export
+ref_window_df_ <- function(df, windowSize = 0L, binary = TRUE, useDiaganol = FALSE) {
+    .Call('rENA_ref_window_df_', PACKAGE = 'rENA', df, windowSize, binary, useDiaganol)
 }
 
 #' @title ref_window_df
@@ -149,13 +150,12 @@ ref_window_df <- function(df, windowSize = 0L, binary = TRUE, useDiaganol = FALS
     .Call('rENA_ref_window_df', PACKAGE = 'rENA', df, windowSize, binary, useDiaganol)
 }
 
-#' @title ref_window_df2
-#' @name ref_window_df2
-#' @param v - A dataframe
-#' @param nms - A vector of characters used for colnames of returned DataFrame
-#' @export
-ref_window_df2 <- function(df, windowSize = 0L, binary = TRUE, useDiaganol = FALSE) {
+ref_window_df2 <- function(df, windowSize = 1L, binary = TRUE, useDiaganol = FALSE) {
     .Call('rENA_ref_window_df2', PACKAGE = 'rENA', df, windowSize, binary, useDiaganol)
+}
+
+ref_window_from_conv <- function(df, convs, windowSize = 1L, binary = TRUE, useDiaganol = FALSE) {
+    .Call('rENA_ref_window_from_conv', PACKAGE = 'rENA', df, convs, windowSize, binary, useDiaganol)
 }
 
 #' @name ref_window_sum

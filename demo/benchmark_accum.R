@@ -10,7 +10,7 @@ loadLibraries <- function() {
   source('~/Workspaces/RStudio2/rENA/R/old.accumulation.R');
   #source('~/Workspaces/RStudio2/rENA/R/roll.sum.pad.R');
   #source('~/Workspaces/RStudio2/rENA/R/lagpad.R');
-  source('~/Workspaces/RStudio2/rENA/R/accumulate.R');
+  source('~/Workspaces/RStudio2/rENA/R/accumulate.data.R');
 }
 
 

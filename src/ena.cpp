@@ -8,23 +8,11 @@
 #include <iterator>
 #include <cmath>
 #include <RcppArmadillo.h>
-//#include "simplex.h"
-//#include "optimizer.h"
-#include "correlation.cpp"
-//#include "/Users/clmarquart/Workspaces/RStudio2/rENA/src/optim.c"
-//#include "cor.h"
 
 using namespace Rcpp;
 using namespace arma;
 using namespace std;
 
-template<class Con>
-void printcon(const Con& c){
-  //std::cout.precision(12);
-  copy(c.begin(),c.end(),ostream_iterator<typename Con::value_type>(Rcpp::Rcout, "  "));
-}
-
-// [[Rcpp::export]]
 int count_if(LogicalVector x) {
   int counter = 0;
   for(int i = 0; i < x.size(); i++) {
@@ -35,7 +23,6 @@ int count_if(LogicalVector x) {
   return counter;
 }
 
-// [[Rcpp::export]]
 int vecmin(NumericVector x) {
   // Rcpp supports STL-style iterators
   NumericVector::iterator it = std::min_element(x.begin(), x.end());
@@ -43,7 +30,6 @@ int vecmin(NumericVector x) {
   return *it;
 }
 
-// [[Rcpp::export]]
 int vecmax(NumericVector x) {
   // Rcpp supports STL-style iterators
   NumericVector::iterator it = std::max_element(x.begin(), x.end());
@@ -51,7 +37,14 @@ int vecmax(NumericVector x) {
   return *it;
 }
 
-// [[Rcpp::export]]
+#include <sstream>
+template <typename T>
+std::string NumberToString ( T Number ) {
+  std::ostringstream ss;
+  ss << Number;
+  return ss.str();
+}
+
 NumericVector logicalToColNums( LogicalVector lv ) {
   int size = lv.size();
   NumericVector nv(count_if(lv));
@@ -68,7 +61,7 @@ NumericVector logicalToColNums( LogicalVector lv ) {
 }
 
 // [[Rcpp::export]]
-NumericVector rowSumsC(NumericMatrix x) {
+NumericVector rowSums_c(NumericMatrix x) {
   int nrow = x.nrow(), ncol = x.ncol();
   NumericVector out(nrow);
 
@@ -82,216 +75,111 @@ NumericVector rowSumsC(NumericMatrix x) {
   return out;
 }
 
-class CorENA{
-private:
-  arma::mat dists ;
-  arma::mat normed ;
-  arma::mat x ;
-  arma::uvec NtriOne ;
-  arma::uvec NtriTwo ;
-  arma::uvec KtriOne ;
-  arma::uvec KtriTwo ;
-  arma::mat corrs;
-  int dim ;
-public:
-  CorENA( ) : dim(0) {}
-  CorENA( int dim ) : dim(dim) {}
-  CorENA(
-    arma::mat dists,
-    arma::mat normed,
-    arma::uvec NtriOne,
-    arma::uvec NtriTwo,
-    arma::uvec KtriOne,
-    arma::uvec KtriTwo,
-    arma::mat corrs,
-    int dim
-  ) : dists(dists),
-  normed(normed),
-  NtriOne(NtriOne),
-  NtriTwo(NtriTwo),
-  KtriOne(KtriOne),
-  KtriTwo(KtriTwo),
-  corrs(corrs),
-  dim(dim) {}
-
-  //arma::mat
-  //double operator()(vector<double> x){
-  double operator()(vector<double> x) {
-    return this->calc( arma::vec(x) );
+NumericMatrix toNumericMatrix(DataFrame x) {
+  int nRows=x.nrows();
+  NumericMatrix y(nRows,x.size());
+  for (int i=0; i<x.size();i++) {
+    y(_,i)=NumericVector(x[i]);
   }
+  return y;
+}
 
-  double operator()(arma::vec x) {
-    return this->calc(x);
-  }
-
-  double calc(arma::vec x) {
-    arma::mat t_pair_dists = this->dists.col(this->dim);
-    arma::mat mps = trans(((x(this->NtriOne) + x(this->NtriTwo)) / 2));
-    arma::mat multRes = this->normed * mps.t(); //.row(0);
-    arma::mat centroids = multRes / sum(this->normed, 1);
-    arma::mat dcentroids = centroids(this->KtriOne) - centroids(this->KtriTwo);
-    arma::mat c = cor(t_pair_dists, dcentroids, 0);
-
-    //Rcpp::Rcout << "Vec x: " << x << std::endl;
-    //Rcpp::Rcout << "dists: " << t_pair_dists << std::endl;
-    //Rcpp::Rcout << "MPS * normed: " << multRes << std::endl;
-    //Rcpp::Rcout << "Rowsum: " << sum(this->normed, 1) << std::endl;
-    //Rcpp::Rcout << "Cents: " << centroids << std::endl;
-    //Rcpp::Rcout << "DCents: " << dcentroids << std::endl;
-    //Rcpp::Rcout << "cor: " << c << std::endl;
-
-
-    return(c(0,0));
-  }
+struct asset_info {
+  double sum, sum2, stdev;
 };
 
-//arma::vec coeff, arma::vec ti, arma::vec xi
-// class SOLN{
-// private:
-//   arma::mat w ;
-//   arma::mat ti ;
-//   arma::mat xi ;
-// public:
-//   SOLN(
-//     arma::mat w,
-//     arma::mat xi,
-//     arma::mat ti
-//   ) : w(w),
-//   ti(ti),
-//   xi(xi) {}
-//
-//   double operator()(Vector2 x) {
-//     arma::vec v(2);
-//     v << x[0] << x[1];
-//     return this->calc( v );
-//   }
-//
-//   double operator()(vector<double> x) {
-//     //Rcpp::Rcout << "Coeff: " << arma::vec(x) << std::endl;
-//     return this->calc( arma::vec(x) );
-//   }
-//
-//   double operator()(arma::vec x) {
-//     return this->calc(x);
-//   }
-//
-//   arma::uvec triIndices(int len, int row = 0) {
-//     int vL = len;
-//     int vS = ( (vL * (vL + 1)) / 2) - vL ;
-//     int s = 0;
-//
-//     arma::umat vR = arma::umat(2, vS, fill::zeros);
-//     uvec vRone = uvec(vS);
-//     for( int i = 2; i <= vL; i++ ) {
-//       for (int j = 0; j < i-1; j++ ) {
-//         if(row == 0) {
-//           vR(0, s) = j;
-//           vRone[s] = j;
-//         } else {
-//           vR(1, s) = i-1;
-//           vRone[s] = i -1;
-//         }
-//         s++;
-//       }
-//     }
-//     return vRone;
-//   }
-//
-//   arma::vec MPS(arma::mat x) {
-//     arma::rowvec xVec = x.t();
-//     arma::uvec CC1 = triIndices(xVec.size(), 0);
-//     arma::uvec CC2 = triIndices(xVec.size(), 1);
-//     arma::vec mps = ((xVec(CC1) + xVec(CC2)) / 2);
-//     return(mps);
-//   }
-//
-//   double calc(arma::vec coeff) {
-//     //Rcpp::Rcout << "Coeff: " << coeff[0] << ", " << coeff[1] << std::endl;
-//     //arma::ivec coeffI = arma::ivec(coeff);
-//     arma::vec mps = MPS( (coeff[0]) + ( (coeff[1]) * this->xi) );
-//     //Rcpp::Rcout << "MPS: " << mps << std::endl;
-//     //Rcpp::Rcout << "xi: " << this->xi << std::endl;
-//     //arma::mat ww = trans(w);
-//     arma::vec ci = arma::vec(w.n_rows);
-//     for(int i=0; i < w.n_rows; i++) {
-//       ci[i] = sum(w.row(i) * mps) / sum(w.row(i)) ;
-//     }
-//     //Rcpp::Rcout << "CI: " << ci << std::endl;
-//
-//     double ssd = sum(arma::pow((ci - this->ti), 2));
-//
-//     //Rcpp::Rcout << "SSD: " << ssd << std::endl;
-//
-//     return(ssd);
-//   }
-// };
+//[correlation matrix](http://en.wikipedia.org/wiki/Correlation_and_dependence).
+// n,sX,sY,sXY,sX2,sY2
+// cor = ( n * sXY - sX * sY ) / ( sqrt(n * sX2 - sX^2) * sqrt(n * sY2 - sY^2) )
+inline asset_info compute_asset_info(const NumericMatrix& mat,
+                                     const int icol, const int rstart, const int rend) {
+  double sum, sum2;
+  sum = sum2 = 0;
 
-// [[Rcpp::export]]
-arma::mat fixIt(DataFrame df) {
-  int dfRows = df.nrows();
-  int dfCols = df.size();
-  arma::mat m(dfRows, dfCols, fill::zeros);
-
-  for (int i=0; i<dfCols;i++) {
-    m.col(i) = Rcpp::as<arma::vec>(df[i]);
+  for (int r = rstart; r < rend; r++) {
+    double d = mat(r, icol);
+    sum += d;
+    sum2 += pow(d,2);
   }
 
-  arma::mat output(dfRows, dfCols, fill::zeros);
-  for (int p = 0; p < dfRows; p++) {
-    //int vlength = ( sum(m[p,]^2) )^ (1/2);
-    //if (!is.na (vlength)) {
-    //  if (vlength>0) {output[p,]=(m[p,]/vlength)}
-    //}
+  asset_info res;
+  res.sum = sum;
+  res.sum2 = sum2;
+  res.stdev = sqrt((rend-rstart) * sum2 - pow(sum, 2));
+  return res;
+}
+
+inline NumericMatrix c_cor_helper(const NumericMatrix& mat, const int rstart, const int rend) {
+  int nc = mat.ncol();
+  int nperiod = rend - rstart;
+  NumericMatrix rmat(nc, nc);
+
+  vector<asset_info> info(nc);
+  for (int c = 0; c < nc; c++)
+    info[c] = compute_asset_info(mat, c, rstart, rend);
+
+  for (int c1 = 0; c1 < nc; c1++) {
+    for (int c2 = 0; c2 < c1; c2++) {
+      double sXY = 0;
+
+      for (int r = rstart; r < rend; r++)
+        sXY += mat(r, c1) * mat(r, c2);
+
+      rmat(c1, c2) = (nperiod * sXY - info[c1].sum * info[c2].sum) / (info[c1].stdev * info[c2].stdev);
+    }
   }
 
-  return(output);
+  return rmat;
 }
 
 // [[Rcpp::export]]
-arma::mat sphere_norm(arma::mat m) {
-  int rows = m.n_rows;
-  arma::mat output(rows , m.n_cols, fill::zeros);
+NumericMatrix c_cor(NumericMatrix mat) {
+  return c_cor_helper(mat, 0, mat.nrow());
+}
+
+// [[Rcpp::export]]
+NumericMatrix sphere_norm_c(DataFrame dfM) {
+  NumericMatrix m = toNumericMatrix(dfM);
+
+  int rows = m.nrow();
+  int cols = m.ncol();
+  NumericMatrix output(rows, cols);
+  std::fill(output.begin(), output.end(), 0);
 
   for (int p = 0; p < rows; p++) {
-    arma::vec vlength = pow( sum( pow(m.row(p),2), 1 ), 0.5);
-    double vl = vlength(0);
+    NumericVector squared = Rcpp::pow(m.row(p),2);
+    double squaredSum = Rcpp::sum(squared);
+    double root = sqrt(squaredSum);
 
-    if (vl > 0) {
-      output.row(p) = ( m.row(p) / vl );
+    if (root > 0) {
+      output.row(p) = ( m.row(p) / root );
     }
   }
+
   return output;
 }
 
 // [[Rcpp::export]]
-arma::mat dont_sphere_norm(arma::mat m) {
-  int nrows = m.n_rows;
-  double largestRowVectorLength = 0;
-  for(int rowNum=0; rowNum < nrows; rowNum++) {
-    arma::vec currLength = pow( sum( pow(m.row(rowNum),2), 1 ), 0.5);
-    double cl = currLength(0);
-    largestRowVectorLength = std::max(largestRowVectorLength, cl);
-  }
+NumericMatrix dont_sphere_norm_c(DataFrame dfM) {
+  NumericMatrix m = toNumericMatrix(dfM);
 
+  int nrows = m.nrow();
+  double largestRowVectorLength = 0;
+
+  for(int rowNum=0; rowNum < nrows; rowNum++) {
+    NumericVector squared = Rcpp::pow(m.row(rowNum),2);
+    double squaredSum = Rcpp::sum( squared );
+    double root = sqrt( squaredSum );
+
+    largestRowVectorLength = std::max(largestRowVectorLength, root);
+  }
   m = m / largestRowVectorLength;
+
   return(m);
 }
 
 // [[Rcpp::export]]
-arma::mat normIt(DataFrame df) {
-  int dfRows = df.nrows();
-  int dfCols = df.size();
-  arma::mat m(dfRows, dfCols, fill::zeros);
-  for (int i=0; i<dfCols;i++) {
-    m.col(i) = Rcpp::as<arma::vec>(df[i]);
-  }
-
-  return arma::normalise(m, 2, 1);
-}
-
-// [[Rcpp::export]]
-List pca(arma::mat m, int dims = 2) {
-//Rcpp::NumericMatrix pca(arma::mat m, int dims = 2) {
+List pca_c(arma::mat m, int dims = 2) {
   arma::mat pca;
   arma::mat score;
   arma::vec latent;
@@ -306,43 +194,12 @@ List pca(arma::mat m, int dims = 2) {
     _["pca"] = pca,
     _["latent"] = latent
   );
-  //return Rcpp::wrap(pca);
 }
 
 // [[Rcpp::export]]
-Rcpp::NumericMatrix centerData(arma::mat values) {
+Rcpp::NumericMatrix center_data_c(arma::mat values) {
   arma::mat centered = values.each_row() - mean(values);
   return Rcpp::wrap(centered);
-}
-
-// [[Rcpp::export]]
-Rcpp::NumericMatrix centerDataRotated(arma::mat centeredValues, arma::mat rotated) {
-  arma::mat rotatedCentered = centeredValues * rotated;
-  return Rcpp::wrap(rotatedCentered);
-}
-
-// [[Rcpp::export]]
-Rcpp::NumericMatrix eq_pos(Rcpp::CharacterVector names, Rcpp::CharacterMatrix labels, arma::mat rotated, bool plusOne) {
-  int numNames = names.size();
-
-  arma::mat vals = arma::mat( size(rotated), fill::eye);
-  arma::mat out = arma::mat(numNames, rotated.n_cols, fill::zeros);
-
-  if(plusOne == true) {
-    for (int p=0; p < numNames; p++) {
-      Rcpp::CharacterVector topRow = labels(0, _);
-      Rcpp::CharacterVector botRow = labels(1, _);
-      for(int j=0; j < topRow.size(); j++) {
-        if(topRow[j] == names[p] || botRow[j] == names[p]) {
-          out(p, j) = 1;
-        }
-      }
-    }
-
-    out = (( (out * 2) * rotated ) / (numNames - 1) / 2);
-  }
-
-  return Rcpp::wrap(out);
 }
 
 // [[Rcpp::export]]
@@ -365,7 +222,7 @@ arma::uvec triIndices(int len, int row = 0) {
       s++;
     }
   }
-  return vRone; //.row(row);
+  return vRone;
 }
 
 // [[Rcpp::export]]
@@ -386,54 +243,8 @@ double getcor(
 }
 
 // [[Rcpp::export]]
-//arma::vec
-List single_optim(
-    arma::mat normed, arma::mat dists,
-    arma::mat rotated,
-    arma::uvec NtriOne, arma::uvec NtriTwo,
-    arma::uvec KtriOne, arma::uvec KtriTwo,
-    int dim = 0, double N = 0.0
-) {
-  arma::mat coRes;
-  CorENA co = CorENA(
-    dists,
-    normed,
-    NtriOne,
-    NtriTwo,
-    KtriOne,
-    KtriTwo,
-    coRes,
-    dim
-  );
-
-  NumericVector rands = runif(N, -3, 3);
-  std::vector<double> rands_(N);
-
-  int i;
-  for(i = 0; i < rands.length(); i++) {
-    rands_[i] = rands(i);;
-  }
-  //Rcpp::Rcout << "Rands: " << rands << std::endl;
-
-  //using BT::Simplex;
-  //arma::vec sim = Simplex(
-  //    co
-  //   ,rands_
-  //   ,1E-5 //1E8*std::numeric_limits<double>::epsilon()
-  //   ,std::vector<std::vector<double> >()
-  //   //,1E5
-  // );
-
-  //sim = sim.tail(N);
-  return List::create(
-    //_["positions"] = sim,
-    //_["correlation"] = co(sim)
-  );
-}
-
-// [[Rcpp::export]]
 int getN(arma::mat normed) {
-  return floor(0.5 + sqrt( 0.25 + 2*normed.n_cols ));
+  return floor(0.5 + sqrt( 0.25 + 2 * normed.n_cols ));
 }
 
 // [[Rcpp::export]]
@@ -442,47 +253,7 @@ int getK(arma::mat normed) {
 }
 
 // [[Rcpp::export]]
-NumericMatrix do_opt(
-    arma::mat normed,
-    arma::mat dists,
-    arma::mat rotated,
-    int num_samples = 100, int num_dims = 2
-) {
-  double N = getN(normed);
-  int K = getK(normed);
-
-  uvec NtriOne = triIndices(N, 0);
-  uvec NtriTwo = triIndices(N, 1);
-  uvec KtriOne = triIndices(K, 0);
-  uvec KtriTwo = triIndices(K, 1);
-
-  NumericMatrix soRes(N+2, num_dims*num_samples);
-
-  int r = 0;
-  for(int i=0; i<num_dims; i++) {
-    for(int j=0; j<num_samples; j++) {
-      int s = 0;
-      List nV = single_optim(normed, dists, rotated, NtriOne, NtriTwo, KtriOne, KtriTwo, i, N);
-      NumericVector newVec = wrap(nV["positions"]);
-      //double corr = nV["correlation"];
-
-      int k;
-      for(k=0; k < newVec.length(); k++) {
-        soRes(k, r) = newVec[k]; //newVec;
-        s++;
-      }
-      soRes(k, r) = nV["correlation"];
-      soRes(k+1, r) = i;  //Tracks the dimension
-      r++;
-    }
-  }
-
-  return soRes;
-}
-
-
-// [[Rcpp::export]]
-arma::mat getRotationDistances(arma::mat rotated) {
+arma::mat getRotationDistances_c(arma::mat rotated) {
   int K = getK(rotated);
   uvec KtriOne = triIndices(K, 0);
   uvec KtriTwo = triIndices(K, 1);
@@ -492,16 +263,8 @@ arma::mat getRotationDistances(arma::mat rotated) {
   return pairDists;
 }
 
-#include <sstream>
-template <typename T>
-std::string NumberToString ( T Number ) {
-  std::ostringstream ss;
-  ss << Number;
-  return ss.str();
-}
-
 // [[Rcpp::export]]
-Rcpp::List get_optimized_node_pos(
+Rcpp::List get_optimized_node_pos_c(
     arma::mat normedFiltered,
     NumericMatrix opted,
     int num_dims=2, int num_samples=3, int max_iter=1000,
@@ -603,7 +366,6 @@ Rcpp::List get_optimized_node_pos(
   }
 }
 
-// [[Rcpp::export]]
 List fastLm(const arma::vec & y, const arma::mat & X) {
   int n = X.n_rows, k = X.n_cols;
 
@@ -629,26 +391,10 @@ List fastLm(const arma::vec & y, const arma::mat & X) {
   );
 }
 
-// [[Rcpp::export]]
 List summary_fastLm_c(List object) {
-  //double se = object["stderr"];
-  //tval <- coef(object)/se
-
-  //TAB <- cbind(Estimate = coef(object),
-  //         StdErr = se,
-  //         t.value = tval,
-  //         p.value = 2*pt(-abs(tval), df=object$df))
-  //
-  //// why do I need this here?
-  //rownames(TAB) <- names(object$coefficients)
-  //colnames(TAB) <- c("Estimate", "StdErr", "t.value", "p.value")
-
-  // cf src/library/stats/R/lm.R and case with no weights and an intercept
-
   arma::vec f = object["fitted.values"];
   arma::vec r = object["residuals"];
 
-  //mss <- sum((f - mean(f))^2)
   arma::vec mss;
   if (object["intercept"]){
     mss = sum( pow((f - mean(f) ),2) );
@@ -690,71 +436,9 @@ List lm_(NumericMatrix x) {
   ));
 }
 
-// :::::::::::::::::::::::::::::::
-// :::::: function scale_soln ::::::
-// :::::::::::::::::::::::::::::::
-//
-//   Linearly transform solution to minimize the sum of
-//     centroid-projected point distances
-//
-// parameters
-//   xi - solution on dimension i
-//   ti - rotated data on dimension i (set$rotated.data[, i])
-//   w - adjacency vectors (set$data)
-//
-//
-// returns
-//   list.  optim results.  see help(optim)
-//
-
-//scale_soln = function(xi, ti, w) {
-List scale_soln ( arma::mat xi, arma::mat ti, arma::mat w ) {
-
-  NumericVector rands = runif(2, 1, 1);
-  std::vector<double> rands_(2);
-  for(int i=0; i < 2; i++) {
-    if(i == 0) rands_[i] = -1;
-    else rands_[i] = 1;
-  }
-  //Rcpp::Rcout << "SOLN RANDS: " << rands << std::endl;
-
-  //arma::vec out;
-  //Rcpp::Rcout << "XI: " << xi << std::endl;
-  //Rcpp::Rcout << "TI: " << ti << std::endl;
-  //Rcpp::Rcout << "w: " << w << std::endl;
-
-  //SOLN soln = SOLN(w, xi, ti); //, w);
-  // using BT::Simplex;
-  // arma::vec sim = Simplex(soln,rands_,1E-3,std::vector<std::vector<double> >());
-  //
-  // //= optim(par = c(1, 1),
-  // //            fn = obj,
-  // //            control = list(maxit = 100000,
-  // //                           reltol=1e-16),
-  // //            ti = ti,
-  // //            xi = xi)
-  // //Rcpp::Rcout << "Soln sim: " << sim << std::endl;
-  //
-   return(List::create(
-  //   _["out"] = sim,
-  //   _["val"] = soln(sim)
-   ));
-
-}
-
 // [[Rcpp::export]]
-Rcpp::List full_opt(arma::mat normed, arma::mat rotated, Rcpp::List optim_nodes, int dims = 2, int num_samples = 3, bool checkUnique = false) {
-
-  /*
-  arma::uvec summedMatched = find((sum(normed, 1)) > 0);
-  arma::uvec summedMatched_r = find((sum(rotated, 1)));
-  arma::mat normedFiltered = normed.rows(summedMatched);
-  arma::mat rotatedFiltered = rotated.rows(summedMatched_r);
-  Rcpp::List nodes = Rcpp::wrap(optim_nodes);
-  arma::mat cents = optim_nodes["centroids"];
-  */
-
-  int N = getN(normed); // Rcpp::as<int>(optim_nodes["N"]);
+Rcpp::List full_opt_c(arma::mat normed, arma::mat rotated, Rcpp::List optim_nodes, int dims = 2, int num_samples = 3, bool checkUnique = false) {
+  int N = getN(normed);
 
   NumericMatrix x_unscaled(N, dims);
 
@@ -778,6 +462,7 @@ Rcpp::List full_opt(arma::mat normed, arma::mat rotated, Rcpp::List optim_nodes,
       }
       List lm_Result = lm_(AllItersFiltered);
       NumericVector rSquares = lm_Result["r.squares"];
+      Rcpp::Rcout << "R squares:" << rSquares << std::endl;
       if(min(rSquares) < 0.9) {
         Rcpp::Rcout << "R squares for dimension "<< i << " indicate ill-conditioned solution: " << rSquares << std::endl;
       }
@@ -798,39 +483,10 @@ Rcpp::List full_opt(arma::mat normed, arma::mat rotated, Rcpp::List optim_nodes,
   );
 }
 
-// bool testNO(arma::mat normed, arma::vec rotated, arma::vec soln) {
-//   float precision = 0.1;
-//   int dimension = 2;
-//   NelderMeadOptimizer o(dimension, precision);
-//
-//   // request a simplex to start with
-//   Vector2 v(1, 1);
-//   o.insert(v);
-//   //o.insert(Vector2(0.1, 0.1));
-//   //o.insert(Vector2(0.2, 0.7));
-//
-//   SOLN solnObj = SOLN(normed, soln, rotated);
-//   Rcpp::Rcout << "SOLN: " << solnObj(v) << std::endl;
-//   while (!o.done()) {
-//     v = o.step(v, solnObj(v));
-//   }
-//   //Rcpp::Rcout << "V: " << v << std::endl;
-//   return true;
-// }
-
-// [[Rcpp::export]]
-arma::mat get_cor(arma::vec dists, arma::vec cents) {
-  return cor(dists, cents);
-}
 
 typedef void (*integrand) (unsigned ndim, const double *x, void *,
               unsigned fdim, double *fval);
 
-// [[Rcpp::export]]
-bool run_optimC() {
-
-  return true;
-}
 
 // [[Rcpp::export]]
 double calc_cor(
@@ -842,13 +498,11 @@ double calc_cor(
 
   arma::mat t_pair_dists = dists.col(dim);
   arma::mat normed = set["data.normed"];
-  double N = getN(normed);
-  int K = getK(normed);
 
-  uvec NtriOne = triIndices(N, 0);
-  uvec NtriTwo = triIndices(N, 1);
-  uvec KtriOne = triIndices(K, 0);
-  uvec KtriTwo = triIndices(K, 1);
+  uvec NtriOne = set["n1"];
+  uvec NtriTwo = set["n2"];
+  uvec KtriOne = set["k1"];
+  uvec KtriTwo = set["k2"];
 
   arma::mat mps = trans(((x(NtriOne) + x(NtriTwo)) / 2));
   arma::mat multRes = normed * mps.t();
@@ -858,13 +512,14 @@ double calc_cor(
   arma::mat cmat2(t_pair_dists.n_rows, 2);
   cmat2.col(0) = t_pair_dists;
   cmat2.col(1) = dcentroids;
-  NumericMatrix cc = cp_cor(Rcpp::wrap(cmat2));
 
+  NumericMatrix cc = c_cor(Rcpp::wrap(cmat2));
   //arma::mat c = cor(t_pair_dists, dcentroids, 0);
 
   //Rcpp::Rcout << "Cor 1: " << c(0,0) << std::endl;
   //Rcpp::Rcout << "Cor 2: " << cc(1,0) << std::endl;
   return cc(1,0);
+  //return c(0,0);
 }
 
 // [[Rcpp::export]]
@@ -877,7 +532,7 @@ arma::vec soln_MPS(arma::mat x) {
 }
 
 // [[Rcpp::export]]
-double soln_calc(
+double soln_calc_c(
   arma::vec coeff, arma::vec xi, arma::vec ti, arma::mat w, int dim
 ) {
   arma::vec mps = soln_MPS( (coeff[0]) + ( (coeff[1]) * xi) );
@@ -892,14 +547,14 @@ double soln_calc(
 }
 
 // [[Rcpp::export]]
-arma::mat remove_zero_rows(arma::mat toFilter) {
+arma::mat remove_zero_rows_c(arma::mat toFilter) {
   arma::uvec b = find(any(toFilter != 0, 1) > 0);
   arma::mat filtered = toFilter.rows(b);
   return(filtered);
 }
 
 // [[Rcpp::export]]
-arma::mat remove_zero_rows2(arma::mat toFilter, arma::mat indices) {
+arma::mat remove_zero_rows_by_c(arma::mat toFilter, arma::mat indices) {
   arma::uvec b = find(any(indices != 0, 1) > 0);
   arma::mat filtered = toFilter.rows(b);
   return(filtered);

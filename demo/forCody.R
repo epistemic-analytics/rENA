@@ -12,7 +12,7 @@ library(microbenchmark);
 
 #source('code/functions/ENAMaker/cpp/02/R/accumulate.R');
 #source('code/functions/ENAMaker/cpp/02/R/do_optimization.R');
-#source('code/functions/ENAMaker/cpp/02/R/do_scale.R');
+#source('code/functions/ENAMaker/cpp/02/R/full_opt_soln.R');
 #source('code/functions/ENAMaker/cpp/02/R/ENAdata.R');
 #source('code/functions/ENAMaker/cpp/02/R/ENAset.R');
 

@@ -2,8 +2,6 @@
 using namespace Rcpp;
 using namespace std;
 
-
-
 struct asset_info {
 	double sum, sum2, stdev;
 };

@@ -8,7 +8,7 @@ Rcpp::sourceCpp('src/ref_window_df.cpp')
 source('~/Workspaces/RStudio2/rENA/R/old.accumulation.R');
 #source('~/Workspaces/RStudio2/rENA/R/roll.sum.pad.R');
 #source('~/Workspaces/RStudio2/rENA/R/lagpad.R');
-source('~/Workspaces/RStudio2/rENA/R/accumulate.R');
+source('~/Workspaces/RStudio2/rENA/R/accumulate.data.R');
 
 df2= read.csv("./data/SENS.Proposal.dataset.2.csv");
 
