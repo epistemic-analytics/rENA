@@ -180,32 +180,38 @@ ENAset = R6::R6Class("ENAset",
       labels = NULL;
       col = 0;
 
-      if(wh == "nodes") {
-        rotDF = as.data.frame(data.table::copy(self$nodes$positions$scaled$positions));
-        rotDF$unit = rownames(self$nodes$positions$scaled$positions);
-      } else if ( wh == "units" ) {
-        rotDF = as.data.frame(data.table::copy(self$data$centered$rotated));
+      if ( wh == "network" ) {
+        ena.plot.network(self, ...);
+      } else {
+        if(wh == "nodes") {
+          rotDF = as.data.frame(data.table::copy(self$nodes$positions$scaled$positions));
+          rotDF$unit = rownames(self$nodes$positions$scaled$positions);
+        } else if ( wh == "units" ) {
+          rotDF = as.data.frame(data.table::copy(self$data$centered$rotated));
 
-        if(!is.null(name.units.by)) {
-          rotDF$unit = attr(self$data$centered$rotated, UNIT_NAMES)[,{apply(.SD,1,function(x){paste(trimws(x),collapse=name.units.sep)})},with=T,.SDcols=name.units.by];
-        } else {
-          rotDF$unit = rownames(rotDF);
+          if(!is.null(name.units.by)) {
+            rotDF$unit = attr(self$data$centered$rotated, UNIT_NAMES)[,{apply(.SD,1,function(x){paste(trimws(x),collapse=name.units.sep)})},with=T,.SDcols=name.units.by];
+          } else {
+            rotDF$unit = rownames(rotDF);
+          }
+        } else if ( wh == "network" ) {
+          ena.plot.network(self, ...)
         }
-      }
 
-      if(!is.null(hide)) {
-        rotDF = rotDF[!rotDF$unit %in% hide,]
-      }
+        if(!is.null(hide)) {
+          rotDF = rotDF[!rotDF$unit %in% hide,]
+        }
 
-      p = plot_ly(
-        type = "scatter", data = rotDF,
-        x = ~V1, y = ~V2,
-        text = ~unit,
-        mode = "markers",
-        showlegend = F,
-        ...
-      );
-      return(p)
+        p = plot_ly(
+          type = "scatter", data = rotDF,
+          x = ~V1, y = ~V2,
+          text = ~unit,
+          mode = "markers",
+          showlegend = F,
+          ...
+        );
+        return(p)
+      }
     }
   ),
 

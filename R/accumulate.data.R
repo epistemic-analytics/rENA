@@ -41,6 +41,9 @@ accumulate.data <- function(
 
   ##
   # Accumulated windows appended to the end of each row
+  #
+  # FIXME: Don't append on the results to the initial data.table, keep a separate
+  #        to lookup the results for the co-occurred values later on.
   ##
     dfDT_codes[, (codedTriNames) := ref_window_df(.SD,windowSize=window), by=stanzasBy, .SDcols=codeNames, with=T];
 
@@ -50,7 +53,6 @@ accumulate.data <- function(
     if(is.null(units)) {
       units = dfDT_codes$ENA_UNIT;
     }
-
     if(!is.null(units.exclude) && length(units.exclude)>0){
       units = units[which(!units %in% units.exclude)];
     }
