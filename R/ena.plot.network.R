@@ -5,10 +5,14 @@ ena.plot.network = function(
   enaset = NULL,
   units.by = enaset$get('enaData')$get('unitsBy'),
   group.by = enaset$get('enaData')$get('conversationsBy'), #"Condition",
+
   selection.one.color = "#5399c7",
   selection.one.name = NULL,
+  selection.one.title = NULL,
+
   selection.two.color = "#FF0000",
   selection.two.name = NULL,
+  selection.two.title = NULL,
 
   weight.multiplier = 20,
   font.size = 10,
@@ -35,6 +39,9 @@ ena.plot.network = function(
 
   sdcols=colnames(dfDT)[sapply(dfDT, is.numeric)];
   minDT = dfDT[handle %in% units.to.plot, lapply(.SD,sum,na.rm=T), by=units.by, .SDcols=sdcols];
+  minDT$ENA_UNIT = merge.columns(x = minDT, from.cols = units.by);
+  minDT = minDT[match(ENA_UNIT, units.to.plot),];
+
   minDTc =minDT[,apply(.SD,2,make.network.node, types=c(selection.one.color, selection.two.color)),.SDcols=sdcols, with = T];
   minDTsizes = minDTc[1,!is.na(minDTc[2,]), with=F];
   minDTcolors = minDTc[2,!is.na(minDTc[2,]), with=F];
@@ -43,6 +50,7 @@ ena.plot.network = function(
   minDTnodes = minDTc[,!is.na(minDTc[2,]), with=F]
   minDTnodes = minDTnodes[,which(!names(minDTcolors) %in% group.by),with=F]
   minDTnodes = minDTnodes[,{ cols=strsplit(colnames(.SD), "...", fixed=T); m=as.matrix(.SD[,,with=F]); lapply(1:length(cols),function(x){ c(m[1,x],m[2,x],cols[[x]]) }); },];
+  browser();
 
   minDTnodes_trans = t(minDTnodes);
   minDTnodes_trans = minDTnodes_trans[,c(3:4,1:2)];
@@ -110,9 +118,13 @@ ena.plot.network = function(
     #add_markers() %>%
     add_text(textfont = network.font.text, textposition = "top right")
 
+  selection.one.title = stringr::str_c("<b style=\"color:",selection.one.color,"\">",selection.one.name,"</b>");
+  if(!is.null(selection.two.name)) {
+    selection.two.title = stringr::str_c("<b style=\"color:",selection.two.color,"\">",selection.two.name,"</b>");
+  }
   network.plot.layout = layout(
     network.plot,
-    title =  stringr::str_c(selection.one.name, selection.two.name, sep = " - "),
+    title =  stringr::str_c(selection.one.title, selection.two.title, sep = " - "),
     #font = list( color = "red"),
     shapes = network.edges.shapes,
     xaxis = network.graph.axis,
