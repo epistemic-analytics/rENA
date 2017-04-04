@@ -5,7 +5,8 @@ ena.plot.network(enaset,
 )
 
 ena.plot.network(enaset,
-  selection.one.name = "akash v.FirstGame"
+  selection.one.name = "akash v.FirstGame",
+  selection.one.color = "#FF0000"
 )
 
 ena.plot.network(enaset,

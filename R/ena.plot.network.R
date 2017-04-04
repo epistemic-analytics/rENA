@@ -50,7 +50,6 @@ ena.plot.network = function(
   minDTnodes = minDTc[,!is.na(minDTc[2,]), with=F]
   minDTnodes = minDTnodes[,which(!names(minDTcolors) %in% group.by),with=F]
   minDTnodes = minDTnodes[,{ cols=strsplit(colnames(.SD), "...", fixed=T); m=as.matrix(.SD[,,with=F]); lapply(1:length(cols),function(x){ c(m[1,x],m[2,x],cols[[x]]) }); },];
-  browser();
 
   minDTnodes_trans = t(minDTnodes);
   minDTnodes_trans = minDTnodes_trans[,c(3:4,1:2)];
@@ -58,7 +57,6 @@ ena.plot.network = function(
   network.edges = minDTnodes_trans; #as.data.frame(get.edgelist(network.graph));
   network.edges.table = as.data.table(network.edges);
 
-  #browser();
   if(!is.null(edge.hide)) {
     network.edges.table = network.edges.table[!network.edges.table$V2 %in% edge.hide|!network.edges.table$V2 %in% edge.hide,]
   }
@@ -125,7 +123,6 @@ ena.plot.network = function(
   network.plot.layout = layout(
     network.plot,
     title =  stringr::str_c(selection.one.title, selection.two.title, sep = " - "),
-    #font = list( color = "red"),
     shapes = network.edges.shapes,
     xaxis = network.graph.axis,
     yaxis = network.graph.axis
