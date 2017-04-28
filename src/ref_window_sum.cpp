@@ -39,6 +39,5 @@ DataFrame ref_window_sum(
   for (int i=0; i<dfCols;i++) {
     df_AsMatrix2.col(i) = Rcpp::as<arma::ivec>(df[i]);
   }
-
   return(sum(df_AsMatrix2));
 }

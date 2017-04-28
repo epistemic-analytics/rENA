@@ -1,3 +1,9 @@
+########'
+#' do_optimization
+#'
+#' @export
+#' @usage do_optimization()
+#######
 do_optimization = function(e, inPar = F, maxit = 1000)
 {
   e_ = e;
@@ -69,8 +75,13 @@ do_optimization = function(e, inPar = F, maxit = 1000)
   return(optimization_results)
 }
 
+########'
+#' do_optimization_2
+#'
+#' @export
+#' @usage do_optimization_2()
+#######
 do_optimization_2 = function(e, inPar=F, maxit = 1000) {
-  print("Using do_opt_2 with cor() in c++");
   e_ = e;
 
   if(is(e, "ENAset")) {
@@ -84,8 +95,8 @@ do_optimization_2 = function(e, inPar=F, maxit = 1000) {
 
       ###
       # These indices have been increased from the initial C++
-      # calculations for use as R indices. Decrease all them for
-      # safe use in C++ again.
+      # calculations for use as R indices. Decrease all of them
+      # for safe use in C++ again.
       ###
        n1 = e_$get('n1') - 1,
        n2 = e_$get('n2') - 1,
@@ -100,7 +111,7 @@ do_optimization_2 = function(e, inPar=F, maxit = 1000) {
 
   single_optim_2 = function(e, dim, N = getN(e$data.normed)) {
     if(e_$get("set.seed") != F) {
-      set.seed(e_$get("set.seed"));
+      set.seed(e_$get("serept.seed"));
     }
     result <- suppressWarnings(optim(par = runif(N,limits$min, limits$max),
                                      fn = calc_cor,
@@ -119,7 +130,7 @@ do_optimization_2 = function(e, inPar=F, maxit = 1000) {
   if(inPar == T) {
     # :::::: load and register doParallel ::::::
     library('doParallel')
-    registerDoParallel(cores = detectCores())
+    registerDoParallel(cores = detectCores()-1)
 
     # :::::: execute in parallel ::::::
     optimization_results=

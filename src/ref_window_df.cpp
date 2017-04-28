@@ -30,6 +30,10 @@ arma::rowvec vector_to_ut(arma::mat v) {
   }
   return vR2;
 }
+
+//' @export
+//'
+// [[Rcpp::export]]
 NumericVector vector_to_ut2(NumericVector v) {
   int vL = v.size();
   int vS = ( (vL * (vL + 1)) / 2) - vL ;
@@ -44,6 +48,27 @@ NumericVector vector_to_ut2(NumericVector v) {
     }
   }
   return vR;
+}
+
+//' @export
+//'
+// [[Rcpp::export]]
+arma::mat rows_to_co_occurrences(DataFrame df) {
+  int dfRows = df.nrows();
+  int dfCols = df.size();
+  int numCoOccurences = ( (dfCols * (dfCols + 1)) / 2) - dfCols;
+
+  arma::mat df_AsMatrix2(dfRows, dfCols, fill::zeros);
+  for (int i=0; i<dfCols;i++) {
+    df_AsMatrix2.col(i) = Rcpp::as<arma::vec>(df[i]);
+  }
+
+  arma::mat df_CoOccurred(dfRows, numCoOccurences, fill::zeros);
+  for(int row = 0; row < dfRows; row++) {
+    df_CoOccurred.row(row) = vector_to_ut(df_AsMatrix2.row(row));
+  }
+
+  return df_CoOccurred;
 }
 
 //' @title ref_window_df
@@ -80,7 +105,9 @@ DataFrame ref_window_df(
     arma::rowvec toUT = vector_to_ut(currRowsSummed);
 
     if(windowSize > 1 && row-1>=0) {
-      arma::mat currRows2_refs = df_AsMatrix2( span( (row-(windowSize-1)>=0)?(row-(windowSize-1)):0,(row-1>0)?row-1:0 ), span::all );
+      //arma::mat currRows2_refs = df_AsMatrix2( span( (row-(windowSize-1)>=0)?(row-(windowSize-1)):0,(row-1>0)?row-1:0 ), span::all );
+      arma::mat currRows2_refs = currRows2.head_rows(currRows2.n_rows-1);
+
       arma::mat currRow_refsSummed = arma::sum(currRows2_refs);
       arma::rowvec toUT_refs = vector_to_ut(currRow_refsSummed);
       arma::rowvec toUT_subs = toUT - toUT_refs;

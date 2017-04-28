@@ -1,7 +1,9 @@
 #######
 #' ENAdata R6class
+#'
 #' @docType class
 #' @importFrom R6 R6Class
+#' @import data.table
 #' @export
 #' @usage ENAdata$new(...)
 #'
@@ -42,7 +44,8 @@ ENAdata = R6::R6Class("ENAdata",
       private$windowSize <- windowSize;
       private$binary <- binary;
       private$units.exclude <- units.exclude;
-      self$data <- private$loadFile();
+
+      private$loadFile();
 
       self
     },
@@ -51,6 +54,8 @@ ENAdata = R6::R6Class("ENAdata",
     ### Public Properties
     #######
     data = NULL,
+    units.summed = NULL,
+    units.co.occurred = NULL,
 
     #####################
     ## Public Functions
@@ -94,6 +99,7 @@ ENAdata = R6::R6Class("ENAdata",
     #'       reload = FALSE
     #'       ...
     #'     )}
+    #'
     #' \preformatted{  Parameters:
     #'     file - The original data to accumulate, as a data.frame or data.table
     #'     codeNames - String vector of column names to use as codes
@@ -160,7 +166,7 @@ ENAdata = R6::R6Class("ENAdata",
     #######
     loadFile = function() {
       if(any(class(private$file) == "data.table")) {
-        df_DT = df;
+        df_DT = private$file;
       } else {
         if(class(private$file) == "data.frame") {
           df = private$file;
@@ -169,7 +175,6 @@ ENAdata = R6::R6Class("ENAdata",
         }
         df_DT = data.table::as.data.table(df);
       }
-
       newRes = accumulate.data(
         dfDT = df_DT,
         stanzasBy = private$conversationsBy,
@@ -182,7 +187,10 @@ ENAdata = R6::R6Class("ENAdata",
         units.exclude = private$units.exclude
       );
 
-      return(newRes);
+      self$units.summed = newRes$units.summed;
+      self$units.co.occurred = newRes$units.co.occurred;
+
+      return(self);
     }
   )
 )

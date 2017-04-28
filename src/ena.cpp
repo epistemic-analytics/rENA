@@ -147,6 +147,7 @@ NumericMatrix sphere_norm_c(DataFrame dfM) {
   std::fill(output.begin(), output.end(), 0);
 
   for (int p = 0; p < rows; p++) {
+    // Calculate the length of the vector ro  w
     NumericVector squared = Rcpp::pow(m.row(p),2);
     double squaredSum = Rcpp::sum(squared);
     double root = sqrt(squaredSum);
@@ -182,7 +183,7 @@ NumericMatrix dont_sphere_norm_c(DataFrame dfM) {
 List pca_c(arma::mat m, int dims = 2) {
   arma::mat pca;
   arma::mat score;
-  arma::vec latent;
+  arma::vec latent; // Eigen
   arma::vec tsquared;
   arma::princomp(pca, score, latent, tsquared, m);
 
@@ -484,8 +485,7 @@ Rcpp::List full_opt_c(arma::mat normed, arma::mat rotated, Rcpp::List optim_node
 }
 
 
-typedef void (*integrand) (unsigned ndim, const double *x, void *,
-              unsigned fdim, double *fval);
+//typedef void (*integrand) (unsigned ndim, const double *x, void *,unsigned fdim, double *fval);
 
 
 // [[Rcpp::export]]
@@ -559,3 +559,11 @@ arma::mat remove_zero_rows_by_c(arma::mat toFilter, arma::mat indices) {
   arma::mat filtered = toFilter.rows(b);
   return(filtered);
 }
+
+
+// bool do_opt_c(Rcpp::List set, int maxIterations, Function optim, NumericVector nv) {
+//   Rcpp::Rcout << "Optim: " << optim << std::endl;
+//   SEXP result=optim(_["par"]=nv, _["fn"]=calc_cor,  _["e"]=set, _["dim"]=1, _["lower"]=-3, _["upper"]=3);
+//   Rcpp::Rcout << "Optim res: " << result << std::endl;
+//   return true;
+// }

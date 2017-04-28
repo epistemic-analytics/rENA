@@ -4,11 +4,11 @@
 \alias{accumulate.data}
 \title{Accumulate Data}
 \usage{
-\method{accumulate}{data}(dfDT, stanzasBy, unitsBy, units, codeNames,
-  stanzas = NULL, unitsSelected = NULL, window = 3, append = F,
-  binary = T, units.exclude = c())
+accumulate.data(dfDT, stanzasBy, unitsBy, units, codeNames, stanzas = NULL,
+  unitsSelected = NULL, window = 3, append = F, binary = T,
+  units.exclude = c())
 }
 \description{
-Accumulate rows of data
+Accumulate Data
 }
 

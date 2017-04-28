@@ -3,6 +3,7 @@
 #'
 #' @docType class
 #' @importFrom R6 R6Class
+#' @import data.table
 #' @export
 #' @usage ENAset$new()
 #'
@@ -94,6 +95,8 @@ ENAset = R6::R6Class("ENAset",
     #####################
     ## Public Functions
     #####################
+    asJSON = function() return( list() ),
+
     #' \code{update()} - Change any of the allowed properties then reprocess the ENAset.
     #' \preformatted{  Example:
     #'     update(
@@ -239,7 +242,7 @@ ENAset = R6::R6Class("ENAset",
     #######
     run = function() {
       # Reference for the ENAdata object
-        df = private$enaData$data;
+        df = private$enaData$units.summed;
 
       ###
       # Backup of ENA data, this is not touched again.
@@ -267,6 +270,8 @@ ENAset = R6::R6Class("ENAset",
         # }
       }
 
+        ### TODO- Weighted
+
       ###
       # Normalize the raw data using self$sphere.norm,
       # which defaults to calling rENA::dont_sphere_norm_c
@@ -281,7 +286,7 @@ ENAset = R6::R6Class("ENAset",
         colnames(self$data$normed) = codeNames_tri;
       # set the rownames to that of the original ENAdata file object
         rownames(self$data$normed) = rownames(df);
-        attr(self$data$normed, UNIT_NAMES) = df[, .SD, with=T, .SDcols=private$enaData$get("unitsBy")];
+        attr(self$data$normed, UNIT_NAMES) = attr(df, UNIT_NAMES) #df[, .SD, with=T, .SDcols=private$enaData$get("unitsBy")];
       ###
 
       ###
@@ -306,6 +311,7 @@ ENAset = R6::R6Class("ENAset",
 
       ###
       # Center the normed data
+      # FIX - store as $data$centered
       ###
         self$data$centered$normed = self$center.data(self$data$normed);
 
@@ -315,16 +321,30 @@ ENAset = R6::R6Class("ENAset",
       ###
 
       ###
+      # Means Rotations
+      ###
+        #meansRotated = rotate_means(self$data$normed, groups, rotationList)
+
+
+      ###
       # Principal Component results
       ###
         pcaResults = pca_c(self$data$centered$normed, dims = private$dimensions);
-        self$data$centered$pca = pcaResults$pca;
-        self$data$centered$latent = pcaResults$latent;
+        self$data$centered$pca = pcaResults$pca; # FIX - store as $data$rotation.matrix
+        self$data$centered$latent = pcaResults$latent; ## TODO remove?
       ###
 
       private$rotateNodes(self$data$centered$pca);
 
       return(self);
+    },
+
+    ###
+    # TODO
+    ###
+    update.projection = function() {
+    },
+    optimize = function() {
     },
 
     ###
@@ -354,6 +374,8 @@ ENAset = R6::R6Class("ENAset",
         self$rotation_dists = getRotationDistances_c(self$data$centered$rotated.non.zero);
       ###
 
+
+    # optim.meth shoud start here:
       ###
       # Perform the optimization
       ###
@@ -391,6 +413,8 @@ ENAset = R6::R6Class("ENAset",
         );
         rownames(self$nodes$positions$scaled$positions) = private$enaData$get("codeNames")
       ###
+    # optim.meth shoud END hered
+
 
       return(self);
     }

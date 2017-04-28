@@ -1,6 +1,14 @@
 library(plotly)
 library(igraph)
 
+##
+#' @title Plot network
+#' @description Accumulate rows of data
+#'
+#'
+#'
+# @export
+##
 ena.plot.network = function(
   enaset = NULL,
   units.by = enaset$get('enaData')$get('unitsBy'),
@@ -38,6 +46,7 @@ ena.plot.network = function(
   units.to.plot = c(selection.one.name, selection.two.name);
 
   sdcols=colnames(dfDT)[sapply(dfDT, is.numeric)];
+  browser()
   minDT = dfDT[handle %in% units.to.plot, lapply(.SD,sum,na.rm=T), by=units.by, .SDcols=sdcols];
   minDT$ENA_UNIT = merge.columns(x = minDT, from.cols = units.by);
   minDT = minDT[match(ENA_UNIT, units.to.plot),];

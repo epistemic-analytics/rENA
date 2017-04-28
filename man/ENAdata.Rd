@@ -53,6 +53,7 @@ ENAdata R6class
       reload = FALSE
       ...
     )}
+
 \preformatted{  Parameters:
     file - The original data to accumulate, as a data.frame or data.table
     codeNames - String vector of column names to use as codes

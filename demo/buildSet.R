@@ -9,14 +9,15 @@ Rcpp::sourceCpp('src/ena.cpp');
 Rcpp::sourceCpp('src/svector_to_ut.cpp');
 Rcpp::sourceCpp('src/ref_window_df.cpp');
 Rcpp::sourceCpp('src/ref_window_sum.cpp');
-
-load("~/old-df.RData")
+Rcpp::sourceCpp('src/merge_columns_c.cpp');
 
 source('R/accumulate.data.R');
 source('R/do_optimization.R');
 source('R/full_opt_soln.R');
 source('R/ENAdata.R');
 source('R/ENAset.R');
+
+load("~/old-df.RData")
 
 #codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
 codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
@@ -27,13 +28,13 @@ units_less_names = units_all_names[1:4];
 
 runIt <- function() {
   enadata = ENAdata$new(
-    df, #"./data/rs.data.sorted.csv",
+    df, #"./inst/extdata/rs.data.sorted.csv",
     unitsBy = c("UserName","Condition"),
     conversationsBy = c("ActivityNumber", "GroupName"),
     codeNames = codeNames, #_less,
     windowSize = 1
   );
-  enaset = ENAset$new(enadata, optim.method=do_optimization)$process();
+  enaset = ENAset$new(enadata, optim.method=do_optimization_2, inPar=F)$process();
 }
 
 done = microbenchmark(runIt(), times=1)

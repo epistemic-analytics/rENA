@@ -2,14 +2,15 @@
 % Please edit documentation in R/RcppExports.R
 \name{ref_window_df2}
 \alias{ref_window_df2}
-\alias{ref_window_df_}
 \title{ref_window_df2}
 \usage{
-ref_window_df_(df, windowSize = 0L, binary = TRUE, useDiaganol = FALSE)
+ref_window_df2(df, windowSize = 1L, binary = TRUE)
 }
 \arguments{
-\item{v}{- A dataframe}
+\item{df}{A dataframe}
 
-\item{nms}{- A vector of characters used for colnames of returned DataFrame}
+\item{windowSize}{Integer for number of rows in the stanza window}
+
+\item{binary}{Logical, treat codes as binary or leave as weighted}
 }
 

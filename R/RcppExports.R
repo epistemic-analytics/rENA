@@ -12,28 +12,8 @@ dfvector_to_ut <- function(v, nms) {
     .Call('rENA_dfvector_to_ut', PACKAGE = 'rENA', v, nms)
 }
 
-count_if <- function(x) {
-    .Call('rENA_count_if', PACKAGE = 'rENA', x)
-}
-
-vecmin <- function(x) {
-    .Call('rENA_vecmin', PACKAGE = 'rENA', x)
-}
-
-vecmax <- function(x) {
-    .Call('rENA_vecmax', PACKAGE = 'rENA', x)
-}
-
-logicalToColNums <- function(lv) {
-    .Call('rENA_logicalToColNums', PACKAGE = 'rENA', lv)
-}
-
-rowSumsC <- function(x) {
-    .Call('rENA_rowSumsC', PACKAGE = 'rENA', x)
-}
-
-toNumericMatrix <- function(x) {
-    .Call('rENA_toNumericMatrix', PACKAGE = 'rENA', x)
+rowSums_c <- function(x) {
+    .Call('rENA_rowSums_c', PACKAGE = 'rENA', x)
 }
 
 c_cor <- function(mat) {
@@ -48,20 +28,12 @@ dont_sphere_norm_c <- function(dfM) {
     .Call('rENA_dont_sphere_norm_c', PACKAGE = 'rENA', dfM)
 }
 
-normIt <- function(df) {
-    .Call('rENA_normIt', PACKAGE = 'rENA', df)
-}
-
-pca <- function(m, dims = 2L) {
-    .Call('rENA_pca', PACKAGE = 'rENA', m, dims)
+pca_c <- function(m, dims = 2L) {
+    .Call('rENA_pca_c', PACKAGE = 'rENA', m, dims)
 }
 
 center_data_c <- function(values) {
     .Call('rENA_center_data_c', PACKAGE = 'rENA', values)
-}
-
-eq_pos <- function(names, labels, rotated, plusOne) {
-    .Call('rENA_eq_pos', PACKAGE = 'rENA', names, labels, rotated, plusOne)
 }
 
 triIndices <- function(len, row = 0L) {
@@ -80,36 +52,20 @@ getK <- function(normed) {
     .Call('rENA_getK', PACKAGE = 'rENA', normed)
 }
 
-getRotationDistances <- function(rotated) {
-    .Call('rENA_getRotationDistances', PACKAGE = 'rENA', rotated)
+getRotationDistances_c <- function(rotated) {
+    .Call('rENA_getRotationDistances_c', PACKAGE = 'rENA', rotated)
 }
 
-get_optimized_node_pos <- function(normedFiltered, opted, num_dims = 2L, num_samples = 3L, max_iter = 1000L, return_all = TRUE) {
-    .Call('rENA_get_optimized_node_pos', PACKAGE = 'rENA', normedFiltered, opted, num_dims, num_samples, max_iter, return_all)
-}
-
-fastLm <- function(y, X) {
-    .Call('rENA_fastLm', PACKAGE = 'rENA', y, X)
-}
-
-summary_fastLm_c <- function(object) {
-    .Call('rENA_summary_fastLm_c', PACKAGE = 'rENA', object)
+get_optimized_node_pos_c <- function(normedFiltered, opted, num_dims = 2L, num_samples = 3L, max_iter = 1000L, return_all = TRUE) {
+    .Call('rENA_get_optimized_node_pos_c', PACKAGE = 'rENA', normedFiltered, opted, num_dims, num_samples, max_iter, return_all)
 }
 
 lm_ <- function(x) {
     .Call('rENA_lm_', PACKAGE = 'rENA', x)
 }
 
-full_opt <- function(normed, rotated, optim_nodes, dims = 2L, num_samples = 3L, checkUnique = FALSE) {
-    .Call('rENA_full_opt', PACKAGE = 'rENA', normed, rotated, optim_nodes, dims, num_samples, checkUnique)
-}
-
-get_cor <- function(dists, cents) {
-    .Call('rENA_get_cor', PACKAGE = 'rENA', dists, cents)
-}
-
-run_optimC <- function() {
-    .Call('rENA_run_optimC', PACKAGE = 'rENA')
+full_opt_c <- function(normed, rotated, optim_nodes, dims = 2L, num_samples = 3L, checkUnique = FALSE) {
+    .Call('rENA_full_opt_c', PACKAGE = 'rENA', normed, rotated, optim_nodes, dims, num_samples, checkUnique)
 }
 
 calc_cor <- function(x, set, dim) {
@@ -120,42 +76,61 @@ soln_MPS <- function(x) {
     .Call('rENA_soln_MPS', PACKAGE = 'rENA', x)
 }
 
-soln_calc <- function(coeff, xi, ti, w, dim) {
-    .Call('rENA_soln_calc', PACKAGE = 'rENA', coeff, xi, ti, w, dim)
+soln_calc_c <- function(coeff, xi, ti, w, dim) {
+    .Call('rENA_soln_calc_c', PACKAGE = 'rENA', coeff, xi, ti, w, dim)
 }
 
-remove_zero_rows <- function(toFilter) {
-    .Call('rENA_remove_zero_rows', PACKAGE = 'rENA', toFilter)
+remove_zero_rows_c <- function(toFilter) {
+    .Call('rENA_remove_zero_rows_c', PACKAGE = 'rENA', toFilter)
 }
 
-remove_zero_rows_by <- function(toFilter, indices) {
-    .Call('rENA_remove_zero_rows_by', PACKAGE = 'rENA', toFilter, indices)
+remove_zero_rows_by_c <- function(toFilter, indices) {
+    .Call('rENA_remove_zero_rows_by_c', PACKAGE = 'rENA', toFilter, indices)
 }
 
-#' @title ref_window_df2
-#' @name ref_window_df2
-#' @param v - A dataframe
-#' @param nms - A vector of characters used for colnames of returned DataFrame
+eq_pos <- function(names, labels, rotated, plusOne) {
+    .Call('rENA_eq_pos', PACKAGE = 'rENA', names, labels, rotated, plusOne)
+}
+
+#'
 #' @export
-ref_window_df_ <- function(df, windowSize = 0L, binary = TRUE, useDiaganol = FALSE) {
-    .Call('rENA_ref_window_df_', PACKAGE = 'rENA', df, windowSize, binary, useDiaganol)
+merge_columns_c <- function(df, cols, sep = " & ") {
+    .Call('rENA_merge_columns_c', PACKAGE = 'rENA', df, cols, sep)
+}
+
+#' @export
+#'
+vector_to_ut2 <- function(v) {
+    .Call('rENA_vector_to_ut2', PACKAGE = 'rENA', v)
+}
+
+#' @export
+#'
+rows_to_co_occurrences <- function(df) {
+    .Call('rENA_rows_to_co_occurrences', PACKAGE = 'rENA', df)
 }
 
 #' @title ref_window_df
 #' @name ref_window_df
-#' @param v - A dataframe
-#' @param nms - A vector of characters used for colnames of returned DataFrame
+#'
+#' @param df A dataframe
+#' @param windowSize Integer for number of rows in the stanza window
+#' @param binary Logical, treat codes as binary or leave as weighted
 #' @export
-ref_window_df <- function(df, windowSize = 0L, binary = TRUE, useDiaganol = FALSE) {
-    .Call('rENA_ref_window_df', PACKAGE = 'rENA', df, windowSize, binary, useDiaganol)
+#'
+ref_window_df <- function(df, windowSize = 0L, binary = TRUE) {
+    .Call('rENA_ref_window_df', PACKAGE = 'rENA', df, windowSize, binary)
 }
 
-ref_window_df2 <- function(df, windowSize = 1L, binary = TRUE, useDiaganol = FALSE) {
-    .Call('rENA_ref_window_df2', PACKAGE = 'rENA', df, windowSize, binary, useDiaganol)
-}
-
-ref_window_from_conv <- function(df, convs, windowSize = 1L, binary = TRUE, useDiaganol = FALSE) {
-    .Call('rENA_ref_window_from_conv', PACKAGE = 'rENA', df, convs, windowSize, binary, useDiaganol)
+#' @title ref_window_df2
+#' @name ref_window_df2
+#'
+#' @param df A dataframe
+#' @param windowSize Integer for number of rows in the stanza window
+#' @param binary Logical, treat codes as binary or leave as weighted
+#'
+ref_window_df2 <- function(df, windowSize = 1L, binary = TRUE) {
+    .Call('rENA_ref_window_df2', PACKAGE = 'rENA', df, windowSize, binary)
 }
 
 #' @name ref_window_sum
