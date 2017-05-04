@@ -330,10 +330,10 @@ ENAset = R6::R6Class("ENAset",
       # Means Rotations
       ###
         if(private$rotate.means == T) {
-          for(group in names(private$rotate.means.by)) {
+          #for(group in names(private$rotate.means.by)) {
             self$data$normed.unrotated = self$data$normed;
-            self$data$centered$pca = ena.rotate.by.mean(self$data$normed, group, private$rotate.means.by[[group]]);
-          }
+            self$data$centered$pca = ena.rotate.by.mean(self$data$normed, private$rotate.means.by); #[[group]]);
+          #}
         }
 
       ###
@@ -345,8 +345,6 @@ ENAset = R6::R6Class("ENAset",
             self$data$centered$latent = pcaResults$latent; ## TODO remove?
         }
       ###
-
-      browser();
 
       private$rotateNodes(self$data$centered$pca);
 
