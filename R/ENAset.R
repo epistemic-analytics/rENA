@@ -49,6 +49,8 @@ ENAset = R6::R6Class("ENAset",
       optim.method=do_optimization,
       check.unique.positions=F,
       set.seed = F,
+      rotate.means = F,
+      rotate.means.by = NULL,
       ...
     ) {
       private$enaData <- enaData;
@@ -59,6 +61,8 @@ ENAset = R6::R6Class("ENAset",
       private$binary <- binary;
       private$correction <- correction;
       private$set.seed <- set.seed;
+      private$rotate.means <- rotate.means;
+      private$rotate.means.by <- rotate.means.by;
 
       self$sphere.norm <- sphere.norm;
       self$center.data <- center.data;
@@ -236,6 +240,8 @@ ENAset = R6::R6Class("ENAset",
     k1 = NULL,
     k2 = NULL,
     set.seed = F,
+    rotate.means = F,
+    rotate.means.by = NULL,
 
     #######
     ### Private Functions
@@ -323,16 +329,24 @@ ENAset = R6::R6Class("ENAset",
       ###
       # Means Rotations
       ###
-        #meansRotated = rotate_means(self$data$normed, groups, rotationList)
-
+        if(private$rotate.means == T) {
+          for(group in names(private$rotate.means.by)) {
+            self$data$normed.unrotated = self$data$normed;
+            self$data$centered$pca = ena.rotate.by.mean(self$data$normed, group, private$rotate.means.by[[group]]);
+          }
+        }
 
       ###
       # Principal Component results
       ###
-        pcaResults = pca_c(self$data$centered$normed, dims = private$dimensions);
-        self$data$centered$pca = pcaResults$pca; # FIX - store as $data$rotation.matrix
-        self$data$centered$latent = pcaResults$latent; ## TODO remove?
+        else {
+            pcaResults = pca_c(self$data$centered$normed, dims = private$dimensions);
+            self$data$centered$pca = pcaResults$pca; # FIX - store as $data$rotation.matrix
+            self$data$centered$latent = pcaResults$latent; ## TODO remove?
+        }
       ###
+
+      browser();
 
       private$rotateNodes(self$data$centered$pca);
 
