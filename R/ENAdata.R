@@ -1,4 +1,4 @@
-#######
+####
 #' ENAdata R6class
 #'
 #' @docType class
@@ -10,72 +10,83 @@
 #' @param file CSV, data.frame, or data.table
 #' @param unitsBy String vector representing column names to use for units
 #' @param units String vector of which units to include in the ENAset
-#' @param conversationsBy String vector of column names to create the conversations
-#' @param codeNames String vector of column names to use as codes
+#' @param conversations.by String vector of column names to create the conversations
+#' @param code.names String vector of column names to use as codes
 #' @param windowSize Integer used to select the size of each stanza window within a conversation
 #' @param binary Logical, whether to convert code values to binary or allow for weigthed values
 #' @param unitsSelected deprecated
 #'
 #' @section Public ENAdata methods:
-#######
+####
 ENAdata = R6::R6Class("ENAdata",
   public = list(
 
-    #######
-    ### Constructor - documented in main class declaration
-    #######
+    ####
+    ## Constructor - documented in main class declaration
+    ####
     initialize = function(
       file,
-      unitsBy = NULL, units = NULL,
-      conversationsBy = NULL,
-      codeNames = NULL,
-      windowSize = 1,
+      units.by = NULL, units = NULL,
+      conversations.by = NULL,
+      code.names = NULL,
+      window.size = 1,
+      window.size.back = window.size,
+      window.size.forward = NULL,
       binary = T,
-      unitsSelected = NULL,
+      units.selected = NULL,
       units.exclude = c(),
+      trajectory.by = NULL,
+      trajectory.type = c("accumulated","non-accumulated"),
       ...
     ) {
       private$file <- file;
-      private$unitsBy <- unitsBy;
+      private$unitsBy <- units.by;
       private$units <- units;
-      private$unitsSelected <- unitsSelected;
-      private$conversationsBy <- conversationsBy;
-      private$codeNames <- codeNames;
-      private$windowSize <- windowSize;
+      private$unitsSelected <- units.selected;
+      private$conversations.by <- conversations.by;
+      private$code.names <- code.names;
+      private$window.size <- list(
+        "back" = window.size.back,
+        "forward" = window.size.forward
+      );
       private$binary <- binary;
       private$units.exclude <- units.exclude;
+      private$trajectory.by <- trajectory.by;
+      private$trajectory.type <- match.arg(trajectory.type);
 
       private$loadFile();
 
       self
     },
 
-    #######
-    ### Public Properties
-    #######
+    ####
+    ## Public Properties
+    ####
     data = NULL,
     units.summed = NULL,
     units.co.occurred = NULL,
 
-    #####################
+    ####
     ## Public Functions
-    #####################
+    ####
     #' \code{get()} - Return a read-only property
     #' \preformatted{  Example:
     #'     get( x = 'file' )}
     #' \preformatted{  Parameters:
     #'      x - Property to return. Defaults to 'file', returning the original data}
-    #######
-    get = function(x = "data") return(private[[x]]),
+    ####
+    get = function(x = "data") {
+      return(private[[x]])
+    },
 
-    #######
+    ####
     #' \code{read()} - Return the accumulated data
     #' \preformatted{  Example:
     #'     get( colnames = T, sep = " & " )}
     #' \preformatted{  Parameters:
     #'      colnames - Logical, whether to replace colnames with their names values from the adjacency matrix
     #'      sep - String to use as a seperator in the updated column names. Ignored if colnames == F}
-    #######
+    ####
     read = function(colnames = T, sep = " & ") {
       namedData = data.table::copy(self$data);
       if(colnames == T) {
@@ -86,13 +97,13 @@ ENAdata = R6::R6Class("ENAdata",
       namedData
     },
 
-    ########
+    ####
     #' \code{update()} - Change any of the allowed properties then reprocess the ENAdata.
     #' \preformatted{  Example:
     #'     update(
     #'       file = private$file,
-    #'       codeNames = private$codeNames,
-    #'       conversationsBy = private$conversationsBy,
+    #'       code.names = private$code.names,
+    #'       conversations.by = private$conversations.by,
     #'       units = private$units,
     #'       unitsSelected = private$unitsSelected,
     #'       windowSize = private$windowSize,
@@ -102,16 +113,16 @@ ENAdata = R6::R6Class("ENAdata",
     #'
     #' \preformatted{  Parameters:
     #'     file - The original data to accumulate, as a data.frame or data.table
-    #'     codeNames - String vector of column names to use as codes
-    #'     conversationsBy - String vector of column names to create the conversations
+    #'     code.names - String vector of column names to use as codes
+    #'     conversations.by - String vector of column names to create the conversations
     #'     units - String vector of which units to include in the ENAset
     #'      windowSize - Integer used to select the size of each stanza window within a conversation
     #'     reload - Logical, force reloading of the ENAdata object}
-    #######
+    ####
     update = function(
       file = private$file,
-      codeNames = private$codeNames,
-      conversationsBy = private$conversationsBy,
+      code.names = private$code.names,
+      conversations.by = private$conversations.by,
       units = private$units,
       units.exclude = private$units.exclude,
       windowSize = private$windowSize,
@@ -120,8 +131,8 @@ ENAdata = R6::R6Class("ENAdata",
       if(all.equal.raw(file, private$file) == FALSE) {
         private$file <- file; reload = T;
       }
-      if( identical(codeNames, private$codeNames) == F ) {
-        private$codeNames <- codeNames; reload = T;
+      if( identical(code.names, private$code.names) == F ) {
+        private$code.names <- code.names; reload = T;
       }
       if( is.null(units) || !all(units == private$units) ) {
         private$units <- units; reload = T;
@@ -129,8 +140,8 @@ ENAdata = R6::R6Class("ENAdata",
       if( identical(units.exclude, private$units.exclude) == F ) {
         private$units.exclude <- units.exclude; reload = T;
       }
-      if( is.null(conversationsBy) || !all(conversationsBy == private$conversationsBy) ) {
-        private$conversationsBy <- conversationsBy; reload = T;
+      if( is.null(conversations.by) || !all(conversations.by == private$conversations.by) ) {
+        private$conversations.by <- conversations.by; reload = T;
       }
       if( identical(windowSize, private$windowSize) == F) {
         private$windowSize = windowSize; reload = T;
@@ -142,28 +153,30 @@ ENAdata = R6::R6Class("ENAdata",
     }
   ),
 
-  #######
+  ####
   ### Private
-  #######
+  ####
   private = list(
 
-    #######
+    ####
     ### Private Properties
-    #######
+    ####
     file = NULL,
-    windowSize = 1,
+    window.size = NULL,
     unitsList = NULL,
     unitsBy = NULL,
     units = NULL,
     unitsSelected = NULL,
-    conversationsBy = NULL,
-    codeNames = NULL,
-    binary = T,
-    units.exclude = c(),
+    conversations.by = NULL,
+    code.names = NULL,
+    binary = NULL,
+    units.exclude = NULL,
+    trajectory.by = NULL,
+    trajectory.type = NULL,
 
-    #######
+    ####
     ### Private Functions
-    #######
+    ####
     loadFile = function() {
       if(any(class(private$file) == "data.table")) {
         df_DT = private$file;
@@ -175,16 +188,19 @@ ENAdata = R6::R6Class("ENAdata",
         }
         df_DT = data.table::as.data.table(df);
       }
+
       newRes = accumulate.data(
         dfDT = df_DT,
-        stanzasBy = private$conversationsBy,
+        stanzasBy = private$conversations.by,
         unitsBy = private$unitsBy,
-        units = private$units, #private$units,
+        units = private$units,
         unitsSelected = private$unitsSelected,
-        codeNames = private$codeNames,
-        window = private$windowSize,
+        code.names = private$code.names,
+        window = private$window.size,
         binary = private$binary,
-        units.exclude = private$units.exclude
+        units.exclude = private$units.exclude,
+        trajectory.by = private$trajectory.by,
+        trajectory.type = private$trajectory.type
       );
 
       self$units.summed = newRes$units.summed;

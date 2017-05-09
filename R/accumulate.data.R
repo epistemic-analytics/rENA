@@ -6,13 +6,17 @@
 accumulate.data <- function(
   dfDT,
   stanzasBy, unitsBy, units,
-  codeNames, stanzas = NULL,
-  unitsSelected = NULL, window = 3,
+  code.names, stanzas = NULL,
+  unitsSelected = NULL, window = list("back" = 1, "forward" = NULL),
   append=F,binary=T,
-  units.exclude = c()
+  units.exclude = c(),
+  trajectory.by = NULL,
+  trajectory.type = c("accumulated","non-accumulated")
 ) {
   ### We need data
     if(is.null(dfDT) || nrow(dfDT) < 1) return(-1);
+
+    trajectory.type <- match.arg(trajectory.type);
 
   ###
   # We need a data.table, it's worth it.
@@ -36,9 +40,9 @@ accumulate.data <- function(
   ##
   # String vector of codesnames representing the names of the co-occurrences
   ##
-    vL = length(codeNames);
+    vL = length(code.names);
     adjacency.length = ( (vL * (vL + 1)) / 2) - vL ;
-    codedTriNames = paste("adjacency.code",rep(1:adjacency.length), sep="-");
+    codedTriNames = paste("adjacency.code",rep(1:adjacency.length), sep=".");
 
   ##
   # Accumulated windows appended to the end of each row
@@ -46,16 +50,28 @@ accumulate.data <- function(
   # FIXME: Don't append on the results to the initial data.table, keep a separate
   #        to lookup the results for the co-occurred values later on.
   ##
-    if(window == 1) {
-      dfDT.co.occurrences = dfDT_codes[,{ ocs=data.table::as.data.table(rows_to_co_occurrences(.SD[,.SD,.SDcols=codeNames, with=T])); data.table::data.table(.SD,ocs) }, .SDcols=c(codeNames, stanzasBy), with=T]
+    if(window$back == 1) {
+      dfDT.co.occurrences = dfDT_codes[,{
+          ocs = data.table::as.data.table(rows_to_co_occurrences(.SD[,.SD,.SDcols=code.names, with=T]));
+
+          # Return value;
+          data.table::data.table(.SD,ocs)
+        },
+        .SDcols=c(code.names, stanzasBy),
+        with=T
+      ];
     } else {
-      #browser();
-      dfDT.co.occurrences = dfDT_codes[, ref_window_df(.SD,windowSize=window), by=stanzasBy, .SDcols=codeNames, with=T];
+      dfDT.co.occurrences = dfDT_codes[,
+        ref_window_df(.SD,windowSize=window), # Return value
+        by=stanzasBy,
+        .SDcols=code.names,
+        with=T
+      ];
     }
 
     colnames(dfDT.co.occurrences)[grep("V\\d+",colnames(dfDT.co.occurrences))] = codedTriNames;
     dfDT.co.occurrences$ENA_UNIT = dfDT_codes$ENA_UNIT #[,{apply(.SD,1,function(x){paste(trimws(x),collapse=".")})},with=T,.SDcols=unitsBy];
-    #dfDT_codes[, (codedTriNames) := ref_window_df(.SD,windowSize=window), by=stanzasBy, .SDcols=codeNames, with=T];
+    #dfDT_codes[, (codedTriNames) := ref_window_df(.SD,windowSize=window), by=stanzasBy, .SDcols=code.names, with=T];
 
   ##
   # If units aren't supplied, use all available
@@ -73,24 +89,80 @@ accumulate.data <- function(
     dfDT.co.occurrences[, (unitsBy) := dfDT_codes[,.SD,.SDcols=unitsBy]];
 
   ###
-  # Sum each unit found in dfDT.co.occurrences
+  # Check whether operating as a Trajectory.
   ###
-  #dfDT.summed.units = dfDT_codes[ENA_UNIT %in% units, ref_window_sum(.SD), by=unitsBy, .SDcols=(codedTriNames) ];
-    dfDT.summed.units = dfDT.co.occurrences[ENA_UNIT %in% units, ref_window_sum(.SD), by=unitsBy, .SDcols=(codedTriNames) ];
-    dfDT.summed.units$ENA_UNIT = dfDT.summed.units[,{apply(.SD,1,function(x){paste(trimws(x),collapse=".")})},with=T,.SDcols=unitsBy];
+
+    ## Not a Trajectory
+    if(is.null(trajectory.by)) {
+      ###
+      # Sum each unit found in dfDT.co.occurrences
+      ###
+        dfDT.summed.units = dfDT.co.occurrences[
+          ENA_UNIT %in% units,
+          {
+            sums = ref_window_sum(.SD);
+            data.frame(ENA_ROW_IDX=.GRP, sums)
+          },
+          by=unitsBy,
+          .SDcols=(codedTriNames)
+        ];
+
+        dfDT.summed.units$ENA_UNIT = merge_columns_c(dfDT.summed.units, unitsBy, sep=".");
+    }
+    ## Trajectory
+    else {
+      ## First sum all units within each Trajectory Group (trajectory.by)
+      dfDT.summed.traj.by = dfDT.co.occurrences[
+        ENA_UNIT %in% units,
+        {
+          sums = lapply(.SD, sum);
+          data.frame(ENA_ROW_IDX=.GRP, sums); # Return value
+        },
+        by=c(unitsBy, trajectory.by),
+        .SDcols=(codedTriNames)
+      ];
+      dfDT.summed.traj.by$ENA_UNIT = merge_columns_c(dfDT.summed.traj.by, unitsBy, sep=".");
+      dfDT.summed.traj.by$TRAJ_UNIT = merge_columns_c(dfDT.summed.traj.by,trajectory.by, sep = ".");
+
+      # Accumulated
+      if(trajectory.type == TRAJ_TYPES[1]) {
+        dfDT.summed.units = dfDT.summed.traj.by[
+          ENA_UNIT %in% unique(units),
+          {
+            cols = colnames(.SD);
+            ENA_UNIT = paste(as.character(.BY), collapse=".");
+            TRAJ_UNIT = .SD[,c(trajectory.by),with=F]; #apply(.SD[,c(trajectory.by),with=F],1, paste, collapse=".");
+            incCols = cols[! cols %in% c(trajectory.by, "ENA_ROW_IDX") ];
+            lag = ref_window_lag(.SD[,.SD,.SDcols=incCols], .N);
+            data.table(ENA_ROW_IDX, TRAJ_UNIT, lag, ENA_UNIT=ENA_UNIT);
+          },
+          by=c(unitsBy),
+          .SDcols=c(codedTriNames,trajectory.by,"ENA_ROW_IDX")
+        ]
+      }
+      # Non-accumulated
+      else if(trajectory.type == TRAJ_TYPES[2]){
+        dfDT.summed.units = dfDT.summed.traj.by;
+      }
+      else {
+        stop("Unsupported Trajectory type.");
+      }
+
+      dfDT.summed.units$ENA_UNIT = merge_columns_c(dfDT.summed.units, unitsBy, sep=".");
+    }
 
   ###
   # Name the rows an columns accordingly
   ###
     colnames(dfDT.summed.units)[grep("V\\d+",colnames(dfDT.summed.units))] = codedTriNames;
-    rownames(dfDT.summed.units) = dfDT.summed.units$ENA_UNIT;
+    #rownames(dfDT.summed.units) = dfDT.summed.units$ENA_UNIT;
 
   ###
   # Set attributes containing matrix representations of the data used for
   # columns and rows
   ###
-    codedRow1 = codeNames[triIndices(length(codeNames), 0)[,1]+1];
-    codedRow2 = codeNames[triIndices(length(codeNames), 1)[,1]+1];
+    codedRow1 = code.names[triIndices(length(code.names), 0)[,1]+1];
+    codedRow2 = code.names[triIndices(length(code.names), 1)[,1]+1];
     attr(dfDT.summed.units, "adjacency.matrix") = rbind(codedRow1, codedRow2);
     attr(dfDT.summed.units, UNIT_NAMES) = dfDT.summed.units[,  .SD ,with=T,.SDcols=unitsBy]
 

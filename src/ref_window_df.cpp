@@ -203,3 +203,38 @@ NumericMatrix ref_window_df2(
   //Rcpp::Rcout << "CoOccur: " << df_CoOccurred << std::endl;
   return (df_CoOccurred);
 }
+
+
+//' @title ref_window_lag
+//' @name ref_window_lag
+//'
+//' @param df A dataframe
+//' @param windowSize Integer for number of rows in the stanza window
+//' @param binary Logical, treat codes as binary or leave as weighted
+//' @export
+//'
+// [[Rcpp::export]]
+DataFrame ref_window_lag(
+    DataFrame df,
+    int windowSize = 0,
+    bool binary = true
+) {
+  int dfRows = df.nrows();
+  int dfCols = df.size();
+
+  arma::mat df_LagSummed(dfRows, dfCols, fill::zeros);
+
+  arma::mat df_AsMatrix2(dfRows, dfCols, fill::zeros);
+  for (int i=0; i<dfCols;i++) {
+    df_AsMatrix2.col(i) = Rcpp::as<arma::vec>(df[i]);
+  }
+
+  for(int row = 0; row < dfRows; row++) {
+    arma::mat currRows2 = df_AsMatrix2( span( (row-(windowSize-1)>=0)?(row-(windowSize-1)):0,row ), span::all );
+    arma::mat currRowsSummed = arma::sum(currRows2);
+
+    df_LagSummed.row(row) = currRowsSummed;
+  }
+
+  return wrap(df_LagSummed);
+}

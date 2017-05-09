@@ -28,18 +28,19 @@ units_all_names = c("akash v","alexander b","amelia n","arden f","brandon l","ca
                  #c("akash v","alexander b","amelia n","arden f","brandon l","cameron k","connor f","devin c","jimmy i","jordan l","joseph l","margaret n","peter p","robert z","steven z","tiffany x","abigail z","brandon f","brent p","cameron i","christina b","cormick u","daniel t","derek v","jackson p","keegan q","kiana k","luke u","madeline g","nathan d","nicholas l","nicholas n","ruzhen e","shane t","caitlyn y","justin y","samuel o","fletcher l","amirah u","carl b","christian x","kevin g","casey f","luis t","mitchell h","amalia x")
 units_less_names = units_all_names[1:4];
 
-runIt <- function() {
+#runIt <- function() {
   enadata = ENAdata$new(
     df, #"./inst/extdata/rs.data.sorted.csv",
-    unitsBy = c("UserName","Condition"),
-    conversationsBy = c("ActivityNumber", "GroupName"),
-    codeNames = codeNames, #_less,
-    windowSize = 1
+    units.by = c("UserName","Condition"),
+    conversations.by = c("ActivityNumber", "GroupName"),
+    code.names = codeNames_less,
+    window.size = 1,
+    trajectory.by = c("ActivityNumber")
   );
-  enaset = ENAset$new(enadata, optim.method=do_optimization_2, inPar=F)$process();
-}
+  #enaset = ENAset$new(enadata, optim.method=do_optimization_2, inPar=F)$process();
+#}
 
-done = microbenchmark(runIt(), times=1)
-print(done)
+#done = microbenchmark(runIt(), times=1)
+#print(done)
 
 #source('~/Workspaces/RStudio2/rENA/demo/plotTests.R')

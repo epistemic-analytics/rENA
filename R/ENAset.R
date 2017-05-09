@@ -1,4 +1,4 @@
-########'
+####
 #' ENAset R6class
 #'
 #' @docType class
@@ -27,15 +27,15 @@
 #'
 #'
 #' @section Public ENAset methods:
-#######
+####
 
 ENAset = R6::R6Class("ENAset",
 
   public = list(
 
-    #######
+    ####
     ### Constructor - documented in main class declaration
-    #######
+    ####
     initialize = function(
       enaData,
       dims=2,
@@ -70,9 +70,9 @@ ENAset = R6::R6Class("ENAset",
       self$check.unique.positions <- check.unique.positions;
     },
 
-    #######
-    ### Public Properties
-    #######
+    ####
+    ## Public Properties
+    ####
     check.unique.positions = NULL,
     optim.method = NULL,
     sphere.norm = NULL,
@@ -96,11 +96,14 @@ ENAset = R6::R6Class("ENAset",
     ),
     rotation_dists = NULL,
 
-    #####################
+    ####
     ## Public Functions
-    #####################
-    asJSON = function() return( list() ),
+    ####
+    asJSON = function() {
+      return( list() )
+    },
 
+    ####
     #' \code{update()} - Change any of the allowed properties then reprocess the ENAset.
     #' \preformatted{  Example:
     #'     update(
@@ -116,7 +119,7 @@ ENAset = R6::R6Class("ENAset",
     #'     dims - Number of dims
     #'     samples - Number of samples
     #'     ... - Extra parameters passed to 'ENAdata$update()'}
-    #######
+    ####
     update = function(
       x = "set",
       data = private$enaData,
@@ -134,31 +137,35 @@ ENAset = R6::R6Class("ENAset",
       return(self$process());
     },
 
-    #######
+    ####
     #' \code{process()} - Process the ENAset.
     #' \preformatted{}
-    #######
-    process = function() return(private$run()),
+    ####
+    process = function() {
+      return(private$run())
+    },
 
-    #######
+    ####
     #' \code{rotate()} - Rotate the centered data by the provided rotation matrix
     #' \preformatted{  Example:
     #'    rotate(rotation = self$data$centered$pca)}
     #' \preformatted{  Parameters:
     #'    rotation - Defaults to ENAdata$centered$pca}
-    #######
-    rotate = function(rotation = self$data$centered$pca) return(private$rotateNodes(rotation)),
+    ####
+    rotate = function(rotation = self$data$centered$pca) {
+      return(private$rotateNodes(rotation))
+    },
 
-    #######
+    ####
     #' \code{get()} - Return a read-only property
     #' \preformatted{  Example:
     #'     get( x = 'enaData' )}
     #' \preformatted{  Parameters:
     #'      x - Property to return. Defaults to 'enaData', returning the associated ENAdata object}
-    #######
+    ####
     get = function(x = 'enaData') return(private[[x]]),
 
-    #######
+    ####
     #' \code{plot()} - Plot ENAset node locations.
     #' \preformatted{  Example:
     #'     plot(
@@ -174,7 +181,7 @@ ENAset = R6::R6Class("ENAset",
     #'      name.units.by - Vector of string column names to use as labels
     #'      name.units.sep - Charcter used to join multiple columns as a label
     #'      ... - Parameters passed on to `plotly`}
-    #######
+    ####
     plot = function(
       wh = "nodes",
       hide = NULL,
@@ -223,9 +230,9 @@ ENAset = R6::R6Class("ENAset",
   ),
 
   private = list(
-    #######
-    ### Private Properties
-    #######
+    ####
+    ## Private Properties
+    ####
     enaData = NULL,
     dimensions = 2,
     samples = 3,
@@ -243,9 +250,9 @@ ENAset = R6::R6Class("ENAset",
     rotate.means = F,
     rotate.means.by = NULL,
 
-    #######
-    ### Private Functions
-    #######
+    ####
+    ## Private Functions
+    ####
     run = function() {
       # Reference for the ENAdata object
         df = private$enaData$units.summed;
