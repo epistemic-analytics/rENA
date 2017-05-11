@@ -92,6 +92,14 @@ eq_pos <- function(names, labels, rotated, plusOne) {
     .Call('rENA_eq_pos', PACKAGE = 'rENA', names, labels, rotated, plusOne)
 }
 
+getEigenValues <- function(adjMats) {
+    .Call('rENA_getEigenValues', PACKAGE = 'rENA', adjMats)
+}
+
+getEigenValues2 <- function(adjMats, numNodes) {
+    invisible(.Call('rENA_getEigenValues2', PACKAGE = 'rENA', adjMats, numNodes))
+}
+
 #'
 #' @export
 merge_columns_c <- function(df, cols, sep = " & ") {
@@ -133,10 +141,22 @@ ref_window_df2 <- function(df, windowSize = 1L, binary = TRUE) {
     .Call('rENA_ref_window_df2', PACKAGE = 'rENA', df, windowSize, binary)
 }
 
+#' @title ref_window_lag
+#' @name ref_window_lag
+#'
+#' @param df A dataframe
+#' @param windowSize Integer for number of rows in the stanza window
+#' @param binary Logical, treat codes as binary or leave as weighted
+#' @export
+#'
+ref_window_lag <- function(df, windowSize = 0L, binary = TRUE) {
+    .Call('rENA_ref_window_lag', PACKAGE = 'rENA', df, windowSize, binary)
+}
+
 #' @name ref_window_sum
 #' @title ref_window_sum
-#' @param v - A dataframe
-#' @param nms - A vector of characters used for colnames of returned DataFrame
+#' @param df
+#' @param binary
 #' @export
 ref_window_sum <- function(df, binary = TRUE) {
     .Call('rENA_ref_window_sum', PACKAGE = 'rENA', df, binary)
@@ -153,17 +173,6 @@ svector_to_ut <- function(v) {
     .Call('rENA_svector_to_ut', PACKAGE = 'rENA', v)
 }
 
-#' Calculates the upper triangle (including the diaganol) of a
-#' vector of integers  if it were converted to a matrix. This
-#' actually skips creating the matrix, by only multiplying the
-#' necesseary indices of the vector.
-#'
-#' @param v - A vector of integers
-#' @export
-vector_to_ut_full <- function(v) {
-    .Call('rENA_vector_to_ut_full', PACKAGE = 'rENA', v)
-}
-
 #' Calculates the upper triangle of a vector of integers  if it
 #' were converted to a matrix. This actually skips creating the
 #' matrix, by only multiplying the necesseary indices of the
@@ -173,5 +182,16 @@ vector_to_ut_full <- function(v) {
 #' @export
 vector_to_ut <- function(v) {
     .Call('rENA_vector_to_ut', PACKAGE = 'rENA', v)
+}
+
+#' Calculates the upper triangle (including the diaganol) of a
+#' vector of integers  if it were converted to a matrix. This
+#' actually skips creating the matrix, by only multiplying the
+#' necesseary indices of the vector.
+#'
+#' @param v - A vector of integers
+#' @export
+vector_to_ut_full <- function(v) {
+    .Call('rENA_vector_to_ut_full', PACKAGE = 'rENA', v)
 }
 

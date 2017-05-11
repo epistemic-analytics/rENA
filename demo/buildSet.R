@@ -33,11 +33,11 @@ units_less_names = units_all_names[1:4];
     df, #"./inst/extdata/rs.data.sorted.csv",
     units.by = c("UserName","Condition"),
     conversations.by = c("ActivityNumber", "GroupName"),
-    code.names = codeNames_less,
-    window.size = 1,
-    trajectory.by = c("ActivityNumber")
+    code.names = codeNames, #_less,
+    window.size = 1
+    #,trajectory.by = c("ActivityNumber")
   );
-  #enaset = ENAset$new(enadata, optim.method=do_optimization_2, inPar=F)$process();
+  enaset = ENAset$new(enadata, optim.method=do_optimization_2, inPar=F)$process();
 #}
 
 #done = microbenchmark(runIt(), times=1)

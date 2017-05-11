@@ -295,7 +295,7 @@ ENAset = R6::R6Class("ENAset",
       # Convert the string vector of code names to their corresponding
       # co-occurence names and set as colnames for the self$data$normed
       ##
-        codeNames_tri = svector_to_ut(private$enaData$get("codeNames"));
+        codeNames_tri = svector_to_ut(private$enaData$get("code.names"));
         colnames(self$data$normed) = codeNames_tri;
       # set the rownames to that of the original ENAdata file object
         rownames(self$data$normed) = rownames(df);
