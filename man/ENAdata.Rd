@@ -15,9 +15,9 @@ ENAdata$new(...)
 
 \item{units}{String vector of which units to include in the ENAset}
 
-\item{conversationsBy}{String vector of column names to create the conversations}
+\item{conversations.by}{String vector of column names to create the conversations}
 
-\item{codeNames}{String vector of column names to use as codes}
+\item{code.names}{String vector of column names to use as codes}
 
 \item{windowSize}{Integer used to select the size of each stanza window within a conversation}
 
@@ -45,8 +45,8 @@ ENAdata R6class
 \preformatted{  Example:
     update(
       file = private$file,
-      codeNames = private$codeNames,
-      conversationsBy = private$conversationsBy,
+      code.names = private$code.names,
+      conversations.by = private$conversations.by,
       units = private$units,
       unitsSelected = private$unitsSelected,
       windowSize = private$windowSize,
@@ -56,8 +56,8 @@ ENAdata R6class
 
 \preformatted{  Parameters:
     file - The original data to accumulate, as a data.frame or data.table
-    codeNames - String vector of column names to use as codes
-    conversationsBy - String vector of column names to create the conversations
+    code.names - String vector of column names to use as codes
+    conversations.by - String vector of column names to create the conversations
     units - String vector of which units to include in the ENAset
      windowSize - Integer used to select the size of each stanza window within a conversation
     reload - Logical, force reloading of the ENAdata object}

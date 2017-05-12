@@ -92,12 +92,8 @@ eq_pos <- function(names, labels, rotated, plusOne) {
     .Call('rENA_eq_pos', PACKAGE = 'rENA', names, labels, rotated, plusOne)
 }
 
-getEigenValues <- function(adjMats) {
-    .Call('rENA_getEigenValues', PACKAGE = 'rENA', adjMats)
-}
-
-getEigenValues2 <- function(adjMats, numNodes) {
-    invisible(.Call('rENA_getEigenValues2', PACKAGE = 'rENA', adjMats, numNodes))
+linderoth_pos <- function(adjMats) {
+    .Call('rENA_linderoth_pos', PACKAGE = 'rENA', adjMats)
 }
 
 #'
@@ -173,6 +169,17 @@ svector_to_ut <- function(v) {
     .Call('rENA_svector_to_ut', PACKAGE = 'rENA', v)
 }
 
+#' Calculates the upper triangle (including the diaganol) of a
+#' vector of integers  if it were converted to a matrix. This
+#' actually skips creating the matrix, by only multiplying the
+#' necesseary indices of the vector.
+#'
+#' @param v - A vector of integers
+#' @export
+vector_to_ut_full <- function(v) {
+    .Call('rENA_vector_to_ut_full', PACKAGE = 'rENA', v)
+}
+
 #' Calculates the upper triangle of a vector of integers  if it
 #' were converted to a matrix. This actually skips creating the
 #' matrix, by only multiplying the necesseary indices of the
@@ -184,14 +191,7 @@ vector_to_ut <- function(v) {
     .Call('rENA_vector_to_ut', PACKAGE = 'rENA', v)
 }
 
-#' Calculates the upper triangle (including the diaganol) of a
-#' vector of integers  if it were converted to a matrix. This
-#' actually skips creating the matrix, by only multiplying the
-#' necesseary indices of the vector.
-#'
-#' @param v - A vector of integers
-#' @export
-vector_to_ut_full <- function(v) {
-    .Call('rENA_vector_to_ut_full', PACKAGE = 'rENA', v)
+vector_to_ut_mul <- function(v) {
+    .Call('rENA_vector_to_ut_mul', PACKAGE = 'rENA', v)
 }
 

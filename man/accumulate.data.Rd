@@ -4,9 +4,10 @@
 \alias{accumulate.data}
 \title{Accumulate Data}
 \usage{
-accumulate.data(dfDT, stanzasBy, unitsBy, units, codeNames, stanzas = NULL,
-  unitsSelected = NULL, window = 3, append = F, binary = T,
-  units.exclude = c())
+accumulate.data(dfDT, stanzasBy, unitsBy, units, code.names, stanzas = NULL,
+  unitsSelected = NULL, window = list(back = 1, forward = NULL),
+  append = F, binary = T, units.exclude = c(), trajectory.by = NULL,
+  trajectory.type = c("accumulated", "non-accumulated"))
 }
 \description{
 Accumulate Data

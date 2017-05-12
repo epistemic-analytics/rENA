@@ -6,9 +6,4 @@
 \usage{
 ref_window_sum(df, binary = TRUE)
 }
-\arguments{
-\item{v}{- A dataframe}
-
-\item{nms}{- A vector of characters used for colnames of returned DataFrame}
-}
 

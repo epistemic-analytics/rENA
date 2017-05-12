@@ -5,12 +5,18 @@
 #'
 #' @return microbenchmark results
 #' @export
+
+
+Rcpp::sourceCpp('src/vector_to_ut.cpp');
+Rcpp::sourceCpp('src/vector_to_ut_full.cpp');
+source('R/old.upper.R');
 benchmark_ut <- function(v = 1:4, times = 100) {
   tryCatch(
     expr = (bench = microbenchmark::microbenchmark( times=times,
-                old.upper(v),
-                vector_to_ut(v),
-                vector_to_ut_full(v)
+                R.upper.tri(v),
+                R.upper.tri.2(v),
+                vector_to_ut_mul(v),
+                vector_to_ut(v)
               )
     )
     ,finally = {
@@ -19,3 +25,5 @@ benchmark_ut <- function(v = 1:4, times = 100) {
     }
   )
 }
+
+print(benchmark_ut(1:32,100))

@@ -1,5 +1,6 @@
-#include <Rcpp.h>
+#include <RcppArmadillo.h>
 using namespace Rcpp;
+using namespace arma;
 
 //' Calculates the upper triangle of a vector of integers  if it
 //' were converted to a matrix. This actually skips creating the
@@ -21,4 +22,11 @@ std::vector<int> vector_to_ut(std::vector<int> v) {
     }
   }
   return vR;
+}
+
+// [[Rcpp::export]]
+arma::rowvec vector_to_ut_mul(arma::vec v) {
+  arma::mat mat = v * trans(v);
+  mat.diag().zeros();
+  return(trans(mat.elem(find(trans(trimatl(mat))))));
 }

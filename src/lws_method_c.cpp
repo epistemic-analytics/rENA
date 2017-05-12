@@ -3,6 +3,7 @@
 // [[Rcpp::depends(RcppEigen)]]
 
 using namespace Rcpp;
+using namespace Eigen;
 using Eigen::Map;         // 'maps' rather than copies
 using Eigen::MatrixXd;
 using Eigen::MatrixXcd;   // variable size matrix, double precision
@@ -30,7 +31,7 @@ public:
 
 //MatrixXcd
 // [[Rcpp::export]]
-Rcpp::List getEigenValues(MatrixXd adjMats) {
+Rcpp::List linderoth_pos(Eigen::MatrixXd adjMats) {
   int upperTriSize = adjMats.cols();
   int numNodes = ( pow(ceil(sqrt(2*upperTriSize)),2) ) - (2*upperTriSize);
   int numDims = 2;
@@ -124,7 +125,7 @@ Rcpp::List getEigenValues(MatrixXd adjMats) {
 }
 
 /*** R
-#getEigenValues(4, enaset$data$normed)
-#getEigenValues(enaset$data$normed[1,4])
-#getEigenValues(testAdjMatsTris)
+#linderoth_pos(4, enaset$data$normed)
+#linderoth_pos(enaset$data$normed[1,4])
+#linderoth_pos(testAdjMatsTris)
 */
