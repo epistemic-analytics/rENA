@@ -2,10 +2,6 @@ r6.to.json <- function( o, o.class = get(class(o)), o.fields = names(o.class$pub
   o.return = list();
   for(f in o.fields) { o.return[[f]] = o[[f]] }
 
-  # o.list = lapply(o.fields, function(n) {
-  #   o[[n]]
-  # })
-
   o.return
 
 }

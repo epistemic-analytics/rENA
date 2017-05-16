@@ -42,7 +42,6 @@ ENAdata = R6::R6Class("ENAdata",
       private$file <- file;
       private$unitsBy <- units.by;
       private$units <- units;
-      private$unitsSelected <- units.selected;
       private$conversations.by <- conversations.by;
       private$code.names <- code.names;
       private$window.size <- list(
@@ -166,7 +165,6 @@ ENAdata = R6::R6Class("ENAdata",
     unitsList = NULL,
     unitsBy = NULL,
     units = NULL,
-    unitsSelected = NULL,
     conversations.by = NULL,
     code.names = NULL,
     binary = NULL,
@@ -194,7 +192,6 @@ ENAdata = R6::R6Class("ENAdata",
         stanzasBy = private$conversations.by,
         unitsBy = private$unitsBy,
         units = private$units,
-        unitsSelected = private$unitsSelected,
         code.names = private$code.names,
         window = private$window.size,
         binary = private$binary,

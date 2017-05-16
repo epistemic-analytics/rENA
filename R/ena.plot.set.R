@@ -4,7 +4,7 @@
 #'
 #'
 #'
-# @export
+#' @export
 ##
 ena.plot.set <- function(
 

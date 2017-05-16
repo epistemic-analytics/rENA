@@ -17,10 +17,11 @@ source('R/rENA.R');
 
 
 #source('code/functions/ENAMaker/cpp/02/R/buildSet2.R')
-csvPath = 'inst/extdata/bigdata/dataset_for_ENA_Include_STRATG_3_TRAJECT.csv'
+#csvPath = 'inst/extdata/bigdata/dataset_for_ENA_Include_STRATG_3_TRAJECT.csv'
+csvPath = 'inst/extdata/bigdata/dataset_for_ENA-FULL.csv'
 csv = fread(csvPath) #, stringsAsFactors = F, strip.white = T)
-#csv$STUDENT_ID_WEEK = apply(csv[,c('STUDENT_ID', 'WEEK')],1, paste,collapse=" & ")
-#csv$rowid = csv$row.id
+csv$STUDENT_ID_WEEK = apply(csv[,c('STUDENT_ID', 'WEEK')],1, paste,collapse=" & ")
+csv$rowid = csv$row.id
 #write.csv(x = csv, file = csvPath, row.names=F)
 codeNames = names(csv)[14:31]
 
@@ -28,12 +29,12 @@ codeNames = names(csv)[14:31]
 # Rprof(filename=profName);
 
   enadata = ENAdata$new(
-    csv[1:500,],
-    unitsBy = c('STUDENT_ID_WEEK'),
+    csv, #[1:500,],
+    units.by = c('STUDENT_ID_WEEK'),
     #units = units,
-    conversationsBy = c('rowid'),
-    codeNames = codeNames,
-    windowSize = 1
+    conversations.by = c('row.id'),
+    code.names = codeNames,
+    window.size = 1
   )
 #, times=1)
 

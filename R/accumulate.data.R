@@ -7,7 +7,7 @@ accumulate.data <- function(
   dfDT,
   stanzasBy, unitsBy, units,
   code.names, stanzas = NULL,
-  unitsSelected = NULL, window = list("back" = 1, "forward" = NULL),
+  window = list("back" = 1, "forward" = NULL),
   append=F,binary=T,
   units.exclude = c(),
   trajectory.by = NULL,
@@ -164,6 +164,7 @@ accumulate.data <- function(
     codedRow1 = code.names[triIndices(length(code.names), 0)[,1]+1];
     codedRow2 = code.names[triIndices(length(code.names), 1)[,1]+1];
     attr(dfDT.summed.units, "adjacency.matrix") = rbind(codedRow1, codedRow2);
+    attr(dfDT.summed.units, "adjacency.codes") = codedTriNames;
     attr(dfDT.summed.units, UNIT_NAMES) = dfDT.summed.units[,  .SD ,with=T,.SDcols=unitsBy]
 
   return(list(

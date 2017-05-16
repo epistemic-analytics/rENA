@@ -22,8 +22,6 @@ units_all = trimws(apply(df[,c('week','send')], 1, paste, collapse="."));
 units_all_less = units_all[1:4];
 
 
-enadataNewcomb = ENAdata$new(df, unitsBy = c("week","send"), conversationsBy = c("stanza"), codeNames = codeNames, windowSize = 1);
-#codeColumns=c((3):18,21:37)
+enadataNewcomb = ENAdata$new(df, units.by = c("week","send"), conversations.by = c("stanza"), code.names = codeNames, window.size = 1);
 enasetNewcomb = ENAset$new(enadataNewcomb)$process()
-#enasetNewcomb$process();
 print("Done.")

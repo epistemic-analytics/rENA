@@ -5,6 +5,7 @@
 using namespace Rcpp;
 using namespace Eigen;
 using Eigen::Map;         // 'maps' rather than copies
+using Eigen::Matrix;
 using Eigen::MatrixXd;
 using Eigen::MatrixXcd;   // variable size matrix, double precision
 using Eigen::VectorXd;    // variable size vector, double precision
@@ -31,20 +32,41 @@ public:
 
 //MatrixXcd
 // [[Rcpp::export]]
-Rcpp::List linderoth_pos(Eigen::MatrixXd adjMats) {
+Rcpp::List linderoth_pos(Eigen::MatrixXd adjMats ) {
   int upperTriSize = adjMats.cols();
   int numNodes = ( pow(ceil(sqrt(2*upperTriSize)),2) ) - (2*upperTriSize);
   int numDims = 2;
 
+  Rcpp::Rcout << "Num nodes: " << numNodes << std::endl;
+
   MatrixXd M = adjMats;
   MatrixXd N = M.transpose() * M;
+  //Rcpp::Rcout << "N: " << N << std::endl;
 
   EigenSolver<MatrixXd> es(N);
-  MatrixXcd evs = es.eigenvectors();
-  MatrixXcd t = M * evs.leftCols(numDims);
+  Eigen::MatrixXcd evs; // = es.eigenvectors();
+  evs.resize(N.rows(), 2);
+  VectorXcd evals = es.eigenvalues();
+
+  int indexOne = 0, indexTwo = 0, evalLength = evals.size();
+
+  for(int i = 0; i < evalLength; i++) {
+    if(evals(i).real() > evals(indexOne).real()) {
+      indexTwo = indexOne;
+      indexOne = i;
+    } else if (evals[i].real() > evals[indexTwo].real()) {
+      indexTwo = i;
+    }
+  }
+  evs.col(0) = es.eigenvectors().col(indexOne);
+  evs.col(1) = es.eigenvectors().col(indexTwo);
+
+  MatrixXcd t = M * evs; //.leftCols(numDims);
+  // Rcpp::Rcout << "t: " << evs << std::endl;
+  //return Rcpp::List::create(_("evs") = evs.real(), _("t") = t.real(), _("N") = N, _("evals") = es.eigenvalues().real(), _("n1") = indexOne, _("n2") = indexTwo);
+
 
   MatrixXd weights = MatrixXd::Zero(adjMats.rows(), numNodes);
-  Rcpp::Rcout << "UT size: " << upperTriSize << std::endl;
   for (int k = 0; k < adjMats.rows(); k++) {
     VectorXd currAdj = adjMats.row(k);
     int z = 0; // adjIndex
@@ -56,6 +78,7 @@ Rcpp::List linderoth_pos(Eigen::MatrixXd adjMats) {
       }
     }
   }
+  // Rcpp::Rcout << "weights: " << weights << std::endl;
 
   Rcpp::NumericVector delta = Rcpp::NumericVector ( Rcpp::Dimension(adjMats.rows(), adjMats.rows(), numDims) );
   Offset offset( adjMats.rows(), adjMats.rows() ); //, numDims ) ;
@@ -66,6 +89,7 @@ Rcpp::List linderoth_pos(Eigen::MatrixXd adjMats) {
       }
     }
   }
+  // Rcpp::Rcout << "delta: " << delta << std::endl;
 
   MatrixXd gamma = MatrixXd::Zero(numDims, numNodes);
   for(int i = 0; i < numDims; i++) {
@@ -77,6 +101,7 @@ Rcpp::List linderoth_pos(Eigen::MatrixXd adjMats) {
       }
     }
   }
+  // Rcpp::Rcout << "Gamma: " << gamma << std::endl;
 
   MatrixXd X = MatrixXd::Zero(numDims, numNodes);
   for(int i = 0; i < numDims; i++) {
@@ -84,6 +109,7 @@ Rcpp::List linderoth_pos(Eigen::MatrixXd adjMats) {
       X(i,j) = gamma(i,j) / gamma.row(i).norm();
     }
   }
+  // Rcpp::Rcout << "X: " << X << std::endl;
 
   MatrixXd centroids = (X * weights.transpose()).transpose();
   double totalcorr = 0.0;
@@ -128,4 +154,5 @@ Rcpp::List linderoth_pos(Eigen::MatrixXd adjMats) {
 #linderoth_pos(4, enaset$data$normed)
 #linderoth_pos(enaset$data$normed[1,4])
 #linderoth_pos(testAdjMatsTris)
+# out = linderoth_pos(enasetNewcomb$data$normed)
 */

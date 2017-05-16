@@ -7,10 +7,43 @@
 #' @export
 ##
 ena.make.set <- function(
-  ...,
-  output = "class"
+  enaData,
+  dims=2,
+  samples=3,
+  inPar=F,
+  codeColumns=NULL,
+  binary=T,
+  correction=NULL,
+  sphere.norm=dont_sphere_norm_c,
+  center.data=center_data_c,
+  optim.method=do_optimization,
+  check.unique.positions=F,
+  set.seed = F,
+  rotate.means = F,
+  rotate.means.by = NULL,
+  output = c("class","json"),
+  ...
 ) {
-  set = ENAset$new(...)$process();
+  set = ENAset$new(
+    enaData,
+    dims,
+    samples,
+    inPar,
+    codeColumns,
+    binary,
+    correction,
+    sphere.norm,
+    center.data,
+    optim.method,
+    check.unique.positions,
+    set.seed,
+    rotate.means,
+    rotate.means.by,
+    ...
+  )$process();
+
+  output = match.arg(output);
+
   if(output == "json") r6.to.json(set)
   else set
 }
