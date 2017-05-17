@@ -38,6 +38,7 @@ ena.accumulate.data <- function(
     ...
   );
 
+  data$function.call = sys.call();
   output = match.arg(output);
   if(output == "json") r6.to.json(data)
   else data

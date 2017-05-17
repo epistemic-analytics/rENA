@@ -39,6 +39,8 @@ ENAdata = R6::R6Class("ENAdata",
       trajectory.type = c("accumulated","non-accumulated"),
       ...
     ) {
+      self$function.call <- sys.call(-1);
+
       private$file <- file;
       private$units.by <- units.by;
       private$units <- units;
@@ -61,9 +63,11 @@ ENAdata = R6::R6Class("ENAdata",
     ####
     ## Public Properties
     ####
+    function.call = NULL,
     data.raw = NULL,
     data.units.summed = NULL,
     data.units.accumuluated = NULL,
+    data.units.summed.meta = NULL,
 
     ####
     ## Public Functions
@@ -149,6 +153,20 @@ ENAdata = R6::R6Class("ENAdata",
       if(reload == T) self$data <- private$loadFile();
 
       return(self);
+    },
+
+    metadata = function(merge = F) {
+      metaAvail=colnames(self$data.raw)[-which(colnames(self$data.raw) %in% c(private$code.names, private$units.by, private$conversations.by))];
+      dfDT.meta.poss = self$data.raw[, { nc = lapply(.SD, function(x) length(table(x))); }, by=c(private$units.by), .SDcols=c(metaAvail)][,,.SDcols=ma];
+      metaAvail = colnames(dfDT.meta.poss)[rapply(dfDT.meta.poss, function(x) all(x == 1))]
+      metaAvail = metaAvail[metaAvail != "ENA_UNIT"];
+      raw.meta = self$data.raw[!duplicated(ENA_UNIT)][ENA_UNIT %in% unique(self$data.units.accumuluated$ENA_UNIT),c("ENA_UNIT",metaAvail),,with=F];
+
+      if(merge == T) {
+        merge(self$data.units.summed, raw.meta)
+      } else {
+        raw.meta
+      }
     }
   ),
 
@@ -186,6 +204,7 @@ ENAdata = R6::R6Class("ENAdata",
         df_DT = data.table::as.data.table(df);
       }
       self$data.raw = df_DT;
+      self$data.raw$ENA_UNIT = merge_columns_c(self$data.raw,private$units.by);
 
       newRes = accumulate.data(
         dfDT = df_DT,
@@ -202,7 +221,7 @@ ENAdata = R6::R6Class("ENAdata",
 
       self$data.units.summed = newRes$units.summed;
       self$data.units.accumuluated = newRes$units.co.occurred;
-
+      self$data.units.summed.meta = self$metadata(merge = T);
       private$units = newRes$units;
 
       return(self);
