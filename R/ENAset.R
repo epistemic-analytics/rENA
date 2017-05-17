@@ -255,7 +255,7 @@ ENAset = R6::R6Class("ENAset",
     ####
     run = function() {
       # Reference for the ENAdata object
-        df = private$enaData$units.summed;
+        df = private$enaData$data.units.summed;
 
       ###
       # Backup of ENA data, this is not touched again.

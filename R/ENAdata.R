@@ -40,7 +40,7 @@ ENAdata = R6::R6Class("ENAdata",
       ...
     ) {
       private$file <- file;
-      private$unitsBy <- units.by;
+      private$units.by <- units.by;
       private$units <- units;
       private$conversations.by <- conversations.by;
       private$code.names <- code.names;
@@ -61,9 +61,9 @@ ENAdata = R6::R6Class("ENAdata",
     ####
     ## Public Properties
     ####
-    data = NULL,
-    units.summed = NULL,
-    units.co.occurred = NULL,
+    data.raw = NULL,
+    data.units.summed = NULL,
+    data.units.accumuluated = NULL,
 
     ####
     ## Public Functions
@@ -162,8 +162,7 @@ ENAdata = R6::R6Class("ENAdata",
     ####
     file = NULL,
     window.size = NULL,
-    unitsList = NULL,
-    unitsBy = NULL,
+    units.by = NULL,
     units = NULL,
     conversations.by = NULL,
     code.names = NULL,
@@ -186,11 +185,12 @@ ENAdata = R6::R6Class("ENAdata",
         }
         df_DT = data.table::as.data.table(df);
       }
+      self$data.raw = df_DT;
 
       newRes = accumulate.data(
         dfDT = df_DT,
         stanzasBy = private$conversations.by,
-        unitsBy = private$unitsBy,
+        unitsBy = private$units.by,
         units = private$units,
         code.names = private$code.names,
         window = private$window.size,
@@ -200,8 +200,10 @@ ENAdata = R6::R6Class("ENAdata",
         trajectory.type = private$trajectory.type
       );
 
-      self$units.summed = newRes$units.summed;
-      self$units.co.occurred = newRes$units.co.occurred;
+      self$data.units.summed = newRes$units.summed;
+      self$data.units.accumuluated = newRes$units.co.occurred;
+
+      private$units = newRes$units;
 
       return(self);
     }

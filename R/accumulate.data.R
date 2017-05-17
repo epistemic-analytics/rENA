@@ -54,15 +54,19 @@ accumulate.data <- function(
       dfDT.co.occurrences = dfDT_codes[,{
           ocs = data.table::as.data.table(rows_to_co_occurrences(.SD[,.SD,.SDcols=code.names, with=T]));
 
-          # Return value;
+          # Return value from data.table back to dfDT.co.occurrences
           data.table::data.table(.SD,ocs)
         },
         .SDcols=c(code.names, stanzasBy),
         with=T
       ];
     } else {
-      dfDT.co.occurrences = dfDT_codes[,
-        ref_window_df(.SD,windowSize=window), # Return value
+      dfDT.co.occurrences = dfDT_codes[,{
+          ocs = ref_window_df(.SD, windowSize=window$back, binary = binary);
+
+          # Return value from data.table back to dfDT.co.occurrences
+          data.table::data.table(.SD,ocs)
+        },
         by=stanzasBy,
         .SDcols=code.names,
         with=T
@@ -70,8 +74,7 @@ accumulate.data <- function(
     }
 
     colnames(dfDT.co.occurrences)[grep("V\\d+",colnames(dfDT.co.occurrences))] = codedTriNames;
-    dfDT.co.occurrences$ENA_UNIT = dfDT_codes$ENA_UNIT #[,{apply(.SD,1,function(x){paste(trimws(x),collapse=".")})},with=T,.SDcols=unitsBy];
-    #dfDT_codes[, (codedTriNames) := ref_window_df(.SD,windowSize=window), by=stanzasBy, .SDcols=code.names, with=T];
+    dfDT.co.occurrences$ENA_UNIT = dfDT_codes$ENA_UNIT;
 
   ##
   # If units aren't supplied, use all available
@@ -169,6 +172,7 @@ accumulate.data <- function(
 
   return(list(
     "units.co.occurred" = dfDT.co.occurrences,
-    "units.summed" = dfDT.summed.units
+    "units.summed" = dfDT.summed.units,
+    "units" = units
   ));
 }
