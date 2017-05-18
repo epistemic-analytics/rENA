@@ -79,6 +79,19 @@ Rcpp::List linderoth_pos(Eigen::MatrixXd adjMats, Eigen::MatrixXd t) { // = R_Ni
     }
   }
   // Rcpp::Rcout << "weights: " << weights << std::endl;
+  for (int k = 0; k < adjMats.rows(); k++) {
+    double length = 0;
+    for(int i = 0; i < numNodes-1; i++) {
+      length = length + std::abs(weights(k,i));
+    }
+    if(length < 0.0001) {
+      length = 0.0001;
+    }
+    for(int i = 0; i < numNodes-1; i++) {
+      weights(k,i) = weights(k,i) / length;
+    }
+  }
+  // Rcpp::Rcout << "weights: " << weights << std::endl;
 
   Rcpp::NumericVector delta = Rcpp::NumericVector ( Rcpp::Dimension(adjMats.rows(), adjMats.rows(), numDims) );
   Offset offset( adjMats.rows(), adjMats.rows() ); //, numDims ) ;

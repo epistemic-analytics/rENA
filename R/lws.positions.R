@@ -9,7 +9,7 @@
 lws.positions <- function(ena.set) {
   message("Running positions using the LWS method.");
 
-  positions = linderoth_pos(ena.set$data$normed, ena.set$data$centered$rotated);
+  positions = linderoth_pos(ena.set$data$normed.non.zero, ena.set$data$centered$rotated);
 
   ena.set$nodes$positions$scaled = positions$nodes;
   rownames(ena.set$nodes$positions$scaled) = ena.set$get("enaData")$get("code.names");
