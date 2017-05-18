@@ -21,7 +21,6 @@ egr.positions <- function(ena.set) {
   ###
   # Store the optimized node positions
   ###
-    browser();
     ena.set$nodes$positions$optim = get_optimized_node_pos_c(
       ena.set$data$normed.non.zero, ena.set$get("dimensions"), ena.set$get("samples"), opted = ena.set$data$optim
     );
@@ -37,7 +36,7 @@ egr.positions <- function(ena.set) {
       dims = ena.set$get("dimensions"), num_samples = ena.set$get("samples")
       ,checkUnique = ena.set$check.unique.positions
     );
-    rownames(ena.set$nodes$positions$unscaled$positions) = ena.set$get("enaData")$get("codeNames");
+    rownames(ena.set$nodes$positions$unscaled$positions) = ena.set$get("enaData")$get("code.names");
   ###
 
   ###
@@ -48,7 +47,7 @@ egr.positions <- function(ena.set) {
       ena.set$data$normed.non.zero,
       ena.set$data$centered$rotated.non.zero
     );
-    rownames(ena.set$nodes$positions$scaled$positions) = ena.set$get("enaData")$get("codeNames");
+    rownames(ena.set$nodes$positions$scaled$positions) = ena.set$get("enaData")$get("code.names");
   ###
 
   return(ena.set);

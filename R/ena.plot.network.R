@@ -11,8 +11,8 @@ library(igraph)
 ##
 ena.plot.network = function(
   enaset = NULL,
-  units.by = enaset$get('enaData')$get('unitsBy'),
-  group.by = enaset$get('enaData')$get('conversationsBy'), #"Condition",
+  units.by = enaset$get('enaData')$get('units.by'),
+  group.by = enaset$get('enaData')$get('conversations.by'), #"Condition",
 
   selection.one.color = "#5399c7",
   selection.one.name = NULL,
@@ -41,13 +41,13 @@ ena.plot.network = function(
 ) {
   df = data.frame(enaset$data$normed, attr(enaset$data$normed, UNIT_NAMES));
   dfDT=as.data.table(df);
-  dfDT$handle = rownames(df);
+  dfDT$handle = merge_columns_c(dfDT,units.by, sep="."); #rownames(df);
 
   units.to.plot = c(selection.one.name, selection.two.name);
 
   sdcols=colnames(dfDT)[sapply(dfDT, is.numeric)];
-  browser()
   minDT = dfDT[handle %in% units.to.plot, lapply(.SD,sum,na.rm=T), by=units.by, .SDcols=sdcols];
+
   minDT$ENA_UNIT = merge.columns(x = minDT, from.cols = units.by);
   minDT = minDT[match(ENA_UNIT, units.to.plot),];
 
@@ -71,10 +71,18 @@ ena.plot.network = function(
   }
   network.edges.length = nrow(network.edges.table);
 
-  network.vertices.df = data.frame(name = rownames(enaset$nodes$positions$scaled$positions), enaset$nodes$positions$scaled$positions);
+  df.names = rownames(enaset$nodes$positions$scaled);
+  if(is.null(df.names)) {
+   df.names = as.character(1:nrow(enaset$nodes$positions$scaled))
+   rownames(enaset$nodes$positions$scaled) = df.names;
+  }
+  network.vertices.df = data.frame(
+    name = df.names, ## New LWS method needs to assign names/attr
+    enaset$nodes$positions$scaled
+  );
 
   network.graph = graph_from_data_frame(minDTnodes_trans, directed = F, vertices = network.vertices.df)
-  network.layout = enaset$nodes$positions$scaled$positions;
+  network.layout = enaset$nodes$positions$scaled;
 
   network.vertices = V(network.graph);
   network.vertices.length = length(network.vertices);

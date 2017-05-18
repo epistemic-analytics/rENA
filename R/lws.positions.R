@@ -12,6 +12,6 @@ lws.positions <- function(ena.set) {
   positions = linderoth_pos(ena.set$data$normed, ena.set$data$centered$rotated);
 
   ena.set$nodes$positions$scaled = positions$nodes;
-
+  rownames(ena.set$nodes$positions$scaled) = ena.set$get("enaData")$get("code.names");
   return(ena.set);
 }
