@@ -8,7 +8,9 @@ full_opt_soln = function(unscaled, normed, rotated, dims=2, maxit = 1000) {
                                      control = list(
                                        reltol=1e-16,
                                        maxit=100000
-                                     )
+                                     ),
+                                     lower=-1,
+                                     upper=1
                                      ));
 
     return(result)

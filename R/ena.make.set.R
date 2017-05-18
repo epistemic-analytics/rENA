@@ -17,6 +17,7 @@ ena.make.set <- function(
   sphere.norm=dont_sphere_norm_c,
   center.data=center_data_c,
   optim.method=do_optimization,
+  position.method=egr.positions,
   check.unique.positions=F,
   set.seed = F,
   rotate.means = F,
@@ -25,20 +26,21 @@ ena.make.set <- function(
   ...
 ) {
   set = ENAset$new(
-    enaData,
-    dims,
-    samples,
-    inPar,
-    codeColumns,
-    binary,
-    correction,
-    sphere.norm,
-    center.data,
-    optim.method,
-    check.unique.positions,
-    set.seed,
-    rotate.means,
-    rotate.means.by,
+    enaData = enaData,
+    dims = dims,
+    samples = samples,
+    inPar = inPar,
+    codeColumns = codeColumns,
+    binary = binary,
+    correction = correction,
+    sphere.norm = sphere.norm,
+    center.data = center.data,
+    optim.method = optim.method,
+    position.method = position.method,
+    check.unique.positions = check.unique.positions,
+    set.seed = set.seed,
+    rotate.means = rotate.means,
+    rotate.means.by = rotate.means.by,
     ...
   )$process();
 

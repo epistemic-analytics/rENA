@@ -39,6 +39,7 @@ do_optimization = function(e, inPar = F, maxit = 1000)
     }
     suppressWarnings(result <- optim(par = runif(e$N,-3, 3),
                                      fn = get_cor,
+                                     method = "Nelder-Mead",
                                      control = list(fnscale=-1,
                                                     maxit=maxit),
                                      lower=-3,
@@ -111,7 +112,7 @@ do_optimization_2 = function(e, inPar=F, maxit = 1000) {
 
   single_optim_2 = function(e, dim, N = getN(e$data.normed)) {
     if(e_$get("set.seed") != F) {
-      set.seed(e_$get("serept.seed"));
+      set.seed(e_$get("set.seed"));
     }
     result <- suppressWarnings(optim(par = runif(N,limits$min, limits$max),
                                      fn = calc_cor,

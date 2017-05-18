@@ -47,6 +47,7 @@ ENAset = R6::R6Class("ENAset",
       sphere.norm=dont_sphere_norm_c,
       center.data=center_data_c,
       optim.method=do_optimization,
+      position.method=egr.positions,
       check.unique.positions=F,
       set.seed = F,
       rotate.means = F,
@@ -67,6 +68,7 @@ ENAset = R6::R6Class("ENAset",
       self$sphere.norm <- sphere.norm;
       self$center.data <- center.data;
       self$optim.method <- optim.method;
+      self$position.method <- position.method;
       self$check.unique.positions <- check.unique.positions;
     },
 
@@ -77,6 +79,7 @@ ENAset = R6::R6Class("ENAset",
     optim.method = NULL,
     sphere.norm = NULL,
     center.data = NULL,
+    position.method = NULL,
     data = list(
       original = NULL,
       raw = NULL,
@@ -353,7 +356,21 @@ ENAset = R6::R6Class("ENAset",
         }
       ###
 
-      private$rotateNodes(self$data$centered$pca);
+      ###
+      # Generated the rotated points
+      ###
+        self$data$centered$rotated = self$data$centered$normed %*% self$data$centered$pca;
+        attr(self$data$centered$rotated, UNIT_NAMES) = attr(self$data$centered$normed, UNIT_NAMES);
+      ###
+
+      ###
+      # Remove zero rows from centered data
+      ###
+        self$data$centered$rotated.non.zero = remove_zero_rows_by_c(self$data$centered$rotated, indices=self$data$normed);
+      ###
+
+      self = self$position.method(self);
+      #private$rotateNodes();
 
       return(self);
     },
@@ -373,69 +390,54 @@ ENAset = R6::R6Class("ENAset",
     #   - Error in self$data$centered$normed %*% rotation:
     #       non-conformable arguments
     ###
-    rotateNodes = function(rotation = self$data$centered$pca) {
-      ###
-      # Rotate the normed centered data by the pca results
-      ###
-        self$data$centered$rotated = self$data$centered$normed %*% rotation;
-        attr(self$data$centered$rotated, UNIT_NAMES) = attr(self$data$centered$normed, UNIT_NAMES);
-      ###
-
-      ###
-      # Remove zero rows from centered data
-      ###
-        self$data$centered$rotated.non.zero = remove_zero_rows_by_c(self$data$centered$rotated, indices=self$data$normed);
-      ###
-
-      ###
-      # Calculate the rotation distances
-      ###
-        self$rotation_dists = getRotationDistances_c(self$data$centered$rotated.non.zero);
-      ###
-
-
-    # optim.meth shoud start here:
-      ###
-      # Perform the optimization
-      ###
-        self$data$optim = self$optim.method(self, inPar = private$inPar);
-      ###
-
-      ###
-      # Store the optimized node positions
-      ###
-        self$nodes$positions$optim = get_optimized_node_pos_c(
-          self$data$normed.non.zero, private$dimensions, private$samples, opted = self$data$optim
-        );
-      ###
-
-      ###
-      # Store the unscaled node positions
-      ###
-        self$nodes$positions$unscaled = full_opt_c(
-          normed = self$data$normed.non.zero,
-          rotated = self$data$centered$rotated.non.zero,
-          optim_nodes = self$nodes$positions$optim,
-          dims = private$dimensions, num_samples = private$samples
-          ,checkUnique = self$check.unique.positions
-        );
-        rownames(self$nodes$positions$unscaled$positions) = private$enaData$get("codeNames");
-      ###
-
-      ###
-      # Scale the node positions
-      ###
-        self$nodes$positions$scaled = full_opt_soln(
-          self$nodes$positions$unscaled$positions,
-          self$data$normed.non.zero,
-          self$data$centered$rotated.non.zero
-        );
-        rownames(self$nodes$positions$scaled$positions) = private$enaData$get("codeNames")
-      ###
-    # optim.meth shoud END hered
-
-
-      return(self);
+    rotateNodes = function() {
+#
+#       ###
+#       # Calculate the rotation distances
+#       ###
+#         self$rotation_dists = getRotationDistances_c(self$data$centered$rotated.non.zero);
+#       ###
+#
+#       ###
+#       # Perform the optimization
+#       ###
+#         self$data$optim = self$optim.method(self, inPar = private$inPar);
+#       ###
+#
+#       ###
+#       # Store the optimized node positions
+#       ###
+#         self$nodes$positions$optim = get_optimized_node_pos_c(
+#           self$data$normed.non.zero, private$dimensions, private$samples, opted = self$data$optim
+#         );
+#       ###
+#
+#       ###
+#       # Store the unscaled node positions
+#       ###
+#         self$nodes$positions$unscaled = full_opt_c(
+#           normed = self$data$normed.non.zero,
+#           rotated = self$data$centered$rotated.non.zero,
+#           optim_nodes = self$nodes$positions$optim,
+#           dims = private$dimensions, num_samples = private$samples
+#           ,checkUnique = self$check.unique.positions
+#         );
+#         rownames(self$nodes$positions$unscaled$positions) = private$enaData$get("codeNames");
+#       ###
+#
+#       ###
+#       # Scale the node positions
+#       ###
+#         self$nodes$positions$scaled = full_opt_soln(
+#           self$nodes$positions$unscaled$positions,
+#           self$data$normed.non.zero,
+#           self$data$centered$rotated.non.zero
+#         );
+#         rownames(self$nodes$positions$scaled$positions) = private$enaData$get("codeNames")
+#       ###
+#
+#
+#       return(self);
     }
   )
 )

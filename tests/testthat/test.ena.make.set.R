@@ -7,6 +7,7 @@ test_that("Simple data.frame to accumulate and make set", {
   df.accum = ena.accumulate.data("./inst/extdata/rs.data.small.csv", units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), code.names = codeNames);
 
   df.set = ena.make.set(df.accum)
+  df.set.lws = ena.make.set(df.accum, position.method = lws.positions)
 
   expect_equal(dim(df.set$data$centered$rotated), c(16,2));
   expect_equal(length(attr(df.set$data$centered$rotated, rENA::UNIT_NAMES)[,UserName]), 16);
