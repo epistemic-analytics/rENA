@@ -33,7 +33,7 @@ ena.accumulate.data <- function(
     window.size.forward,
     binary,
     units.exclude,
-    trajectory.by,
+    trajectory.by = trajectory.by,
     trajectory.type = match.arg(trajectory.type),
     ...
   );

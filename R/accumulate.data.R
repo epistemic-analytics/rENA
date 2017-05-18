@@ -13,6 +13,7 @@ accumulate.data <- function(
   trajectory.by = NULL,
   trajectory.type = c("accumulated","non-accumulated")
 ) {
+
   ### We need data
     if(is.null(dfDT) || nrow(dfDT) < 1) return(-1);
 
@@ -57,7 +58,7 @@ accumulate.data <- function(
           # Return value from data.table back to dfDT.co.occurrences
           data.table::data.table(.SD,ocs)
         },
-        .SDcols=c(code.names, stanzasBy),
+        .SDcols=c(code.names, stanzasBy, trajectory.by),
         with=T
       ];
     } else {
@@ -134,7 +135,7 @@ accumulate.data <- function(
           {
             cols = colnames(.SD);
             ENA_UNIT = paste(as.character(.BY), collapse=".");
-            TRAJ_UNIT = .SD[,c(trajectory.by),with=F]; #apply(.SD[,c(trajectory.by),with=F],1, paste, collapse=".");
+            TRAJ_UNIT = .SD[,c(trajectory.by),with=F];
             incCols = cols[! cols %in% c(trajectory.by, "ENA_ROW_IDX") ];
             lag = ref_window_lag(.SD[,.SD,.SDcols=incCols], .N);
             data.table(ENA_ROW_IDX, TRAJ_UNIT, lag, ENA_UNIT=ENA_UNIT);
@@ -144,7 +145,7 @@ accumulate.data <- function(
         ]
       }
       # Non-accumulated
-      else if(trajectory.type == TRAJ_TYPES[2]){
+      else if(trajectory.type == TRAJ_TYPES[2]) {
         dfDT.summed.units = dfDT.summed.traj.by;
       }
       else {
