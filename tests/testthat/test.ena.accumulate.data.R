@@ -43,4 +43,5 @@ test_that("Simple forwarded metadata", {
 
   df.accum = ena.accumulate.data(df, units.by = c("Name"), conversations.by = c("Day"), code.names = c("c1","c2","c3"));
 
+  expect_true("m1" %in% colnames(df.accum$data.units.summed.meta));
 })
