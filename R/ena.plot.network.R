@@ -39,7 +39,7 @@ ena.plot.network = function(
   edge.font.family = font.family,
   edge.hide = NULL
 ) {
-  df = data.frame(enaset$data$normed, attr(enaset$data$normed, UNIT_NAMES));
+  df = data.frame(enaset$data$normed, attr(enaset$data$normed, rENA::opts$UNIT_NAMES));
   dfDT=as.data.table(df);
   dfDT$handle = merge_columns_c(dfDT,units.by, sep="."); #rownames(df);
 

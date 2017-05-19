@@ -4,7 +4,12 @@
 \alias{ena.make.set}
 \title{Generate ENA Set}
 \usage{
-ena.make.set(..., output = "class")
+ena.make.set(enaData, dims = 2, samples = 3, inPar = F,
+  codeColumns = NULL, binary = T, correction = NULL,
+  sphere.norm = dont_sphere_norm_c, center.data = center_data_c,
+  optim.method = do_optimization, position.method = egr.positions,
+  check.unique.positions = F, set.seed = F, rotate.means = F,
+  rotate.means.by = NULL, output = c("class", "json"), ...)
 }
 \description{
 Generate an ENA set from a givent ENA data object

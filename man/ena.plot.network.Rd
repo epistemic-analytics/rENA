@@ -5,8 +5,8 @@
 \title{Plot network}
 \usage{
 ena.plot.network(enaset = NULL,
-  units.by = enaset$get("enaData")$get("unitsBy"),
-  group.by = enaset$get("enaData")$get("conversationsBy"),
+  units.by = enaset$get("enaData")$get("units.by"),
+  group.by = enaset$get("enaData")$get("conversations.by"),
   selection.one.color = "#5399c7", selection.one.name = NULL,
   selection.one.title = NULL, selection.two.color = "#FF0000",
   selection.two.name = NULL, selection.two.title = NULL,

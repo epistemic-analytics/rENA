@@ -2,9 +2,10 @@ suppressMessages(library(rENA, quietly = T, verbose = F))
 context("Split concatenated code column");
 
 test_that("Code column splits on file", {
-  fileName = "../../inst/extdata/test-bad-code-col.csv";
-  file = read.csv(fileName);
-  split = ena.split.codes(fileName, split.columns="Codes");
+  file <- system.file("extdata", "test-bad-code-col.csv", package="rENA")
+  # fileName = "../../inst/extdata/test-bad-code-col.csv";
+  # file = read.csv(fileName);
+  split = ena.split.codes(file, split.columns="Codes");
 
   expect_is(split, "data.frame");
   expect_gt(length(colnames(split)), length(colnames(file)));

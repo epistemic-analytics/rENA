@@ -5,7 +5,7 @@ ena.rotate.by.mean = function(data, groups) {
 
 
 #ena.rotate.by.mean = function(data, col, vals) {
-  attrData = attr(data, UNIT_NAMES)
+  attrData = attr(data, rENA::opts$UNIT_NAMES)
 
   data = scale(data, scale=F, center=T);
 

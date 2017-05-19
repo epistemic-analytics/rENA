@@ -28,7 +28,7 @@ ena.split.codes <- function(
   ## Use `split.columns.by` to split values in `split.columns`
   if( !is.null(split.columns) ) {
     for(col in split.columns) {
-      split.column = matrix(unlist(tstrsplit(data.file[,col], split=",", type.convert = T)), nrow=nrow(data.file))
+      split.column = matrix(unlist(data.table::tstrsplit(data.file[,col], split=",", type.convert = T)), nrow=nrow(data.file))
       re.named = F;
       if(!is.null(code.names)) {
         if (col %in% names(code.names) ) {

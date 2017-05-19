@@ -2,12 +2,12 @@
 % Please edit documentation in R/rENA.R
 \docType{data}
 \name{rENA}
-\alias{UNIT_NAMES}
+\alias{opts}
 \alias{rENA}
 \title{rENA creates ENA sets}
-\format{An object of class \code{character} of length 1.}
+\format{An object of class \code{list} of length 2.}
 \usage{
-UNIT_NAMES
+opts
 }
 \description{
 rENA creates ENA sets

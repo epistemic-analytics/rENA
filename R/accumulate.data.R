@@ -129,7 +129,7 @@ accumulate.data <- function(
       dfDT.summed.traj.by$TRAJ_UNIT = merge_columns_c(dfDT.summed.traj.by,trajectory.by, sep = ".");
 
       # Accumulated
-      if(trajectory.type == TRAJ_TYPES[1]) {
+      if(trajectory.type == rENA::opts$TRAJ_TYPES[1]) {
         dfDT.summed.units = dfDT.summed.traj.by[
           ENA_UNIT %in% unique(units),
           {
@@ -145,7 +145,7 @@ accumulate.data <- function(
         ]
       }
       # Non-accumulated
-      else if(trajectory.type == TRAJ_TYPES[2]) {
+      else if(trajectory.type == rENA::opts$TRAJ_TYPES[2]) {
         dfDT.summed.units = dfDT.summed.traj.by;
       }
       else {
@@ -169,7 +169,7 @@ accumulate.data <- function(
     codedRow2 = code.names[triIndices(length(code.names), 1)[,1]+1];
     attr(dfDT.summed.units, "adjacency.matrix") = rbind(codedRow1, codedRow2);
     attr(dfDT.summed.units, "adjacency.codes") = codedTriNames;
-    attr(dfDT.summed.units, UNIT_NAMES) = dfDT.summed.units[,  .SD ,with=T,.SDcols=unitsBy]
+    attr(dfDT.summed.units, rENA::opts$UNIT_NAMES) = dfDT.summed.units[,  .SD ,with=T,.SDcols=unitsBy]
 
   return(list(
     "units.co.occurred" = dfDT.co.occurrences,

@@ -4,7 +4,12 @@
 \alias{ena.accumulate.data}
 \title{Accumulate Data}
 \usage{
-ena.accumulate.data(...)
+ena.accumulate.data(file, units.by = NULL, units = NULL,
+  conversations.by = NULL, code.names = NULL, window.size = 1,
+  window.size.back = window.size, window.size.forward = NULL, binary = T,
+  units.exclude = c(), trajectory.by = NULL,
+  trajectory.type = c("accumulated", "non-accumulated"), output = c("class",
+  "json"), ...)
 }
 \description{
 Accumulate rows of data

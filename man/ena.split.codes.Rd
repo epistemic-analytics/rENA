@@ -7,6 +7,12 @@
 ena.split.codes(data.file, split.columns = NULL, split.columns.by = ",",
   code.names = NULL)
 }
+\arguments{
+\item{code.names}{}
+}
+\value{
+data.frame
+}
 \description{
 Split code columns
 }

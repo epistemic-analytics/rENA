@@ -92,8 +92,8 @@ eq_pos <- function(names, labels, rotated, plusOne) {
     .Call('rENA_eq_pos', PACKAGE = 'rENA', names, labels, rotated, plusOne)
 }
 
-linderoth_pos <- function(adjMats) {
-    .Call('rENA_linderoth_pos', PACKAGE = 'rENA', adjMats)
+linderoth_pos <- function(adjMats, t) {
+    .Call('rENA_linderoth_pos', PACKAGE = 'rENA', adjMats, t)
 }
 
 #'

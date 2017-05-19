@@ -207,7 +207,7 @@ ENAset = R6::R6Class("ENAset",
           rotDF = as.data.frame(data.table::copy(self$data$centered$rotated));
 
           if(!is.null(name.units.by)) {
-            rotDF$unit = attr(self$data$centered$rotated, UNIT_NAMES)[,{apply(.SD,1,function(x){paste(trimws(x),collapse=name.units.sep)})},with=T,.SDcols=name.units.by];
+            rotDF$unit = attr(self$data$centered$rotated, rENA::opts$UNIT_NAMES)[,{apply(.SD,1,function(x){paste(trimws(x),collapse=name.units.sep)})},with=T,.SDcols=name.units.by];
           } else {
             rotDF$unit = rownames(rotDF);
           }
@@ -302,7 +302,7 @@ ENAset = R6::R6Class("ENAset",
         colnames(self$data$normed) = codeNames_tri;
       # set the rownames to that of the original ENAdata file object
         rownames(self$data$normed) = rownames(df);
-        attr(self$data$normed, UNIT_NAMES) = attr(df, UNIT_NAMES) #df[, .SD, with=T, .SDcols=private$enaData$get("unitsBy")];
+        attr(self$data$normed, rENA::opts$UNIT_NAMES) = attr(df, rENA::opts$UNIT_NAMES) #df[, .SD, with=T, .SDcols=private$enaData$get("unitsBy")];
       ###
 
       ###
@@ -333,7 +333,7 @@ ENAset = R6::R6Class("ENAset",
 
         colnames(self$data$centered$normed) = codeNames_tri;
         rownames(self$data$centered$normed) = rownames(df);
-        attr(self$data$centered$normed, UNIT_NAMES) = attr(self$data$normed, UNIT_NAMES)
+        attr(self$data$centered$normed, rENA::opts$UNIT_NAMES) = attr(self$data$normed, rENA::opts$UNIT_NAMES)
       ###
 
       ###
@@ -360,7 +360,7 @@ ENAset = R6::R6Class("ENAset",
       # Generated the rotated points
       ###
         self$data$centered$rotated = self$data$centered$normed %*% self$data$centered$pca;
-        attr(self$data$centered$rotated, UNIT_NAMES) = attr(self$data$centered$normed, UNIT_NAMES);
+        attr(self$data$centered$rotated, rENA::opts$UNIT_NAMES) = attr(self$data$centered$normed, rENA::opts$UNIT_NAMES);
       ###
 
       ###
