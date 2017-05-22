@@ -2,7 +2,12 @@ stages:
   - test
   - build
   - deploy
-image: jangorecki/r-base-dev
+#before_script:
+#  - docker info
+#build_image:
+#  - docker build -t r-package-builder inst/docker/
+#  - docker run r-package-builder
+image: 60bce1176f6c
 test:
   stage: test
   tags:
