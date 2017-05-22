@@ -4,6 +4,7 @@ stages:
   - deploy
 before_script:
   - docker info
+  - pwd
 build_image:
   script:
     - docker build -t r-package-builder inst/docker/
