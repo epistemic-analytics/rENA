@@ -10,7 +10,7 @@ before_script:
 #    - docker build -t r-package-builder $CI_PROJECT_DIR/inst/docker/
 #  - docker run r-package-builder
 
-image: r-package-builder:latest
+image: f82a947cc3b6
 test:
   stage: test
   tags:
