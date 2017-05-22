@@ -2,12 +2,12 @@ stages:
   - test
   - build
   - deploy
-#before_script:
-#  - docker info
+before_script:
+  - docker info
 #  - pwd
-#build_image:
-#  script:
-#    - docker build -t r-package-builder $CI_PROJECT_DIR/inst/docker/
+build_image:
+  script:
+    - docker build -t r-package-builder $CI_PROJECT_DIR/inst/docker/
 #  - docker run r-package-builder
 
 image: r-package-builder:latest
