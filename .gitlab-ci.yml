@@ -2,7 +2,6 @@ stages:
   - test
   - build
   - deploy
-
 image: jangorecki/r-base-dev
 test:
   stage: test
