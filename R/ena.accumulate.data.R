@@ -7,7 +7,7 @@
 #'
 #' @export
 #'
-#' @param data.file The \\code{\link{csv}} file location or \code{\link{data.frame}} for the function
+#' @param data.file The \code{\link{csv}} file location or \code{\link{data.frame}} for the function
 #' @param conversation Columns used in the conversation
 #' @param units Columns used based on units
 #' @param codes Columns used based on codes
@@ -19,7 +19,7 @@
 #'
 #' @keywords data, accumulate
 #'
-#' @seealso {\link{ena.split.codes()}}
+#' @seealso \code{\link{ena.split.codes()}}, \code{\link{ena.make.set()}}
 #'
 #' @examples
 #' #ADD EXAMPLES

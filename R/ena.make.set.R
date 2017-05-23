@@ -1,10 +1,31 @@
 ##
 #' @title Generate ENA Set
+#'
 #' @description Generate an ENA set from a givent ENA data object
 #'
-#'
+#' @details NEED TO ADD
 #'
 #' @export
+#'
+#' @param accumulated.data \code{\link{ENAData}} from ena.accumulate.data(), parameters passed to ena.accumulate.data
+#' @param dimensions Number of dimensions desired
+#' @param norm.by NEEDS DETAILS
+#' @param rotations.by Functions to use per dimension
+#' @param rotate.groups NEEDS DETAILS
+#' @param rotate.groups.using NEEDS DETAILS
+#' @param mask.connections NEEDS DETAILS
+#' @param rotation.set \code{\link{ENARotationSet}} from a previously created ENAset
+#' @param use.endpoints NEEDS DETAILS
+#' @param optim.method NEEDS DETAILS
+#'
+#' @keywords ENA, generate, set
+#'
+#' @seealso \code{\link{ena.accumulate.data()}}, \code{\link{ena.split.codes()}}
+#'
+#' @examples
+#' #ADD EXAMPLES
+#'
+#' @return \code{\link{ENAset}} class object
 ##
 ena.make.set <- function(
   enaData,

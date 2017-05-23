@@ -5,14 +5,14 @@
 #'
 #' @export
 #'
-#' @param data.file The \\code{\link{csv}} file location or \code{\link{data.frame}} which has the columns to be split
-#' @param split.columns The specific column in the The \\code{\link{csv}} file or \code{\link{data.frame}} that will be split
-#' @param split.columns.by Delimits columns in The \\code{\link{csv}} file or \code{\link{data.frame}} that will be split
-#' @param code.names The name for the codes resulting from the split columns in the The \\code{\link{csv}} file or \code{\link{data.frame}}
+#' @param data.file The \code{\link{csv}} file location or \code{\link{data.frame}} which has the columns to be split
+#' @param split.columns The specific column in the The \code{\link{csv}} file or \code{\link{data.frame}} that will be split
+#' @param split.columns.by Delimits columns in The \code{\link{csv}} file or \code{\link{data.frame}} that will be split
+#' @param code.names The name for the codes resulting from the split columns in the The \code{\link{csv}} file or \code{\link{data.frame}}
 #'
 #' @keywords columns, split
 #'
-#' @seealso \code{\link{ena.accumulate.data()}}
+#' @seealso \code{\link{ena.accumulate.data()}}, \code{\link{ena.make.set()}}
 #'
 #' @examples
 #' #ADD EXAMPLEs
