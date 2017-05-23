@@ -1,10 +1,27 @@
 ##
 #' @title Accumulate Data
-#' @description Accumulate rows of data
 #'
+#' @description This function will accumulate rows of data
 #'
+#' @details NEED TO ADD
 #'
 #' @export
+#'
+#' @param data.file The \\code{\link{csv}} file location or \code{\link{data.frame}} for the function
+#' @param conversation Columns used in the conversation
+#' @param units Columns used based on units
+#' @param codes Columns used based on codes
+#' @param weight.by NEED DOCUMENTATION
+#'
+#' @keywords data, accumulate
+#'
+#' @seealso {\link{ena.split.codes()}}
+#'
+#' @examples
+#' #ADD EXAMPLES
+#'
+#' @return \code{\link{ENAData}} class object with accumulated data
+#'
 ##
 ena.accumulate.data <- function(
   file,
