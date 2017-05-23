@@ -1,10 +1,20 @@
 ##
-#' @title Generate ENA Set
-#' @description Generate an ENA set from a givent ENA data object
+#' @title Update ENA Set
 #'
+#' @description Update ENA set with a givent ENA data object
 #'
+#' @export
 #'
-# @export
+#' @param ena.set \code{\link{ENAset}} from ena.generate.set()
+#'
+#' @keywords ENA, set, update
+#'
+#' @seealso \code{\link{ena.generate.set()}}
+#'
+#' @examples
+#' #ADD EXAMPLES
+#'
+#' @return \code{\link{ENAset}} class object
 ##
 ena.update.set <- function(
 
