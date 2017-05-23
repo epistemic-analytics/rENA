@@ -1,7 +1,7 @@
 ##
 #' @title Generate ENA Set
 #'
-#' @description Generate an ENA set from a givent ENA data object
+#' @description Generate an ENA set from a given ENA data object
 #'
 #' @details NEED TO ADD
 #'
@@ -41,7 +41,7 @@
 #' @examples
 #' #ADD EXAMPLES
 #'
-#' @return Plot \code{\link{ENAset}}
+#' @return Plot of \code{\link{ENAset}}
 ##
 ena.plot.set <- function(
   enaset,
