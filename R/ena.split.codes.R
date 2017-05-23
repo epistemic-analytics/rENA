@@ -3,21 +3,22 @@
 #'
 #' @description This function will split single code columns into binary columns
 #'
-#' @details If there is only one column of code phrases, this function will auto create binary columns. For instance, if a single line is coded as "Balance, Tradeoffs, other business" this function would create 3 binary columns to code.
-#'
 #' @export
 #'
 #' @param data.file The \\code{\link{csv}} file or \code{\link{data.frame}} which has the columns to be split
-#' @param split.columns The specific column in the \code{\link[=getTestSet]{testSet}} that will be split
-#' @param split.columns.by
-#' @param code.names The name for the codes resulting from the split columns in the \code{\link[=getTestSet]{testSet}}
+#' @param split.columns The specific column in the \code{\link{data.frame}} that will be split
+#' @param split.columns.by Delimits columns in \code{\link{data.frame}} that will be split
+#' @param code.names The name for the codes resulting from the split columns in the \code{\link{data.frame}}
 #'
 #' @keywords columns, split
 #'
 #' @seealso \code{\link{ena.accumulate.data()}}
 #'
+#' @examples
+#' #ADD EXAMPLEs
+#'
 #' @return \code{\link{data.frame}} containing the split code columns
-#' @export
+#'
 ###
 
 ena.split.codes <- function(
