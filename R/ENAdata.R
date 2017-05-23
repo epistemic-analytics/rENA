@@ -157,7 +157,7 @@ ENAdata = R6::R6Class("ENAdata",
 
     metadata = function(merge = F) {
       metaAvail=colnames(self$data.raw)[-which(colnames(self$data.raw) %in% c(private$code.names, private$units.by, private$conversations.by))];
-      dfDT.meta.poss = self$data.raw[, { nc = lapply(.SD, function(x) length(table(x))); }, by=c(private$units.by), .SDcols=c(metaAvail)][,,.SDcols=ma];
+      dfDT.meta.poss = self$data.raw[, { nc = lapply(.SD, function(x) length(unique(x))); }, by=c(private$units.by), .SDcols=c(metaAvail)][,,.SDcols=metaAvail];
       metaAvail = colnames(dfDT.meta.poss)[rapply(dfDT.meta.poss, function(x) all(x == 1))]
       metaAvail = metaAvail[metaAvail != "ENA_UNIT"];
       raw.meta = self$data.raw[!duplicated(ENA_UNIT)][ENA_UNIT %in% unique(self$data.units.accumuluated$ENA_UNIT),c("ENA_UNIT",metaAvail),,with=F];
