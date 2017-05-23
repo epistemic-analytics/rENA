@@ -41,7 +41,7 @@
 #' @examples
 #' #ADD EXAMPLES
 #'
-#' @return Plot of \code{\link{ENAset}}
+#' @return Plot \code{\link{ENAset}}
 ##
 ena.plot.set <- function(
 
