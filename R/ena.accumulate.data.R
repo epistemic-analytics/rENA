@@ -11,7 +11,11 @@
 #' @param conversation Columns used in the conversation
 #' @param units Columns used based on units
 #' @param codes Columns used based on codes
-#' @param weight.by NEED DOCUMENTATION
+#' @param weight.by NEED DETAILS
+#' @param trajectory.by NEED DETAILS
+#' @param window.size Number of lines in the stanza
+#' @param window.size.b Number of lines back to include window in stanza
+#' @param windwo.size.f Number of lines forward to inclucde window in stanza
 #'
 #' @keywords data, accumulate
 #'
