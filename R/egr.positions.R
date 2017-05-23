@@ -1,9 +1,9 @@
 ##
-#' @title EGR Positions
-#' @description Original ENA position method developed by Epistemic Games
-#'
-#'
-#' @export
+# @title EGR Positions
+# @description Original ENA position method developed by Epistemic Games
+#
+#
+# @export
 ##
 egr.positions <- function(ena.set) {
   ###

@@ -1,8 +1,8 @@
-########'
-#' do_optimization
-#'
-#' @export
-#' @usage do_optimization()
+########
+# do_optimization
+#
+# @export
+# @usage do_optimization()
 #######
 do_optimization = function(e, inPar = F, maxit = 1000)
 {
