@@ -8,13 +8,18 @@
 #' @usage ENAdata$new(...)
 #'
 #' @param file CSV, data.frame, or data.table
-#' @param unitsBy String vector representing column names to use for units
+#' @param units.by String vector representing column names to use for units
 #' @param units String vector of which units to include in the ENAset
 #' @param conversations.by String vector of column names to create the conversations
 #' @param code.names String vector of column names to use as codes
-#' @param windowSize Integer used to select the size of each stanza window within a conversation
+#' @param window.size Integer used to select the size of each stanza window within a conversation
+#' @param window.size.back
+#' @param window.size.forward
 #' @param binary Logical, whether to convert code values to binary or allow for weigthed values
-#' @param unitsSelected deprecated
+#' @param units.selected deprecated
+#' @param units.exclude
+#' @param trajectory.by
+#' @param trajectory.type
 #'
 #' @section Public ENAdata methods:
 ####
