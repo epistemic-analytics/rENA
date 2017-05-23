@@ -148,6 +148,25 @@ ENAset = R6::R6Class("ENAset",
       return(private$run())
     },
 
+    get.data = function(wh = c("normed","centered","rotated"), with.meta = T) {
+      wh =  match.arg(wh);
+      data = NULL;
+      if( wh == "normed" ) {
+        data = self$data$normed
+      } else if ( wh == "centered" ) {
+        data = self$data$centered$normed
+      } else if ( wh == "rotated" ) {
+        data = self$data$centered$rotated
+      }
+
+      if(with.meta == T) {
+        data.units = attr(data, rENA::opts$UNIT_NAMES);
+        merge(data.table::data.table(data, data.units, ENA_UNIT=merge_columns_c(data.units ,private$enaData$get("units.by"))),private$enaData$metadata())
+      } else {
+        data
+      }
+    },
+
     ####
     #' \code{rotate()} - Rotate the centered data by the provided rotation matrix
     #' \preformatted{  Example:

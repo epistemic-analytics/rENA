@@ -1,8 +1,3 @@
-##
-#' @title Accumulate Data
-#' @description Accumulate Data
-#' @import data.table
-##
 accumulate.data <- function(
   dfDT,
   stanzasBy, unitsBy, units,

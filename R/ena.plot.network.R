@@ -10,7 +10,7 @@ library(igraph)
 # @export
 ##
 ena.plot.network = function(
-  enaset = NULL,
+  enaset = NULL, plot = NULL,
   units.by = enaset$get('enaData')$get('units.by'),
   group.by = enaset$get('enaData')$get('conversations.by'), #"Condition",
 
@@ -40,7 +40,7 @@ ena.plot.network = function(
   edge.hide = NULL
 ) {
   df = data.frame(enaset$data$normed, attr(enaset$data$normed, rENA::opts$UNIT_NAMES));
-  dfDT=as.data.table(df);
+  dfDT= data.table::as.data.table(df);
   dfDT$handle = merge_columns_c(dfDT,units.by, sep="."); #rownames(df);
 
   units.to.plot = c(selection.one.name, selection.two.name);
@@ -64,7 +64,7 @@ ena.plot.network = function(
   minDTnodes_trans = minDTnodes_trans[,c(3:4,1:2)];
 
   network.edges = minDTnodes_trans; #as.data.frame(get.edgelist(network.graph));
-  network.edges.table = as.data.table(network.edges);
+  network.edges.table = data.table::as.data.table(network.edges);
 
   if(!is.null(edge.hide)) {
     network.edges.table = network.edges.table[!network.edges.table$V2 %in% edge.hide|!network.edges.table$V2 %in% edge.hide,]
@@ -80,7 +80,6 @@ ena.plot.network = function(
     name = df.names, ## New LWS method needs to assign names/attr
     enaset$nodes$positions$scaled
   );
-
   network.graph = graph_from_data_frame(minDTnodes_trans, directed = F, vertices = network.vertices.df)
   network.layout = enaset$nodes$positions$scaled;
 
@@ -116,11 +115,10 @@ ena.plot.network = function(
 
   network.graph.axis <- list(title = "", showgrid = FALSE, showticklabels = FALSE, zeroline = T);
 
-
   network.plot = plot_ly(data.frame(network.layout),
     type="scatter",
-    x = ~X1, #network.nodes.x,
-    y = ~X2, #network.nodes.y,
+    x = ~X1,
+    y = ~X2,
     mode="markers",
     marker = list(
       color = I(node.color),
@@ -128,15 +126,15 @@ ena.plot.network = function(
     ),
     showlegend = F,
     text =names(network.nodes.y)
-    #,hoverinfo = "text"
   ) %>%
-    #add_markers() %>%
     add_text(textfont = network.font.text, textposition = "top right")
 
   selection.one.title = stringr::str_c("<b style=\"color:",selection.one.color,"\">",selection.one.name,"</b>");
+
   if(!is.null(selection.two.name)) {
     selection.two.title = stringr::str_c("<b style=\"color:",selection.two.color,"\">",selection.two.name,"</b>");
   }
+
   network.plot.layout = layout(
     network.plot,
     title =  stringr::str_c(selection.one.title, selection.two.title, sep = " - "),
