@@ -7,20 +7,27 @@
 #'
 #' @export
 #'
-#' @param accumulated.data \code{\link{ENAData}} from ena.accumulate.data(), parameters passed to ena.accumulate.data
-#' @param dimensions Number of dimensions desired
-#' @param norm.by NEEDS DETAILS
-#' @param rotations.by Functions to use per dimension
-#' @param rotate.groups NEEDS DETAILS
-#' @param rotate.groups.using NEEDS DETAILS
-#' @param mask.connections NEEDS DETAILS
-#' @param rotation.set \code{\link{ENARotationSet}} from a previously created ENAset
-#' @param use.endpoints NEEDS DETAILS
-#' @param optim.method NEEDS DETAILS
+#' @param enaData
+#' @param dims
+#' @param samples
+#' @param inPar
+#' @param codeColumns
+#' @param binary
+#' @param correction
+#' @param sphere.norm
+#' @param center.data
+#' @param optim.method
+#' @param position.method
+#' @param check.unique.positions
+#' @param set.seed
+#' @param rotate.means
+#' @param rotate.means.by
+#' @param output
+#' @param ...
 #'
 #' @keywords ENA, generate, set
 #'
-#' @seealso \code{\link{ena.accumulate.data()}}, \code{\link{ena.split.codes()}}
+#' @seealso \code{\link{ena.accumulate.data}}, \code{\link{ena.split.codes}}
 #'
 #' @examples
 #' #ADD EXAMPLES

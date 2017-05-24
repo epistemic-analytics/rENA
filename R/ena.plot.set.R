@@ -7,36 +7,43 @@
 #'
 #' @export
 #'
-#' @param ena.set \code{\link{ENASet}} from ena.generate.set()
-#' @param plot.title Title of plot
+#' @param enaset
+#' @param plot.title
 #' @param plot.mode
-#' @param dimensions Number of dimensions in plot
-#' @param dimension.labels Labels of axes
+#' @param plot.color
+#' @param dimensions
+#' @param dimension.labels
 #' @param dimension.show.variance
-#'
-#' @param units Units of plot
-#' @param unit.labels Units of labels
-#' @param unit.label.positions
-#' @param unit.colors Color of units
-#' @param units.groups.by
-#'
-#' @param plot.group.points
-#' @param plot.group.points.by
-#' @param plot.group.point.labels
-#' @param plot.group.point.label.positions
-#' @param plot.group.point.colors
-#'
-#' @param network.one Name of unit/mean
-#' @param network.two Name of unit/mean
+#' @param multiplier
+#' @param units
+#' @param unit.colors
+#' @param unit.labels
+#' @param unit.labels.positions
+#' @param unit.size
+#' @param unit.size.multiplier
+#' @param unit.show.confidence.intervals
+#' @param unit.group
+#' @param unit.group_by
+#' @param unit.group.labels
+#' @param unit.group.labels.positions
+#' @param unit.group.labels.colors
+#' @param unit.group.size
+#' @param unit.group.size.multiplier
+#' @param network.one
+#' @param network.two
 #' @param network.colors
 #' @param network.show.all.codes
 #' @param network.code.labels
-#' @param network.code.label.positions
+#' @param network.code.labels.positions
 #' @param network.edge.threshold
+#' @param axis.flip.x
+#' @param axis.flip.y
+#' @param estimate.network.over
+#' @param ...
 #'
 #' @keywords ENA, plot, set
 #'
-#' @seealso \code{\link{ena.make.data()}}, \code{\link{ena.update.data()}}
+#' @seealso \code{\link{ena.make.data}}, \code{\link{ena.update.data}}
 #'
 #' @examples
 #' #ADD EXAMPLES

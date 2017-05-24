@@ -5,7 +5,7 @@
 #'
 #' @export
 #'
-#' @param ena.set \code{\link{ENAset}} from \code{\link{ena.generate.set()}}
+#' @param ena.set \code{\link{ENAset}} from \code{\link{ena.generate.set}}
 #' @param units Vector of units
 #' @param filter.by
 #' @param code.cols Columns of codes
@@ -14,7 +14,7 @@
 #'
 #' @keywords ENA, get, conversation
 #'
-#' @seealso \code{\link{ena.make.set()}}
+#' @seealso \code{\link{ena.make.set}}
 #'
 #' @examples
 #' #ADD EXAMPLES
