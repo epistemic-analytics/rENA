@@ -2,11 +2,11 @@ library(plotly)
 library(igraph)
 
 ##
-#' @title Plot network
-#' @description Accumulate rows of data
-#'
-#'
-#'
+# @title Plot network
+# @description Accumulate rows of data
+#
+#
+#
 # @export
 ##
 ena.plot.network = function(
