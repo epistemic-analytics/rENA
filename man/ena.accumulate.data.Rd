@@ -18,7 +18,7 @@ ena.accumulate.data(file, units.by = NULL, units = NULL,
 
 \item{trajectory.by}{NEED DETAILS}
 
-\item{data.file}{The \code{\link{csv}} file location or \code{\link{data.frame}} for the function}
+\item{data.file}{The csv file location or data.frame for the function}
 
 \item{conversation}{Columns used in the conversation}
 
@@ -31,7 +31,7 @@ ena.accumulate.data(file, units.by = NULL, units = NULL,
 \item{windwo.size.f}{Number of lines forward to inclucde window in stanza}
 }
 \value{
-\code{\link{ENAData}} class object with accumulated data
+\code{\link{ENAdata}} class object with accumulated data
 }
 \description{
 This function will accumulate rows of data
@@ -44,7 +44,7 @@ NEED TO ADD
 
 }
 \seealso{
-\code{\link{ena.split.codes()}}, \code{\link{ena.make.set()}}
+\code{\link{ena.split.codes}}, \code{\link{ena.make.set}}
 }
 \keyword{accumulate}
 \keyword{data,}

@@ -21,3 +21,11 @@ test:
     - R CMD build . --no-build-vignettes --no-manual
     - PKG_FILE_NAME=$(ls -1t *.tar.gz | head -n 1)
     - R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual --as-cran
+
+build:
+  stage: build
+  tags:
+    - R-package
+  script:
+    - echo "Building package."
+    -

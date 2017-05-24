@@ -7,7 +7,7 @@
 #'
 #' @export
 #'
-#' @param data.file The \code{\link{csv}} file location or \code{\link{data.frame}} for the function
+#' @param data.file The csv file location or data.frame for the function
 #' @param conversation Columns used in the conversation
 #' @param units Columns used based on units
 #' @param codes Columns used based on codes
@@ -19,12 +19,12 @@
 #'
 #' @keywords data, accumulate
 #'
-#' @seealso \code{\link{ena.split.codes()}}, \code{\link{ena.make.set()}}
+#' @seealso \code{\link{ena.split.codes}}, \code{\link{ena.make.set}}
 #'
 #' @examples
 #' #ADD EXAMPLES
 #'
-#' @return \code{\link{ENAData}} class object with accumulated data
+#' @return \code{\link{ENAdata}} class object with accumulated data
 #'
 ##
 ena.accumulate.data <- function(

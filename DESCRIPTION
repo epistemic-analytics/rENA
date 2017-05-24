@@ -10,7 +10,7 @@ Maintainer: Cody L Marquart <cody.marquart@wisc.edu>
 License: GPL (>= 2)
 LazyData: TRUE
 LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppEigen
-Imports: data.table, Rcpp, RcppArmadillo, RcppParallel, R6, methods
+Imports: data.table, Rcpp, RcppParallel, R6, methods
 Suggests: microbenchmark,
     testthat
 RoxygenNote: 5.0.1
