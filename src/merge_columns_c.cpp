@@ -1,9 +1,7 @@
 #include <Rcpp.h>
+
 using namespace Rcpp;
 
-//std::vector<std::string>
-//'
-//' @export
 // [[Rcpp::export]]
 std::vector<std::string> merge_columns_c(DataFrame df, CharacterVector cols, std::string sep = ".") {
   int vRows = df.nrows();
