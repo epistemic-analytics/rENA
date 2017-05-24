@@ -10,6 +10,13 @@ test_that("Simple data.frame to accumulate and make set", {
   df.set = ena.make.set(df.accum)
   df.set.lws = ena.make.set(df.accum, position.method = lws.positions)
 
-  testthat::expect_equal(dim(df.set$data$centered$rotated), c(48,2));
-  testthat::expect_equal(length(attr(df.set$data$centered$rotated, rENA::opts$UNIT_NAMES)[,UserName]), 48);
+  testthat::expect_equal(
+    dim(df.set$data$centered$rotated),
+    c(48,2)
+  );
+
+  testthat::expect_equal(
+    length(attr(df.set$data$centered$rotated, rENA::opts$UNIT_NAMES)[,UserName]),
+    48
+  );
 })
