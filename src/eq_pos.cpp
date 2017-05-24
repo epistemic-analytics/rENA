@@ -5,7 +5,7 @@
 using namespace Rcpp;
 using namespace arma;
 
-// [[Rcpp::export]]
+
 Rcpp::NumericMatrix eq_pos(Rcpp::CharacterVector names, Rcpp::CharacterMatrix labels, arma::mat rotated, bool plusOne) {
   int numNames = names.size();
 

@@ -7,7 +7,7 @@ using namespace Rcpp;
 typedef vec (*funcPtr)(const vec& x);
 typedef SEXP (*funcPtr2)(SEXP call, SEXP op, SEXP args, SEXP rho);
 
-// [[Rcpp::export]]
+
 XPtr<funcPtr2> putFunPtrInXPtr(SEXP fn) {
   Rcpp::Rcout << "Fun: " << TYPEOF(fn) << " == " << EXTPTRSXP << std::endl;
   XPtr<funcPtr2> newFn(fn);
@@ -15,7 +15,7 @@ XPtr<funcPtr2> putFunPtrInXPtr(SEXP fn) {
 }
 
 
-// [[Rcpp::export]]
+
 void callViaXPtr(SEXP call, SEXP op, SEXP args, SEXP rho) {
   XPtr<funcPtr2> xpfun(call);
   funcPtr2 fun = *xpfun;

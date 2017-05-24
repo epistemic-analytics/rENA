@@ -8,8 +8,8 @@ using namespace arma;
 //' vector.
 //'
 //' @param v - A vector of integers
-//' @export
-// [[Rcpp::export]]
+
+
 std::vector<int> vector_to_ut(std::vector<int> v) {
   int vL = v.size();
   int vS = ( (vL * (vL + 1)) / 2) - vL ;
@@ -24,7 +24,7 @@ std::vector<int> vector_to_ut(std::vector<int> v) {
   return vR;
 }
 
-// [[Rcpp::export]]
+
 arma::rowvec vector_to_ut_mul(arma::vec v) {
   arma::mat mat = v * trans(v);
   mat.diag().zeros();

@@ -74,7 +74,7 @@ inline NumericMatrix c_cor_helper(const NumericMatrix& mat, const int rstart, co
   return rmat;
 }
 
-// [[Rcpp::export]]
+
 NumericMatrix c_cor(NumericMatrix mat) {
   return c_cor_helper(mat, 0, mat.nrow());
 }
@@ -108,7 +108,7 @@ double calc_cor(
   //return c(0,0);
 }
 
-// [[Rcpp::export]]
+
 void calc_grad(
     const int& n,
     const List& set,
@@ -430,7 +430,7 @@ List nmmin_c(int n, NumericVector Bvec, NumericVector X, double Fmin,
 ///* par fn gr method options */
 //List optim(SEXP call, SEXP op, SEXP args, SEXP rho) { //tmp, SEXP rho
 
-// [[Rcpp::export]]
+
 Rcpp::List optim_nm_cor(
   Rcpp::NumericVector par,
   List options,

@@ -52,12 +52,12 @@ inline NumericMatrix c_cor_helper(const NumericMatrix& mat, const int rstart, co
   return rmat;
 }
 
-// [[Rcpp::export]]
+
 NumericMatrix c_cor(NumericMatrix mat) {
   return c_cor_helper(mat, 0, mat.nrow());
 }
 
-// [[Rcpp::export]]
+
 double calc_cor(
     arma::vec x,
     List set,
@@ -88,7 +88,7 @@ double calc_cor(
   //return c(0,0);
 }
 
-// [[Rcpp::export]]
+
 double calc_grad( arma::vec& x, List& set, int& dim) {
   int i;
   double eps, epsused, tmp, val1, val2;

@@ -72,7 +72,7 @@ inline NumericMatrix c_cor_helper(const NumericMatrix& mat, const int rstart, co
   return rmat;
 }
 
-// [[Rcpp::export]]
+
 NumericMatrix c_cor(NumericMatrix mat) {
   return c_cor_helper(mat, 0, mat.nrow());
 }
@@ -169,7 +169,7 @@ COR::TVector ArmaToVector(arma::vec v_) {
 
 
 // [[Rcpp::plugins(cpp11)]]
-// [[Rcpp::export]]
+
 int useAuto(Rcpp::NumericVector initialGuess, Rcpp::List set, int upper, int lower = 0) {
   // typedef double T;
   // typedef cppoptlib::NonNegativeLeastSquares<T> TNNLS;
