@@ -28,4 +28,3 @@ build:
     - R-package
   script:
     - echo "Building package."
-    -
