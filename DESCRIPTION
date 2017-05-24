@@ -9,8 +9,8 @@ Author: Cody L Marquart [aut, cre]
 Maintainer: Cody L Marquart <cody.marquart@wisc.edu>
 License: GPL (>= 2)
 LazyData: TRUE
-LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppEigen, data.table
-Imports: data.table, Rcpp, RcppParallel, R6, methods, foreach 
+LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppEigen
+Imports: data.table, Rcpp, RcppParallel, R6, methods, foreach, stats 
 Suggests: microbenchmark,
     testthat
 RoxygenNote: 5.0.1

@@ -24,31 +24,7 @@ ena.plot.set(enaset, plot.title = "ENA Plot", plot.mode = "units+network",
   "set"), ...)
 }
 \arguments{
-\item{plot.title}{Title of plot}
-
-\item{dimensions}{Number of dimensions in plot}
-
-\item{dimension.labels}{Labels of axes}
-
-\item{dimension.show.variance}{}
-
-\item{units}{Units of plot}
-
-\item{unit.colors}{Color of units}
-
-\item{unit.labels}{Units of labels}
-
-\item{network.one}{Name of unit/mean}
-
-\item{network.two}{Name of unit/mean}
-
-\item{network.edge.threshold}{}
-
-\item{ena.set}{\code{\link{ENASet}} from ena.generate.set()}
-
-\item{units.groups.by}{}
-
-\item{plot.group.point.colors}{}
+\item{...}{}
 }
 \value{
 Plot of \code{\link{ENAset}}
@@ -64,7 +40,7 @@ NEED TO ADD
 
 }
 \seealso{
-\code{\link{ena.make.data()}}, \code{\link{ena.update.data()}}
+\code{\link{ena.make.data}}, \code{\link{ena.update.data}}
 }
 \keyword{ENA,}
 \keyword{plot,}

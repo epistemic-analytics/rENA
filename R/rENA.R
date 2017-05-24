@@ -2,6 +2,11 @@
 #
 #' @useDynLib rENA
 #' @importFrom Rcpp sourceCpp
+#' @import stats
+#' @import data.table
+#' @import foreach
+#' @import plotly
+#' @import readr
 # @name rENA
 
 #' @export
