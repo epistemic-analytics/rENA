@@ -11,7 +11,7 @@ ENAdata$new(...)
 \arguments{
 \item{file}{CSV, data.frame, or data.table}
 
-\item{unitsBy}{String vector representing column names to use for units}
+\item{units.by}{String vector representing column names to use for units}
 
 \item{units}{String vector of which units to include in the ENAset}
 
@@ -19,11 +19,13 @@ ENAdata$new(...)
 
 \item{code.names}{String vector of column names to use as codes}
 
-\item{windowSize}{Integer used to select the size of each stanza window within a conversation}
+\item{window.size}{Integer used to select the size of each stanza window within a conversation}
 
 \item{binary}{Logical, whether to convert code values to binary or allow for weigthed values}
 
-\item{unitsSelected}{deprecated}
+\item{units.selected}{deprecated}
+
+\item{trajectory.type}{}
 }
 \description{
 ENAdata R6class

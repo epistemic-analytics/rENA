@@ -11,7 +11,41 @@ ena.accumulate.data(file, units.by = NULL, units = NULL,
   trajectory.type = c("accumulated", "non-accumulated"), output = c("class",
   "json"), ...)
 }
-\description{
-Accumulate rows of data
+\arguments{
+\item{units}{Columns used based on units}
+
+\item{window.size}{Number of lines in the stanza}
+
+\item{trajectory.by}{NEED DETAILS}
+
+\item{data.file}{The \code{\link{csv}} file location or \code{\link{data.frame}} for the function}
+
+\item{conversation}{Columns used in the conversation}
+
+\item{codes}{Columns used based on codes}
+
+\item{weight.by}{NEED DETAILS}
+
+\item{window.size.b}{Number of lines back to include window in stanza}
+
+\item{windwo.size.f}{Number of lines forward to inclucde window in stanza}
 }
+\value{
+\code{\link{ENAData}} class object with accumulated data
+}
+\description{
+This function will accumulate rows of data
+}
+\details{
+NEED TO ADD
+}
+\examples{
+#ADD EXAMPLES
+
+}
+\seealso{
+\code{\link{ena.split.codes()}}, \code{\link{ena.make.set()}}
+}
+\keyword{accumulate}
+\keyword{data,}
 

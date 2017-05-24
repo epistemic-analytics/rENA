@@ -4,7 +4,7 @@
 \alias{ena.plot.network}
 \title{Plot network}
 \usage{
-ena.plot.network(enaset = NULL,
+ena.plot.network(enaset = NULL, plot = NULL,
   units.by = enaset$get("enaData")$get("units.by"),
   group.by = enaset$get("enaData")$get("conversations.by"),
   selection.one.color = "#5399c7", selection.one.name = NULL,

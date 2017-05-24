@@ -8,12 +8,27 @@ ena.split.codes(data.file, split.columns = NULL, split.columns.by = ",",
   code.names = NULL)
 }
 \arguments{
-\item{code.names}{}
+\item{data.file}{The \code{\link{csv}} file location or \code{\link{data.frame}} which has the columns to be split}
+
+\item{split.columns}{The specific column in the The \code{\link{csv}} file or \code{\link{data.frame}} that will be split}
+
+\item{split.columns.by}{Delimits columns in The \code{\link{csv}} file or \code{\link{data.frame}} that will be split}
+
+\item{code.names}{The name for the codes resulting from the split columns in the The \code{\link{csv}} file or \code{\link{data.frame}}}
 }
 \value{
-data.frame
+\code{\link{data.frame}} containing the split code columns
 }
 \description{
-Split code columns
+This function will split single code columns into binary columns
 }
+\examples{
+#ADD EXAMPLEs
+
+}
+\seealso{
+\code{\link{ena.accumulate.data()}}, \code{\link{ena.make.set()}}
+}
+\keyword{columns,}
+\keyword{split}
 

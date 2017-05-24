@@ -17,7 +17,7 @@ test:
     - R-package
   script:
     - echo "Running tests."
-    - Rscript -e "devtools::test()"
-    #- R CMD build . --no-build-vignettes --no-manual
-    #- PKG_FILE_NAME=$(ls -1t *.tar.gz | head -n 1)
-    #- R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual --as-cran
+    #- Rscript -e "devtools::test()"
+    - R CMD build . --no-build-vignettes --no-manual
+    - PKG_FILE_NAME=$(ls -1t *.tar.gz | head -n 1)
+    - R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual --as-cran

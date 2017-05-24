@@ -2,11 +2,35 @@
 % Please edit documentation in R/ena.get.conversation.R
 \name{ena.get.conversation}
 \alias{ena.get.conversation}
-\title{Generate ENA Set}
+\title{Gets a conversation from an ENA set}
 \usage{
 ena.get.conversation()
 }
-\description{
-Generate an ENA set from a givent ENA data object
+\arguments{
+\item{ena.set}{\code{\link{ENAset}} from \code{\link{ena.generate.set()}}}
+
+\item{units}{Vector of units}
+
+\item{code.cols}{Columns of codes}
+
+\item{referants.only}{Only return rows that are coded for a column in code.cols or are contained in a window}
+
+\item{metadata.cols}{Vector of additional metadata columns}
 }
+\value{
+Conversation
+}
+\description{
+Gets a conversation from an ENA set from a given ENA data object
+}
+\examples{
+#ADD EXAMPLES
+
+}
+\seealso{
+\code{\link{ena.make.set()}}
+}
+\keyword{ENA,}
+\keyword{conversation}
+\keyword{get,}
 

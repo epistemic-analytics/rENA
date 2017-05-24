@@ -37,6 +37,8 @@ ENAset$new()
 \item{check.unique.positions}{Check for uniqueness in positions}
 
 \item{set.seed}{Force uniqueness across function calls, e.g - set.seed=42\cr Defaults to FALSE}
+
+\item{rotate.means.by}{}
 }
 \description{
 ENAset R6class

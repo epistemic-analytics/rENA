@@ -11,7 +11,44 @@ ena.make.set(enaData, dims = 2, samples = 3, inPar = F,
   check.unique.positions = F, set.seed = F, rotate.means = F,
   rotate.means.by = NULL, output = c("class", "json"), ...)
 }
+\arguments{
+\item{optim.method}{NEEDS DETAILS}
+
+\item{accumulated.data}{\code{\link{ENAData}} from ena.accumulate.data(), parameters passed to ena.accumulate.data}
+
+\item{dimensions}{Number of dimensions desired}
+
+\item{norm.by}{NEEDS DETAILS}
+
+\item{rotations.by}{Functions to use per dimension}
+
+\item{rotate.groups}{NEEDS DETAILS}
+
+\item{rotate.groups.using}{NEEDS DETAILS}
+
+\item{mask.connections}{NEEDS DETAILS}
+
+\item{rotation.set}{\code{\link{ENARotationSet}} from a previously created ENAset}
+
+\item{use.endpoints}{NEEDS DETAILS}
+}
+\value{
+\code{\link{ENAset}} class object
+}
 \description{
 Generate an ENA set from a givent ENA data object
 }
+\details{
+NEED TO ADD
+}
+\examples{
+#ADD EXAMPLES
+
+}
+\seealso{
+\code{\link{ena.accumulate.data()}}, \code{\link{ena.split.codes()}}
+}
+\keyword{ENA,}
+\keyword{generate,}
+\keyword{set}
 

@@ -2,11 +2,27 @@
 % Please edit documentation in R/ena.update.set.R
 \name{ena.update.set}
 \alias{ena.update.set}
-\title{Generate ENA Set}
+\title{Update ENA Set}
 \usage{
 ena.update.set()
 }
-\description{
-Generate an ENA set from a givent ENA data object
+\arguments{
+\item{ena.set}{\code{\link{ENAset}} from ena.generate.set()}
 }
+\value{
+\code{\link{ENAset}} class object
+}
+\description{
+Update ENA set with a givent ENA data object
+}
+\examples{
+#ADD EXAMPLES
+
+}
+\seealso{
+\code{\link{ena.generate.set()}}
+}
+\keyword{ENA,}
+\keyword{set,}
+\keyword{update}
 

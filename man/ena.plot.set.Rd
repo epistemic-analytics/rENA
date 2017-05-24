@@ -4,9 +4,69 @@
 \alias{ena.plot.set}
 \title{Generate ENA Set}
 \usage{
-ena.plot.set()
+ena.plot.set(enaset, plot.title = "ENA Plot", plot.mode = "units+network",
+  plot.color = I("black"), dimensions = c(1, 2), dimension.labels = c("x",
+  "y"), dimension.show.variance = T, multiplier = 5,
+  units = unique(enaset$get("enaData")$get("units")),
+  unit.colors = rep(plot.color, nrow(enaset$data$centered$rotated)),
+  unit.labels = units, unit.labels.positions = NULL, unit.size = 1,
+  unit.size.multiplier = multiplier, unit.show.confidence.intervals = T,
+  unit.group = NULL, unit.group_by = c("mean", "sum"),
+  unit.group.labels = names(unit.groups),
+  unit.group.labels.positions = "top right",
+  unit.group.labels.colors = rep(plot.color, length(unit.group)),
+  unit.group.size = unit.size,
+  unit.group.size.multiplier = unit.size.multiplier, network.one = NULL,
+  network.two = NULL, network.colors = NULL, network.show.all.codes = F,
+  network.code.labels = rownames(enaset$nodes$positions$scaled),
+  network.code.labels.positions = NULL, network.edge.threshold = 0,
+  axis.flip.x = F, axis.flip.y = F, estimate.network.over = c("plot",
+  "set"), ...)
+}
+\arguments{
+\item{plot.title}{Title of plot}
+
+\item{dimensions}{Number of dimensions in plot}
+
+\item{dimension.labels}{Labels of axes}
+
+\item{dimension.show.variance}{}
+
+\item{units}{Units of plot}
+
+\item{unit.colors}{Color of units}
+
+\item{unit.labels}{Units of labels}
+
+\item{network.one}{Name of unit/mean}
+
+\item{network.two}{Name of unit/mean}
+
+\item{network.edge.threshold}{}
+
+\item{ena.set}{\code{\link{ENASet}} from ena.generate.set()}
+
+\item{units.groups.by}{}
+
+\item{plot.group.point.colors}{}
+}
+\value{
+Plot of \code{\link{ENAset}}
 }
 \description{
-Generate an ENA set from a givent ENA data object
+Generate an ENA set from a given ENA data object
 }
+\details{
+NEED TO ADD
+}
+\examples{
+#ADD EXAMPLES
+
+}
+\seealso{
+\code{\link{ena.make.data()}}, \code{\link{ena.update.data()}}
+}
+\keyword{ENA,}
+\keyword{plot,}
+\keyword{set}
 
