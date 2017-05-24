@@ -1,12 +1,12 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-//' Calculates the upper triangle of a vector of integers  if it
-//' were converted to a matrix. This actually skips creating the
-//' matrix, by only multiplying the necesseary indices of the
-//' vector.
-//'
-//' @param v - A vector of integers
+// Calculates the upper triangle of a vector of integers  if it
+// were converted to a matrix. This actually skips creating the
+// matrix, by only multiplying the necesseary indices of the
+// vector.
+//
+// @param v - A vector of integers
 
 DataFrame dfvector_to_ut(DataFrame v, CharacterVector nms) {
   int vRows = v.nrows();
