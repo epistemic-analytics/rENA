@@ -9,7 +9,7 @@
 #'
 #' @keywords ENA, set, update
 #'
-#' @seealso \code{\link{ena.generate.set()}}
+#' @seealso \code{\link{ena.generate.set}}
 #'
 #' @examples
 #' #ADD EXAMPLES

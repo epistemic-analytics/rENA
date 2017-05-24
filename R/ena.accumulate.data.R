@@ -7,15 +7,20 @@
 #'
 #' @export
 #'
-#' @param data.file The csv file location or data.frame for the function
-#' @param conversation Columns used in the conversation
+#' @param file The csv file location or data.frame for the function
+#' @param units.by
 #' @param units Columns used based on units
-#' @param codes Columns used based on codes
-#' @param weight.by NEED DETAILS
-#' @param trajectory.by NEED DETAILS
+#' @param conversations.by Columns used in the conversation
+#' @param code.names Columns used based on codes
 #' @param window.size Number of lines in the stanza
-#' @param window.size.b Number of lines back to include window in stanza
-#' @param windwo.size.f Number of lines forward to inclucde window in stanza
+#' @param window.size.back Number of lines back to include window in stanza
+#' @param window.size.forward Number of lines forward to inclucde window in stanza
+#' @param binary
+#' @param units.exclude
+#' @param trajectory.by
+#' @param trajectory.type
+#' @param output
+#' @param ... additional parameters addressed in inner function
 #'
 #' @keywords data, accumulate
 #'
