@@ -115,6 +115,5 @@ ena.plot.set <- function(
       selection.one.name = network.one
     )
   }
-browser();
   return(plot);
 }
