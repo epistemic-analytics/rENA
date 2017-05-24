@@ -5,19 +5,19 @@ stages:
 #before_script:
 #  - docker info
 #  - pwd
-build_image:
-  script:
-    - docker build -t r-package-builder $CI_PROJECT_DIR/inst/docker/
+#build_image:
+#  script:
+#    - docker build -t r-package-builder $CI_PROJECT_DIR/inst/docker/
 #  - docker run r-package-builder
 
-#image: r-package-builder:latest
-#test:
-#  stage: test
-#  tags:
-#    - R-package
-#  script:
-#    - echo "Running tests."
-#    - Rscript -e "devtools::test()"
-#    #- R CMD build . --no-build-vignettes --no-manual
-#    #- PKG_FILE_NAME=$(ls -1t *.tar.gz | head -n 1)
-#    #- R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual --as-cran
+image: r-package-builder:latest
+test:
+  stage: test
+  tags:
+    - R-package
+  script:
+    - echo "Running tests."
+    - Rscript -e "devtools::test()"
+    #- R CMD build . --no-build-vignettes --no-manual
+    #- PKG_FILE_NAME=$(ls -1t *.tar.gz | head -n 1)
+    #- R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual --as-cran
