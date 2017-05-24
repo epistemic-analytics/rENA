@@ -98,7 +98,7 @@ void calc_cor(
 }
 
 
-// [[Rcpp::export]]
+
 int timesTwo(int toTimes) {
   //
   // This example demonstrates minimization of f(x,y) = 100*(x+3)^4+(y-3)^4

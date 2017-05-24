@@ -7,8 +7,7 @@ using namespace Rcpp;
 //' vector.
 //'
 //' @param v - A vector of integers
-//' @export
-// [[Rcpp::export]]
+
 DataFrame dfvector_to_ut(DataFrame v, CharacterVector nms) {
   int vRows = v.nrows();
 

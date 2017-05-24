@@ -73,7 +73,7 @@ inline NumericMatrix c_cor_helper(const NumericMatrix& mat, const int rstart, co
   return rmat;
 }
 
-// [[Rcpp::export]]
+
 NumericMatrix c_cor(NumericMatrix mat) {
   return c_cor_helper(mat, 0, mat.nrow());
 }
@@ -383,7 +383,7 @@ public:
 //   return List::create(_("status") = status, _("res") = x);
 // }
 //
-// // [[Rcpp::export]]
+//
 // Rcpp::NumericMatrix optim_test(Rcpp::List set) {
 //   int N, num_samples, num_dims, i, j, pass = 0;
 //
@@ -428,7 +428,7 @@ public:
 //   return resultMatrix;
 // }
 
-// [[Rcpp::export]]
+
 NumericVector optim_test_2(List set) {
   int N = set["N"];
   typedef double T;

@@ -7,8 +7,8 @@ using namespace Rcpp;
 //' vector.
 //'
 //' @param v - A vector of integers
-//' @export
-// [[Rcpp::export]]
+
+
 std::vector<std::string> svector_to_ut(std::vector<std::string> v) {
   int vL = v.size();
   int vS = ( (vL * (vL + 1)) / 2) - vL ;
