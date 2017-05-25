@@ -1,12 +1,13 @@
 # rENA creates ENA sets
 #
-#' @useDynLib rENA
 #' @importFrom Rcpp sourceCpp
+#' @importFrom methods is
 #' @import stats
 #' @import data.table
 #' @import foreach
 #' @import plotly
-#' @import readr
+#' @import utils
+#' @useDynLib rENA, .registration = TRUE
 # @name rENA
 
 #' @export

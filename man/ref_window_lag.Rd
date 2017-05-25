@@ -3,6 +3,9 @@
 \name{ref_window_lag}
 \alias{ref_window_lag}
 \title{ref_window_lag}
+\usage{
+ref_window_lag(df, windowSize = 0L, binary = TRUE)
+}
 \arguments{
 \item{df}{A dataframe}
 

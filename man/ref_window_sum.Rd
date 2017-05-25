@@ -3,4 +3,7 @@
 \name{ref_window_sum}
 \alias{ref_window_sum}
 \title{ref_window_sum}
+\usage{
+ref_window_sum(df, binary = TRUE)
+}
 
