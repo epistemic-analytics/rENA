@@ -36,6 +36,8 @@ ena.plot.set(enaset, plot.title = "ENA Plot", plot.mode = "units+network",
 
 \item{dimension.labels}{Labels for the dimensions of the plot}
 
+\item{dimension.show.variance}{TBD}
+
 \item{multiplier}{Size multiplier for the plot}
 
 \item{units}{Vector of units to plot}
@@ -105,7 +107,7 @@ ena.plot.set(\\code{\\link{ENAset}})
 }
 }
 \seealso{
-\code{\link{ena.make.set}}, \code{\link{ena.update.set}}
+\code{\link{ena.make.set}}, \code{ena.update.set}
 }
 \keyword{ENA,}
 \keyword{plot,}

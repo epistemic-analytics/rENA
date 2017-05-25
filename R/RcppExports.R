@@ -82,7 +82,11 @@ linderoth_pos <- function(adjMats, t) {
 }
 
 #' @title Merge data frame columns
+#' @description TBD
 #' @export
+#' @param df Dataframe
+#' @param cols Vector
+#' @param sep Character seperator
 merge_columns_c <- function(df, cols, sep = ".") {
     .Call('rENA_merge_columns_c', PACKAGE = 'rENA', df, cols, sep)
 }
@@ -94,6 +98,7 @@ rows_to_co_occurrences <- function(df) {
 #' @title ref_window_df
 #' @name ref_window_df
 #'
+#' @description TBD
 #' @param df A dataframe
 #' @param windowSize Integer for number of rows in the stanza window
 #' @param binary Logical, treat codes as binary or leave as weighted
@@ -103,7 +108,7 @@ ref_window_df <- function(df, windowSize = 0L, binary = TRUE) {
 
 #' @title ref_window_df2
 #' @name ref_window_df2
-#'
+#' @description TBD
 #' @param df A dataframe
 #' @param windowSize Integer for number of rows in the stanza window
 #' @param binary Logical, treat codes as binary or leave as weighted
@@ -113,18 +118,20 @@ ref_window_df2 <- function(df, windowSize = 1L, binary = TRUE) {
 
 #' @title ref_window_lag
 #' @name ref_window_lag
-#'
+#' @description TBD
 #' @param df A dataframe
 #' @param windowSize Integer for number of rows in the stanza window
 #' @param binary Logical, treat codes as binary or leave as weighted
+#' @export
 ref_window_lag <- function(df, windowSize = 0L, binary = TRUE) {
     .Call('rENA_ref_window_lag', PACKAGE = 'rENA', df, windowSize, binary)
 }
 
 #' @name ref_window_sum
 #' @title ref_window_sum
-#' @param df
-#' @param binary
+#' @param df dataframe
+#' @param binary logical
+#' @description TBD
 ref_window_sum <- function(df, binary = TRUE) {
     .Call('rENA_ref_window_sum', PACKAGE = 'rENA', df, binary)
 }

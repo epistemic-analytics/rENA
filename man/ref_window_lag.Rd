@@ -13,4 +13,7 @@ ref_window_lag(df, windowSize = 0L, binary = TRUE)
 
 \item{binary}{Logical, treat codes as binary or leave as weighted}
 }
+\description{
+TBD
+}
 

@@ -13,4 +13,7 @@ ref_window_df2(df, windowSize = 1L, binary = TRUE)
 
 \item{binary}{Logical, treat codes as binary or leave as weighted}
 }
+\description{
+TBD
+}
 

@@ -13,7 +13,7 @@
 #' @param plot.color Color of the plot
 #' @param dimensions Number of dimensions in the plot
 #' @param dimension.labels Labels for the dimensions of the plot
-#' @param dimension.show.variance
+#' @param dimension.show.variance TBD
 #' @param multiplier Size multiplier for the plot
 #' @param units Vector of units to plot
 #' @param unit.colors Color of units
@@ -43,7 +43,7 @@
 #'
 #' @keywords ENA, plot, set
 #'
-#' @seealso \code{\link{ena.make.set}}, \code{\link{ena.update.set}}
+#' @seealso \code{\link{ena.make.set}}, \code{ena.update.set}
 #'
 #' @examples
 #' \dontrun{

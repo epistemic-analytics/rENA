@@ -8,42 +8,6 @@
 \usage{
 ENAset
 }
-\arguments{
-\item{enaData}{ENAdata Object}
-
-\item{dims}{Number of dimensions}
-
-\item{samples}{Number of samples}
-
-\item{inPar}{Peform in parallel}
-
-\item{codeColumns}{Coded columns}
-
-\item{binary}{Binary or Weighted}
-
-\item{correction}{Function to perform weighted correction}
-
-\item{sphere.norm}{Function to sphere normalize.  Provided:\cr
-\code{dont_sphere_norm_c} - Default\cr
-\code{sphere_norm_c}}
-
-\item{center.data}{Function to center data. Provided:\cr
-\code{center_data_c} - Default}
-
-\item{optim.method}{Function to optimize node positions. Provided:\cr
-\code{do_optimization} - Default\cr
-\code{do_optimization_2}}
-
-\item{position.method}{[TBD]}
-
-\item{check.unique.positions}{Check for uniqueness in positions}
-
-\item{set.seed}{Force uniqueness across function calls, e.g - set.seed=42\cr Defaults to FALSE}
-
-\item{rotate.means}{[TBD]}
-
-\item{rotate.means.by}{[TBD]}
-}
 \description{
 ENAset R6class
 }

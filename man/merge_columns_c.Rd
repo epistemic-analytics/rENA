@@ -6,4 +6,14 @@
 \usage{
 merge_columns_c(df, cols, sep = ".")
 }
+\arguments{
+\item{df}{Dataframe}
+
+\item{cols}{Vector}
+
+\item{sep}{Character seperator}
+}
+\description{
+TBD
+}
 

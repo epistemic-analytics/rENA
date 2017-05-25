@@ -1,5 +1,6 @@
 # rENA creates ENA sets
 #
+#' @name rENA
 #' @importFrom Rcpp sourceCpp
 #' @importFrom methods is
 #' @import stats
@@ -12,14 +13,17 @@
 #' @import RcppRoll
 # @import igraph
 #' @useDynLib rENA, .registration = TRUE
-# @name rENA
 
+#' @title Default rENA constants
+#' @description Default rENA constants
 #' @export
 opts = list (
   UNIT_NAMES = "ena.unit.names",
   TRAJ_TYPES = c("accumulated","non-accumulated")
 )
 
+#' @title Default colors used for plotting.
+#' @description Default colors for plotting
 #' @export
 default.colors = c(I("blue"), I("red"));
 

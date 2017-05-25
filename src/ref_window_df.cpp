@@ -69,6 +69,7 @@ arma::mat rows_to_co_occurrences(DataFrame df) {
 //' @title ref_window_df
 //' @name ref_window_df
 //'
+//' @description TBD
 //' @param df A dataframe
 //' @param windowSize Integer for number of rows in the stanza window
 //' @param binary Logical, treat codes as binary or leave as weighted
@@ -121,7 +122,7 @@ DataFrame ref_window_df(
 
 //' @title ref_window_df2
 //' @name ref_window_df2
-//'
+//' @description TBD
 //' @param df A dataframe
 //' @param windowSize Integer for number of rows in the stanza window
 //' @param binary Logical, treat codes as binary or leave as weighted
@@ -199,10 +200,11 @@ NumericMatrix ref_window_df2(
 
 //' @title ref_window_lag
 //' @name ref_window_lag
-//'
+//' @description TBD
 //' @param df A dataframe
 //' @param windowSize Integer for number of rows in the stanza window
 //' @param binary Logical, treat codes as binary or leave as weighted
+//' @export
 // [[Rcpp::export]]
 DataFrame ref_window_lag(
     DataFrame df,

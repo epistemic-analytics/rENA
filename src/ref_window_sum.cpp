@@ -22,8 +22,9 @@ arma::ivec vector_to_ut(arma::imat v) {
 
 //' @name ref_window_sum
 //' @title ref_window_sum
-//' @param df
-//' @param binary
+//' @param df dataframe
+//' @param binary logical
+//' @description TBD
 // [[Rcpp::export]]
 DataFrame ref_window_sum(
   DataFrame df,

@@ -6,4 +6,12 @@
 \usage{
 ref_window_sum(df, binary = TRUE)
 }
+\arguments{
+\item{df}{dataframe}
+
+\item{binary}{logical}
+}
+\description{
+TBD
+}
 

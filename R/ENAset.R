@@ -6,26 +6,26 @@
 #' @import data.table
 #' @export
 #'
-#' @param enaData ENAdata Object
-#' @param dims Number of dimensions
-#' @param samples Number of samples
-#' @param inPar Peform in parallel
-#' @param codeColumns Coded columns
-#' @param binary Binary or Weighted
-#' @param correction Function to perform weighted correction
-#' @param sphere.norm Function to sphere normalize.  Provided:\cr
-#'   \code{dont_sphere_norm_c} - Default\cr
-#'   \code{sphere_norm_c}
-#' @param center.data Function to center data. Provided:\cr
-#'   \code{center_data_c} - Default
-#' @param optim.method Function to optimize node positions. Provided:\cr
-#'   \code{do_optimization} - Default\cr
-#'   \code{do_optimization_2}
-#' @param position.method [TBD]
-#' @param check.unique.positions Check for uniqueness in positions
-#' @param set.seed Force uniqueness across function calls, e.g - set.seed=42\cr Defaults to FALSE
-#' @param rotate.means [TBD]
-#' @param rotate.means.by [TBD]
+# @param enaData ENAdata Object
+# @param dims Number of dimensions
+# @param samples Number of samples
+# @param inPar Peform in parallel
+# @param codeColumns Coded columns
+# @param binary Binary or Weighted
+# @param correction Function to perform weighted correction
+# @param sphere.norm Function to sphere normalize.  Provided:\cr
+#   \code{dont_sphere_norm_c} - Default\cr
+#   \code{sphere_norm_c}
+# @param center.data Function to center data. Provided:\cr
+#   \code{center_data_c} - Default
+# @param optim.method Function to optimize node positions. Provided:\cr
+#   \code{do_optimization} - Default\cr
+#   \code{do_optimization_2}
+# @param position.method [TBD]
+# @param check.unique.positions Check for uniqueness in positions
+# @param set.seed Force uniqueness across function calls, e.g - set.seed=42\cr Defaults to FALSE
+# @param rotate.means [TBD]
+# @param rotate.means.by [TBD]
 #'
 #' @section Public ENAset methods:
 ####

@@ -8,33 +8,6 @@
 \usage{
 ENAdata
 }
-\arguments{
-\item{file}{CSV, data.frame, or data.table}
-
-\item{units.by}{String vector representing column names to use for units}
-
-\item{units}{String vector of which units to include in the ENAset}
-
-\item{conversations.by}{String vector of column names to create the conversations}
-
-\item{code.names}{String vector of column names to use as codes}
-
-\item{window.size}{Integer used to select the size of each stanza window within a conversation}
-
-\item{window.size.back}{[TBD]}
-
-\item{window.size.forward}{[TBD]}
-
-\item{binary}{Logical, whether to convert code values to binary or allow for weigthed values}
-
-\item{units.selected}{deprecated}
-
-\item{units.exclude}{[TBD]}
-
-\item{trajectory.by}{[TBD]}
-
-\item{trajectory.type}{[TBD]}
-}
 \description{
 ENAdata R6class
 }
