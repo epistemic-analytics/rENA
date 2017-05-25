@@ -1,7 +1,7 @@
 ##
 #' @title Update ENA Set
 #'
-#' @description Update ENA set with a givent ENA data object
+#' @description Update ENA set with a given ENA data object.
 #'
 #' @export
 #'
@@ -13,8 +13,10 @@
 #'
 #' @examples
 #' \dontrun{
-#' #ADD EXAMPLES
+#' #Given a ENA data object
+#' ena.update.set(\code{\link{ENAdata}})
 #' }
+#'
 #' @return \code{\link{ENAset}} class object
 ##
 ena.update.set <- function(

@@ -1,14 +1,14 @@
 ##
 #' @title Accumulate Data
 #'
-#' @description This function will accumulate rows of data
+#' @description This function will accumulate rows of data.
 #'
-#' @details NEED TO ADD
+#' @details [TBD]
 #'
 #' @export
 #'
 #' @param file The csv file location or data.frame for the function
-#' @param units.by
+#' @param units.by Delimits columns based on the units
 #' @param units Columns used based on units
 #' @param conversations.by Columns used in the conversation
 #' @param code.names Columns used based on codes
@@ -16,7 +16,7 @@
 #' @param window.size.back Number of lines back to include window in stanza
 #' @param window.size.forward Number of lines forward to inclucde window in stanza
 #' @param binary
-#' @param units.exclude
+#' @param units.exclude Exclude certain columns based on units
 #' @param trajectory.by
 #' @param trajectory.type
 #' @param output
@@ -28,7 +28,12 @@
 #'
 #' @examples
 #' \dontrun{
-#' #ADD EXAMPLES
+#' #Given a csv file location
+#' ena.accumulate.data(data = .csv)
+#'
+#' #Given a data frame
+#' ena.accumulate.data(data = data.frame)
+#'
 #' }
 #' @return \code{\link{ENAdata}} class object with accumulated data
 #'
