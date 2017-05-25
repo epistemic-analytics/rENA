@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{merge_columns_c}
 \alias{merge_columns_c}
-\title{Merge data frame columsn}
+\title{Merge data frame columns}
 \usage{
 merge_columns_c(df, cols, sep = ".")
 }

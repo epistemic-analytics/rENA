@@ -2,7 +2,8 @@
 
 using namespace Rcpp;
 
-//' @title Merge data frame columsn
+//' @title Merge data frame columns
+//' @export
 // [[Rcpp::export]]
 std::vector<std::string> merge_columns_c(DataFrame df, CharacterVector cols, std::string sep = ".") {
   int vRows = df.nrows();

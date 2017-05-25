@@ -81,7 +81,8 @@ linderoth_pos <- function(adjMats, t) {
     .Call('rENA_linderoth_pos', PACKAGE = 'rENA', adjMats, t)
 }
 
-#' @title Merge data frame columsn
+#' @title Merge data frame columns
+#' @export
 merge_columns_c <- function(df, cols, sep = ".") {
     .Call('rENA_merge_columns_c', PACKAGE = 'rENA', df, cols, sep)
 }
