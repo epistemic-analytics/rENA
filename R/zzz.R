@@ -1,4 +1,5 @@
-# .onLoad <- function(libname, pkgname) {
+.onLoad <- function(libname, pkgname) {
+  globalVariables(c(".","ENA_ROW_IDX","ENA_UNIT","V1","V2","V3","ci.x","ci.y","e","handle","name","unit.groups"))
 #   op <- options()
 #   op.rENA <- list(
 #     UNIT_NAMES = "ena.unit.names",
@@ -13,4 +14,4 @@
 #   }
 #
 #   invisible()
-# }
+}

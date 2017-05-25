@@ -9,7 +9,6 @@
 #' @importFrom R6 R6Class
 #' @import data.table
 #' @export
-#' @usage ENARotationSet$new(...)
 #'
 #' @param file CSV, data.frame, or data.table
 #' @param unitsBy String vector representing column names to use for units

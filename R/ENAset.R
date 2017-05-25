@@ -5,7 +5,6 @@
 #' @importFrom R6 R6Class
 #' @import data.table
 #' @export
-#' @usage ENAset$new()
 #'
 #' @param enaData ENAdata Object
 #' @param dims Number of dimensions

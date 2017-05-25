@@ -6,7 +6,7 @@
 \title{ENARotationSet R6class}
 \format{An object of class \code{R6ClassGenerator} of length 24.}
 \usage{
-ENARotationSet$new(...)
+ENARotationSet
 }
 \arguments{
 \item{file}{CSV, data.frame, or data.table}

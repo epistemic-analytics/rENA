@@ -7,6 +7,10 @@
 #' @import foreach
 #' @import plotly
 #' @import utils
+#' @import doParallel
+#' @import parallel
+#' @import RcppRoll
+#' @import igraph
 #' @useDynLib rENA, .registration = TRUE
 # @name rENA
 

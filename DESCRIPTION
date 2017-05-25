@@ -19,7 +19,11 @@ Imports:
     methods,
     foreach,
     stats,
-    plotly
+    plotly,
+    doParallel,
+    parallel,
+    RcppRoll,
+    igraph
 Suggests:
     microbenchmark,
     testthat

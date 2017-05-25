@@ -67,7 +67,7 @@ rotationPlusSVDWrapper = function(X, meta_vec, groups = NA, rotationList = 'mean
     if (rotationList[i] == 'lda') {
       weights[,i] = ulda(Y,group)
     } else if (rotationList[i] == 'svm') {
-      weights[,i] = linearSvm(Y,group)
+      #weights[,i] = linearSvm(Y,group)
     } else if (rotationList[i] == 'mean') {
       weights[,i] = meanRotation(Y,group)
     }
@@ -225,12 +225,12 @@ ulda = function (data,grouping,tol=1e-12) {
 #Output
 # out - a vector containing the weights
 linearSvm = function(data,grouping) {
-  require('kernlab')
-  #Compute the linear, unscaled, uncentered support vector machine model
-  svm.model = ksvm(data, grouping,kernel="vanilladot",scale=F,center=F)
-  #
-  weights = t(matrix(unlist(coef(svm.model)),nrow=1)%*%data[SVindex(svm.model),])
-  return (weights/sqrt(sum(weights^2)))
+  #require('kernlab')
+  ##Compute the linear, unscaled, uncentered support vector machine model
+  #svm.model = ksvm(data, grouping,kernel="vanilladot",scale=F,center=F)
+  ##
+  #weights = t(matrix(unlist(coef(svm.model)),nrow=1)%*%data[SVindex(svm.model),])
+  #return (weights/sqrt(sum(weights^2)))
 }
 
 # This function computes the vector that connects the mean

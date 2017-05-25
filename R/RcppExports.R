@@ -96,9 +96,6 @@ NULL
 #' @param binary Logical, treat codes as binary or leave as weighted
 NULL
 
-#'
-NULL
-
 #' @title ref_window_df2
 #' @name ref_window_df2
 #'
@@ -111,6 +108,10 @@ NULL
 #'
 rows_to_co_occurrences <- function(df) {
     .Call('rENA_rows_to_co_occurrences', PACKAGE = 'rENA', df)
+}
+
+ref_window_df <- function(df, windowSize = 0L, binary = TRUE) {
+    .Call('rENA_ref_window_df', PACKAGE = 'rENA', df, windowSize, binary)
 }
 
 #' @title ref_window_lag

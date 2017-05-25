@@ -5,7 +5,6 @@
 #' @importFrom R6 R6Class
 #' @import data.table
 #' @export
-#' @usage ENAdata$new(...)
 #'
 #' @param file CSV, data.frame, or data.table
 #' @param units.by String vector representing column names to use for units

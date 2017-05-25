@@ -6,7 +6,7 @@
 \title{ENAdata R6class}
 \format{An object of class \code{R6ClassGenerator} of length 24.}
 \usage{
-ENAdata$new(...)
+ENAdata
 }
 \arguments{
 \item{file}{CSV, data.frame, or data.table}
