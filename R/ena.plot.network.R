@@ -1,11 +1,4 @@
-##
-# @title Plot network
-# @description Accumulate rows of data
-#
-#
-#
-# @export
-##
+
 ena.plot.network = function(
   enaset = NULL, plot = NULL,
   units.by = enaset$get('enaData')$get('units.by'),
