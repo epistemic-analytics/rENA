@@ -31,7 +31,7 @@ public:
 } ;
 
 //MatrixXcd
-
+// [[Rcpp::export]]
 Rcpp::List linderoth_pos(Eigen::MatrixXd adjMats, Eigen::MatrixXd t) { // = R_NilValue ) {
   int upperTriSize = adjMats.cols();
   int numNodes = ( pow(ceil(sqrt(2*upperTriSize)),2) ) - (2*upperTriSize);

@@ -3,9 +3,6 @@
 \name{ref_window_df2}
 \alias{ref_window_df2}
 \title{ref_window_df2}
-\usage{
-ref_window_df2(df, windowSize = 1L, binary = TRUE)
-}
 \arguments{
 \item{df}{A dataframe}
 

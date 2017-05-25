@@ -7,7 +7,7 @@
 ena.get.conversation()
 }
 \arguments{
-\item{ena.set}{\code{\link{ENAset}} from \code{\link{ena.generate.set()}}}
+\item{ena.set}{\code{\link{ENAset}} from \code{\link{ena.generate.set}}}
 
 \item{units}{Vector of units}
 
@@ -28,7 +28,7 @@ Gets a conversation from an ENA set from a given ENA data object
 
 }
 \seealso{
-\code{\link{ena.make.set()}}
+\code{\link{ena.make.set}}
 }
 \keyword{ENA,}
 \keyword{conversation}

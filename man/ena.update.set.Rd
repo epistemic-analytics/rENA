@@ -20,7 +20,7 @@ Update ENA set with a givent ENA data object
 
 }
 \seealso{
-\code{\link{ena.generate.set()}}
+\code{\link{ena.generate.set}}
 }
 \keyword{ENA,}
 \keyword{set,}

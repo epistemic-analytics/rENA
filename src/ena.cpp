@@ -60,7 +60,7 @@ NumericVector logicalToColNums( LogicalVector lv ) {
   return nv;
 }
 
-
+// [[Rcpp::export]]
 NumericVector rowSums_c(NumericMatrix x) {
   int nrow = x.nrow(), ncol = x.ncol();
   NumericVector out(nrow);
@@ -132,12 +132,12 @@ inline NumericMatrix c_cor_helper(const NumericMatrix& mat, const int rstart, co
   return rmat;
 }
 
-
+// [[Rcpp::export]]
 NumericMatrix c_cor(NumericMatrix mat) {
   return c_cor_helper(mat, 0, mat.nrow());
 }
 
-
+// [[Rcpp::export]]
 NumericMatrix sphere_norm_c(DataFrame dfM) {
   NumericMatrix m = toNumericMatrix(dfM);
 
@@ -160,7 +160,7 @@ NumericMatrix sphere_norm_c(DataFrame dfM) {
   return output;
 }
 
-
+// [[Rcpp::export]]
 NumericMatrix dont_sphere_norm_c(DataFrame dfM) {
   NumericMatrix m = toNumericMatrix(dfM);
 
@@ -180,6 +180,7 @@ NumericMatrix dont_sphere_norm_c(DataFrame dfM) {
 }
 
 
+// [[Rcpp::export]]
 List pca_c(arma::mat m, int dims = 2) {
   arma::mat pca;
   arma::mat score;
@@ -198,12 +199,13 @@ List pca_c(arma::mat m, int dims = 2) {
 }
 
 
+// [[Rcpp::export]]
 Rcpp::NumericMatrix center_data_c(arma::mat values) {
   arma::mat centered = values.each_row() - mean(values);
   return Rcpp::wrap(centered);
 }
 
-
+// [[Rcpp::export]]
 arma::uvec triIndices(int len, int row = 0) {
   int vL = len;
   int vS = ( (vL * (vL + 1)) / 2) - vL ;
@@ -226,7 +228,7 @@ arma::uvec triIndices(int len, int row = 0) {
   return vRone;
 }
 
-
+// [[Rcpp::export]]
 double getcor(
     arma::mat dists, arma::mat normed, arma::mat x,
     arma::uvec NtriOne, arma::uvec NtriTwo,
@@ -243,17 +245,17 @@ double getcor(
   return(c);
 }
 
-
+// [[Rcpp::export]]
 int getN(arma::mat normed) {
   return floor(0.5 + sqrt( 0.25 + 2 * normed.n_cols ));
 }
 
-
+// [[Rcpp::export]]
 int getK(arma::mat normed) {
   return normed.n_rows;
 }
 
-
+// [[Rcpp::export]]
 arma::mat getRotationDistances_c(arma::mat rotated) {
   int K = getK(rotated);
   uvec KtriOne = triIndices(K, 0);
@@ -264,7 +266,7 @@ arma::mat getRotationDistances_c(arma::mat rotated) {
   return pairDists;
 }
 
-
+// [[Rcpp::export]]
 Rcpp::List get_optimized_node_pos_c(
     arma::mat normedFiltered,
     NumericMatrix opted,
@@ -411,7 +413,7 @@ List summary_fastLm_c(List object) {
   );
 }
 
-
+// [[Rcpp::export]]
 List lm_(NumericMatrix x) {
   int chose = x.ncol() * (x.ncol() - 1) / 2;
   NumericVector r_sq(chose); //length=choose(ncol(x), 2));
@@ -437,7 +439,7 @@ List lm_(NumericMatrix x) {
   ));
 }
 
-
+// [[Rcpp::export]]
 Rcpp::List full_opt_c(arma::mat normed, arma::mat rotated, Rcpp::List optim_nodes, int dims = 2, int num_samples = 3, bool checkUnique = false) {
   int N = getN(normed);
 
@@ -486,9 +488,7 @@ Rcpp::List full_opt_c(arma::mat normed, arma::mat rotated, Rcpp::List optim_node
 
 
 //typedef void (*integrand) (unsigned ndim, const double *x, void *,unsigned fdim, double *fval);
-
-
-
+// [[Rcpp::export]]
 double calc_cor(
   arma::vec x,
   List set,
@@ -522,7 +522,7 @@ double calc_cor(
   //return c(0,0);
 }
 
-
+// [[Rcpp::export]]
 arma::vec soln_MPS(arma::mat x) {
   arma::rowvec xVec = x.t();
   arma::uvec CC1 = triIndices(xVec.size(), 0);
@@ -531,7 +531,7 @@ arma::vec soln_MPS(arma::mat x) {
   return(mps);
 }
 
-
+// [[Rcpp::export]]
 double soln_calc_c(
   arma::vec coeff, arma::vec xi, arma::vec ti, arma::mat w, int dim
 ) {
@@ -546,14 +546,14 @@ double soln_calc_c(
   return(ssd);
 }
 
-
+// [[Rcpp::export]]
 arma::mat remove_zero_rows_c(arma::mat toFilter) {
   arma::uvec b = find(any(toFilter != 0, 1) > 0);
   arma::mat filtered = toFilter.rows(b);
   return(filtered);
 }
 
-
+// [[Rcpp::export]]
 arma::mat remove_zero_rows_by_c(arma::mat toFilter, arma::mat indices) {
   arma::uvec b = find(any(indices != 0, 1) > 0);
   arma::mat filtered = toFilter.rows(b);

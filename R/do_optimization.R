@@ -77,10 +77,10 @@ do_optimization = function(e, inPar = F, maxit = 1000)
 }
 
 ########'
-#' do_optimization_2
-#'
-#' @export
-#' @usage do_optimization_2()
+# do_optimization_2
+#
+# @export
+# @usage do_optimization_2()
 #######
 do_optimization_2 = function(e, inPar=F, maxit = 1000) {
   e_ = e;

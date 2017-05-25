@@ -52,7 +52,7 @@ NumericVector vector_to_ut2(NumericVector v) {
 
 
 //'
-
+// [[Rcpp::export]]
 arma::mat rows_to_co_occurrences(DataFrame df) {
   int dfRows = df.nrows();
   int dfCols = df.size();
@@ -211,9 +211,7 @@ NumericMatrix ref_window_df2(
 //' @param df A dataframe
 //' @param windowSize Integer for number of rows in the stanza window
 //' @param binary Logical, treat codes as binary or leave as weighted
-
-//'
-
+// [[Rcpp::export]]
 DataFrame ref_window_lag(
     DataFrame df,
     int windowSize = 0,
