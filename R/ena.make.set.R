@@ -9,20 +9,20 @@
 #'
 #' @param enaData \code{\link{ENAdata}} that will be used to generate an ENA set
 #' @param dims Number of dimensions in the set
-#' @param samples
-#' @param inPar
+#' @param samples [TBD]
+#' @param inPar [TBD]
 #' @param codeColumns Number of columns of codes in the ENA set
-#' @param binary
-#' @param correction
-#' @param sphere.norm
-#' @param center.data
-#' @param optim.method
-#' @param position.method
-#' @param check.unique.positions
-#' @param set.seed
-#' @param rotate.means
-#' @param rotate.means.by
-#' @param output
+#' @param binary [TBD]
+#' @param correction [TBD]
+#' @param sphere.norm [TBD]
+#' @param center.data [TBD]
+#' @param optim.method [TBD]
+#' @param position.method [TBD]
+#' @param check.unique.positions [TBD]
+#' @param set.seed [TBD]
+#' @param rotate.means [TBD]
+#' @param rotate.means.by [TBD]
+#' @param output [TBD]
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords ENA, generate, set

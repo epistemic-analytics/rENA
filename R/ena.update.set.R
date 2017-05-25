@@ -5,7 +5,7 @@
 #'
 #' @export
 #'
-#' @param ena.set \code{\link{ENAset}} from ena.generate.set()
+#' @param ena.set \code{\link{ENAset}} from ena.make.set()
 #'
 #' @keywords ENA, set, update
 #'

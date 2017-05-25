@@ -5,7 +5,7 @@
 #'
 #' @export
 #'
-#' @param ena.set \code{\link{ENAset}} from \code{\link{ena.generate.set}}
+#' @param ena.set \code{\link{ENAset}} from \code{\link{ena.make.set}}
 #' @param units Vector of units
 #' @param filter.by
 #' @param code.cols Columns of codes

@@ -9,7 +9,7 @@
 #'
 #' @param enaset \code{\link{ENAset}} used to generate the plot
 #' @param plot.title Title of the plot
-#' @param plot.mode
+#' @param plot.mode [TBD]
 #' @param plot.color Color of the plot
 #' @param dimensions Number of dimensions in the plot
 #' @param dimension.labels Labels for the dimensions of the plot
@@ -22,20 +22,20 @@
 #' @param unit.size change size of unit label
 #' @param unit.size.multiplier Change size multiplier of unit labels
 #' @param unit.show.confidence.intervals Show confidence intervals of a unit
-#' @param unit.group
-#' @param unit.group_by
-#' @param unit.group.labels
-#' @param unit.group.labels.positions
-#' @param unit.group.labels.colors
-#' @param unit.group.size
-#' @param unit.group.size.multiplier
-#' @param network.one
-#' @param network.two
-#' @param network.colors
-#' @param network.show.all.codes
-#' @param network.code.labels
-#' @param network.code.labels.positions
-#' @param network.edge.threshold
+#' @param unit.group [TBD]
+#' @param unit.group_by [TBD]
+#' @param unit.group.labels [TBD]
+#' @param unit.group.labels.positions [TBD]
+#' @param unit.group.labels.colors [TBD]
+#' @param unit.group.size [TBD]
+#' @param unit.group.size.multiplier [TBD]
+#' @param network.one [TBD]
+#' @param network.two [TBD]
+#' @param network.colors [TBD]
+#' @param network.show.all.codes [TBD]
+#' @param network.code.labels [TBD]
+#' @param network.code.labels.positions [TBD]
+#' @param network.edge.threshold [TBD]
 #' @param axis.flip.x Flip plot on x-axis
 #' @param axis.flip.y Flip plot on y-axis
 #' @param estimate.network.over Adjusts weights using what is being plotted or what is in the entire set
@@ -43,7 +43,7 @@
 #'
 #' @keywords ENA, plot, set
 #'
-#' @seealso \code{\link{ena.make.data}}, \code{\link{ena.update.data}}
+#' @seealso \code{\link{ena.make.sest}}, \code{\link{ena.update.set}}
 #'
 #' @examples
 #' \dontrun{
