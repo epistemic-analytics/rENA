@@ -36,8 +36,9 @@ Generate an ENA set from a given ENA data object
 NEED TO ADD
 }
 \examples{
+\dontrun{
 #ADD EXAMPLES
-
+}
 }
 \seealso{
 \code{\link{ena.make.data}}, \code{\link{ena.update.data}}

@@ -1,3 +1,5 @@
+library('doParallel')
+
 ########
 # do_optimization
 #
@@ -19,7 +21,6 @@ do_optimization = function(e, inPar = F, maxit = 1000)
     e = e_list;
   }
   # :::::: load and register doParallel ::::::
-  library('doParallel')
   registerDoParallel(cores = detectCores())
 
   # :::::: function single_optim ::::::
@@ -129,8 +130,6 @@ do_optimization_2 = function(e, inPar=F, maxit = 1000) {
 
   N = getN(e$data.normed);
   if(inPar == T) {
-    # :::::: load and register doParallel ::::::
-    library('doParallel')
     registerDoParallel(cores = detectCores()-1)
 
     # :::::: execute in parallel ::::::

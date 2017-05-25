@@ -1,5 +1,6 @@
 library(plotly)
 library(igraph)
+library(stringr)
 
 ##
 # @title Plot network

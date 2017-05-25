@@ -23,8 +23,13 @@ Data frame containing the split code columns
 This function will split single code columns into binary columns
 }
 \examples{
-#ADD EXAMPLEs
+\dontrun{
+#Given a csv file location
+ena.split.codes(data = .csv)
 
+#Given a data frame
+ena.split.codes(data = data.frame)
+}
 }
 \seealso{
 \code{\link{ena.accumulate.data}}, \code{\link{ena.make.set}}

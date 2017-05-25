@@ -27,8 +27,9 @@
 #' @seealso \code{\link{ena.split.codes}}, \code{\link{ena.make.set}}
 #'
 #' @examples
+#' \dontrun{
 #' #ADD EXAMPLES
-#'
+#' }
 #' @return \code{\link{ENAdata}} class object with accumulated data
 #'
 ##

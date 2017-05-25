@@ -46,8 +46,9 @@
 #' @seealso \code{\link{ena.make.data}}, \code{\link{ena.update.data}}
 #'
 #' @examples
+#' \dontrun{
 #' #ADD EXAMPLES
-#'
+#' }
 #' @return Plot of \code{\link{ENAset}}
 ##
 ena.plot.set <- function(

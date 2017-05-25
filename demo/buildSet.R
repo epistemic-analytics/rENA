@@ -1,7 +1,6 @@
 library(R6);
 library(data.table);
 library(microbenchmark);
-library(plotly);
 
 source('R/rENA.R');
 

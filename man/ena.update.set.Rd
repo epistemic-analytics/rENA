@@ -16,8 +16,9 @@ ena.update.set()
 Update ENA set with a givent ENA data object
 }
 \examples{
+\dontrun{
 #ADD EXAMPLES
-
+}
 }
 \seealso{
 \code{\link{ena.generate.set}}

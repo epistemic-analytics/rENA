@@ -17,8 +17,9 @@
 #' @seealso \code{\link{ena.make.set}}
 #'
 #' @examples
+#' \dontrun{
 #' #ADD EXAMPLES
-#'
+#' }
 #' @return Conversation
 ##
 ena.get.conversation <- function(

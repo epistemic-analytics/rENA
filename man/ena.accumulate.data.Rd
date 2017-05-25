@@ -38,8 +38,9 @@ This function will accumulate rows of data
 NEED TO ADD
 }
 \examples{
+\dontrun{
 #ADD EXAMPLES
-
+}
 }
 \seealso{
 \code{\link{ena.split.codes}}, \code{\link{ena.make.set}}

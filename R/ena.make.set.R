@@ -30,7 +30,9 @@
 #' @seealso \code{\link{ena.accumulate.data}}, \code{\link{ena.split.codes}}
 #'
 #' @examples
+#' \dontrun{
 #' #ADD EXAMPLES
+#' }
 #'
 #' @return \code{\link{ENAset}} class object
 ##

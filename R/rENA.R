@@ -10,7 +10,7 @@
 #' @import doParallel
 #' @import parallel
 #' @import RcppRoll
-#' @import igraph
+# @import igraph
 #' @useDynLib rENA, .registration = TRUE
 # @name rENA
 

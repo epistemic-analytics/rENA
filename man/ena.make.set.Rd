@@ -24,7 +24,9 @@ Generate an ENA set from a givent ENA data object
 NEED TO ADD
 }
 \examples{
+\dontrun{
 #ADD EXAMPLES
+}
 
 }
 \seealso{

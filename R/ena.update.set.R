@@ -12,8 +12,9 @@
 #' @seealso \code{\link{ena.generate.set}}
 #'
 #' @examples
+#' \dontrun{
 #' #ADD EXAMPLES
-#'
+#' }
 #' @return \code{\link{ENAset}} class object
 ##
 ena.update.set <- function(

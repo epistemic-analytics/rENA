@@ -1,9 +1,8 @@
-# ENARotationSet
-## Node positions
-## Rotation matrix
-
 #######
 #' ENARotationSet R6class
+#'
+## Node positions
+## Rotation matrix
 #'
 #' @docType class
 #' @importFrom R6 R6Class

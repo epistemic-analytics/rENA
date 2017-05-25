@@ -24,8 +24,9 @@ Conversation
 Gets a conversation from an ENA set from a given ENA data object
 }
 \examples{
+\dontrun{
 #ADD EXAMPLES
-
+}
 }
 \seealso{
 \code{\link{ena.make.set}}
