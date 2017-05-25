@@ -22,8 +22,9 @@ test:
   script:
     - echo "Running tests..."
     #- Rscript -e "devtools::test()"
-    #- Rscript -e "install.packages(c('xml2','devtools','roxygen2','data.table','Rcpp','RcppArmadillo','RcppParallel','R6','RcppEigen','RcppRoll','microbenchmark','testthat','plotly','igraph'), repos='http://cran.us.r-project.org')"
-    - Rscript -e "install.packages(c('git2r','curl','openssl','httr'), repos='http://cran.us.r-project.org')"
+    #- Rscript -e "install.packages(c('xml2','devtools','roxygen2','data.table','Rcpp','RcppArmadillo','RcppParallel','R6','RcppEigen','RcppRoll','microbenchmark','testthat'), repos='http://cran.us.r-project.org')"
+    #- Rscript -e "install.packages(c('git2r','curl','openssl','httr'), repos='http://cran.us.r-project.org')"
+    - Rscript -e "install.packages(c('plotly','igraph'), repos='http://cran.us.r-project.org')"
     - R CMD build . --no-build-vignettes --no-manual
     - PKG_FILE_NAME=$(ls -1t *.tar.gz | head -n 1)
     - R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual --as-cran
