@@ -5,7 +5,7 @@
 #' @import stats
 #' @import data.table
 #' @import foreach
-#' @import plotly
+# @import plotly
 #' @import utils
 #' @import doParallel
 #' @import parallel
@@ -19,6 +19,9 @@ opts = list (
   UNIT_NAMES = "ena.unit.names",
   TRAJ_TYPES = c("accumulated","non-accumulated")
 )
+
+#' @export
+default.colors = c(I("blue"), I("red"));
 
 # UNIT_NAMES = "ena.unit.names"
 # TRAJ_TYPES = c("accumulated","non-accumulated")

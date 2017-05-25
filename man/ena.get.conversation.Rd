@@ -18,15 +18,17 @@ ena.get.conversation()
 \item{metadata.cols}{Vector of additional metadata columns}
 }
 \value{
-Conversation
+Conversation from desired \code{\link{ENAset}}
 }
 \description{
-Gets a conversation from an ENA set from a given ENA data object
+Gets a conversation from an ENA set from a given ENA data object.
 }
 \examples{
 \dontrun{
-#ADD EXAMPLES
+#Given an ENA set
+ena.get.conversation(\\code{\\link{ENAset}})
 }
+
 }
 \seealso{
 \code{\link{ena.make.set}}

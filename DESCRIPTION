@@ -19,6 +19,7 @@ Imports:
     methods,
     foreach,
     stats,
+    igraph,
     plotly,
     doParallel,
     parallel,

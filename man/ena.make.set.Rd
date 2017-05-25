@@ -12,20 +12,27 @@ ena.make.set(enaData, dims = 2, samples = 3, inPar = F,
   rotate.means.by = NULL, output = c("class", "json"), ...)
 }
 \arguments{
-\item{...}{}
+\item{enaData}{\code{\link{ENAdata}} that will be used to generate an ENA set}
+
+\item{dims}{Number of dimensions in the set}
+
+\item{codeColumns}{Number of columns of codes in the ENA set}
+
+\item{...}{additional parameters addressed in inner function}
 }
 \value{
 \code{\link{ENAset}} class object
 }
 \description{
-Generate an ENA set from a givent ENA data object
+Generate an ENA set from a given ENA data object.
 }
 \details{
-NEED TO ADD
+[TBD]
 }
 \examples{
 \dontrun{
-#ADD EXAMPLES
+#Given an \\code{\\link{ENAdata}}
+ena.make.set(\\code{\\link{ENAdata}})
 }
 
 }

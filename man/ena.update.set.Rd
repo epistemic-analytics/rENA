@@ -13,12 +13,14 @@ ena.update.set()
 \code{\link{ENAset}} class object
 }
 \description{
-Update ENA set with a givent ENA data object
+Update ENA set with a given ENA data object.
 }
 \examples{
 \dontrun{
-#ADD EXAMPLES
+#Given a ENA data object
+ena.update.set(\\code{\\link{ENAdata}})
 }
+
 }
 \seealso{
 \code{\link{ena.generate.set}}

@@ -1,7 +1,3 @@
-library(plotly)
-library(igraph)
-library(stringr)
-
 ##
 # @title Plot network
 # @description Accumulate rows of data
@@ -81,10 +77,14 @@ ena.plot.network = function(
     name = df.names, ## New LWS method needs to assign names/attr
     enaset$nodes$positions$scaled
   );
-  network.graph = graph_from_data_frame(minDTnodes_trans, directed = F, vertices = network.vertices.df)
+  network.graph = igraph::graph_from_data_frame(
+    minDTnodes_trans,
+    directed = F,
+    vertices = network.vertices.df
+  )
   network.layout = enaset$nodes$positions$scaled;
 
-  network.vertices = V(network.graph);
+  network.vertices = igraph::V(network.graph);
   network.vertices.length = length(network.vertices);
   network.font.text = list(
     family = node.font.family,
@@ -116,7 +116,7 @@ ena.plot.network = function(
 
   network.graph.axis <- list(title = "", showgrid = FALSE, showticklabels = FALSE, zeroline = T);
 
-  network.plot = plot_ly(data.frame(network.layout),
+  network.plot = plotly::plot_ly(data.frame(network.layout),
     type="scatter",
     x = ~X1,
     y = ~X2,
@@ -128,7 +128,7 @@ ena.plot.network = function(
     showlegend = F,
     text =names(network.nodes.y)
   ) %>%
-    add_text(textfont = network.font.text, textposition = "top right")
+    plotly::add_text(textfont = network.font.text, textposition = "top right")
 
   selection.one.title = stringr::str_c("<b style=\"color:",selection.one.color,"\">",selection.one.name,"</b>");
 
@@ -136,7 +136,7 @@ ena.plot.network = function(
     selection.two.title = stringr::str_c("<b style=\"color:",selection.two.color,"\">",selection.two.name,"</b>");
   }
 
-  network.plot.layout = layout(
+  network.plot.layout = plotly::layout(
     network.plot,
     title =  stringr::str_c(selection.one.title, selection.two.title, sep = " - "),
     shapes = network.edges.shapes,

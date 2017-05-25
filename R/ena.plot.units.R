@@ -1,8 +1,3 @@
-library(plotly)
-library(igraph)
-
-default.colors = c(I("blue"), I("red"));
-
 ##
 #' @title Plot network
 #' @description Accumulate rows of data
@@ -92,7 +87,7 @@ ena.plot.units = function(
   )
 
   network.graph.axis <- list(title = "", showgrid = FALSE, showticklabels = FALSE, zeroline = T);
-  network.plot = plot_ly(
+  network.plot = plotly::plot_ly(
     network.layout,
     type="scatter",
     x = ~V1, y = ~V2,
@@ -106,7 +101,7 @@ ena.plot.units = function(
     text = dfDT$name,
     hoverinfo = "text"
   )
-  network.plot.layout = layout(
+  network.plot.layout = plotly::layout(
     network.plot,
     title =  plot.title,
     xaxis = network.graph.axis,

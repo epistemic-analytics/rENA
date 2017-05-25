@@ -14,6 +14,8 @@ ena.accumulate.data(file, units.by = NULL, units = NULL,
 \arguments{
 \item{file}{The csv file location or data.frame for the function}
 
+\item{units.by}{Delimits columns based on the units}
+
 \item{units}{Columns used based on units}
 
 \item{conversations.by}{Columns used in the conversation}
@@ -26,20 +28,27 @@ ena.accumulate.data(file, units.by = NULL, units = NULL,
 
 \item{window.size.forward}{Number of lines forward to inclucde window in stanza}
 
+\item{units.exclude}{Exclude certain columns based on units}
+
 \item{...}{additional parameters addressed in inner function}
 }
 \value{
 \code{\link{ENAdata}} class object with accumulated data
 }
 \description{
-This function will accumulate rows of data
+This function will accumulate rows of data.
 }
 \details{
-NEED TO ADD
+[TBD]
 }
 \examples{
 \dontrun{
-#ADD EXAMPLES
+#Given a csv file location
+ena.accumulate.data(data = .csv)
+
+#Given a data frame
+ena.accumulate.data(data = data.frame)
+
 }
 }
 \seealso{

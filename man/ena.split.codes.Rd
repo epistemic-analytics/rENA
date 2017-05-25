@@ -20,7 +20,7 @@ ena.split.codes(data.file, split.columns = NULL, split.columns.by = ",",
 Data frame containing the split code columns
 }
 \description{
-This function will split single code columns into binary columns
+This function will split single code columns into binary columns.
 }
 \examples{
 \dontrun{

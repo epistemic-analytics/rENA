@@ -2,7 +2,7 @@
 % Please edit documentation in R/ena.plot.set.R
 \name{ena.plot.set}
 \alias{ena.plot.set}
-\title{Generate ENA Set}
+\title{Generate Plot of ENA set}
 \usage{
 ena.plot.set(enaset, plot.title = "ENA Plot", plot.mode = "units+network",
   plot.color = I("black"), dimensions = c(1, 2), dimension.labels = c("x",
@@ -24,20 +24,54 @@ ena.plot.set(enaset, plot.title = "ENA Plot", plot.mode = "units+network",
   "set"), ...)
 }
 \arguments{
-\item{...}{}
+\item{enaset}{\code{\link{ENAset}} used to generate the plot}
+
+\item{plot.title}{Title of the plot}
+
+\item{plot.color}{Color of the plot}
+
+\item{dimensions}{Number of dimensions in the plot}
+
+\item{dimension.labels}{Labels for the dimensions of the plot}
+
+\item{multiplier}{Size multiplier for the plot}
+
+\item{units}{Vector of units to plot}
+
+\item{unit.colors}{Color of units}
+
+\item{unit.labels}{Names of units}
+
+\item{unit.labels.positions}{Location of names of units}
+
+\item{unit.size}{change size of unit label}
+
+\item{unit.size.multiplier}{Change size multiplier of unit labels}
+
+\item{unit.show.confidence.intervals}{Show confidence intervals of a unit}
+
+\item{axis.flip.x}{Flip plot on x-axis}
+
+\item{axis.flip.y}{Flip plot on y-axis}
+
+\item{estimate.network.over}{Adjusts weights using what is being plotted or what is in the entire set}
+
+\item{...}{Additional parameters addressed in inner function}
 }
 \value{
 Plot of \code{\link{ENAset}}
 }
 \description{
-Generate an ENA set from a given ENA data object
+Generate a plot of a given ENA set.
 }
 \details{
-NEED TO ADD
+[TBD]
 }
 \examples{
 \dontrun{
-#ADD EXAMPLES
+# Given an ENA set
+ena.plot.set(\\code{\\link{ENAset}})
+
 }
 }
 \seealso{
