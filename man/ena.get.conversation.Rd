@@ -7,7 +7,7 @@
 ena.get.conversation()
 }
 \arguments{
-\item{ena.set}{\code{\link{ENAset}} from \code{\link{ena.generate.set}}}
+\item{ena.set}{\code{\link{ENAset}} from \code{\link{ena.make.set}}}
 
 \item{units}{Vector of units}
 

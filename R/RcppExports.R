@@ -81,17 +81,10 @@ linderoth_pos <- function(adjMats, t) {
     .Call('rENA_linderoth_pos', PACKAGE = 'rENA', adjMats, t)
 }
 
+#' @title Merge data frame columsn
 merge_columns_c <- function(df, cols, sep = ".") {
     .Call('rENA_merge_columns_c', PACKAGE = 'rENA', df, cols, sep)
 }
-
-#' @title ref_window_df2
-#' @name ref_window_df2
-#'
-#' @param df A dataframe
-#' @param windowSize Integer for number of rows in the stanza window
-#' @param binary Logical, treat codes as binary or leave as weighted
-NULL
 
 rows_to_co_occurrences <- function(df) {
     .Call('rENA_rows_to_co_occurrences', PACKAGE = 'rENA', df)
@@ -105,6 +98,16 @@ rows_to_co_occurrences <- function(df) {
 #' @param binary Logical, treat codes as binary or leave as weighted
 ref_window_df <- function(df, windowSize = 0L, binary = TRUE) {
     .Call('rENA_ref_window_df', PACKAGE = 'rENA', df, windowSize, binary)
+}
+
+#' @title ref_window_df2
+#' @name ref_window_df2
+#'
+#' @param df A dataframe
+#' @param windowSize Integer for number of rows in the stanza window
+#' @param binary Logical, treat codes as binary or leave as weighted
+ref_window_df2 <- function(df, windowSize = 1L, binary = TRUE) {
+    .Call('rENA_ref_window_df2', PACKAGE = 'rENA', df, windowSize, binary)
 }
 
 #' @title ref_window_lag

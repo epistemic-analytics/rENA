@@ -34,11 +34,15 @@ ENAset
 \code{do_optimization} - Default\cr
 \code{do_optimization_2}}
 
+\item{position.method}{[TBD]}
+
 \item{check.unique.positions}{Check for uniqueness in positions}
 
 \item{set.seed}{Force uniqueness across function calls, e.g - set.seed=42\cr Defaults to FALSE}
 
-\item{rotate.means.by}{}
+\item{rotate.means}{[TBD]}
+
+\item{rotate.means.by}{[TBD]}
 }
 \description{
 ENAset R6class

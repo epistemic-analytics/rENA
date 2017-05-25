@@ -21,11 +21,19 @@ ENAdata
 
 \item{window.size}{Integer used to select the size of each stanza window within a conversation}
 
+\item{window.size.back}{[TBD]}
+
+\item{window.size.forward}{[TBD]}
+
 \item{binary}{Logical, whether to convert code values to binary or allow for weigthed values}
 
 \item{units.selected}{deprecated}
 
-\item{trajectory.type}{}
+\item{units.exclude}{[TBD]}
+
+\item{trajectory.by}{[TBD]}
+
+\item{trajectory.type}{[TBD]}
 }
 \description{
 ENAdata R6class

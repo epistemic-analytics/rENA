@@ -28,6 +28,8 @@ ena.plot.set(enaset, plot.title = "ENA Plot", plot.mode = "units+network",
 
 \item{plot.title}{Title of the plot}
 
+\item{plot.mode}{[TBD]}
+
 \item{plot.color}{Color of the plot}
 
 \item{dimensions}{Number of dimensions in the plot}
@@ -49,6 +51,34 @@ ena.plot.set(enaset, plot.title = "ENA Plot", plot.mode = "units+network",
 \item{unit.size.multiplier}{Change size multiplier of unit labels}
 
 \item{unit.show.confidence.intervals}{Show confidence intervals of a unit}
+
+\item{unit.group}{[TBD]}
+
+\item{unit.group_by}{[TBD]}
+
+\item{unit.group.labels}{[TBD]}
+
+\item{unit.group.labels.positions}{[TBD]}
+
+\item{unit.group.labels.colors}{[TBD]}
+
+\item{unit.group.size}{[TBD]}
+
+\item{unit.group.size.multiplier}{[TBD]}
+
+\item{network.one}{[TBD]}
+
+\item{network.two}{[TBD]}
+
+\item{network.colors}{[TBD]}
+
+\item{network.show.all.codes}{[TBD]}
+
+\item{network.code.labels}{[TBD]}
+
+\item{network.code.labels.positions}{[TBD]}
+
+\item{network.edge.threshold}{[TBD]}
 
 \item{axis.flip.x}{Flip plot on x-axis}
 
@@ -75,7 +105,7 @@ ena.plot.set(\\code{\\link{ENAset}})
 }
 }
 \seealso{
-\code{\link{ena.make.data}}, \code{\link{ena.update.data}}
+\code{\link{ena.make.set}}, \code{\link{ena.update.set}}
 }
 \keyword{ENA,}
 \keyword{plot,}

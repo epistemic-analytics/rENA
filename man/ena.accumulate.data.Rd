@@ -28,7 +28,15 @@ ena.accumulate.data(file, units.by = NULL, units = NULL,
 
 \item{window.size.forward}{Number of lines forward to inclucde window in stanza}
 
+\item{binary}{[TBD]}
+
 \item{units.exclude}{Exclude certain columns based on units}
+
+\item{trajectory.by}{[TBD]}
+
+\item{trajectory.type}{[TBD]}
+
+\item{output}{[TBD]}
 
 \item{...}{additional parameters addressed in inner function}
 }

@@ -7,7 +7,7 @@
 ena.update.set()
 }
 \arguments{
-\item{ena.set}{\code{\link{ENAset}} from ena.generate.set()}
+\item{ena.set}{\code{\link{ENAset}} from ena.make.set()}
 }
 \value{
 \code{\link{ENAset}} class object

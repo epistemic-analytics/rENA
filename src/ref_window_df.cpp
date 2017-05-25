@@ -125,6 +125,7 @@ DataFrame ref_window_df(
 //' @param df A dataframe
 //' @param windowSize Integer for number of rows in the stanza window
 //' @param binary Logical, treat codes as binary or leave as weighted
+// [[Rcpp::export]]
 NumericMatrix ref_window_df2(
     DataFrame df,
     int windowSize = 1,

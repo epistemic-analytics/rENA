@@ -16,7 +16,33 @@ ena.make.set(enaData, dims = 2, samples = 3, inPar = F,
 
 \item{dims}{Number of dimensions in the set}
 
+\item{samples}{[TBD]}
+
+\item{inPar}{[TBD]}
+
 \item{codeColumns}{Number of columns of codes in the ENA set}
+
+\item{binary}{[TBD]}
+
+\item{correction}{[TBD]}
+
+\item{sphere.norm}{[TBD]}
+
+\item{center.data}{[TBD]}
+
+\item{optim.method}{[TBD]}
+
+\item{position.method}{[TBD]}
+
+\item{check.unique.positions}{[TBD]}
+
+\item{set.seed}{[TBD]}
+
+\item{rotate.means}{[TBD]}
+
+\item{rotate.means.by}{[TBD]}
+
+\item{output}{[TBD]}
 
 \item{...}{additional parameters addressed in inner function}
 }
