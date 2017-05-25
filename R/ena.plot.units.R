@@ -1,11 +1,4 @@
-##
-#' @title Plot network
-#' @description Accumulate rows of data
-#'
-#'
-#'
-# @export
-##
+
 ena.plot.units = function(
   enaset,
   data = enaset$get.data("rotated",with.meta=T),

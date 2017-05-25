@@ -15,11 +15,11 @@
 #' @param window.size Number of lines in the stanza
 #' @param window.size.back Number of lines back to include window in stanza
 #' @param window.size.forward Number of lines forward to inclucde window in stanza
-#' @param binary
+#' @param binary [TBD]
 #' @param units.exclude Exclude certain columns based on units
-#' @param trajectory.by
-#' @param trajectory.type
-#' @param output
+#' @param trajectory.by [TBD]
+#' @param trajectory.type [TBD]
+#' @param output [TBD]
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords data, accumulate

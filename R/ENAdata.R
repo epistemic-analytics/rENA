@@ -12,13 +12,13 @@
 #' @param conversations.by String vector of column names to create the conversations
 #' @param code.names String vector of column names to use as codes
 #' @param window.size Integer used to select the size of each stanza window within a conversation
-#' @param window.size.back
-#' @param window.size.forward
+#' @param window.size.back [TBD]
+#' @param window.size.forward [TBD]
 #' @param binary Logical, whether to convert code values to binary or allow for weigthed values
 #' @param units.selected deprecated
-#' @param units.exclude
-#' @param trajectory.by
-#' @param trajectory.type
+#' @param units.exclude [TBD]
+#' @param trajectory.by [TBD]
+#' @param trajectory.type [TBD]
 #'
 #' @section Public ENAdata methods:
 ####
