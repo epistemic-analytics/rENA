@@ -4,3 +4,4 @@
 ^inst/extdata/bigdata/.*
 ^inst/extdata/small-data/.*
 ^.*.\.tar\.gz$
+^\.git/.*

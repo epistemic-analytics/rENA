@@ -31,9 +31,6 @@ arma::rowvec vector_to_ut(arma::mat v) {
   return vR2;
 }
 
-
-//'
-
 NumericVector vector_to_ut2(NumericVector v) {
   int vL = v.size();
   int vS = ( (vL * (vL + 1)) / 2) - vL ;
@@ -50,8 +47,6 @@ NumericVector vector_to_ut2(NumericVector v) {
   return vR;
 }
 
-
-//'
 // [[Rcpp::export]]
 arma::mat rows_to_co_occurrences(DataFrame df) {
   int dfRows = df.nrows();
@@ -77,7 +72,6 @@ arma::mat rows_to_co_occurrences(DataFrame df) {
 //' @param df A dataframe
 //' @param windowSize Integer for number of rows in the stanza window
 //' @param binary Logical, treat codes as binary or leave as weighted
-
 // [[Rcpp::export]]
 DataFrame ref_window_df(
     DataFrame df,
@@ -131,8 +125,6 @@ DataFrame ref_window_df(
 //' @param df A dataframe
 //' @param windowSize Integer for number of rows in the stanza window
 //' @param binary Logical, treat codes as binary or leave as weighted
-//'
-
 NumericMatrix ref_window_df2(
     DataFrame df,
     int windowSize = 1,

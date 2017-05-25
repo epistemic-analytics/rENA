@@ -85,8 +85,17 @@ merge_columns_c <- function(df, cols, sep = ".") {
     .Call('rENA_merge_columns_c', PACKAGE = 'rENA', df, cols, sep)
 }
 
+#' @title ref_window_df2
+#' @name ref_window_df2
 #'
+#' @param df A dataframe
+#' @param windowSize Integer for number of rows in the stanza window
+#' @param binary Logical, treat codes as binary or leave as weighted
 NULL
+
+rows_to_co_occurrences <- function(df) {
+    .Call('rENA_rows_to_co_occurrences', PACKAGE = 'rENA', df)
+}
 
 #' @title ref_window_df
 #' @name ref_window_df
@@ -94,22 +103,6 @@ NULL
 #' @param df A dataframe
 #' @param windowSize Integer for number of rows in the stanza window
 #' @param binary Logical, treat codes as binary or leave as weighted
-NULL
-
-#' @title ref_window_df2
-#' @name ref_window_df2
-#'
-#' @param df A dataframe
-#' @param windowSize Integer for number of rows in the stanza window
-#' @param binary Logical, treat codes as binary or leave as weighted
-#'
-NULL
-
-#'
-rows_to_co_occurrences <- function(df) {
-    .Call('rENA_rows_to_co_occurrences', PACKAGE = 'rENA', df)
-}
-
 ref_window_df <- function(df, windowSize = 0L, binary = TRUE) {
     .Call('rENA_ref_window_df', PACKAGE = 'rENA', df, windowSize, binary)
 }
