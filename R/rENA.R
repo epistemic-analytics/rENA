@@ -12,7 +12,7 @@
 #' @import parallel
 #' @import RcppRoll
 # @import igraph
-#' @useDynLib rENA, .registration = TRUE
+#' @useDynLib rENA
 
 #' @title Default rENA constants
 #' @description Default rENA constants
