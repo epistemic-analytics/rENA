@@ -21,11 +21,11 @@
 #' @param optim.method Function to optimize node positions. Provided:\cr
 #'   \code{do_optimization} - Default\cr
 #'   \code{do_optimization_2}
-#' @param position.method
+#' @param position.method [TBD]
 #' @param check.unique.positions Check for uniqueness in positions
 #' @param set.seed Force uniqueness across function calls, e.g - set.seed=42\cr Defaults to FALSE
-#' @param rotate.means
-#' @param rotate.means.by
+#' @param rotate.means [TBD]
+#' @param rotate.means.by [TBD]
 #'
 #' @section Public ENAset methods:
 ####

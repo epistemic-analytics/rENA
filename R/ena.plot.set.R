@@ -43,7 +43,7 @@
 #'
 #' @keywords ENA, plot, set
 #'
-#' @seealso \code{\link{ena.make.sest}}, \code{\link{ena.update.set}}
+#' @seealso \code{\link{ena.make.set}}, \code{\link{ena.update.set}}
 #'
 #' @examples
 #' \dontrun{
