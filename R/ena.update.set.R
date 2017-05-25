@@ -1,7 +1,7 @@
 ##
 #' @title Update ENA Set
 #'
-#' @description Update ENA set with a givent ENA data object
+#' @description Update ENA set with a given ENA data object.
 #'
 #' @export
 #'
@@ -12,7 +12,8 @@
 #' @seealso \code{\link{ena.generate.set}}
 #'
 #' @examples
-#' #ADD EXAMPLES
+#' #Given a ENA data object
+#' ena.update.set(\code{\link{ENAdata}})
 #'
 #' @return \code{\link{ENAset}} class object
 ##

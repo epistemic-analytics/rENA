@@ -1,7 +1,7 @@
 ##
 #' @title Gets a conversation from an ENA set
 #'
-#' @description Gets a conversation from an ENA set from a given ENA data object
+#' @description Gets a conversation from an ENA set from a given ENA data object.
 #'
 #' @export
 #'
@@ -17,9 +17,10 @@
 #' @seealso \code{\link{ena.make.set}}
 #'
 #' @examples
-#' #ADD EXAMPLES
+#' #Given an ENA set
+#' ena.get.conversation(\code{\link{ENAset}})
 #'
-#' @return Conversation
+#' @return Conversation from desired \code{\link{ENAset}}
 ##
 ena.get.conversation <- function(
 

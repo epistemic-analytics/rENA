@@ -1,27 +1,27 @@
 ##
-#' @title Generate ENA Set
+#' @title Generate Plot of ENA set
 #'
-#' @description Generate an ENA set from a given ENA data object
+#' @description Generate a plot of a given ENA set.
 #'
-#' @details NEED TO ADD
+#' @details [TBD]
 #'
 #' @export
 #'
-#' @param enaset
-#' @param plot.title
+#' @param enaset \code{\link{ENAset}} used to generate the plot
+#' @param plot.title Title of the plot
 #' @param plot.mode
-#' @param plot.color
-#' @param dimensions
-#' @param dimension.labels
+#' @param plot.color Color of the plot
+#' @param dimensions Number of dimensions in the plot
+#' @param dimension.labels Labels for the dimensions of the plot
 #' @param dimension.show.variance
-#' @param multiplier
-#' @param units
-#' @param unit.colors
-#' @param unit.labels
-#' @param unit.labels.positions
-#' @param unit.size
-#' @param unit.size.multiplier
-#' @param unit.show.confidence.intervals
+#' @param multiplier Size multiplier for the plot
+#' @param units Vector of units to plot
+#' @param unit.colors Color of units
+#' @param unit.labels Names of units
+#' @param unit.labels.positions Location of names of units
+#' @param unit.size change size of unit label
+#' @param unit.size.multiplier Change size multiplier of unit labels
+#' @param unit.show.confidence.intervals Show confidence intervals of a unit
 #' @param unit.group
 #' @param unit.group_by
 #' @param unit.group.labels
@@ -36,17 +36,18 @@
 #' @param network.code.labels
 #' @param network.code.labels.positions
 #' @param network.edge.threshold
-#' @param axis.flip.x
-#' @param axis.flip.y
-#' @param estimate.network.over
-#' @param ...
+#' @param axis.flip.x Flip plot on x-axis
+#' @param axis.flip.y Flip plot on y-axis
+#' @param estimate.network.over Adjusts weights using what is being plotted or what is in the entire set
+#' @param ... Additional parameters addressed in inner function
 #'
 #' @keywords ENA, plot, set
 #'
 #' @seealso \code{\link{ena.make.data}}, \code{\link{ena.update.data}}
 #'
 #' @examples
-#' #ADD EXAMPLES
+#' # Given an ENA set
+#' ena.plot.set(\code{\link{ENAset}})
 #'
 #' @return Plot of \code{\link{ENAset}}
 ##

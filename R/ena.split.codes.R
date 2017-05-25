@@ -1,7 +1,7 @@
 ###
 #' @title Split code columns
 #'
-#' @description This function will split single code columns into binary columns
+#' @description This function will split single code columns into binary columns.
 #'
 #' @export
 #'

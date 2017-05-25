@@ -1,17 +1,17 @@
 ##
 #' @title Generate ENA Set
 #'
-#' @description Generate an ENA set from a givent ENA data object
+#' @description Generate an ENA set from a given ENA data object.
 #'
-#' @details NEED TO ADD
+#' @details [TBD]
 #'
 #' @export
 #'
-#' @param enaData
-#' @param dims
+#' @param enaData \code{\link{ENAdata}} that will be used to generate an ENA set
+#' @param dims Number of dimensions in the set
 #' @param samples
 #' @param inPar
-#' @param codeColumns
+#' @param codeColumns Number of columns of codes in the ENA set
 #' @param binary
 #' @param correction
 #' @param sphere.norm
@@ -23,14 +23,15 @@
 #' @param rotate.means
 #' @param rotate.means.by
 #' @param output
-#' @param ...
+#' @param ... additional parameters addressed in inner function
 #'
 #' @keywords ENA, generate, set
 #'
 #' @seealso \code{\link{ena.accumulate.data}}, \code{\link{ena.split.codes}}
 #'
 #' @examples
-#' #ADD EXAMPLES
+#' #Given an \code{\link{ENAdata}}
+#' ena.make.set(\code{\link{ENAdata}})
 #'
 #' @return \code{\link{ENAset}} class object
 ##
