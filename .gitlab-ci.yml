@@ -48,3 +48,6 @@ archive:
     - echo "Archiving package..."
   dependencies:
     - test
+  artifacts:
+    paths:
+      - $(ls -1t *.tar.gz | head -n 1)
