@@ -1,6 +1,7 @@
 stages:
   - image
   - build
+  - test
   - archive
   - deploy
 before_script:
@@ -15,7 +16,7 @@ build_image:
 #  - docker run r-package-builder
 
 image: r-package-builder:latest
-test:
+build:
   stage: build
   tags:
     - R-package
@@ -27,11 +28,18 @@ test:
     #- Rscript -e "install.packages(c('plotly','igraph','foreach','doParallel'), repos='http://cran.us.r-project.org')"
     - Rscript -e "Rcpp::compileAttributes()"
     - R CMD build . --no-build-vignettes --no-manual
-    - PKG_FILE_NAME=$(ls -1t *.tar.gz | head -n 1)
-    - R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual --as-cran
   artifacts:
     paths:
       - $(ls -1t *.tar.gz | head -n 1)
+test:
+  stage: test
+  tags:
+    - R-package
+  script:
+    - PKG_FILE_NAME=$(ls -1t *.tar.gz | head -n 1)
+    - R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual --as-cran
+  dependencies:
+    - build
 build:
   stage: archive
   tags:
@@ -39,4 +47,5 @@ build:
   script:
     - echo "Archiving package..."
   dependencies:
+    - build
     - test
