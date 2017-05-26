@@ -49,5 +49,6 @@ archive:
   dependencies:
     - test
   artifacts:
+    expire_in: 10 years
     paths:
       - $(ls -1t *.tar.gz | head -n 1)
