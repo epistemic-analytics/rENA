@@ -40,12 +40,11 @@ test:
     - R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual --as-cran
   dependencies:
     - build
-build:
+archive:
   stage: archive
   tags:
     - R-package
   script:
     - echo "Archiving package..."
   dependencies:
-    - build
     - test
