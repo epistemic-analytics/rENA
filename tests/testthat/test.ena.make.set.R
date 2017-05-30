@@ -30,7 +30,11 @@ test_that("Make a simple trajectory set", {
     code.names = codeNames,
     trajectory.by = c("ActivityNumber"), trajectory.type = "accumulated"
   );
-  df.set = ena.make.set(df.accum)
+
   df.set.lws = ena.make.set(df.accum, position.method = lws.positions)
 
+  testthat::expect_equal(
+    length(attr(df.set.lws$data$centered$rotated, rENA::opts$UNIT_NAMES)[,UserName]),
+    517
+  );
 })
