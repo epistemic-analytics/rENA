@@ -20,3 +20,17 @@ test_that("Simple data.frame to accumulate and make set", {
     48
   );
 })
+
+test_that("Make a simple trajectory set", {
+  codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
+
+  df.file <- system.file("extdata", "rs.data.csv", package="rENA");
+  df.accum = ena.accumulate.data(
+    df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"),
+    code.names = codeNames,
+    trajectory.by = c("ActivityNumber"), trajectory.type = "accumulated"
+  );
+  df.set = ena.make.set(df.accum)
+  df.set.lws = ena.make.set(df.accum, position.method = lws.positions)
+
+})

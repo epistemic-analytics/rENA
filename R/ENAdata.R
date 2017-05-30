@@ -166,11 +166,16 @@ ENAdata = R6::R6Class("ENAdata",
       metaAvail = metaAvail[metaAvail != "ENA_UNIT"];
       raw.meta = self$data.raw[!duplicated(ENA_UNIT)][ENA_UNIT %in% unique(self$data.units.accumuluated$ENA_UNIT),c("ENA_UNIT",metaAvail),,with=F];
 
+      df.to.return = NULL;
       if(merge == T) {
-        merge(self$data.units.summed, raw.meta)
+        df.to.return = merge(self$data.units.summed, raw.meta)
       } else {
-        raw.meta
+        df.to.return = raw.meta
       }
+
+      attr(df.to.return, rENA::opts$UNIT_NAMES) = self$data.units.summed[,  .SD ,with=T,.SDcols=c(private$units.by,private$trajectory.by)]
+
+      df.to.return
     }
   ),
 

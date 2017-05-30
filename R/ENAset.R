@@ -159,13 +159,21 @@ ENAset = R6::R6Class("ENAset",
       } else if ( wh == "rotated" ) {
         data = self$data$centered$rotated
       }
-
+      df.to.return = NULL;
       if(with.meta == T) {
         data.units = attr(data, rENA::opts$UNIT_NAMES);
-        merge(data.table::data.table(data, data.units, ENA_UNIT=merge_columns_c(data.units ,private$enaData$get("units.by"))),private$enaData$metadata())
+        df.to.return = merge(
+          data.table::data.table(
+            data, data.units,
+            ENA_UNIT=merge_columns_c(data.units, private$enaData$get("units.by")),
+            TRAJ_UNIT=merge_columns_c(data.units, c(private$enaData$get("units.by"), private$enaData$get("trajectory.by")))
+          ),
+          private$enaData$metadata()
+        )
       } else {
-        data
+        df.to.return = data
       }
+      df.to.return
     },
 
     ####
@@ -278,7 +286,7 @@ ENAset = R6::R6Class("ENAset",
     ####
     run = function() {
       # Reference for the ENAdata object
-        df = private$enaData$data.units.summed;
+        df = private$enaData$data.units.summed.meta;
 
       ###
       # Backup of ENA data, this is not touched again.

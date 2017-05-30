@@ -29,6 +29,7 @@
 #' @param unit.group.labels.colors [TBD]
 #' @param unit.group.size [TBD]
 #' @param unit.group.size.multiplier [TBD]
+#' @param unit.trajectory.by [TBD]
 #' @param network.one [TBD]
 #' @param network.two [TBD]
 #' @param network.colors [TBD]
@@ -81,6 +82,8 @@ ena.plot.set <- function(
   unit.group.size = unit.size,
   unit.group.size.multiplier = unit.size.multiplier,
 
+  unit.trajectory.by = NULL,
+
   network.one = NULL,
   network.two = NULL,
   network.colors = NULL,
@@ -108,12 +111,14 @@ ena.plot.set <- function(
   if(show.units && !is.null(units)){
     plot = ena.plot.units(
       enaset = enaset, plot.title = plot.title,
+      units = units,
       unit.size = unit.size,
       unit.colors = unit.colors,
       unit.group = unit.group,
       unit.show.confidence.intervals = unit.show.confidence.intervals,
       unit.group.size = unit.group.size,
-      unit.group.size.multiplier = unit.group.size.multiplier
+      unit.group.size.multiplier = unit.group.size.multiplier,
+      unit.trajectory.by = unit.trajectory.by
     );
   }
   if(show.networks && !is.null(network.one)) {
