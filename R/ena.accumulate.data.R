@@ -1,7 +1,7 @@
 ##
 #' @title Accumulate Data
 #'
-#' @description This function will accumulate rows of data.
+#' @description This function accumulates rows of data.
 #'
 #' @details [TBD]
 #'
