@@ -16,8 +16,9 @@ ena.plot.set(enaset, plot.title = "ENA Plot", plot.mode = "units+network",
   unit.group.labels.positions = "top right",
   unit.group.labels.colors = rep(plot.color, length(unit.group)),
   unit.group.size = unit.size,
-  unit.group.size.multiplier = unit.size.multiplier, network.one = NULL,
-  network.two = NULL, network.colors = NULL, network.show.all.codes = F,
+  unit.group.size.multiplier = unit.size.multiplier,
+  unit.trajectory.by = NULL, network.one = NULL, network.two = NULL,
+  network.colors = NULL, network.show.all.codes = F,
   network.code.labels = rownames(enaset$nodes$positions$scaled),
   network.code.labels.positions = NULL, network.edge.threshold = 0,
   axis.flip.x = F, axis.flip.y = F, estimate.network.over = c("plot",
@@ -67,6 +68,8 @@ ena.plot.set(enaset, plot.title = "ENA Plot", plot.mode = "units+network",
 \item{unit.group.size}{[TBD]}
 
 \item{unit.group.size.multiplier}{[TBD]}
+
+\item{unit.trajectory.by}{[TBD]}
 
 \item{network.one}{[TBD]}
 
