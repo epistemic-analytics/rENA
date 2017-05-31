@@ -46,8 +46,8 @@ egr.positions <- function(ena.set) {
       ena.set$nodes$positions$unscaled$positions,
       ena.set$data$normed.non.zero,
       ena.set$data$centered$rotated.non.zero
-    );
-    rownames(ena.set$nodes$positions$scaled$positions) = ena.set$get("enaData")$get("code.names");
+    )$positions;
+    rownames(ena.set$nodes$positions$scaled) = ena.set$get("enaData")$get("code.names");
   ###
 
   return(ena.set);

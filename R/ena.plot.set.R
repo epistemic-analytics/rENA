@@ -101,7 +101,7 @@ ena.plot.set <- function(
 ) {
   plot = NULL
 
-  show.modes = unlist(strsplit("units+network",split="\\+"))
+  show.modes = unlist(strsplit(plot.mode,split="\\+"))
   show.units = "units" %in% show.modes;
   show.networks = "network" %in% show.modes;
 

@@ -76,7 +76,6 @@ ena.plot.network = function(
     vertices = network.vertices.df
   )
   network.layout = enaset$nodes$positions$scaled;
-
   network.vertices = igraph::V(network.graph);
   network.vertices.length = length(network.vertices);
   network.font.text = list(
@@ -120,8 +119,8 @@ ena.plot.network = function(
     ),
     showlegend = F,
     text =names(network.nodes.y)
-  ) %>%
-    plotly::add_text(textfont = network.font.text, textposition = "top right")
+  );
+  network.plot = plotly::add_text(network.plot, textfont = network.font.text, textposition = "top right")
 
   selection.one.title = stringr::str_c("<b style=\"color:",selection.one.color,"\">",selection.one.name,"</b>");
 
