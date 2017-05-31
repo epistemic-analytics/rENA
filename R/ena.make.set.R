@@ -1,7 +1,7 @@
 ##
 #' @title Generate ENA Set
 #'
-#' @description Generate an ENA set from a given ENA data object.
+#' @description Generates an ENA set from a given ENA data object.
 #'
 #' @details [TBD]
 #'
