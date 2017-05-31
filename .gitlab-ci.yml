@@ -40,6 +40,9 @@ test:
     - R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual --as-cran
   dependencies:
     - build
+  artifacts:
+    paths:
+      - $(ls -1t *.tar.gz | head -n 1)
 archive:
   stage: archive
   tags:
