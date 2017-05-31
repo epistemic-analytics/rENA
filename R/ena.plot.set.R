@@ -125,7 +125,8 @@ ena.plot.set <- function(
     plot = ena.plot.network(
       enaset = enaset,
       plot = plot,
-      selection.one.name = network.one
+      selection.one.name = network.one,
+      selection.two.name = network.two
     )
   }
   return(plot);

@@ -34,3 +34,10 @@ test_that("Plot some nodes", {
   p = ena.plot.set(df.set, plot.mode="network", network.one="brandon f.SecondGame");
   testthat::expect_is(p, "plotly");
 })
+test_that("Plot two networks", {
+  df.accum = ena.accumulate.data(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), code.names = codeNames);
+  df.set = ena.make.set(df.accum)
+  df.set.lws = ena.make.set(df.accum, position.method = lws.positions)
+  p = ena.plot.set(df.set.lws, plot.mode="network", network.one="brandon f.SecondGame", network.two="arden f.FirstGame");
+  testthat::expect_is(p, "plotly");
+})
