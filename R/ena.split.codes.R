@@ -43,23 +43,17 @@ ena.split.codes <- function(
 
   ## Use `split.columns.by` to split values in `split.columns`
   if( !is.null(split.columns) ) {
+    data.file.dt = data.table::data.table(data.file);
+
     for(col in split.columns) {
-      split.column = matrix(unlist(data.table::tstrsplit(data.file[,col], split=split.columns.by, type.convert = T)), nrow=nrow(data.file))
-      re.named = F;
-      if(!is.null(code.names)) {
-        if (col %in% names(code.names) ) {
-          colnames(split.column) = code.names[[col]];
-          re.named = T;
-        } else if (length(split.columns) == 1 && length(code.names) == ncol(split.column))  {
-          colnames(split.column) = code.names;
-          re.named = T;
-        }
+      found.codes = sort(unique(unlist(mapply(function(x) {strsplit(x, split.columns.by) }, as.character(data.table::data.table(data.file)[[col]])))));
+
+      found.codes.dt = data.table::data.table(matrix(ncol=length(found.codes), nrow=nrow(data.file), 0));
+      colnames(found.codes.dt) = found.codes
+      for(i in 1:nrow(data.file)) {
+        found.codes.dt[i,unlist(strsplit(as.character(as.matrix(data.file.dt[i, col, with=F])), split.columns.by))] = 1
       }
-      if(re.named == F) {
-        colnames(split.column) = paste(col,1:ncol(split.column),sep=".");
-      }
-      data.file = cbind(data.file,split.column);
-      data.file = data.file[, -which(names(data.file) == col)];
+      data.file = cbind(data.file,found.codes.dt);
     }
   }
 
