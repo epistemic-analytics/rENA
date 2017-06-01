@@ -44,18 +44,19 @@ ena.accumulate.data(file, units.by = NULL, units = NULL,
 \code{\link{ENAdata}} class object with accumulated data
 }
 \description{
-This function will accumulate rows of data.
+This function accumulates rows of data.
 }
 \details{
 [TBD]
 }
 \examples{
 \dontrun{
-#Given a csv file location
-ena.accumulate.data(data = .csv)
+codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
 
-#Given a data frame
-ena.accumulate.data(data = data.frame)
+df.file <- system.file("extdata", "rs.data.csv", package="rENA")
+
+# Given a csv file location
+ena.accumulate.data(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), code.names = codeNames)
 
 }
 }

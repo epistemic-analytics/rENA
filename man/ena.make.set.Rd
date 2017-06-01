@@ -50,7 +50,7 @@ ena.make.set(enaData, dims = 2, samples = 3, inPar = F,
 \code{\link{ENAset}} class object
 }
 \description{
-Generate an ENA set from a given ENA data object.
+Generates an ENA set from a given ENA data object.
 }
 \details{
 [TBD]
