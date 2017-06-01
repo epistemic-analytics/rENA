@@ -14,7 +14,7 @@
 #' @param code.names Columns used based on codes
 #' @param window.size Number of lines in the stanza
 #' @param window.size.back Number of lines back to include window in stanza
-#' @param window.size.forward Number of lines forward to inclucde window in stanza
+#' @param window.size.forward Number of lines forward in stanza window
 #' @param binary [TBD]
 #' @param units.exclude Exclude certain columns based on units
 #' @param trajectory.by [TBD]
@@ -28,13 +28,20 @@
 #'
 #' @examples
 #' \dontrun{
-#' codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
+#' codeNames = c(
+#'   "E.data","S.data","E.design","S.design","S.professional","E.client",
+#'   "V.client","E.consultant","V.consultant","S.collaboration","I.engineer",
+#'   "I.intern","K.actuator","K.rom","K.materials","K.power"
+#' )
 #'
 #' df.file <- system.file("extdata", "rs.data.csv", package="rENA")
 #'
 #' # Given a csv file location
-#' ena.accumulate.data(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), code.names = codeNames)
-#'
+#' ena.accumulate.data(
+#'   df.file, units.by = c("UserName","Condition"),
+#'   conversations.by = c("ActivityNumber","GroupName"),
+#'   code.names = codeNames
+#' )
 #' }
 #' @return \code{\link{ENAdata}} class object with accumulated data
 #'

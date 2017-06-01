@@ -26,7 +26,7 @@ ena.accumulate.data(file, units.by = NULL, units = NULL,
 
 \item{window.size.back}{Number of lines back to include window in stanza}
 
-\item{window.size.forward}{Number of lines forward to inclucde window in stanza}
+\item{window.size.forward}{Number of lines forward in stanza window}
 
 \item{binary}{[TBD]}
 
@@ -51,13 +51,20 @@ This function accumulates rows of data.
 }
 \examples{
 \dontrun{
-codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
+codeNames = c(
+  "E.data","S.data","E.design","S.design","S.professional","E.client",
+  "V.client","E.consultant","V.consultant","S.collaboration","I.engineer",
+  "I.intern","K.actuator","K.rom","K.materials","K.power"
+)
 
 df.file <- system.file("extdata", "rs.data.csv", package="rENA")
 
 # Given a csv file location
-ena.accumulate.data(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), code.names = codeNames)
-
+ena.accumulate.data(
+  df.file, units.by = c("UserName","Condition"),
+  conversations.by = c("ActivityNumber","GroupName"),
+  code.names = codeNames
+)
 }
 }
 \seealso{

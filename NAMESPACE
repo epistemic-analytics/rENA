@@ -2,11 +2,13 @@
 
 export(ENAdata)
 export(ENAset)
+export(default.colors)
 export(ena.accumulate.data)
 export(ena.make.set)
 export(ena.plot.set)
 export(ena.split.codes)
 export(merge_columns_c)
+export(opts)
 export(ref_window_lag)
 import(RcppRoll)
 import(data.table)

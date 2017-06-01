@@ -3,4 +3,7 @@
 \name{rENA}
 \alias{rENA}
 \title{rENA creates ENA sets}
+\description{
+rENA is used to generate ENA sets
+}
 
