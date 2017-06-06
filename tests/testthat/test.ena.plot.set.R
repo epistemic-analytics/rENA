@@ -21,7 +21,7 @@ test_that("Plot a trajectory set", {
     trajectory.by = c("ActivityNumber"), trajectory.type = "accumulated"
   );
 
-  df.set.lws = ena.make.set(df.accum, position.method = lws.positions)
+  df.set.lws = ena.make.set(df.accum, position.method = lws.positions.es)
   p = ena.plot.set(df.set.lws, plot.mode="units", unit.group = "Condition", unit.group.size = 2, unit.trajectory.by = c("ActivityNumber"));
 
   testthat::expect_is(p, "plotly");

@@ -118,7 +118,9 @@ ena.plot.set <- function(
       unit.show.confidence.intervals = unit.show.confidence.intervals,
       unit.group.size = unit.group.size,
       unit.group.size.multiplier = unit.group.size.multiplier,
-      unit.trajectory.by = unit.trajectory.by
+      unit.trajectory.by = unit.trajectory.by,
+      dimension.labels = dimension.labels,
+      dimension.show.variance = dimension.show.variance
     );
   }
   if(show.networks && !is.null(network.one)) {

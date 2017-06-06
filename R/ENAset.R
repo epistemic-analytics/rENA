@@ -380,7 +380,7 @@ ENAset = R6::R6Class("ENAset",
         else {
             pcaResults = pca_c(self$data$centered$normed, dims = private$dimensions);
             self$data$centered$pca = pcaResults$pca; # FIX - store as $data$rotation.matrix
-            self$data$centered$latent = pcaResults$latent; ## TODO remove?
+            self$data$centered$latent = pcaResults$latent[private$dimensions]; ## TODO remove?
         }
       ###
 

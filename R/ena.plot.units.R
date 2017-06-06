@@ -5,6 +5,9 @@ ena.plot.units = function(
   plot = NULL,
   plot.title,
 
+  dimension.labels = c("x","y"),
+  dimension.show.variance = T,
+
   units = unique(enaset$get("enaData")$get("units")),
   unit.size = 1,
   unit.size.multiplier = 5,
@@ -37,14 +40,26 @@ ena.plot.units = function(
   dfDT[,name:=ENA_UNIT] # Create a name column
 
   network.vertices.df = dfDT[ENA_UNIT %in% units,c(ncol(dfDT),1:ncol(dfDT)-1),with=F];
-
-
   network.font.text = list(
     family = font.family,
     size = font.size,
     color = font.color
   );
-  network.graph.axis <- list(title = "", showgrid = FALSE, showticklabels = FALSE, zeroline = T);
+
+  evs = enaset$data$centered$latent[1:enaset$get("dimensions")];
+  evs = floor(evs/sum(evs)*100)
+
+  network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T);
+  network.graph.axis.x = network.graph.axis.y = network.graph.axis;
+
+  if(dimension.show.variance == T) {
+    network.graph.axis.x$title = paste(dimension.labels[1], " (", evs[1], "%)", sep = "");
+    network.graph.axis.y$title = paste(dimension.labels[2], " (", evs[2], "%)", sep = "");
+  } else {
+    network.graph.axis.x$title = dimension.labels[1];
+    network.graph.axis.y$title = dimension.labels[2];
+  }
+
   network.plot.layout = NULL;
   if(!is.null(unit.trajectory.by)) {
     dfDT.trajs = dfDT[,{ data.table::data.table(lines = list(.SD))  } ,by=ENA_UNIT]
@@ -88,6 +103,7 @@ ena.plot.units = function(
 
         dfDT.groups = merge(dfDT.groups, conf.ints);
         dfDT.groups[, c("ci.x1", "ci.x2", "ci.y1", "ci.y2") := .(V1 - ci.x, V1 + ci.x, V2 - ci.y, V2 + ci.y)]
+
         lines = apply(dfDT.groups,1,function(x) {
           list(
             "type" = "square",
@@ -125,11 +141,11 @@ ena.plot.units = function(
     network.plot.layout = plotly::layout(
       network.plot,
       title =  plot.title,
-      xaxis = network.graph.axis,
-      yaxis = network.graph.axis,
+      xaxis = network.graph.axis.x,
+      yaxis = network.graph.axis.y,
       shapes = lines
     )
+
     network.plot.layout
   }
-
 }
