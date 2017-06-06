@@ -27,7 +27,10 @@ ena.plot.network = function(
   edge.font.size = font.size,
   edge.font.color = font.color,
   edge.font.family = font.family,
-  edge.hide = NULL
+  edge.hide = NULL,
+
+  network.edge.threshold = 0,
+  network.show.all.codes = F
 ) {
   df = data.frame(enaset$data$normed, attr(enaset$data$normed, rENA::opts$UNIT_NAMES));
   dfDT= data.table::as.data.table(df);
@@ -56,6 +59,12 @@ ena.plot.network = function(
   network.edges = minDTnodes_trans; #as.data.frame(get.edgelist(network.graph));
   network.edges.table = data.table::as.data.table(network.edges);
 
+  ## Remove edges below threshold
+  network.edges.table = network.edges.table[V3 > network.edge.threshold]
+
+  ## Remove nodes without connections
+
+  ## Remove edges explicitly hidden
   if(!is.null(edge.hide)) {
     network.edges.table = network.edges.table[!network.edges.table$V2 %in% edge.hide|!network.edges.table$V2 %in% edge.hide,]
   }
@@ -107,20 +116,41 @@ ena.plot.network = function(
   }
 
   network.graph.axis <- list(title = "", showgrid = FALSE, showticklabels = FALSE, zeroline = T);
+  node.sizes = sapply(rownames(network.layout), function(x) { network.edges.table[V1==x|V2==x, sum(unlist(V3)),] }) * node.weight.multiplier
 
-  network.plot = plotly::plot_ly(data.frame(network.layout),
+  if(!network.show.all.codes) {
+    node.sizes = node.sizes[which(data.frame(node.sizes)$node.sizes != 0)]
+    network.layout = network.layout[rownames(network.layout) %in% names(node.sizes),]
+  }
+  network.plot = plotly::plot_ly(
+    data.frame(network.layout),
     type="scatter",
     x = ~X1,
     y = ~X2,
     mode="markers",
     marker = list(
       color = I(node.color),
-      size = as.numeric(sapply(rownames(network.layout), function(x) { network.edges.table[V1==x|V2==x, sum(unlist(V3)),] })) * node.weight.multiplier
+      size = as.numeric(node.sizes)
     ),
     showlegend = F,
-    text =names(network.nodes.y)
+    text = rownames(network.layout)
   );
-  network.plot = plotly::add_text(network.plot, textfont = network.font.text, textposition = "top right")
+  browser()
+  network.plot = plotly::add_annotations(
+    network.plot,
+    textfont = network.font.text,
+    xref = "x",
+    yref = "y",
+    xanchor = "center",
+    standoff = 30,
+    #clicktoshow = "onout",
+    #captureevents = T,
+    visible = F,
+    #ax = 20, #sample(200, nrow(network.layout), replace=T),
+    #ay = -90,
+    showarrow = F
+    #textposition = "top right"
+  );
 
   selection.one.title = stringr::str_c("<b style=\"color:",selection.one.color,"\">",selection.one.name,"</b>");
 

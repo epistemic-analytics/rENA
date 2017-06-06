@@ -81,6 +81,11 @@ linderoth_pos <- function(adjMats, t) {
     .Call('rENA_linderoth_pos', PACKAGE = 'rENA', adjMats, t)
 }
 
+#' @title Multiobjective, Component by Component, with Ellipsoidal Scaling
+linderoth_pos_es <- function(adjMats, t) {
+    .Call('rENA_linderoth_pos_es', PACKAGE = 'rENA', adjMats, t)
+}
+
 #' @title Merge data frame columns
 #' @description TBD
 #' @export

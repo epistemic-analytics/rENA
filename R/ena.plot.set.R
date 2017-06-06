@@ -126,7 +126,10 @@ ena.plot.set <- function(
       enaset = enaset,
       plot = plot,
       selection.one.name = network.one,
-      selection.two.name = network.two
+      selection.two.name = network.two,
+
+      network.edge.threshold = network.edge.threshold,
+      network.show.all.codes = network.show.all.codes
     )
   }
   return(plot);
