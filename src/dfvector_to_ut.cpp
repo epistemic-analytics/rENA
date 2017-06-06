@@ -1,24 +1,23 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-//' Calculates the upper triangle of a vector of integers  if it
-//' were converted to a matrix. This actually skips creating the
-//' matrix, by only multiplying the necesseary indices of the
-//' vector.
-//'
-//' @param v - A vector of integers
-//' @export
-// [[Rcpp::export]]
+// Calculates the upper triangle of a vector of integers  if it
+// were converted to a matrix. This actually skips creating the
+// matrix, by only multiplying the necesseary indices of the
+// vector.
+//
+// @param v - A vector of integers
+
 DataFrame dfvector_to_ut(DataFrame v, CharacterVector nms) {
   int vRows = v.nrows();
 
-  IntegerMatrix Am(vRows, nms.length());
   List listOfSums(nms.length());
   for(int j = 0; j < nms.length(); j++) {
     listOfSums[j] = IntegerVector::create(vRows);
   }
-
   listOfSums.attr("names") = nms;
+
+  IntegerMatrix Am(vRows, nms.length());
   for(int row = 0; row < vRows; row++) {
     int s = 0;
 

@@ -22,9 +22,9 @@ arma::ivec vector_to_ut(arma::imat v) {
 
 //' @name ref_window_sum
 //' @title ref_window_sum
-//' @param v - A dataframe
-//' @param nms - A vector of characters used for colnames of returned DataFrame
-//' @export
+//' @param df dataframe
+//' @param binary logical
+//' @description TBD
 // [[Rcpp::export]]
 DataFrame ref_window_sum(
   DataFrame df,
@@ -39,6 +39,5 @@ DataFrame ref_window_sum(
   for (int i=0; i<dfCols;i++) {
     df_AsMatrix2.col(i) = Rcpp::as<arma::ivec>(df[i]);
   }
-
   return(sum(df_AsMatrix2));
 }

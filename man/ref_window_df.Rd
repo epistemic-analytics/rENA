@@ -4,11 +4,16 @@
 \alias{ref_window_df}
 \title{ref_window_df}
 \usage{
-ref_window_df(df, windowSize = 0L, binary = TRUE, useDiaganol = FALSE)
+ref_window_df(df, windowSize = 0L, binary = TRUE)
 }
 \arguments{
-\item{v}{- A dataframe}
+\item{df}{A dataframe}
 
-\item{nms}{- A vector of characters used for colnames of returned DataFrame}
+\item{windowSize}{Integer for number of rows in the stanza window}
+
+\item{binary}{Logical, treat codes as binary or leave as weighted}
+}
+\description{
+TBD
 }
 

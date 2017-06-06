@@ -8,3 +8,6 @@ RcppExports.cpp
 data/bigdata
 .DS_Store
 ..Rcheck/
+*.Rcheck/
+rENA.Rcheck/
+*.tar.gz

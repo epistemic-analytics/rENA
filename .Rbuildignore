@@ -1,2 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.gitlab-ci\.yml
+^inst/extdata/bigdata/.*
+^inst/extdata/small-data/.*
+^.*.\.tar\.gz$
+^\.git/.*
