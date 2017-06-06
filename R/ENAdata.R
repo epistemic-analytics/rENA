@@ -70,7 +70,7 @@ ENAdata = R6::R6Class("ENAdata",
     function.call = NULL,
     data.raw = NULL,
     data.units.summed = NULL,
-    data.units.accumuluated = NULL,
+    data.units.accumulated = NULL,
     data.units.summed.meta = NULL,
 
     ####
@@ -164,7 +164,7 @@ ENAdata = R6::R6Class("ENAdata",
       dfDT.meta.poss = self$data.raw[, { nc = lapply(.SD, function(x) length(unique(x))); }, by=c(private$units.by), .SDcols=c(metaAvail)][,,.SDcols=metaAvail];
       metaAvail = colnames(dfDT.meta.poss)[rapply(dfDT.meta.poss, function(x) all(x == 1))]
       metaAvail = metaAvail[metaAvail != "ENA_UNIT"];
-      raw.meta = self$data.raw[!duplicated(ENA_UNIT)][ENA_UNIT %in% unique(self$data.units.accumuluated$ENA_UNIT),c("ENA_UNIT",metaAvail),,with=F];
+      raw.meta = self$data.raw[!duplicated(ENA_UNIT)][ENA_UNIT %in% unique(self$data.units.accumulated$ENA_UNIT),c("ENA_UNIT",metaAvail),,with=F];
 
       df.to.return = NULL;
       if(merge == T) {
@@ -229,7 +229,7 @@ ENAdata = R6::R6Class("ENAdata",
       );
 
       self$data.units.summed = newRes$units.summed;
-      self$data.units.accumuluated = newRes$units.co.occurred;
+      self$data.units.accumulated = newRes$units.co.occurred;
       self$data.units.summed.meta = self$metadata(merge = T);
       private$units = newRes$units;
 

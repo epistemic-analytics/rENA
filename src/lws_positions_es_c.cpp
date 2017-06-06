@@ -177,7 +177,7 @@ Rcpp::List linderoth_pos_es(Eigen::MatrixXd adjMats, Eigen::MatrixXd t) { // = R
     double alpha = R / alphaDblNew;
     x = alpha * x;
 
-    double dist = component_norm(weights, t.col(i), x);
+    // double dist = component_norm(weights, t.col(i), x);
     double sumck = 0, sumtk = 0, sumcksq = 0, sumcktk = 0;
 
     for (int k = 0; k < adjMats.rows(); k++) {

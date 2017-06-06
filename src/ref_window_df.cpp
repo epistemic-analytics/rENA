@@ -73,6 +73,7 @@ arma::mat rows_to_co_occurrences(DataFrame df) {
 //' @param df A dataframe
 //' @param windowSize Integer for number of rows in the stanza window
 //' @param binary Logical, treat codes as binary or leave as weighted
+//' @export
 // [[Rcpp::export]]
 DataFrame ref_window_df(
     DataFrame df,

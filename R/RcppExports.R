@@ -107,6 +107,7 @@ rows_to_co_occurrences <- function(df) {
 #' @param df A dataframe
 #' @param windowSize Integer for number of rows in the stanza window
 #' @param binary Logical, treat codes as binary or leave as weighted
+#' @export
 ref_window_df <- function(df, windowSize = 0L, binary = TRUE) {
     .Call('rENA_ref_window_df', PACKAGE = 'rENA', df, windowSize, binary)
 }
@@ -137,6 +138,7 @@ ref_window_lag <- function(df, windowSize = 0L, binary = TRUE) {
 #' @param df dataframe
 #' @param binary logical
 #' @description TBD
+#' @export
 ref_window_sum <- function(df, binary = TRUE) {
     .Call('rENA_ref_window_sum', PACKAGE = 'rENA', df, binary)
 }
