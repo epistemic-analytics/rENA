@@ -30,7 +30,7 @@ test_that("Plot a trajectory set", {
 test_that("Plot some nodes", {
   df.accum = ena.accumulate.data(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), code.names = codeNames);
   df.set = ena.make.set(df.accum)
-  df.set.lws = ena.make.set(df.accum, position.method = rENA::lws.positions)
+  #df.set.lws = ena.make.set(df.accum, position.method = rENA::lws.positions)
   p = ena.plot.set(df.set, plot.mode="network", network.one="brandon f.SecondGame");
   testthat::expect_is(p, "plotly");
 })

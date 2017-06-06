@@ -135,7 +135,6 @@ ena.plot.network = function(
     showlegend = F,
     text = rownames(network.layout)
   );
-  browser()
   network.plot = plotly::add_annotations(
     network.plot,
     textfont = network.font.text,

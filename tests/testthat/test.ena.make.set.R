@@ -28,12 +28,12 @@ test_that("Simple data.frame to accumulate and make set with Linderoth method(s)
   df.set.lws.es = ena.make.set(df.accum, position.method = lws.positions.es)
 
   testthat::expect_equal(
-    dim(df.set$data$centered$rotated),
+    dim(df.set.lws$data$centered$rotated),
     c(48,2)
   );
 
   testthat::expect_equal(
-    length(attr(df.set$data$centered$rotated, rENA::opts$UNIT_NAMES)[,UserName]),
+    length(attr(df.set.lws$data$centered$rotated, rENA::opts$UNIT_NAMES)[,UserName]),
     48
   );
 })
