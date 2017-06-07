@@ -162,7 +162,7 @@ ENAset = R6::R6Class("ENAset",
       df.to.return = NULL;
       if(with.meta == T) {
         data.units = attr(data, rENA::opts$UNIT_NAMES);
-        df.to.return = merge(
+        df.to.return = cbind(
           data.table::data.table(
             data, data.units,
             ENA_UNIT=merge_columns_c(data.units, private$enaData$get("units.by")),
@@ -287,11 +287,9 @@ ENAset = R6::R6Class("ENAset",
     run = function() {
       # Reference for the ENAdata object
         df = private$enaData$data.units.summed.meta;
-
       ###
       # Backup of ENA data, this is not touched again.
       ###
-        #self$data$original = df[,(2):ncol(df), with=F];
         self$data$original = df[,grep("adjacency.code", colnames(df)), with=F]
 
       ###
@@ -301,7 +299,7 @@ ENAset = R6::R6Class("ENAset",
       ###
         self$data$raw = data.table::copy(self$data$original);
 
-      ###
+    ###
       # If non-binary, invoke the supplied correction method
       # on the raw data.
       ###
@@ -314,15 +312,13 @@ ENAset = R6::R6Class("ENAset",
         # }
       }
 
-        ### TODO- Weighted
-
       ###
       # Normalize the raw data using self$sphere.norm,
       # which defaults to calling rENA::dont_sphere_norm_c
       ###
         self$data$normed = self$sphere.norm(self$data$raw);
 
-      ###
+      ##
       # Convert the string vector of code names to their corresponding
       # co-occurence names and set as colnames for the self$data$normed
       ##

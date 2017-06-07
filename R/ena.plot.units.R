@@ -73,9 +73,10 @@ ena.plot.units = function(
     )
 
     for(x in 1:nrow(dfDT.trajs)) {
+      toPlot = unique(colnames(dfDT.trajs[x][[2]][[1]]))
       network.plot = plotly::add_trace(
         network.plot,
-        data=dfDT.trajs[x][[2]][[1]],
+        data=dfDT.trajs[x][[2]][[1]][,toPlot,with=FALSE],
         x = ~V1, y = ~V2,
         name=dfDT.trajs[x][[1]],
         mode="lines+markers",
