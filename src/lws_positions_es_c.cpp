@@ -137,11 +137,7 @@ Rcpp::List linderoth_pos_es(Eigen::MatrixXd adjMats, Eigen::MatrixXd t) { // = R
   if(min(evalsVec) < 0.001) {
     Rcpp::Environment base("package:base");
     Rcpp::Function message_r = base["message"];
-    message_r("Warning: Sigma not positive definite.");
-    message_r(" --> Adding 0.1 to diagonal");
-
-    // Rcpp::Rcout << "Warning: Sigma not positive definite.  Eigenvalue: " << min(evalsVec) << std::endl;
-    // Rcpp::Rcout << " --> Adding 0.1 to diagonal" << std::endl;
+    message_r("Warning: Sigma not positive definite. Adding 0.1 to diagonal");
 
     sigma = sigma + (0.1 * MatrixXd::Identity(numNodes, numNodes));
   }
@@ -222,6 +218,5 @@ Rcpp::List linderoth_pos_es(Eigen::MatrixXd adjMats, Eigen::MatrixXd t) { // = R
 # );
 # df.set.lws = ena.make.set(df.accum, position.method = lws.positions)
 # out = linderoth_pos_es(df.set.lws$data$normed, df.set.lws$data$centered$rotated)
-
-out = linderoth_pos_es(adjMatrix, rotMatrix)
+# out = linderoth_pos_es(adjMatrix, rotMatrix)
 */

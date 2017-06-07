@@ -61,6 +61,8 @@ ena.plot.units = function(
   }
 
   network.plot.layout = NULL;
+
+  ## Trajectory model
   if(!is.null(unit.trajectory.by)) {
     dfDT.trajs = dfDT[,{ data.table::data.table(lines = list(.SD))  } ,by=ENA_UNIT]
     network.plot = plotly::plot_ly(
@@ -83,7 +85,10 @@ ena.plot.units = function(
     }
 
     network.plot
-  } else {
+  }
+
+  ## Non-trajectory model
+  else {
     dfDT.groups = NULL
 
     lines <- list();
@@ -124,15 +129,19 @@ ena.plot.units = function(
     }
 
     network.layout = data.frame(dfDT);
+    # browser();
+    if(length(unit.colors) == 1) {
+      unit.colors = rep(unit.colors, nrow(data))
+    }
     network.plot = plotly::plot_ly(
       network.layout,
       type="scatter",
       x = ~V1, y = ~V2,
       mode="markers",
       marker = list(
-        symbol = c(rep("circle",nrow(data)),rep("square",nrow(dfDT.groups))),
+        symbol = c(rep("circle",nrow(data)),rep("square", ifelse(!is.null(dfDT.groups), nrow(dfDT.groups), 0))),
         color = unit.colors,
-        size = c(rep(unit.size * unit.size.multiplier, nrow(data)), rep(unit.group.size * unit.group.size.multiplier, nrow(dfDT.groups)))
+        size = c(rep(unit.size * unit.size.multiplier, nrow(data)), rep(unit.group.size * unit.group.size.multiplier, ifelse(!is.null(dfDT.groups),nrow(dfDT.groups), 0)))
       ),
       showlegend = F,
       text = dfDT$name,

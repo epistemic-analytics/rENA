@@ -111,6 +111,7 @@ ena.plot.set <- function(
   if(show.units && !is.null(units)){
     plot = ena.plot.units(
       enaset = enaset, plot.title = plot.title,
+
       units = units,
       unit.size = unit.size,
       unit.colors = unit.colors,
@@ -119,6 +120,7 @@ ena.plot.set <- function(
       unit.group.size = unit.group.size,
       unit.group.size.multiplier = unit.group.size.multiplier,
       unit.trajectory.by = unit.trajectory.by,
+
       dimension.labels = dimension.labels,
       dimension.show.variance = dimension.show.variance
     );
