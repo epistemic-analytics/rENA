@@ -374,7 +374,18 @@ ENAset = R6::R6Class("ENAset",
       # Principal Component results
       ###
         else {
-            pcaResults = pca_c(self$data$centered$normed, dims = private$dimensions);
+            to.norm = data.table::data.table(
+              self$data$centered$normed,
+              merge_columns_c(
+                attr(
+                  self$data$centered$normed,
+                  rENA::opts$UNIT_NAMES
+                ),
+                self$get("enaData")$get("units.by")
+              )
+            )
+            to.norm = as.matrix(to.norm[,c(1:(ncol(to.norm)-1)),by=c("V2"),with=F])
+            pcaResults = pca_c(to.norm, dims = private$dimensions);
             self$data$centered$pca = pcaResults$pca; # FIX - store as $data$rotation.matrix
             self$data$centered$latent = pcaResults$latent[private$dimensions]; ## TODO remove?
         }
