@@ -229,8 +229,8 @@ ENAset = R6::R6Class("ENAset",
         ena.plot.network(self, ...);
       } else {
         if(wh == "nodes") {
-          rotDF = as.data.frame(data.table::copy(self$nodes$positions$scaled$positions));
-          rotDF$unit = rownames(self$nodes$positions$scaled$positions);
+          rotDF = as.data.frame(data.table::copy(self$nodes$positions$scaled));
+          rotDF$unit = rownames(self$nodes$positions$scaled);
         } else if ( wh == "units" ) {
           rotDF = as.data.frame(data.table::copy(self$data$centered$rotated));
 
@@ -247,7 +247,7 @@ ENAset = R6::R6Class("ENAset",
           rotDF = rotDF[!rotDF$unit %in% hide,]
         }
 
-        p = plot_ly(
+        p = plotly::plot_ly(
           type = "scatter", data = rotDF,
           x = ~V1, y = ~V2,
           text = ~unit,
