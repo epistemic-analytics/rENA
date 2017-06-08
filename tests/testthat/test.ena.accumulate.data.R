@@ -107,6 +107,7 @@ test_that("Test trajectories", {
 
 test_that("Test accumulation with data.frame and matrix", {
   df.file <- system.file("extdata", "rs.data.csv", package="rENA")
+
   codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
   df.csv = read.csv(df.file)
 
@@ -114,7 +115,15 @@ test_that("Test accumulation with data.frame and matrix", {
 
   df.accum2 = ena.accumulate.data(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), code.names = codeNames);
 
+  ## Test with file reported in #5
+  pn.file <- system.file("extdata", "sample-data", "PinterestMock2.csv", package="rENA")
+  pn.csv = read.csv(pn.file)
+  pn.accum = ena.accumulate.data(pn.csv, units.by =  c("Teacher"), conversations.by = c("Board"), code.names = c("Kinesthetic", "Algorithmic"))
+
+
   testthat::expect_is(df.csv, "data.frame")
   testthat::expect_is(df.accum, "ENAdata")
   testthat::expect_is(df.accum2, "ENAdata")
+
+  testthat::expect_is(pn.accum, "ENAdata")
 })
