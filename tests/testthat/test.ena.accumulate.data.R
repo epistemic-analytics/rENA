@@ -103,3 +103,18 @@ test_that("Test trajectories", {
   # Test that non-accumulation is properly leaving second trajectory group 0 (different than the previous test)
     expect_identical(c(1,0,1), df.non.accum$data.units.summed[Name == "Z", adjacency.code.1]);
 })
+
+
+test_that("Test accumulation with data.frame and matrix", {
+  df.file <- system.file("extdata", "rs.data.csv", package="rENA")
+  codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
+  df.csv = read.csv(df.file)
+
+  df.accum = ena.accumulate.data(df.csv, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), code.names = codeNames);
+
+  df.accum2 = ena.accumulate.data(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), code.names = codeNames);
+
+  testthat::expect_is(df.csv, "data.frame")
+  testthat::expect_is(df.accum, "ENAdata")
+  testthat::expect_is(df.accum2, "ENAdata")
+})
