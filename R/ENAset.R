@@ -384,7 +384,7 @@ ENAset = R6::R6Class("ENAset",
                 self$get("enaData")$get("units.by")
               )
             )
-            to.norm = as.matrix(to.norm[,c(1:(ncol(to.norm)-1)),by=c("V2"),with=F])
+            to.norm = as.matrix(to.norm[,tail(.SD,n=1),.SDcols=colnames(to.norm)[which(colnames(to.norm) != "V2")],by=c("V2")][,2:ncol(to.norm)])
             pcaResults = pca_c(to.norm, dims = private$dimensions);
             self$data$centered$pca = pcaResults$pca; # FIX - store as $data$rotation.matrix
             self$data$centered$latent = pcaResults$latent[private$dimensions]; ## TODO remove?
