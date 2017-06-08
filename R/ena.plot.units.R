@@ -81,7 +81,7 @@ ena.plot.units = function(
         name=dfDT.trajs[x][[1]],
         mode="lines+markers",
         text = dfDT.trajs[x][[2]][[1]]$TRAJ_UNIT,
-        hoverinfo = "text"
+        hoverinfo = "text+x+y"
       )
     }
 
@@ -145,8 +145,8 @@ ena.plot.units = function(
         size = c(rep(unit.size * unit.size.multiplier, nrow(data)), rep(unit.group.size * unit.group.size.multiplier, ifelse(!is.null(dfDT.groups),nrow(dfDT.groups), 0)))
       ),
       showlegend = F,
-      text = dfDT$name,
-      hoverinfo = "text"
+      text = ~name,
+      hoverinfo = "text+x+y"
     )
     network.plot.layout = plotly::layout(
       network.plot,
