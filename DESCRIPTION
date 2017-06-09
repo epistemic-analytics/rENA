@@ -11,6 +11,7 @@ License: GPL (>= 2)
 LazyData: TRUE
 LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppEigen 
 Imports:
+    readr,
     data.table,
     Rcpp,
     RcppArmadillo,
