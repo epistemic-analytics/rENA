@@ -206,7 +206,7 @@ ENAdata = R6::R6Class("ENAdata",
       if(any(class(private$file) == "data.table")) {
         df_DT = private$file;
       } else {
-        if(class(private$file) == "data.frame") {
+        if(is(private$file, "data.frame") == T) {
           df = private$file;
         } else {
           df = read.csv(private$file);
