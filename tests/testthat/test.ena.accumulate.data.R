@@ -129,7 +129,8 @@ test_that("Test accumulation with data.frame and matrix", {
 
 
 test_that("Test accumulation with dplyr::tbl_df", {
-  PinterestMock2 <- readr::read_csv("~/Workspaces/RStudio2/rENA/inst/extdata/sample-data/PinterestMock2.csv")
+  pn.file = system.file("extdata", "sample-data", "PinterestMock2.csv", package="rENA")
+  PinterestMock2 <- readr::read_csv(pn.file)
   pn.accum = ena.accumulate.data(PinterestMock2, units.by =  c("Teacher"), conversations.by = c("Board"), code.names = c("Kinesthetic", "Algorithmic"))
 
   testthat::expect_is(pn.accum, "ENAdata")
