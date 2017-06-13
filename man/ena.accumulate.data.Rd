@@ -9,7 +9,7 @@ ena.accumulate.data(file, units.by = NULL, units = NULL,
   window.size.back = window.size, window.size.forward = NULL, binary = T,
   units.exclude = c(), trajectory.by = NULL,
   trajectory.type = c("accumulated", "non-accumulated"), output = c("class",
-  "json"), ...)
+  "json"), output.fields = NULL, ...)
 }
 \arguments{
 \item{file}{The csv file location or data.frame for the function}

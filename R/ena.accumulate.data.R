@@ -19,7 +19,8 @@
 #' @param units.exclude Exclude certain columns based on units
 #' @param trajectory.by [TBD]
 #' @param trajectory.type [TBD]
-#' @param output [TBD]
+#' @param output Object or JSON string. Default: Object
+#' @param output.fields Fields to be included in JSON output
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords data, accumulate
@@ -60,6 +61,7 @@ ena.accumulate.data <- function(
   trajectory.by = NULL,
   trajectory.type = c("accumulated","non-accumulated"),
   output = c("class","json"),
+  output.fields = NULL,
   ...
 ) {
   data = ENAdata$new(
@@ -80,6 +82,14 @@ ena.accumulate.data <- function(
 
   data$function.call = sys.call();
   output = match.arg(output);
-  if(output == "json") r6.to.json(data)
+  if(output == "json") {
+    output.class = get(class(data))
+
+    if(is.null(output.fields)) {
+      output.fields = names(output.class$public_fields)
+    }
+
+    r6.to.json(data, o.class = output.class, o.fields = output.fields)
+  }
   else data
 }

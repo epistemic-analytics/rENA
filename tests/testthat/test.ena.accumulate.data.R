@@ -135,3 +135,15 @@ test_that("Test accumulation with dplyr::tbl_df", {
 
   testthat::expect_is(pn.accum, "ENAdata")
 })
+
+test_that("Test accumulation output JSON", {
+  pn.file = system.file("extdata", "sample-data", "PinterestMock2.csv", package="rENA")
+  pn.accum = ena.accumulate.data(pn.file, units.by =  c("Teacher"), conversations.by = c("Board"), code.names = c("Kinesthetic", "Algorithmic"), output = "json")
+
+  pn.accum.less = ena.accumulate.data(pn.file, units.by =  c("Teacher"), conversations.by = c("Board"), code.names = c("Kinesthetic", "Algorithmic"), output = "json", output.fields = c("data.units.summed.meta"))
+
+  testthat::expect_is(pn.accum, "list")
+  testthat::expect_is(pn.accum$data.units.accumulated, "data.frame")
+  testthat::expect_is(pn.accum.less, "list")
+  testthat::expect_null(pn.accum.less$data.units.accumulated)
+})
