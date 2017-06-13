@@ -19,7 +19,7 @@
 #' @param units.exclude Exclude certain columns based on units
 #' @param trajectory.by [TBD]
 #' @param trajectory.type [TBD]
-#' @param output Object or JSON string. Default: Object
+#' @param output ENAdata object or JSON string. Default: ENAdata
 #' @param output.fields Fields to be included in JSON output
 #' @param ... additional parameters addressed in inner function
 #'

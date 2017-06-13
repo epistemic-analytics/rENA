@@ -36,7 +36,9 @@ ena.accumulate.data(file, units.by = NULL, units = NULL,
 
 \item{trajectory.type}{[TBD]}
 
-\item{output}{[TBD]}
+\item{output}{ENAdata object or JSON string. Default: ENAdata}
+
+\item{output.fields}{Fields to be included in JSON output}
 
 \item{...}{additional parameters addressed in inner function}
 }
