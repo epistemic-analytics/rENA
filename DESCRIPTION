@@ -12,6 +12,7 @@ LazyData: TRUE
 LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppEigen 
 Imports:
     readr,
+    data.tree,
     data.table,
     Rcpp,
     RcppArmadillo,
