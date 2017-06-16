@@ -23,6 +23,7 @@
 #' @param rotate.means [TBD]
 #' @param rotate.means.by [TBD]
 #' @param output [TBD]
+#' @param output.fields Fields to be included in JSON output
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords ENA, generate, set
@@ -54,6 +55,7 @@ ena.make.set <- function(
   rotate.means = F,
   rotate.means.by = NULL,
   output = c("class","json"),
+  output.fields = NULL,
   ...
 ) {
   set = ENAset$new(
@@ -77,6 +79,14 @@ ena.make.set <- function(
 
   output = match.arg(output);
 
-  if(output == "json") r6.to.json(set)
+  if(output == "json") {
+    output.class = get(class(set))
+
+    if(is.null(output.fields)) {
+      output.fields = names(output.class$public_fields)
+    }
+
+    r6.to.json(set, o.class = output.class, o.fields = output.fields)
+  }
   else set
 }
