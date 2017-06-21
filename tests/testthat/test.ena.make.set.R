@@ -8,7 +8,7 @@ test_that("Simple data.frame to accumulate and make set", {
   df.accum = ena.accumulate.data(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), code.names = codeNames);
 
   df.set = ena.make.set(df.accum)
-  df.set.lws = ena.make.set(df.accum, position.method = lws.positions)
+  df.set.lws = ena.make.set(df.accum, position.method = lws.positions.es)
 
   testthat::expect_equal(
     dim(df.set$data$centered$rotated),
