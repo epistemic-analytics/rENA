@@ -6,13 +6,3 @@
 \usage{
 linderoth_pos_es(adjMats, t)
 }
-\arguments{
-\item{adjMats}{Matrix of adjacency vectors}
-
-\item{t}{plotted po}
-}
-\description{
-Position method using Multiobjective, Component by Component,
-with Ellipsoidal Scaling
-}
-

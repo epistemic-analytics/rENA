@@ -19,9 +19,6 @@ test_that("Simple data.frame to accumulate and make set", {
     length(attr(df.set$data$centered$rotated, rENA::opts$UNIT_NAMES)[,UserName]),
     48
   );
-
-  df.set.json = ena.make.set(df.accum, position.method = lws.positions, output = "json")
-  testthat::expect_is(df.set.json, "list")
 })
 
 test_that("Simple data.frame to accumulate and make set with Linderoth method(s)", {

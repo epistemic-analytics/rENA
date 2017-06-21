@@ -164,33 +164,18 @@ ENAdata = R6::R6Class("ENAdata",
       dfDT.meta.poss = self$data.raw[, { nc = lapply(.SD, function(x) length(unique(x))); }, by=c(private$units.by), .SDcols=c(metaAvail)][,,.SDcols=metaAvail];
       metaAvail = colnames(dfDT.meta.poss)[rapply(dfDT.meta.poss, function(x) all(x == 1))]
       metaAvail = metaAvail[metaAvail != "ENA_UNIT"];
-      raw.meta = self$data.raw[!duplicated(ENA_UNIT)][ENA_UNIT %in% unique(self$data.units.accumulated$ENA_UNIT),c("ENA_UNIT",private$units.by,private$trajectory.by, metaAvail),,with=F];
+      raw.meta = self$data.raw[!duplicated(ENA_UNIT)][ENA_UNIT %in% unique(self$data.units.accumulated$ENA_UNIT),c("ENA_UNIT",metaAvail),,with=F];
 
       df.to.return = NULL;
       if(merge == T) {
-        df.to.return = merge(self$data.units.summed, raw.meta[,unique(colnames(raw.meta)),with=F], by=c("ENA_UNIT"), suffixes=c("",".y"))
+        df.to.return = merge(self$data.units.summed, raw.meta)
       } else {
-        df.to.return = merge(self$data.units.summed[,c("ENA_UNIT", private$trajectory.by),with=F],raw.meta,by=c("ENA_UNIT"), suffixes=c("","y"))
+        df.to.return = raw.meta
       }
 
-      attr(df.to.return, rENA::opts$UNIT_NAMES) = df.to.return[,  .SD ,with=T,.SDcols=c(private$units.by,private$trajectory.by)];
-      #self$data.units.summed[,  .SD ,with=T,.SDcols=c(private$units.by,private$trajectory.by)]
+      attr(df.to.return, rENA::opts$UNIT_NAMES) = self$data.units.summed[,  .SD ,with=T,.SDcols=c(private$units.by,private$trajectory.by)]
 
       df.to.return
-    },
-    print = function(...) {
-      args = list(...);
-      fields = NULL;
-      to.print = list();
-      if(is.null(args$fields)) {
-        fields = names(get(class(self))$public_fields)
-      } else {
-        fields = args$fields
-      }
-      for(f in fields) {
-        to.print[[f]] = self[[f]]
-      }
-      return(to.print);
     }
   ),
 
@@ -220,7 +205,7 @@ ENAdata = R6::R6Class("ENAdata",
       if(any(class(private$file) == "data.table")) {
         df_DT = private$file;
       } else {
-        if(is(private$file, "data.frame") == T) {
+        if(class(private$file) == "data.frame") {
           df = private$file;
         } else {
           df = read.csv(private$file);

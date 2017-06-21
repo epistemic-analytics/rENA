@@ -73,15 +73,14 @@ ena.plot.units = function(
     )
 
     for(x in 1:nrow(dfDT.trajs)) {
-      toPlot = unique(colnames(dfDT.trajs[x][[2]][[1]]))
       network.plot = plotly::add_trace(
         network.plot,
-        data=dfDT.trajs[x][[2]][[1]][,toPlot,with=FALSE],
+        data=dfDT.trajs[x][[2]][[1]],
         x = ~V1, y = ~V2,
         name=dfDT.trajs[x][[1]],
         mode="lines+markers",
         text = dfDT.trajs[x][[2]][[1]]$TRAJ_UNIT,
-        hoverinfo = "text+x+y"
+        hoverinfo = "text"
       )
     }
 
@@ -145,8 +144,8 @@ ena.plot.units = function(
         size = c(rep(unit.size * unit.size.multiplier, nrow(data)), rep(unit.group.size * unit.group.size.multiplier, ifelse(!is.null(dfDT.groups),nrow(dfDT.groups), 0)))
       ),
       showlegend = F,
-      text = ~name,
-      hoverinfo = "text+x+y"
+      text = dfDT$name,
+      hoverinfo = "text"
     )
     network.plot.layout = plotly::layout(
       network.plot,

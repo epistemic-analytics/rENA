@@ -9,8 +9,7 @@ ena.make.set(enaData, dims = 2, samples = 3, inPar = F,
   sphere.norm = dont_sphere_norm_c, center.data = center_data_c,
   optim.method = do_optimization, position.method = egr.positions,
   check.unique.positions = F, set.seed = F, rotate.means = F,
-  rotate.means.by = NULL, output = c("class", "json"),
-  output.fields = NULL, ...)
+  rotate.means.by = NULL, output = c("class", "json"), ...)
 }
 \arguments{
 \item{enaData}{\code{\link{ENAdata}} that will be used to generate an ENA set}
@@ -44,8 +43,6 @@ ena.make.set(enaData, dims = 2, samples = 3, inPar = F,
 \item{rotate.means.by}{[TBD]}
 
 \item{output}{[TBD]}
-
-\item{output.fields}{Fields to be included in JSON output}
 
 \item{...}{additional parameters addressed in inner function}
 }

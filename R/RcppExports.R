@@ -82,10 +82,6 @@ linderoth_pos <- function(adjMats, t) {
 }
 
 #' @title Multiobjective, Component by Component, with Ellipsoidal Scaling
-#' @description Position method using Multiobjective, Component by Component,
-#' with Ellipsoidal Scaling
-#' @param adjMats Matrix of adjacency vectors
-#' @param t plotted po
 linderoth_pos_es <- function(adjMats, t) {
     .Call('rENA_linderoth_pos_es', PACKAGE = 'rENA', adjMats, t)
 }

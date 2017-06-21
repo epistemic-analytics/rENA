@@ -87,10 +87,6 @@ double component_norm(MatrixXd w, VectorXd t, VectorXd x) {
 }
 
 //' @title Multiobjective, Component by Component, with Ellipsoidal Scaling
-//' @description Position method using Multiobjective, Component by Component,
-//' with Ellipsoidal Scaling
-//' @param adjMats Matrix of adjacency vectors
-//' @param t plotted po
 // [[Rcpp::export]]
 Rcpp::List linderoth_pos_es(Eigen::MatrixXd adjMats, Eigen::MatrixXd t) { // = R_NilValue ) {
   int upperTriSize = adjMats.cols();

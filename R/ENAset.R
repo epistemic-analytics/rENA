@@ -162,7 +162,7 @@ ENAset = R6::R6Class("ENAset",
       df.to.return = NULL;
       if(with.meta == T) {
         data.units = attr(data, rENA::opts$UNIT_NAMES);
-        df.to.return = cbind(
+        df.to.return = merge(
           data.table::data.table(
             data, data.units,
             ENA_UNIT=merge_columns_c(data.units, private$enaData$get("units.by")),
@@ -229,8 +229,8 @@ ENAset = R6::R6Class("ENAset",
         ena.plot.network(self, ...);
       } else {
         if(wh == "nodes") {
-          rotDF = as.data.frame(data.table::copy(self$nodes$positions$scaled));
-          rotDF$unit = rownames(self$nodes$positions$scaled);
+          rotDF = as.data.frame(data.table::copy(self$nodes$positions$scaled$positions));
+          rotDF$unit = rownames(self$nodes$positions$scaled$positions);
         } else if ( wh == "units" ) {
           rotDF = as.data.frame(data.table::copy(self$data$centered$rotated));
 
@@ -247,7 +247,7 @@ ENAset = R6::R6Class("ENAset",
           rotDF = rotDF[!rotDF$unit %in% hide,]
         }
 
-        p = plotly::plot_ly(
+        p = plot_ly(
           type = "scatter", data = rotDF,
           x = ~V1, y = ~V2,
           text = ~unit,
@@ -257,20 +257,6 @@ ENAset = R6::R6Class("ENAset",
         );
         return(p)
       }
-    },
-    print = function(...) {
-      args = list(...);
-      fields = NULL;
-      to.print = list();
-      if(is.null(args$fields)) {
-        fields = names(get(class(self))$public_fields)
-      } else {
-        fields = args$fields
-      }
-      for(f in fields) {
-        to.print[[f]] = self[[f]]
-      }
-      return(to.print);
     }
   ),
 
@@ -301,9 +287,11 @@ ENAset = R6::R6Class("ENAset",
     run = function() {
       # Reference for the ENAdata object
         df = private$enaData$data.units.summed.meta;
+
       ###
       # Backup of ENA data, this is not touched again.
       ###
+        #self$data$original = df[,(2):ncol(df), with=F];
         self$data$original = df[,grep("adjacency.code", colnames(df)), with=F]
 
       ###
@@ -313,7 +301,7 @@ ENAset = R6::R6Class("ENAset",
       ###
         self$data$raw = data.table::copy(self$data$original);
 
-    ###
+      ###
       # If non-binary, invoke the supplied correction method
       # on the raw data.
       ###
@@ -326,13 +314,15 @@ ENAset = R6::R6Class("ENAset",
         # }
       }
 
+        ### TODO- Weighted
+
       ###
       # Normalize the raw data using self$sphere.norm,
       # which defaults to calling rENA::dont_sphere_norm_c
       ###
         self$data$normed = self$sphere.norm(self$data$raw);
 
-      ##
+      ###
       # Convert the string vector of code names to their corresponding
       # co-occurence names and set as colnames for the self$data$normed
       ##
@@ -388,18 +378,7 @@ ENAset = R6::R6Class("ENAset",
       # Principal Component results
       ###
         else {
-            to.norm = data.table::data.table(
-              self$data$centered$normed,
-              merge_columns_c(
-                attr(
-                  self$data$centered$normed,
-                  rENA::opts$UNIT_NAMES
-                ),
-                self$get("enaData")$get("units.by")
-              )
-            )
-            to.norm = as.matrix(to.norm[,tail(.SD,n=1),.SDcols=colnames(to.norm)[which(colnames(to.norm) != "V2")],by=c("V2")][,2:ncol(to.norm)])
-            pcaResults = pca_c(to.norm, dims = private$dimensions);
+            pcaResults = pca_c(self$data$centered$normed, dims = private$dimensions);
             self$data$centered$pca = pcaResults$pca; # FIX - store as $data$rotation.matrix
             self$data$centered$latent = pcaResults$latent[private$dimensions]; ## TODO remove?
         }
