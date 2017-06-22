@@ -66,6 +66,12 @@ ENAset = R6::R6Class("ENAset",
       private$rotate.means <- rotate.means;
       private$rotate.means.by <- rotate.means.by;
 
+      #NEW CODE
+      self$unit.names = as.matrix(enaData$data.units.summed[,1])[,1];
+
+      self$codes = enaData$get("code.names");
+      #end new code
+
       self$sphere.norm <- sphere.norm;
       self$center.data <- center.data;
       self$optim.method <- optim.method;
@@ -76,6 +82,12 @@ ENAset = R6::R6Class("ENAset",
     ####
     ## Public Properties
     ####
+
+    ### NEW CODE
+    unit.names = NULL,
+    codes = NULL,
+    # end NEW CODE
+
     check.unique.positions = NULL,
     optim.method = NULL,
     sphere.norm = NULL,
@@ -138,6 +150,10 @@ ENAset = R6::R6Class("ENAset",
       } else if (x == "data") {
         private$enaData <- private$enaData$update(...);
       }
+
+      self$unit.names <- as.matrix(enaData$data.units.summed[,1])[,1];
+      self$codes <- enaData$get("code.names");
+
       return(self$process());
     },
 

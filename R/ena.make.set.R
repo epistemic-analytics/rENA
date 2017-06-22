@@ -56,6 +56,7 @@ ena.make.set <- function(
   rotate.means.by = NULL,
   output = c("class","json"),
   output.fields = NULL,
+  unit.names = NULL,
   ...
 ) {
   set = ENAset$new(
@@ -74,7 +75,13 @@ ena.make.set <- function(
     set.seed = set.seed,
     rotate.means = rotate.means,
     rotate.means.by = rotate.means.by,
+
+    unit.names = as.matrix(enaData$data.units.summed[,1])[,1],
+
+    codes = enaData$get("code.names"),
+
     ...
+
   )$process();
 
   output = match.arg(output);
