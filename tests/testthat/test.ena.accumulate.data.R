@@ -44,6 +44,29 @@ test_that("Accumulate weighted data.", {
   testthat::expect_true(all(apply(x$data.units.summed.meta[,.SD,.SDcols=colnames(x$data.units.summed.meta)[grep("^adj",colnames(x$data.units.summed.meta))]], 2, is.double)))
 })
 
+### NEW TEST
+test_that("Corrected data.units.summed equals manually corrected data.units.summed.raw (correction = log)", {
+  testdata = runif(24, 0, 1)
+  testmat = matrix(testdata, 4, dimnames=list(NULL,LETTERS[1:6]))
+  testmeta = data.frame(tr=1:4, unit=rep(1, 4))
+  testdf = cbind(testmeta, testmat)
+
+  x = ena.accumulate.data(testdf,
+                           units.by='unit',
+                           conversations.by='tr',
+                           units='1',
+                           code.names=LETTERS[1:6],
+                           window.size=4,
+                           binary=F, correction = log)
+
+  xtest = x$data.units.summed.raw;
+
+  cols = colnames(xtest)[grep("adjacency.code", colnames(xtest))];
+  xtest[, (cols) := lapply(.SD, log), .SDcols = cols];
+
+  testthat::expect_equal(x$data.units.summed, xtest);
+})
+
 test_that("Simple forwarded metadata", {
   fake.codes.len = 10;
   fake.codes <- function(x) sample(0:1,fake.codes.len, replace=T)

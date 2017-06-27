@@ -10,7 +10,7 @@ ena.make.set(enaData, dims = 2, samples = 3, inPar = F,
   optim.method = do_optimization, position.method = egr.positions,
   check.unique.positions = F, set.seed = F, rotate.means = F,
   rotate.means.by = NULL, output = c("class", "json"),
-  output.fields = NULL, ...)
+  output.fields = NULL, unit.names = NULL, ...)
 }
 \arguments{
 \item{enaData}{\code{\link{ENAdata}} that will be used to generate an ENA set}

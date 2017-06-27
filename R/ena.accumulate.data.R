@@ -16,6 +16,7 @@
 #' @param window.size.back Number of lines back to include window in stanza
 #' @param window.size.forward Number of lines forward in stanza window
 #' @param binary [TBD]
+#' @param correction [TBD]
 #' @param units.exclude Exclude certain columns based on units
 #' @param trajectory.by [TBD]
 #' @param trajectory.type [TBD]
@@ -57,6 +58,7 @@ ena.accumulate.data <- function(
   window.size.back = window.size,
   window.size.forward = NULL,
   binary = T,
+  correction = NULL,
   units.exclude = c(),
   trajectory.by = NULL,
   trajectory.type = c("accumulated","non-accumulated"),
@@ -74,6 +76,7 @@ ena.accumulate.data <- function(
     window.size.back,
     window.size.forward,
     binary,
+    correction,
     units.exclude,
     trajectory.by = trajectory.by,
     trajectory.type = match.arg(trajectory.type),

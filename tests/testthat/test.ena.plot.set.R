@@ -9,8 +9,9 @@ df.accum = ena.accumulate.data(
   df.file,
   units.by = c("UserName","Condition"),
   conversations.by = c("ActivityNumber","GroupName"),
-  code.names = codeNames
+  code.names = codeNames, window.size = 4
 );
+
 df.set.lws = ena.make.set(df.accum, position.method = lws.positions.es);
 
 df.accum.traj = ena.accumulate.data(
@@ -101,3 +102,7 @@ test_that("Plot a mean trajectory", {
 test_that("Plot a combined plot of units and nodes", {
   message("Test for units+nodes: not implemented")
 })
+
+
+
+
