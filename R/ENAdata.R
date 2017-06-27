@@ -15,6 +15,7 @@
 # @param window.size.back [TBD]
 # @param window.size.forward [TBD]
 # @param binary Logical, whether to convert code values to binary or allow for weigthed values
+# @param correction math operation by which to modify data for weighted values (i.e. log, sqrt)
 # @param units.selected deprecated
 # @param units.exclude [TBD]
 # @param trajectory.by [TBD]
@@ -37,6 +38,7 @@ ENAdata = R6::R6Class("ENAdata",
       window.size.back = window.size,
       window.size.forward = NULL,
       binary = T,
+      correction = NULL,
       units.selected = NULL,
       units.exclude = c(),
       trajectory.by = NULL,
@@ -55,6 +57,7 @@ ENAdata = R6::R6Class("ENAdata",
         "forward" = window.size.forward
       );
       private$binary <- binary;
+      private$correction <- correction;
       private$units.exclude <- units.exclude;
       private$trajectory.by <- trajectory.by;
       private$trajectory.type <- match.arg(trajectory.type);
@@ -72,6 +75,7 @@ ENAdata = R6::R6Class("ENAdata",
     data.units.summed = NULL,
     data.units.accumulated = NULL,
     data.units.summed.meta = NULL,
+    data.units.summed.raw = NULL,
 
     ####
     ## Public Functions
@@ -208,6 +212,7 @@ ENAdata = R6::R6Class("ENAdata",
     conversations.by = NULL,
     code.names = NULL,
     binary = NULL,
+    correction = NULL,
     units.exclude = NULL,
     trajectory.by = NULL,
     trajectory.type = NULL,
@@ -237,12 +242,25 @@ ENAdata = R6::R6Class("ENAdata",
         code.names = private$code.names,
         window = private$window.size,
         binary = private$binary,
+        correction = private$correction,
         units.exclude = private$units.exclude,
         trajectory.by = private$trajectory.by,
         trajectory.type = private$trajectory.type
       );
 
       self$data.units.summed = newRes$units.summed;
+
+
+
+      # save raw summed data prior to corrections
+      self$data.units.summed.raw = self$data.units.summed;
+
+      # If weighted (not binary) and correction specified, invoke correction
+      if(private$binary == F & !is.null(private$correction)) {
+        cols = colnames(self$data.units.summed)[grep("adjacency.code", colnames(self$data.units.summed))];
+        self$data.units.summed[, (cols) := lapply(.SD, private$correction), .SDcols = cols];
+      }
+
       self$data.units.accumulated = newRes$units.co.occurred;
       self$data.units.summed.meta = self$metadata(merge = T);
       private$units = newRes$units;

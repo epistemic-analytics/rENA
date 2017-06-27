@@ -3,7 +3,7 @@ accumulate.data <- function(
   stanzasBy, unitsBy, units,
   code.names, stanzas = NULL,
   window = list("back" = 1, "forward" = NULL),
-  append=F,binary=T,
+  append=F, binary=T, correction = NULL,
   units.exclude = c(),
   trajectory.by = NULL,
   trajectory.type = c("accumulated","non-accumulated")

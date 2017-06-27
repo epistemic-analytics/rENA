@@ -44,8 +44,7 @@ ENAset = R6::R6Class("ENAset",
       inPar=F,
       codeColumns=NULL,
       binary=T,
-      correction=NULL,
-      sphere.norm=sphere_norm_c,
+      sphere.norm=dont_sphere_norm_c,
       center.data=center_data_c,
       optim.method=do_optimization,
       position.method=egr.positions,
@@ -61,22 +60,17 @@ ENAset = R6::R6Class("ENAset",
       private$inPar <- inPar;
       private$codeColumns <- codeColumns;
       private$binary <- binary;
-      private$correction <- correction;
       private$set.seed <- set.seed;
       private$rotate.means <- rotate.means;
       private$rotate.means.by <- rotate.means.by;
+
+      self$unit.names = as.matrix(enaData$data.units.summed[,1])[,1];
+      self$codes = enaData$get("code.names");
 
       self$sphere.norm <- sphere.norm;
       self$center.data <- center.data;
       self$optim.method <- optim.method;
       self$position.method <- position.method;
-
-      #NEW CODE
-      assign("rs.test", self, envir = .GlobalEnv)
-      self$unit.names = as.matrix(enaData$data.units.summed[,1])[,1];
-
-      self$codes = enaData$get("code.names");
-      #end new code
       self$check.unique.positions <- check.unique.positions;
     },
 
@@ -84,10 +78,8 @@ ENAset = R6::R6Class("ENAset",
     ## Public Properties
     ####
 
-    ### NEW CODE
     unit.names = NULL,
     codes = NULL,
-    # end NEW CODE
 
     check.unique.positions = NULL,
     optim.method = NULL,
@@ -308,7 +300,6 @@ ENAset = R6::R6Class("ENAset",
     inPar = FALSE,
     codeColumns = NULL,
     binary = T,
-    correction = 0,
     N = NULL,
     n1 = NULL,
     n2 = NULL,
@@ -338,21 +329,6 @@ ENAset = R6::R6Class("ENAset",
       # is likely to be overwritten.
       ###
         self$data$raw = data.table::copy(self$data$original);
-
-      ###
-      # If non-binary, invoke the supplied correction method
-      # on the raw data.
-      ###
-      if(private$binary == F) {
-        self$data$raw = private$correction(self$data$raw);
-        # if(private$correction == 1) {
-        #   self$data$raw = log(self$data$raw + 1);
-        # } else if(private$correction == 2) {
-        #   self$data$raw = sqrt(self$data$raw);
-        # }
-      }
-
-        ### TODO- Weighted
 
       ###
       # Normalize the raw data using self$sphere.norm,
