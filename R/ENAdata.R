@@ -95,9 +95,9 @@ ENAdata = R6::R6Class("ENAdata",
     #'      sep - String to use as a seperator in the updated column names. Ignored if colnames == F}
     ####
     read = function(colnames = T, sep = " & ") {
-      namedData = data.table::copy(self$data);
+      namedData = data.table::copy(self$data.units.accumulated);
       if(colnames == T) {
-        namedRows = attr(self$data, "adjacency.matrix");
+        namedRows = attr(self$data.units.accumulated, "adjacency.matrix");
         #colnames(namedData) = c("ENA_UNIT", apply(namedRows, 2, function(x) paste(x[1], x[2], sep=sep)));
         colnames(namedData)[grep("adjacency.code",colnames(namedData))] = apply(namedRows, 2, function(x) paste(x[1], x[2], sep=sep))
       }
@@ -215,6 +215,7 @@ ENAdata = R6::R6Class("ENAdata",
       self$data.raw = df_DT;
       self$data.raw$ENA_UNIT = merge_columns_c(self$data.raw,private$units.by);
 
+      accumulate.data(self);
       newRes = accumulate.data(
         dfDT = df_DT,
         stanzasBy = private$conversations.by,

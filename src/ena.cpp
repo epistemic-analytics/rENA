@@ -298,6 +298,7 @@ Rcpp::List get_optimized_node_pos_c(
     correlationRowNames[i] = "Sample " + NumberToString(i+1);
   }
 
+  // Rcpp::Rcout << "Correlations: " << opted << std::endl;
   NumericMatrix correlations = opted( Range(opted.nrow()-2, opted.nrow()-2), _ ); // Range(0,opted.ncol()-num_samples-1) );
   correlations.attr("dim") = Dimension(num_samples,num_dims);
 

@@ -45,7 +45,7 @@ ena.make.set <- function(
   codeColumns=NULL,
   binary=T,
   correction=NULL,
-  sphere.norm=dont_sphere_norm_c,
+  sphere.norm=sphere_norm_c,
   center.data=center_data_c,
   optim.method=do_optimization,
   position.method=egr.positions,
@@ -54,6 +54,8 @@ ena.make.set <- function(
   rotate.means = F,
   rotate.means.by = NULL,
   output = c("class","json"),
+  output.fields = NULL,
+  unit.names = NULL,
   ...
 ) {
   set = ENAset$new(
@@ -72,7 +74,13 @@ ena.make.set <- function(
     set.seed = set.seed,
     rotate.means = rotate.means,
     rotate.means.by = rotate.means.by,
+
+    unit.names = as.matrix(enaData$data.units.summed[,1])[,1],
+
+    codes = enaData$get("code.names"),
+
     ...
+
   )$process();
 
   output = match.arg(output);

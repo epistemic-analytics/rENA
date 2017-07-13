@@ -201,6 +201,8 @@ Rcpp::List linderoth_pos_es(Eigen::MatrixXd adjMats, Eigen::MatrixXd t) { // = R
   return Rcpp::List::create(
     _("nodes") = X.transpose(),
     _("correlations") = compute_difference_correlations(centroids, t),
+    _("centroids") = centroids,
+    _("weights") = weights,
     _("points") = t
   );
 }
@@ -217,6 +219,6 @@ Rcpp::List linderoth_pos_es(Eigen::MatrixXd adjMats, Eigen::MatrixXd t) { // = R
 #   trajectory.by = c("ActivityNumber"), trajectory.type = "accumulated"
 # );
 # df.set.lws = ena.make.set(df.accum, position.method = lws.positions)
-# out = linderoth_pos_es(df.set.lws$data$normed, df.set.lws$data$centered$rotated)
+out = linderoth_pos_es(df.set.lws$data$normed, df.set.lws$data$centered$rotated)
 # out = linderoth_pos_es(adjMatrix, rotMatrix)
 */

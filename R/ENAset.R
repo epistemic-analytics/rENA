@@ -45,7 +45,7 @@ ENAset = R6::R6Class("ENAset",
       codeColumns=NULL,
       binary=T,
       correction=NULL,
-      sphere.norm=dont_sphere_norm_c,
+      sphere.norm=sphere_norm_c,
       center.data=center_data_c,
       optim.method=do_optimization,
       position.method=egr.positions,
@@ -70,12 +70,25 @@ ENAset = R6::R6Class("ENAset",
       self$center.data <- center.data;
       self$optim.method <- optim.method;
       self$position.method <- position.method;
+
+      #NEW CODE
+      assign("rs.test", self, envir = .GlobalEnv)
+      self$unit.names = as.matrix(enaData$data.units.summed[,1])[,1];
+
+      self$codes = enaData$get("code.names");
+      #end new code
       self$check.unique.positions <- check.unique.positions;
     },
 
     ####
     ## Public Properties
     ####
+
+    ### NEW CODE
+    unit.names = NULL,
+    codes = NULL,
+    # end NEW CODE
+
     check.unique.positions = NULL,
     optim.method = NULL,
     sphere.norm = NULL,
@@ -138,6 +151,10 @@ ENAset = R6::R6Class("ENAset",
       } else if (x == "data") {
         private$enaData <- private$enaData$update(...);
       }
+
+      self$unit.names <- as.matrix(enaData$data.units.summed[,1])[,1];
+      self$codes <- enaData$get("code.names");
+
       return(self$process());
     },
 
@@ -194,7 +211,9 @@ ENAset = R6::R6Class("ENAset",
     #' \preformatted{  Parameters:
     #'      x - Property to return. Defaults to 'enaData', returning the associated ENAdata object}
     ####
-    get = function(x = 'enaData') return(private[[x]]),
+    get = function(x = 'enaData') {
+      return(private[[x]])
+    },
 
     ####
     #' \code{plot()} - Plot ENAset node locations.
@@ -358,6 +377,7 @@ ENAset = R6::R6Class("ENAset",
       # FIX - store as $data$centered
       ###
         self$data$centered$normed = self$center.data(self$data$normed);
+        self$data$centered$normed.non.zero = remove_zero_rows_by_c(self$data$centered$normed, indices=self$data$normed);
 
         colnames(self$data$centered$normed) = codeNames_tri;
         rownames(self$data$centered$normed) = rownames(df);
@@ -397,8 +417,10 @@ ENAset = R6::R6Class("ENAset",
         self$data$centered$rotated.non.zero = remove_zero_rows_by_c(self$data$centered$rotated, indices=self$data$normed);
       ###
 
+      ###
+      # TODO: Document what the position.methods should be adding to the ENAset (e.g. node positions)
+      ###
       self = self$position.method(self);
-      #private$rotateNodes();
 
       return(self);
     },
@@ -409,63 +431,6 @@ ENAset = R6::R6Class("ENAset",
     update.projection = function() {
     },
     optimize = function() {
-    },
-
-    ###
-    # Rotate by rotation matrix
-    #
-    # --The rotation args needs to conform to the data
-    #   - Error in self$data$centered$normed %*% rotation:
-    #       non-conformable arguments
-    ###
-    rotateNodes = function() {
-#
-#       ###
-#       # Calculate the rotation distances
-#       ###
-#         self$rotation_dists = getRotationDistances_c(self$data$centered$rotated.non.zero);
-#       ###
-#
-#       ###
-#       # Perform the optimization
-#       ###
-#         self$data$optim = self$optim.method(self, inPar = private$inPar);
-#       ###
-#
-#       ###
-#       # Store the optimized node positions
-#       ###
-#         self$nodes$positions$optim = get_optimized_node_pos_c(
-#           self$data$normed.non.zero, private$dimensions, private$samples, opted = self$data$optim
-#         );
-#       ###
-#
-#       ###
-#       # Store the unscaled node positions
-#       ###
-#         self$nodes$positions$unscaled = full_opt_c(
-#           normed = self$data$normed.non.zero,
-#           rotated = self$data$centered$rotated.non.zero,
-#           optim_nodes = self$nodes$positions$optim,
-#           dims = private$dimensions, num_samples = private$samples
-#           ,checkUnique = self$check.unique.positions
-#         );
-#         rownames(self$nodes$positions$unscaled$positions) = private$enaData$get("codeNames");
-#       ###
-#
-#       ###
-#       # Scale the node positions
-#       ###
-#         self$nodes$positions$scaled = full_opt_soln(
-#           self$nodes$positions$unscaled$positions,
-#           self$data$normed.non.zero,
-#           self$data$centered$rotated.non.zero
-#         );
-#         rownames(self$nodes$positions$scaled$positions) = private$enaData$get("codeNames")
-#       ###
-#
-#
-#       return(self);
     }
   )
 )
