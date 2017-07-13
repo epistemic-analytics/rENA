@@ -10,6 +10,7 @@ egr.positions <- function(ena.set) {
   # Calculate the rotation distances
   ###
     ena.set$rotation_dists = getRotationDistances_c(ena.set$data$centered$rotated.non.zero);
+
   ###
 
   ###

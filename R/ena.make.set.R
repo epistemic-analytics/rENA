@@ -46,7 +46,7 @@ ena.make.set <- function(
   codeColumns=NULL,
   binary=T,
   correction=NULL,
-  sphere.norm=dont_sphere_norm_c,
+  sphere.norm=sphere_norm_c,
   center.data=center_data_c,
   optim.method=do_optimization,
   position.method=egr.positions,

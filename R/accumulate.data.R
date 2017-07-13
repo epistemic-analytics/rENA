@@ -46,6 +46,7 @@ accumulate.data <- function(
   # FIXME: Don't append on the results to the initial data.table, keep a separate
   #        to lookup the results for the co-occurred values later on.
   ##
+    # browser()
     if(window$back == 1) {
       dfDT.co.occurrences = dfDT_codes[,{
           ocs = data.table::as.data.table(rows_to_co_occurrences(.SD[,.SD,.SDcols=code.names, with=T]));
@@ -57,26 +58,22 @@ accumulate.data <- function(
         with=T
       ];
     } else {
-      dfDT.co.occurrences = dfDT_codes[,{
-          ocs = ref_window_df(.SD, windowSize=window$back, binary = binary);
-
-          # Return value from data.table back to dfDT.co.occurrences
-          data.table::data.table(.SD,ocs)
-        },
+      dfDT.co.occurrences = dfDT_codes[,
+          (codedTriNames) := ref_window_df(.SD[,.SD, .SDcols=code.names, with=T],windowSize=window$back, binary = binary),
         by=stanzasBy,
-        .SDcols=code.names,
+        .SDcols=c(unitsBy, code.names),
         with=T
       ];
     }
 
-    colnames(dfDT.co.occurrences)[grep("V\\d+",colnames(dfDT.co.occurrences))] = codedTriNames;
-    dfDT.co.occurrences$ENA_UNIT = dfDT_codes$ENA_UNIT;
+    # colnames(dfDT.co.occurrences)[grep("V\\d+",colnames(dfDT.co.occurrences))] = codedTriNames
+    #dfDT.co.occurrences$ENA_UNIT = merge_columns_c(dfDT.co.occurrences, cols=unitsBy, sep=".") #dfDT_codes$ENA_UNIT;
 
   ##
   # If units aren't supplied, use all available
   ##
     if(is.null(units)) {
-      units = dfDT_codes$ENA_UNIT;
+      units = dfDT.co.occurrences$ENA_UNIT;
     }
     if(!is.null(units.exclude) && length(units.exclude)>0){
       units = units[which(!units %in% units.exclude)];
@@ -85,7 +82,7 @@ accumulate.data <- function(
   ###
   # Keep original columns used for units
   ###
-    dfDT.co.occurrences[, (unitsBy) := dfDT_codes[,.SD,.SDcols=unitsBy]];
+    #dfDT.co.occurrences[, (unitsBy) := dfDT_codes[,.SD,.SDcols=unitsBy]];
 
   ###
   # Check whether operating as a Trajectory.
@@ -96,17 +93,10 @@ accumulate.data <- function(
       ###
       # Sum each unit found in dfDT.co.occurrences
       ###
-        dfDT.summed.units = dfDT.co.occurrences[
-          ENA_UNIT %in% units,
-          {
-            sums = ref_window_sum(.SD);
-            data.frame(ENA_ROW_IDX=.GRP, sums)
-          },
-          by=unitsBy,
-          .SDcols=(codedTriNames)
-        ];
+        dfDT.summed.units = dfDT.co.occurrences[ENA_UNIT %in% units, ref_window_sum(.SD),by = unitsBy, .SDcols = (codedTriNames)];
 
-        dfDT.summed.units$ENA_UNIT = merge_columns_c(dfDT.summed.units, unitsBy, sep=".");
+
+        #dfDT.summed.units$ENA_UNIT = merge_columns_c(dfDT.summed.units, unitsBy, sep=".");
     }
     ## Trajectory
     else {
@@ -147,8 +137,8 @@ accumulate.data <- function(
         stop("Unsupported Trajectory type.");
       }
 
-      dfDT.summed.units$ENA_UNIT = merge_columns_c(dfDT.summed.units, unitsBy, sep=".");
     }
+      dfDT.summed.units$ENA_UNIT = merge_columns_c(dfDT.summed.units, unitsBy, sep=".");
 
   ###
   # Name the rows an columns accordingly

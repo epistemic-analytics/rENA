@@ -96,14 +96,15 @@ DataFrame ref_window_df(
      * The rows in the current window. CurrentRow + Referrants == windowSize
      */
     arma::mat currRows2 = df_AsMatrix2( span( (row-(windowSize-1)>=0)?(row-(windowSize-1)):0,row ), span::all );
+
     arma::mat currRowsSummed = arma::sum(currRows2);
     arma::rowvec toUT = vector_to_ut(currRowsSummed);
 
     if(windowSize > 1 && row-1>=0) {
       //arma::mat currRows2_refs = df_AsMatrix2( span( (row-(windowSize-1)>=0)?(row-(windowSize-1)):0,(row-1>0)?row-1:0 ), span::all );
       arma::mat currRows2_refs = currRows2.head_rows(currRows2.n_rows-1);
-
       arma::mat currRow_refsSummed = arma::sum(currRows2_refs);
+
       arma::rowvec toUT_refs = vector_to_ut(currRow_refsSummed);
       arma::rowvec toUT_subs = toUT - toUT_refs;
 
@@ -112,7 +113,6 @@ DataFrame ref_window_df(
       df_CoOccurred.row(row) = toUT;
     }
   }
-
   if(binary == true) {
     df_CoOccurred.elem( find(df_CoOccurred > 0) ).ones();
   }
@@ -143,7 +143,6 @@ NumericMatrix ref_window_df2(
   for(int row = 0; row < dfRows; row++) {
     /** The rows in the CurrentWindow. CurrentRow + ReferringRows == windowSize */
     NumericMatrix currRows = df_asMatrix( Range( (row-(windowSize-1)>=0)?(row-(windowSize-1)):0,row ), _ );
-    Rcpp::Rcout << "Window " << row << ":" << std::endl << currRows << std::endl;
 
     /** Sum of the entire CurrentWindow */
     NumericVector currRowsSummed1 = Rcpp::colSums(currRows);
@@ -161,7 +160,6 @@ NumericMatrix ref_window_df2(
     if(windowSize > 1 && row-1>=0) {
       /** Select ReferringRows for the CurrentWindow */
       NumericMatrix currRow_refs = df_asMatrix( Range( (row-(windowSize-1)>=0) ? (row-(windowSize-1)): 0, (row-1>0)?row-1:0 ), _ );
-      Rcpp::Rcout << "Refs " << row << ":" << std::endl << currRow_refs << std::endl;
 
       /** Sum the ReferringRows for the CurrentWindow */
       NumericVector currRow_refsSummed = Rcpp::colSums(currRow_refs);

@@ -27,7 +27,6 @@ do_optimization = function(e, inPar = F, maxit = 1000)
       return(cor(t_pair_dists, dcentroids))
     }
     if(e_$get("set.seed") != F) {
-      browser();
       set.seed(e_$get("set.seed"));
     }
     suppressWarnings(result <- optim(par = runif(e$N,-3, 3),
@@ -102,7 +101,7 @@ do_optimization_2 = function(e, inPar=F, maxit = 1000) {
       set.seed(e_$get("set.seed"));
     }
     result <- suppressWarnings(optim(par = runif(N,limits$min, limits$max),
-                                     fn = calc_cor,
+                                   fn = calc_cor,
                                      gr = NULL,
                                      e, dim-1, # ... parameters to calc_cor()
                                      method = "Nelder-Mead",
