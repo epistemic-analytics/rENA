@@ -19,7 +19,7 @@ egr.positions <- function(enaset) {
     #enaset$data$optim = enaset$function.params$optim.method(enaset, inPar = enaset$get("inPar"));
 
     #NEW - just uses temporary local variable  --- SHOULD enaset$function.params$optim.method be replaced w/ do_optimization
-    optim = enaset$function.params$optim.method(enaset, inPar = enaset$get("inPar"));
+    optim = do_optimization(enaset, inPar = enaset$get("inPar"));
   ###
 
   ###

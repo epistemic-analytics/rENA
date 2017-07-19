@@ -1,5 +1,5 @@
 ##
-#' @title Accumulate Data from separate data frames
+#' @title Accumulate Data from csv
 #'
 #' @description This function accumulates rows of data.
 #'
@@ -20,7 +20,8 @@
 #' @param units.exclude Exclude certain columns based on units
 #' @param trajectory.by [TBD]
 #' @param trajectory.type [TBD]
-#' @param output [TBD]
+#' @param output ENAdata object or JSON string. Default: ENAdata
+#' @param output.fields Fields to be included in JSON output
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords data, accumulate
@@ -47,60 +48,34 @@
 #' @return \code{\link{ENAdata}} class object with accumulated data
 #'
 ##
-ena.accumulate.data <- function(
+ena.accumulate.data.file <- function(
+  file,
+  units.by = NULL,    # not included - to be removed
+  units = NULL,   ### included
+  conversations.by = NULL,    # to conversations (df of conversations)
+  codes = NULL,   ### included
 
-  ##### NOTE: units, conversations, and codes must be data frames with the same number of rows
-  units = NULL,   # data frame containing units
-  conversation = NULL,    # df containing conversations
-  codes = NULL,   # df containing codes
-  metadata = NULL,   #optional - df containing metadata to be appended
-
-  model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),   #use match arg and list?
-
-  weight.by = "binary",
-
+  #window.size = 1,
   window.size.back = 1,
   window.size.forward = NULL,
 
-  #####
-  mask = upper.tri(as.matrix(units)), #matrix (default - upper triangle of 1's)
+  weight.by = "binary",
+  #binary = T,     #part of weight.by
+  #correction = NULL,    #part of weight.by
 
   units.exclude = c(),      #leave for now
+
+  model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),   #use match arg and list?
+  #trajectory.by = NULL,     #no longer used, trajectories are always by activity
+  #trajectory.type = c("accumulated","non-accumulated"),     #into model
 
   output = c("class","json"),    #keep for now
   output.fields = NULL,       #keep for now
   ...
 ) {
-
-  ##### FOR TESTING
-  # df.units = data.frame(
-  #   Name=c("J","Z","D","A","S","M","N","L","W","R","T","P"),
-  #   Day=c(1,1,1,1,1,1,2,2,2,2,2,2),
-  #   ActivityNumber=c(1,1,1,1,2,2,2,2,3,3,3,3)
-  # );
-  # df.conversation = data.frame(
-  #   text=c("Jaskdjhfaerkasb","Zaskdjfasdnfioahefoihasopdifoiaefasd","Daldfiaosdjfasd",
-  #          "Akasdnf;kajsdnfkasdf","Sfjfaosifiifah","MdfiaihehhII","Nasdhfuohahsdfe",
-  #          "Llaskjdfla","Wasdkjfhasdfhia","Rasdhfkasdj","Tasduhasdfhu","PdkjaSUEBub")
-  # );
-  # df.codes = data.frame(
-  #   c1=c(1,1,1,1,1,0,0,1,1,0,0,1),
-  #   c2=c(1,1,1,0,0,1,0,0,0,0,0,1),
-  #   c3=c(0,0,1,0,1,0,1,0,0,0,1,0)
-  # );
-  # metadata = NULL;
-  #### END TESTING CODE
-
-  if(nrow(units) != nrow(conversation) || nrow(conversation) != nrow(codes))
-  df <- cbind(df.units, df.conversation);
-  df <- cbind(df, df.codes);
-  if(!is.null(metadata)) {
-    df <- cbind(df, metadata);
-  }
-  print(df);
-
+  print(file);
   data = ENAdata$new(
-    df,
+    file,
     units.by,
     units,
     conversations.by,
@@ -124,6 +99,14 @@ ena.accumulate.data <- function(
 
   data$function.call = sys.call();
   output = match.arg(output);
-  if(output == "json") r6.to.json(data)
+  if(output == "json") {
+    output.class = get(class(data))
+
+    if(is.null(output.fields)) {
+      output.fields = names(output.class$public_fields)
+    }
+
+    r6.to.json(data, o.class = output.class, o.fields = output.fields)
+  }
   else data
 }
