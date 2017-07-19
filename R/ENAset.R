@@ -10,10 +10,9 @@
 # @param dims Number of dimensions
 # @param samples Number of samples
 # @param inPar Peform in parallel
-# @param codeColumns Coded columns
 # @param binary Binary or Weighted
 # @param correction Function to perform weighted correction
-# @param sphere.norm Function to sphere normalize.  Provided:\cr
+# @param norm.by Function to sphere normalize.  Provided:\cr
 #   \code{dont_sphere_norm_c} - Default\cr
 #   \code{sphere_norm_c}
 # @param center.data Function to center data. Provided:\cr
@@ -21,7 +20,7 @@
 # @param optim.method Function to optimize node positions. Provided:\cr
 #   \code{do_optimization} - Default\cr
 #   \code{do_optimization_2}
-# @param position.method [TBD]
+# @param node.position.method [TBD]
 # @param check.unique.positions Check for uniqueness in positions
 # @param set.seed Force uniqueness across function calls, e.g - set.seed=42\cr Defaults to FALSE
 # @param rotate.means [TBD]
@@ -39,39 +38,41 @@ ENAset = R6::R6Class("ENAset",
     ####
     initialize = function(
       enaData,
-      dims=2,
-      samples=3,
-      inPar=F,
-      codeColumns=NULL,
-      binary=T,
-      sphere.norm=dont_sphere_norm_c,
-      center.data=center_data_c,
-      optim.method=do_optimization,
-      position.method=egr.positions,
-      check.unique.positions=F,
+      #dims = 2,
+      #samples = 3,
+      #inPar = F,
+
+      norm.by = sphere_norm_c,
+      center.data = center_data_c,
+      #optim.method = do_optimization,
+      node.position.method = lws.positions.es,
+      check.unique.positions = F,
       set.seed = F,
       rotate.means = F,
       rotate.means.by = NULL,
       ...
     ) {
-      private$enaData <- enaData;
-      private$dimensions <- dims;
-      private$samples <- samples;
-      private$inPar <- inPar;
-      private$codeColumns <- codeColumns;
-      private$binary <- binary;
+      self$enaData <- enaData;
+
+      #private$dimensions <- dims;
+      #private$samples <- samples;
+      #private$inPar <- inPar;
+
       private$set.seed <- set.seed;
       private$rotate.means <- rotate.means;
       private$rotate.means.by <- rotate.means.by;
 
-      self$unit.names = as.matrix(enaData$data.units.summed[,1])[,1];
-      self$codes = enaData$get("code.names");
+      #originally had here just to have at a high level, move to ENAplot?
+      self$unit.names <- as.matrix(enaData$adjacency.vectors[,1])[,1];
+      self$codes <- enaData$codes;
 
-      self$sphere.norm <- sphere.norm;
-      self$center.data <- center.data;
-      self$optim.method <- optim.method;
-      self$position.method <- position.method;
-      self$check.unique.positions <- check.unique.positions;
+      self$function.call <- sys.call();
+
+      self$function.params$norm.by <- norm.by;    #was sphere_norm
+      self$function.params$center.data <- center.data;
+      #self$function.params$optim.method <- optim.method;
+      self$function.params$node.position.method <- node.position.method;    #was position.method
+      self$function.params$check.unique.positions <- check.unique.positions;
     },
 
     ####
@@ -79,31 +80,68 @@ ENAset = R6::R6Class("ENAset",
     ####
 
     unit.names = NULL,
-    codes = NULL,
 
-    check.unique.positions = NULL,
-    optim.method = NULL,
-    sphere.norm = NULL,
-    center.data = NULL,
-    position.method = NULL,
-    data = list(
-      original = NULL,
-      raw = NULL,
-      normed = NULL,
-      centered = list(
-        normed = NULL,
-        rotated = NULL
-      ),
-      optim = NULL
+
+     #####changed to list - function.params
+    # check.unique.positions = NULL,
+    # optim.method = NULL,
+    # norm.by = NULL,
+    # center.data = NULL,
+    # position.method = NULL,
+
+    #data = list(
+      #original = NULL,   ### changed to private (data.original)
+      #raw = NULL,    # -> points.raw
+      #normed = NULL, # -> line.weights
+      #centered = list(
+      #  normed = NULL,    # -> points.normed.centered
+      #  rotated = NULL    # -> points.rotated
+      #),
+      #optim = NULL    #### USED IN egr.positions - replaced w/ temporary variable in function
+    #),
+
+    #nodes = list(
+    #  positions = list(
+    #    optim = NULL,    #### (contains correlation) optim$correlation ->correlation (possibly also variance)
+    #    unscaled = NULL  #going to be removed - currently used in egr.positions
+    #    scaled = NULL   #### -> node.positions
+    #  )
+    #),
+
+    rotation_dists = NULL,  #leave for now - to be removed for a temp variable
+
+    #######   NEW PUBLIC PROPERTIES
+    enaData = NULL,
+
+    points.raw = NULL,    #was data$raw
+    points.normed.centered = NULL,    #was data$centered$normed
+    points.rotated = NULL,    #was data$centered$rotated
+    points.rotated.non.zero = NULL,
+
+    line.weights = NULL,   #was data$normed
+    line.weights.non.zero = NULL,
+    line.weights.unrotated = NULL,
+
+    #### NEW
+    node.position.method = NULL,   #was position.method
+
+    node.positions = NULL,  #was nodes$positions$scaled
+
+    codes = NULL,   #same as before
+
+    rotation = NULL,   ## new - ENARotation object
+
+    correlation = NULL,   #not formerly listed, comes from optimized node positions in egr.positions
+    variance = NULL,     #was self$data$centered$latent
+
+    function.call = NULL,     #new - string reping function call
+    function.params = list(   #list containing parameters function was called with
+      check.unique.positions = NULL,
+      optim.method = do_optimization,   #always this - should it be removed?
+      norm.by = NULL,
+      center.data = NULL,
+      position.method = NULL
     ),
-    nodes = list(
-      positions = list(
-        optim = NULL,
-        unscaled = NULL,
-        scaled = NULL
-      )
-    ),
-    rotation_dists = NULL,
 
     ####
     ## Public Functions
@@ -117,7 +155,7 @@ ENAset = R6::R6Class("ENAset",
     #' \preformatted{  Example:
     #'     update(
     #'       x="set",
-    #'       data=private$enaData,
+    #'       data=self$enaData,
     #'       dims=private$dimensions,
     #'       samples=private$samples,
     #'       ...
@@ -131,21 +169,21 @@ ENAset = R6::R6Class("ENAset",
     ####
     update = function(
       x = "set",
-      data = private$enaData,
+      data = self$enaData,
       dims = private$dimensions,
       samples = private$samples,
       ...
     ) {
       if(x == "set") {
-        private$enaData <- data;
+        self$enaData <- data;
         private$dimensions <- dims;
         private$samples <- samples;
       } else if (x == "data") {
-        private$enaData <- private$enaData$update(...);
+        self$enaData <- self$enaData$update(...);
       }
 
-      self$unit.names <- as.matrix(enaData$data.units.summed[,1])[,1];
-      self$codes <- enaData$get("code.names");
+      self$unit.names <- as.matrix(enaData$adjacency.vectors[,1])[,1];
+      self$codes <- enaData$get("codes");
 
       return(self$process());
     },
@@ -158,15 +196,16 @@ ENAset = R6::R6Class("ENAset",
       return(private$run())
     },
 
+    ####
     get.data = function(wh = c("normed","centered","rotated"), with.meta = T) {
       wh =  match.arg(wh);
       data = NULL;
       if( wh == "normed" ) {
-        data = self$data$normed
+        data = self$line.weights
       } else if ( wh == "centered" ) {
-        data = self$data$centered$normed
+        data = self$points.normed.centered
       } else if ( wh == "rotated" ) {
-        data = self$data$centered$rotated
+        data = self$points.rotated
       }
       df.to.return = NULL;
       if(with.meta == T) {
@@ -174,10 +213,10 @@ ENAset = R6::R6Class("ENAset",
         df.to.return = merge(
           data.table::data.table(
             data, data.units,
-            ENA_UNIT=merge_columns_c(data.units, private$enaData$get("units.by")),
-            TRAJ_UNIT=merge_columns_c(data.units, c(private$enaData$get("units.by"), private$enaData$get("trajectory.by")))
+            ENA_UNIT=merge_columns_c(data.units, self$enaData$get("units.by")),
+            TRAJ_UNIT=merge_columns_c(data.units, c(self$enaData$get("units.by"), self$enaData$get("trajectory.by")))
           ),
-          private$enaData$metadata()
+          self$enaData$add.metadata()
         )
       } else {
         df.to.return = data
@@ -192,18 +231,19 @@ ENAset = R6::R6Class("ENAset",
     #' \preformatted{  Parameters:
     #'    rotation - Defaults to ENAdata$centered$pca}
     ####
-    rotate = function(rotation = self$data$centered$pca) {
-      return(private$rotateNodes(rotation))
-    },
+    # rotate = function(rotation = self$data$centered$pca) {
+    #   return(private$rotateNodes(rotation))
+    # },
+
 
     ####
     #' \code{get()} - Return a read-only property
     #' \preformatted{  Example:
-    #'     get( x = 'enaData' )}
+    #'     get( x = 'file' )}
     #' \preformatted{  Parameters:
-    #'      x - Property to return. Defaults to 'enaData', returning the associated ENAdata object}
+    #'      x - Property to return. Defaults to 'file', returning the original data}
     ####
-    get = function(x = 'enaData') {
+    get = function(x = "enaData") {
       return(private[[x]])
     },
 
@@ -240,13 +280,13 @@ ENAset = R6::R6Class("ENAset",
         ena.plot.network(self, ...);
       } else {
         if(wh == "nodes") {
-          rotDF = as.data.frame(data.table::copy(self$nodes$positions$scaled)); #$positions));
-          rotDF$unit = rownames(self$nodes$positions$scaled);
+          rotDF = as.data.frame(data.table::copy(self$node.positions));
+          rotDF$unit = rownames(self$node.positions);
         } else if ( wh == "units" ) {
-          rotDF = as.data.frame(data.table::copy(self$data$centered$rotated));
+          rotDF = as.data.frame(data.table::copy(self$points.rotated));
 
           if(!is.null(name.units.by)) {
-            rotDF$unit = attr(self$data$centered$rotated, rENA::opts$UNIT_NAMES)[,{apply(.SD,1,function(x){paste(trimws(x),collapse=name.units.sep)})},with=T,.SDcols=name.units.by];
+            rotDF$unit = attr(self$points.rotated, rENA::opts$UNIT_NAMES)[,{apply(.SD,1,function(x){paste(trimws(x),collapse=name.units.sep)})},with=T,.SDcols=name.units.by];
           } else {
             rotDF$unit = rownames(rotDF);
           }
@@ -294,18 +334,24 @@ ENAset = R6::R6Class("ENAset",
     ####
     ## Private Properties
     ####
-    enaData = NULL,
+
+    #new
+    data.original = NULL,
+    optim = NULL,
+
+    #
     dimensions = 2,
     samples = 3,
     inPar = FALSE,
-    codeColumns = NULL,
-    binary = T,
+
     N = NULL,
     n1 = NULL,
     n2 = NULL,
     K = NULL,
     k1 = NULL,
     k2 = NULL,
+
+    # what to do with these?
     set.seed = F,
     rotate.means = F,
     rotate.means.by = NULL,
@@ -315,43 +361,41 @@ ENAset = R6::R6Class("ENAset",
     ####
     run = function() {
       # Reference for the ENAdata object
-        df = private$enaData$data.units.summed.meta;
-
+      df = self$enaData$metadata;
       ###
       # Backup of ENA data, this is not touched again.
       ###
-        #self$data$original = df[,(2):ncol(df), with=F];
-        self$data$original = df[,grep("adjacency.code", colnames(df)), with=F]
+      private$data.original = df[,grep("adjacency.code", colnames(df)), with=F]
 
       ###
       # Copy of the original data, this is used for all
-      # further operations. Unlike, `data$original`, this
+      # further operations. Unlike, `data.original`, this
       # is likely to be overwritten.
       ###
-        self$data$raw = data.table::copy(self$data$original);
+      self$points.raw = data.table::copy(private$data.original);
 
       ###
-      # Normalize the raw data using self$sphere.norm,
+      # Normalize the raw data using self$function.params$norm.by,
       # which defaults to calling rENA::dont_sphere_norm_c
       ###
-        self$data$normed = self$sphere.norm(self$data$raw);
+      self$line.weights = self$function.params$norm.by(self$points.raw);
 
       ###
       # Convert the string vector of code names to their corresponding
-      # co-occurence names and set as colnames for the self$data$normed
+      # co-occurence names and set as colnames for the self$line.weights
       ##
-        codeNames_tri = svector_to_ut(private$enaData$get("code.names"));
-        colnames(self$data$normed) = codeNames_tri;
+      codeNames_tri = svector_to_ut(self$enaData$codes);
+      colnames(self$line.weights) = codeNames_tri;
       # set the rownames to that of the original ENAdata file object
-        rownames(self$data$normed) = rownames(df);
-        attr(self$data$normed, rENA::opts$UNIT_NAMES) = attr(df, rENA::opts$UNIT_NAMES) #df[, .SD, with=T, .SDcols=private$enaData$get("unitsBy")];
+      rownames(self$line.weights) = rownames(df);
+      attr(self$line.weights, rENA::opts$UNIT_NAMES) = attr(df, rENA::opts$UNIT_NAMES) #df[, .SD, with=T, .SDcols=self$enaData$get("unitsBy")];
       ###
 
       ###
       # Remove the zeroed rows
       #  - Used specifically when performing the optimization
       ###
-        self$data$normed.non.zero = remove_zero_rows_c(self$data$normed);
+      self$line.weights.non.zero = remove_zero_rows_c(self$line.weights);
       ###
 
       ###
@@ -359,63 +403,74 @@ ENAset = R6::R6Class("ENAset",
       # values directly from vectors later on. Avoids having to create
       # larger, under-used matrices.
       ###
-        private$N = getN(self$data$normed.non.zero);
-        private$K = getK(self$data$normed.non.zero);
-        private$n1 = triIndices(private$N, 0) + 1;
-        private$n2 = triIndices(private$N, 1) + 1;
-        private$k1 = triIndices(private$K, 0) + 1;
-        private$k2 = triIndices(private$K, 1) + 1;
+      private$N = getN(self$line.weights.non.zero);
+      private$K = getK(self$line.weights.non.zero);
+      private$n1 = triIndices(private$N, 0) + 1;
+      private$n2 = triIndices(private$N, 1) + 1;
+      private$k1 = triIndices(private$K, 0) + 1;
+      private$k2 = triIndices(private$K, 1) + 1;
       ###
 
       ###
       # Center the normed data
       # FIX - store as $data$centered
       ###
-        self$data$centered$normed = self$center.data(self$data$normed);
-        self$data$centered$normed.non.zero = remove_zero_rows_by_c(self$data$centered$normed, indices=self$data$normed);
+      self$points.normed.centered = self$function.params$center.data(self$line.weights);
 
-        colnames(self$data$centered$normed) = codeNames_tri;
-        rownames(self$data$centered$normed) = rownames(df);
-        attr(self$data$centered$normed, rENA::opts$UNIT_NAMES) = attr(self$data$normed, rENA::opts$UNIT_NAMES)
+      colnames(self$points.normed.centered) = codeNames_tri;
+      rownames(self$points.normed.centered) = rownames(df);
+      attr(self$points.normed.centered, rENA::opts$UNIT_NAMES) = attr(self$line.weights, rENA::opts$UNIT_NAMES)
       ###
 
       ###
       # Means Rotations
       ###
-        if(private$rotate.means == T) {
-          #for(group in names(private$rotate.means.by)) {
-            self$data$normed.unrotated = self$data$normed;
-            self$data$centered$pca = ena.rotate.by.mean(self$data$normed, private$rotate.means.by); #[[group]]);
-          #}
-        }
+      if(private$rotate.means == T) {
+        #for(group in names(private$rotate.means.by)) {
+        self$line.weights.unrotated = self$line.weights;
+            ### used to be  self$data$centered$pca
+        self$rotation = ena.rotate.by.mean(self$line.weights, private$rotate.means.by); #[[group]]);
+        #}
+      }
 
       ###
       # Principal Component results
       ###
-        else {
-            pcaResults = pca_c(self$data$centered$normed, dims = private$dimensions);
-            self$data$centered$pca = pcaResults$pca; # FIX - store as $data$rotation.matrix
-            self$data$centered$latent = pcaResults$latent[private$dimensions]; ## TODO remove?
-        }
+      else {
+        to.norm = data.table::data.table(
+          self$points.normed.centered,
+          merge_columns_c(
+            attr(
+              self$points.normed.centered,
+              rENA::opts$UNIT_NAMES
+            ),
+            self$enaData$get("units.by")
+          )
+        )
+        to.norm = as.matrix(to.norm[,tail(.SD,n=1),.SDcols=colnames(to.norm)[which(colnames(to.norm) != "V2")],by=c("V2")][,2:ncol(to.norm)]);
+        pcaResults = pca_c(to.norm, dims = private$dimensions);
+        ### used to be  self$data$centered$pca
+        self$rotation = pcaResults$pca;
+        ### used to be self$data$centered$latent
+        self$variance = pcaResults$latent[private$dimensions];
+      }
       ###
 
       ###
       # Generated the rotated points
       ###
-        self$data$centered$rotated = self$data$centered$normed %*% self$data$centered$pca;
-        attr(self$data$centered$rotated, rENA::opts$UNIT_NAMES) = attr(self$data$centered$normed, rENA::opts$UNIT_NAMES);
+      self$points.rotated = self$points.normed.centered %*% self$rotation;
+      attr(self$points.rotated, rENA::opts$UNIT_NAMES) = attr(self$points.normed.centered, rENA::opts$UNIT_NAMES);
       ###
 
       ###
       # Remove zero rows from centered data
       ###
-        self$data$centered$rotated.non.zero = remove_zero_rows_by_c(self$data$centered$rotated, indices=self$data$normed);
+      self$points.rotated.non.zero = remove_zero_rows_by_c(self$points.rotated, indices=self$line.weights);
       ###
 
-      ###
-      # TODO: Document what the position.methods should be adding to the ENAset (e.g. node positions)
-      ###
-      self = self$position.method(self);
+      self = self$function.params$node.position.method(self);
+      #private$rotateNodes();
 
       return(self);
     },
@@ -426,6 +481,65 @@ ENAset = R6::R6Class("ENAset",
     update.projection = function() {
     },
     optimize = function() {
+    },
+
+    ###
+    # Rotate by rotation matrix
+    #
+    # --The rotation args needs to conform to the data
+    #   - Error in self$points.normed.centered %*% rotation:
+    #       non-conformable arguments
+    ###
+    rotateNodes = function() {
+#
+#       ###
+#       # Calculate the rotation distances
+#       ###
+#         self$rotation_dists = getRotationDistances_c(self$points.rotated.non.zero);
+#       ###
+#
+#       ###
+#       # Perform the optimization
+#       ### --- OLD VERSION
+#         self$data$optim = self$function.params$optim.method(self, inPar = private$inPar);
+#       ### --- NEW VERSION
+#         private$optim = self$function.params$optim.method(self, inPar = private$inPar);
+#       ###
+
+#       # Store the optimized node positions
+#       ### --- OLD VERSION
+#         self$nodes$positions$optim = get_optimized_node_pos_c(
+#           self$line.weights.non.zero, private$dimensions, private$samples, opted = self$data$optim
+#         );
+#       ### --- NEW VERSION
+#
+#
+#       ###
+#       # Store the unscaled node positions
+#       ###
+#         self$nodes$positions$unscaled = full_opt_c(
+#           normed = self$line.weights.non.zero,
+#           rotated = self$points.rotated.non.zero,
+#           optim_nodes = self$nodes$positions$optim,
+#           dims = private$dimensions, num_samples = private$samples
+#           ,checkUnique = self$function.params$check.unique.positions
+#         );
+#         rownames(self$nodes$positions$unscaled$positions) = self$enaData$get("codeNames");
+#       ###
+#
+#       ###
+#       # Scale the node positions
+#       ###
+#         self$node.positions = full_opt_soln(
+#           self$nodes$positions$unscaled$positions,
+#           self$line.weights.non.zero,
+#           self$points.rotated.non.zero
+#         );
+#         rownames(self$node.positions$positions) = self$enaData$get("codeNames")
+#       ###
+#
+#
+#       return(self);
     }
   )
 )

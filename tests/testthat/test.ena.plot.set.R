@@ -9,7 +9,7 @@ df.accum = ena.accumulate.data(
   df.file,
   units.by = c("UserName","Condition"),
   conversations.by = c("ActivityNumber","GroupName"),
-  code.names = codeNames, window.size = 4
+  codes = codeNames, window.size = 4
 );
 
 df.set.lws = ena.make.set(df.accum, position.method = lws.positions.es);
@@ -18,7 +18,7 @@ df.accum.traj = ena.accumulate.data(
   df.file,
   units.by = c("UserName","Condition"),
   conversations.by = c("ActivityNumber","GroupName"),
-  code.names = codeNames,
+  codes = codeNames,
   trajectory.by = c("ActivityNumber"),
   trajectory.type = "accumulated"
 );

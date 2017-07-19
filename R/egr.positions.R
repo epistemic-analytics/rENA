@@ -5,51 +5,65 @@
 #
 # @export
 ##
-egr.positions <- function(ena.set) {
+egr.positions <- function(enaset) {
   ###
   # Calculate the rotation distances
   ###
-    ena.set$rotation_dists = getRotationDistances_c(ena.set$data$centered$rotated.non.zero);
-
+    enaset$rotation_dists = getRotationDistances_c(enaset$points.rotated.non.zero);
   ###
 
   ###
   # Perform the optimization
   ###
-    ena.set$data$optim = ena.set$optim.method(ena.set, inPar = ena.set$get("inPar"));
+    #OLD
+    #enaset$data$optim = enaset$function.params$optim.method(enaset, inPar = enaset$get("inPar"));
+
+    #NEW - just uses temporary local variable  --- SHOULD enaset$function.params$optim.method be replaced w/ do_optimization
+    optim = enaset$function.params$optim.method(enaset, inPar = enaset$get("inPar"));
   ###
 
   ###
   # Store the optimized node positions
-  ###
-    ena.set$nodes$positions$optim = get_optimized_node_pos_c(
-      ena.set$data$normed.non.zero, ena.set$get("dimensions"), ena.set$get("samples"), opted = ena.set$data$optim
+  ### - OLD
+    #enaset$nodes$positions$optim = get_optimized_node_pos_c(
+    #  enaset$line.weights.non.zero, enaset$get("dimensions"), enaset$get("samples"), opted = enaset$data$optim
+    #);
+  ### - NEW ---
+    nodes.positions.optim = get_optimized_node_pos_c(
+      enaset$line.weights.non.zero, enaset$get("dimensions"), enaset$get("samples"), opted = optim
     );
-  ###
-
+    enaset$correlation = nodes.positions.optim["Correlations"];
   ###
   # Store the unscaled node positions
-  ###
-    ena.set$nodes$positions$unscaled = full_opt_c(
-      normed = ena.set$data$normed.non.zero,
-      rotated = ena.set$data$centered$rotated.non.zero,
-      optim_nodes = ena.set$nodes$positions$optim,
-      dims = ena.set$get("dimensions"), num_samples = ena.set$get("samples")
-      ,checkUnique = ena.set$check.unique.positions
+  ### --- OLD
+    # enaset$nodes$positions$unscaled = full_opt_c(
+    #   normed = enaset$line.weights.non.zero,
+    #   rotated = enaset$points.rotated.non.zero,
+    #   optim_nodes = nodes.positions.optim,
+    #   dims = enaset$get("dimensions"), num_samples = enaset$get("samples")
+    #   ,checkUnique = enaset$function.params$check.unique.positions
+    # );
+    # rownames(enaset$nodes$positions$unscaled$positions) = enaset$enaData$codes;
+  ### --- NEW
+    nodes.positions.unscaled = full_opt_c(
+      normed = enaset$line.weights.non.zero,
+      rotated = enaset$points.rotated.non.zero,
+      optim_nodes = nodes.positions.optim,
+      dims = enaset$get("dimensions"), num_samples = enaset$get("samples")
+      ,checkUnique = enaset$function.params$check.unique.positions
     );
-    rownames(ena.set$nodes$positions$unscaled$positions) = ena.set$get("enaData")$get("code.names");
-  ###
+    rownames(nodes.positions.unscaled$positions) = enaset$enaData$codes;
 
   ###
   # Scale the node positions
   ###
-    ena.set$nodes$positions$scaled = full_opt_soln(
-      ena.set$nodes$positions$unscaled$positions,
-      ena.set$data$normed.non.zero,
-      ena.set$data$centered$rotated.non.zero
+    enaset$node.positions = full_opt_soln(
+      nodes.positions.unscaled$positions,
+      enaset$line.weights.non.zero,
+      enaset$points.rotated.non.zero
     )$positions;
-    rownames(ena.set$nodes$positions$scaled) = ena.set$get("enaData")$get("code.names");
+    rownames(enaset$node.positions) = enaset$enaData$codes;
   ###
 
-  return(ena.set);
+  return(enaset);
 }
