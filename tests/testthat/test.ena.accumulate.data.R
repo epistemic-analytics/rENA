@@ -37,7 +37,7 @@ test_that("Accumulate weighted data.", {
                           conversations.by='tr',
                           units='1',
                           codes=LETTERS[1:6],
-                          window.size=4,
+                          window.size.back=4,
                           weight.by = "weighted")
                           #binary=F)
 
@@ -57,7 +57,7 @@ test_that("Corrected adjacency.vectors equals manually corrected raw data (corre
                            conversations.by='tr',
                            units='1',
                            codes=LETTERS[1:6],
-                           window.size=4,
+                           window.size.back=4,
                            weight.by = log)
                            #binary=F,
                            #correction = log)
