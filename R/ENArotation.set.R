@@ -28,16 +28,25 @@ ENARotationSet = R6::R6Class("ENARotationSet",
     #######
     initialize = function(
       file,
-      unitsBy = NULL, units = NULL,
-      conversationsBy = NULL,
-      codeNames = NULL,
-      windowSize = 1,
-      binary = T,
-      unitsSelected = NULL,
-      units.exclude = c(),
+
       ...
     ) {
 
-    }
+
+
+    },
+
+    ####
+    ## Public Properties
+    ####
+
+    rotation = NULL,
+    node.positions = NULL,
+    codes = NULL
+  ),
+
+  private = list(
+
   )
-);
+
+)

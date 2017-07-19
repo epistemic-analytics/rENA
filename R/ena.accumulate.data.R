@@ -11,7 +11,7 @@
 #' @param units.by Delimits columns based on the units
 #' @param units Columns used based on units
 #' @param conversations.by Columns used in the conversation
-#' @param code.names Columns used based on codes
+#' @param codes Columns used based on codes
 #' @param window.size Number of lines in the stanza
 #' @param window.size.back Number of lines back to include window in stanza
 #' @param window.size.forward Number of lines forward in stanza window
@@ -42,7 +42,7 @@
 #' ena.accumulate.data(
 #'   df.file, units.by = c("UserName","Condition"),
 #'   conversations.by = c("ActivityNumber","GroupName"),
-#'   code.names = codeNames
+#'   codes = codeNames
 #' )
 #' }
 #' @return \code{\link{ENAdata}} class object with accumulated data
@@ -50,20 +50,27 @@
 ##
 ena.accumulate.data <- function(
   file,
-  units.by = NULL,
-  units = NULL,
-  conversations.by = NULL,
-  code.names = NULL,
-  window.size = 1,
-  window.size.back = window.size,
+  units.by = NULL,    # not included - to be removed
+  units = NULL,   ### included
+  conversations.by = NULL,    # to conversations (df of conversations)
+  codes = NULL,   ### included
+
+  #window.size = 1,
+  window.size.back = 1,
   window.size.forward = NULL,
-  binary = T,
-  correction = NULL,
-  units.exclude = c(),
-  trajectory.by = NULL,
-  trajectory.type = c("accumulated","non-accumulated"),
-  output = c("class","json"),
-  output.fields = NULL,
+
+  weight.by = "binary",
+  #binary = T,     #part of weight.by
+  #correction = NULL,    #part of weight.by
+
+  units.exclude = c(),      #leave for now
+
+  model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),   #use match arg and list?
+  #trajectory.by = NULL,     #no longer used, trajectories are always by activity
+  #trajectory.type = c("accumulated","non-accumulated"),     #into model
+
+  output = c("class","json"),    #keep for now
+  output.fields = NULL,       #keep for now
   ...
 ) {
   data = ENAdata$new(
@@ -71,15 +78,21 @@ ena.accumulate.data <- function(
     units.by,
     units,
     conversations.by,
-    code.names,
+    codes,
+
     window.size,
     window.size.back,
     window.size.forward,
-    binary,
-    correction,
+
+    weight.by,
+    #binary,
+    #correction,
+
     units.exclude,
-    trajectory.by = trajectory.by,
-    trajectory.type = match.arg(trajectory.type),
+
+    model = match.arg(model),
+    #trajectory.by = trajectory.by,
+    #trajectory.type = match.arg(trajectory.type),
     ...
   );
 

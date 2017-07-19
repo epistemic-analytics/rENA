@@ -210,8 +210,8 @@ Rcpp::List linderoth_pos_es(Eigen::MatrixXd adjMats, Eigen::MatrixXd t) { // = R
 }
 
 /*** R
-#linderoth_pos(4, enaset$data$normed)
-#linderoth_pos(enaset$data$normed[1,4])
+#linderoth_pos(4, enaset$line.weights)
+#linderoth_pos(enaset$line.weights[1,4])
 #linderoth_pos(testAdjMatsTris)
 # df.file <- system.file("extdata", "rs.data.csv", package="rENA")
 # codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
@@ -221,6 +221,6 @@ Rcpp::List linderoth_pos_es(Eigen::MatrixXd adjMats, Eigen::MatrixXd t) { // = R
 #   trajectory.by = c("ActivityNumber"), trajectory.type = "accumulated"
 # );
 # df.set.lws = ena.make.set(df.accum, position.method = lws.positions)
-# out = linderoth_pos_es(df.set.lws$data$normed, df.set.lws$data$centered$rotated)
+# out = linderoth_pos_es(df.set.lws$line.weights, df.set.lws$points.rotated)
 # out = linderoth_pos_es(adjMatrix, rotMatrix)
 */

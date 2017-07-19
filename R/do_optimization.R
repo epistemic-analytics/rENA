@@ -4,7 +4,7 @@ do_optimization = function(e, inPar = F, maxit = 1000)
 
   if(is(e, "ENAset")) {
     e_list = list(
-      data.normed = e$data$normed.non.zero,
+      data.normed = e$line.weights.non.zero,
       rotation_dists = e$rotation_dists,
       dims = e$get("dimensions"),
       samples = e$get("samples")
@@ -74,7 +74,7 @@ do_optimization_2 = function(e, inPar=F, maxit = 1000) {
 
   if(is(e, "ENAset")) {
     e_list = list(
-      data.normed = e$data$normed.non.zero,
+      data.normed = e$line.weights.non.zero,
       rotation_dists = e$rotation_dists,
       dims = e$get("dimensions"),
       samples = e$get("samples"),
