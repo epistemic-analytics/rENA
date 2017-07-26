@@ -205,7 +205,7 @@ ENAdata = R6::R6Class("ENAdata",
       if(any(class(private$file) == "data.table")) {
         df_DT = private$file;
       } else {
-        if(class(private$file) == "data.frame") {
+        if(any(class(private$file) == "data.frame")) {
           df = private$file;
         } else {
           df = read.csv(private$file);
@@ -215,7 +215,6 @@ ENAdata = R6::R6Class("ENAdata",
       self$data.raw = df_DT;
       self$data.raw$ENA_UNIT = merge_columns_c(self$data.raw,private$units.by);
 
-      accumulate.data(self);
       newRes = accumulate.data(
         dfDT = df_DT,
         stanzasBy = private$conversations.by,
