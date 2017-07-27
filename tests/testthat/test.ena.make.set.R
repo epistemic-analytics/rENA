@@ -5,7 +5,7 @@ df.file <- system.file("extdata", "rs.data.csv", package="rENA")
 codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
 
 test_that("Simple data.frame to accumulate and make set", {
-  df.accum = ena.accumulate.data(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
+  df.accum = ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
 
   df.set = ena.make.set(df.accum, node.position.method = egr.positions)
   df.set.lws = ena.make.set(df.accum, node.position.method = lws.positions.es)
@@ -31,7 +31,7 @@ test_that("Simple data.frame to accumulate and make set", {
 })
 
 test_that("Simple data.frame to accumulate and make set with Linderoth method(s)", {
-  df.accum = ena.accumulate.data(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
+  df.accum = ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
 
   df.set.lws = ena.make.set(df.accum, position.method = lws.positions)
   df.set.lws.es = ena.make.set(df.accum, position.method = lws.positions.es)
@@ -49,11 +49,11 @@ test_that("Simple data.frame to accumulate and make set with Linderoth method(s)
 
 
 test_that("Make a simple trajectory set", {
-  df.accum = ena.accumulate.data(
+  df.accum = ena.accumulate.data.file(
     df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"),
     codes = codeNames,
-    model = "AccumulatedTrajectory"
-    #trajectory.by = c("ActivityNumber"), trajectory.type = "accumulated"
+    model = "AccumulatedTrajectory",
+    trajectory.by = c("ActivityNumber")#, trajectory.type = "accumulated"
   );
 
   df.set.lws = ena.make.set(df.accum, node.position.method = lws.positions)

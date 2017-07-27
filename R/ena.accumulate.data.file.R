@@ -8,8 +8,8 @@
 #' @export
 #'
 #' @param file The csv file location or data.frame for the function
-#' @param units.by Delimits columns based on the units
-#' @param units Columns used based on units
+#' @param units.used Delimits columns based on the units (which specific units to use)
+#' @param units.by unit columns to accumulate by
 #' @param conversations.by Columns used in the conversation
 #' @param codes Columns used based on codes
 #' @param window.size Number of lines in the stanza
@@ -50,18 +50,19 @@
 ##
 ena.accumulate.data.file <- function(
   file,
-  units.by = NULL,    # not included - to be removed
-  units = NULL,   ### included
-  conversations.by = NULL,    # to conversations (df of conversations)
-  codes = NULL,   ### included
+
+  units.used = NULL,   #subset of actual unit values to use for accumulation - all used if not specified
+
+  units.by,    #unit columns to merge on to create ENA_UNIT --- MUST BE SUPPLIED
+  conversations.by,    #conversation columns to accumulate by --- MUST BE SUPPLIED
+
+  codes = NULL,
 
   #window.size = 1,
   window.size.back = 1,
   window.size.forward = NULL,
 
   weight.by = "binary",
-  #binary = T,     #part of weight.by
-  #correction = NULL,    #part of weight.by
 
   units.exclude = c(),      #leave for now
 
@@ -73,12 +74,24 @@ ena.accumulate.data.file <- function(
   output.fields = NULL,       #keep for now
   ...
 ) {
-  print(file);
+  #print(file);
+  if(is.null(file) || is.null(units.by) || is.null(conversations.by) || is.null(codes)) {
+    print("ACCUMULATION FROM FILE REQUIRES: file, units.by, conversations.by, and codes");
+  }
+
+  units = NULL;    #will be populated once csv is read
+
+  model = match.arg(model)
+
   data = ENAdata$new(
     file,
-    units.by,
+
     units,
+    units.used,
+
+    units.by,
     conversations.by,
+
     codes,
 
     window.size,
@@ -86,14 +99,11 @@ ena.accumulate.data.file <- function(
     window.size.forward,
 
     weight.by,
-    #binary,
-    #correction,
 
     units.exclude,
 
-    model = match.arg(model),
-    #trajectory.by = trajectory.by,
-    #trajectory.type = match.arg(trajectory.type),
+    model = model,
+
     ...
   );
 

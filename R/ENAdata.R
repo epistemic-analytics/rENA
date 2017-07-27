@@ -7,17 +7,20 @@
 #' @export
 #'
 # @param file CSV, data.frame, or data.table
-# @param units.by String vector representing column names to use for units
-# @param units String vector of which units to include in the ENAset
-# @param conversations.by String vector of column names to create the conversations
+# @param units String vector representing column names to use for units --- FORMERLY units.by  ####OLD
+# @param units data frame with unit columns and values #### NEW
+# @param units.by String vector of which units to include in the ENAset --- FORMERLY units
+# @param conversation String vector of column names to create the conversations --- FORMERLY conversations.by
 # @param codes String vector of column names to use as codes
 # @param window.size Integer used to select the size of each stanza window within a conversation
 # @param window.size.back [TBD]
 # @param window.size.forward [TBD]
-# @param binary Logical, whether to convert code values to binary or allow for weigthed values
-# @param correction math operation by which to modify data for weighted values (i.e. log, sqrt)
+# @param weight.by string or function determining to convert codes to binary, allow weighted, or apply a correcion
+# @param binary Logical, whether to convert code values to binary or allow for weigthed values  --- NO LONGER INCLUDED
+# @param correction math operation by which to modify data for weighted values (i.e. log, sqrt) --- NO LONGER INCLUDED
 # @param units.selected deprecated
 # @param units.exclude [TBD]
+# @param model - type of ENA model: endpoint or trajectory, if trajectory what type
 # @param trajectory.by [TBD]
 # @param trajectory.type [TBD]
 #'
@@ -30,35 +33,46 @@ ENAdata = R6::R6Class("ENAdata",
     ## Constructor - documented in main class declaration
     ####
     initialize = function(
-      file,
-      units.by = NULL,
-      units = NULL,
-      conversations.by = NULL,
-      codes = NULL,
+      file,    #csv or data frame containing units, codes, conversations, and metadata
+
+      units = NULL,     #data frame of unit columns and values
+      units.used = NULL,    #vector of unit values to include (a subset of rows of the units df)
+
+      units.by = NULL,  # unit col names that will be grouped by to determine ENA_UNIT
+
+      conversations.by = NULL,   # conversation col names that will be grouped by to determine conversations
+
+      codes = NULL,  #vector of code column names to use in accumulation
+
       window.size = 1,
       window.size.back = window.size,
       window.size.forward = NULL,
 
       weight.by = "binary",
-      #binary = T,
-      #correction = NULL,
 
       units.selected = NULL,
       units.exclude = c(),
 
-      model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),
-      #trajectory.by = NULL,
-      #trajectory.type = c("accumulated","non-accumulated"),
+      model = NULL,
+      trajectory.by = NULL,
       ...
     ) {
       self$function.call <- sys.call(-1);
 
       private$file <- file;
-      private$units.by <- units.by;
 
       self$units <- units;
+
+      private$units.used <- units.used;
+
+      private$units.by <- units.by
       private$conversations.by <- conversations.by;
+
+      private$trajectory.by <- trajectory.by;
+      if(is.null(trajectory.by)) private$trajectory.by = conversations.by;
+
       self$codes <- codes;
+      if(is.data.frame(self$codes)) self$codes <- colnames(self$codes);
 
       private$window.size <- list(
         "back" = window.size.back,
@@ -66,14 +80,12 @@ ENAdata = R6::R6Class("ENAdata",
       );
 
       private$weight.by <- weight.by;
-      #private$binary <- binary;
-      #private$correction <- correction;
+
       private$units.exclude <- units.exclude;
 
-      self$model <- match.arg(model);
-      if(model == "EndPoint") private$trajectory.by = NULL;
-      #private$trajectory.by <- trajectory.by;
-      #private$trajectory.type <- match.arg(trajectory.type);
+      self$model <- model;
+
+      if(self$model == "EndPoint") private$trajectory.by <- NULL;
 
       private$loadFile();
 
@@ -92,7 +104,6 @@ ENAdata = R6::R6Class("ENAdata",
     #data.units.summed.meta = NULL, # -> metadata
     #data.units.summed.raw = NULL, # -> adjacency.vectors.raw (saved before applying correction)
 
-    ##### NEW - according to ENAObjectValues doc
     model = NULL,
 
     raw = NULL,
@@ -114,7 +125,6 @@ ENAdata = R6::R6Class("ENAdata",
 
     function.call = NULL,
     function.params = NULL,
-    ###### END NEW
 
     ####
     ## Public Functions
@@ -202,12 +212,14 @@ ENAdata = R6::R6Class("ENAdata",
       return(self);
     },
 
-    ##### CHANGE TO add.metadata
     add.metadata = function(merge = F) {
+      ### get columns which arent in codes, units.by, or conversations.by
       metaAvail=colnames(self$raw)[-which(colnames(self$raw) %in% c(self$codes, private$units.by, private$conversations.by))];
+      ### delimit possible metadata to only columns with one value per unit
       dfDT.meta.poss = self$raw[, { nc = lapply(.SD, function(x) length(unique(x))); }, by=c(private$units.by), .SDcols=c(metaAvail)][,,.SDcols=metaAvail];
       metaAvail = colnames(dfDT.meta.poss)[rapply(dfDT.meta.poss, function(x) all(x == 1))]
       metaAvail = metaAvail[metaAvail != "ENA_UNIT"];
+
       raw.meta = self$raw[!duplicated(ENA_UNIT)][ENA_UNIT %in% unique(self$accumulated.adjacency.vectors$ENA_UNIT),c("ENA_UNIT",private$units.by,private$trajectory.by, metaAvail),,with=F];
 
       df.to.return = NULL;
@@ -248,18 +260,17 @@ ENAdata = R6::R6Class("ENAdata",
     ####
     file = NULL,
     window.size = NULL,
+
+    units.used = NULL,
+
     units.by = NULL,
     conversations.by = NULL,
 
-    #combining to weight.by
     weight.by = NULL,
-    #binary = NULL,
-    #correction = NULL,
 
     units.exclude = NULL,
 
-    trajectory.by = "ActivityNumber",
-    #trajectory.type = NULL,   #now in model
+    trajectory.by = NULL,
 
     ####
     ### Private Functions
@@ -268,10 +279,14 @@ ENAdata = R6::R6Class("ENAdata",
       if(any(class(private$file) == "data.table")) {
         df_DT = private$file;
       } else {
-        if(is(private$file, "data.frame") == T) {
+        if(is.data.frame(private$file)) {
           df = private$file;
         } else {
           df = read.csv(private$file);
+
+          ###NEW LINE - taking unit cols of df, the columns specified in units.by (wasn't supplied if from csv)
+          self$units = df[,private$units.by];
+
         }
         df_DT = data.table::as.data.table(df);
       }
@@ -279,24 +294,7 @@ ENAdata = R6::R6Class("ENAdata",
       self$raw = df_DT;
       self$raw$ENA_UNIT = merge_columns_c(self$raw,private$units.by);
 
-      #### NEW
-
       self %<>% accumulate.data();
-
-      #### OLD
-      # newRes = accumulate.data(
-      #   dfDT = df_DT,
-      #   stanzasBy = private$conversations.by,
-      #   unitsBy = private$units.by,
-      #   units = private$units,
-      #   codes = private$codes,
-      #   window = private$window.size,
-      #   binary = private$binary,
-      #   correction = private$correction,
-      #   units.exclude = private$units.exclude,
-      #   trajectory.by = private$trajectory.by,
-      #   trajectory.type = private$trajectory.type
-      # );
 
       # save raw adjacency vectors prior to corrections
       self$adjacency.vectors.raw = self$adjacency.vectors;
