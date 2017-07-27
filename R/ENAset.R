@@ -339,7 +339,7 @@ ENAset = R6::R6Class("ENAset",
     data.original = NULL,
     optim = NULL,
 
-    #
+    #moved from public
     dimensions = 2,
     samples = 3,
     inPar = FALSE,

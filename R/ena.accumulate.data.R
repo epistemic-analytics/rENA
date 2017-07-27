@@ -8,9 +8,10 @@
 #' @export
 #'
 #' @param file The csv file location or data.frame for the function
-#' @param units.by Delimits columns based on the units
-#' @param units Columns used based on units
-#' @param conversations.by Columns used in the conversation
+#' @param units.by Columns to be used in the unit accumulation (list of column names)
+#' @param units Data frame of unit columns and values
+#' @param conversations.by Columns to be used in the conversation accumulation (list of column names)
+#' @param conversation NEW data frame of conversation columns w/ values
 #' @param codes Columns used based on codes
 #' @param window.size Number of lines in the stanza
 #' @param window.size.back Number of lines back to include window in stanza
@@ -49,20 +50,20 @@
 ##
 ena.accumulate.data <- function(
 
-  ##### NOTE: units, conversations, and codes must be data frames with the same number of rows
+  ##### NOTE: units, conversations, codes, and metadata must be data frames with the same number of rows
   units = NULL,   # data frame containing units
-  conversation = NULL,    # df containing conversations
+  conversation = NULL,    # df containing conversation lines
   codes = NULL,   # df containing codes
-  metadata = NULL,   #optional - df containing metadata to be appended
+  metadata = NULL,   #optional - df containing metadata
 
   model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),   #use match arg and list?
 
   weight.by = "binary",
 
+  window.size = 1,
   window.size.back = 1,
   window.size.forward = NULL,
 
-  #####
   mask = upper.tri(as.matrix(units)), #matrix (default - upper triangle of 1's)
 
   units.exclude = c(),      #leave for now
@@ -72,38 +73,38 @@ ena.accumulate.data <- function(
   ...
 ) {
 
-  ##### FOR TESTING
-  # df.units = data.frame(
-  #   Name=c("J","Z","D","A","S","M","N","L","W","R","T","P"),
-  #   Day=c(1,1,1,1,1,1,2,2,2,2,2,2),
-  #   ActivityNumber=c(1,1,1,1,2,2,2,2,3,3,3,3)
-  # );
-  # df.conversation = data.frame(
-  #   text=c("Jaskdjhfaerkasb","Zaskdjfasdnfioahefoihasopdifoiaefasd","Daldfiaosdjfasd",
-  #          "Akasdnf;kajsdnfkasdf","Sfjfaosifiifah","MdfiaihehhII","Nasdhfuohahsdfe",
-  #          "Llaskjdfla","Wasdkjfhasdfhia","Rasdhfkasdj","Tasduhasdfhu","PdkjaSUEBub")
-  # );
-  # df.codes = data.frame(
-  #   c1=c(1,1,1,1,1,0,0,1,1,0,0,1),
-  #   c2=c(1,1,1,0,0,1,0,0,0,0,0,1),
-  #   c3=c(0,0,1,0,1,0,1,0,0,0,1,0)
-  # );
-  # metadata = NULL;
-  #### END TESTING CODE
+  if(is.null(units) || is.null(conversation) || is.null(codes)) {
+    print("ACCUMULATION FROM DATA FRAMES REQUIRES: units, conversation, and codes");
+  }
 
-  if(nrow(units) != nrow(conversation) || nrow(conversation) != nrow(codes))
-  df <- cbind(df.units, df.conversation);
-  df <- cbind(df, df.codes);
-  if(!is.null(metadata)) {
+  if(nrow(units) != nrow(conversation) || nrow(conversation) != nrow(codes)) {
+    print("Data Frames do not have the same number of rows!");
+    ### throw error
+  }
+
+  df <- cbind(units, conversation);
+  df <- cbind(df, codes);
+
+  if(!is.null(metadata) && nrow(metadata) == nrow(df)) {
     df <- cbind(df, metadata);
   }
-  print(df);
+
+  units.by = colnames(units);   #accumulating by all unit columns provided in units df
+  conversations.by = colnames(conversation); #accumulating by all columns provided in conversation df
+
+  units.used = NULL;   # when accumulating from data frames, all units are used
+
+  model = match.arg(model)
 
   data = ENAdata$new(
     df,
-    units.by,
-    units,
-    conversations.by,
+
+    units,    #data frame of unit columns (including values)
+    units.used,
+
+    units.by,    # KEEP- automatically uses all units for accumulation from separate data frames
+    conversations.by,    #column names of conversation df, automatically accumulating by all cols for accum from dfs
+
     codes,
 
     window.size,
@@ -111,14 +112,11 @@ ena.accumulate.data <- function(
     window.size.forward,
 
     weight.by,
-    #binary,
-    #correction,
 
     units.exclude,
 
-    model = match.arg(model),
-    #trajectory.by = trajectory.by,
-    #trajectory.type = match.arg(trajectory.type),
+    model = model,
+
     ...
   );
 
@@ -127,3 +125,4 @@ ena.accumulate.data <- function(
   if(output == "json") r6.to.json(data)
   else data
 }
+
