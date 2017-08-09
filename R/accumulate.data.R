@@ -32,7 +32,6 @@ accumulate.data <- function(
   ###
     #dfDT_codes$ENA_UNIT = dfDT_codes[,{apply(.SD,1,function(x){paste(trimws(x),collapse=".")})},with=T,.SDcols=unitsBy];
     dfDT_codes$ENA_UNIT = merge_columns_c(dfDT_codes, cols=unitsBy, sep=".");
-
   ##
   # String vector of codesnames representing the names of the co-occurrences
   ##
@@ -66,7 +65,11 @@ accumulate.data <- function(
       ];
     }
 
-    # colnames(dfDT.co.occurrences)[grep("V\\d+",colnames(dfDT.co.occurrences))] = codedTriNames
+    message("FIX THE ENA UNIT, NOT SAFE TO COPY FROM dfDT_codes")
+    dfDT.co.occurrences$ENA_UNIT = dfDT_codes$ENA_UNIT;
+
+
+    colnames(dfDT.co.occurrences)[grep("V\\d+",colnames(dfDT.co.occurrences))] = codedTriNames
     #dfDT.co.occurrences$ENA_UNIT = merge_columns_c(dfDT.co.occurrences, cols=unitsBy, sep=".") #dfDT_codes$ENA_UNIT;
 
   ##
@@ -93,7 +96,8 @@ accumulate.data <- function(
       ###
       # Sum each unit found in dfDT.co.occurrences
       ###
-        dfDT.summed.units = dfDT.co.occurrences[ENA_UNIT %in% units, ref_window_sum(.SD),by = unitsBy, .SDcols = (codedTriNames)];
+        # dfDT.summed.units = dfDT.co.occurrences[ENA_UNIT %in% units, ref_window_sum(.SD),by = unitsBy, .SDcols = (codedTriNames)];
+        dfDT.summed.units = dfDT.co.occurrences[ENA_UNIT %in% units, ref_window_sum(.SD),by = ENA_UNIT, .SDcols = (codedTriNames)];
 
 
         #dfDT.summed.units$ENA_UNIT = merge_columns_c(dfDT.summed.units, unitsBy, sep=".");
@@ -138,7 +142,7 @@ accumulate.data <- function(
       }
 
     }
-      dfDT.summed.units$ENA_UNIT = merge_columns_c(dfDT.summed.units, unitsBy, sep=".");
+      # dfDT.summed.units$ENA_UNIT = merge_columns_c(dfDT.summed.units, unitsBy, sep=".");
 
   ###
   # Name the rows an columns accordingly
@@ -154,7 +158,7 @@ accumulate.data <- function(
     codedRow2 = code.names[triIndices(length(code.names), 1)[,1]+1];
     attr(dfDT.summed.units, "adjacency.matrix") = rbind(codedRow1, codedRow2);
     attr(dfDT.summed.units, "adjacency.codes") = codedTriNames;
-    attr(dfDT.summed.units, rENA::opts$UNIT_NAMES) = dfDT.summed.units[,  .SD ,with=T,.SDcols=unitsBy]
+    attr(dfDT.summed.units, rENA::opts$UNIT_NAMES) = dfDT.summed.units[,  .SD ,with=T,.SDcols=c("ENA_UNIT")]
 
   return(list(
     "units.co.occurred" = dfDT.co.occurrences,

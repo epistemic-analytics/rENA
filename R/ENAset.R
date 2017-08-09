@@ -276,6 +276,25 @@ ENAset = R6::R6Class("ENAset",
         );
         return(p)
       }
+    },
+    print = function(...) {
+      args = list(...);
+      fields = NULL;
+      to.print = list();
+      if(is.null(args$fields)) {
+        fields = Filter(function(f) { (class(self[[f]]) != "function") }, names(get(class(self))$public_fields))
+      } else {
+        fields = args$fields
+      }
+      for(field in fields) {
+        if(grepl("\\$", field)) {
+          parts = Filter(function(f) { f!="" }, strsplit(field,"\\$")[[1]])
+          to.print[[field]] = Reduce(function(o, i) { o[[i]] }, parts, self)
+        } else {
+          to.print[[field]] = self[[field]]
+        }
+      }
+      return(to.print);
     }
   ),
 
