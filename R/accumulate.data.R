@@ -6,7 +6,7 @@ accumulate.data <- function(enadata) {
 
   units.by = enadata$get("units.by"); ### COLUMNS TO BE COMBINED TO FORM ENA_UNIT
 
-  #### FIX FOR ISSUE - codes given as vector for accum.data.file but is a data frame for accum.data
+  #### FIX FOR ISSUE - codes given as vector for accum.data.file but is a df for accum.data
   codes = enadata$codes;
   if(is.data.frame(codes)) codes = colnames(codes);
 
@@ -94,13 +94,8 @@ accumulate.data <- function(enadata) {
     ];
   }
 
-    message("FIX THE ENA UNIT, NOT SAFE TO COPY FROM dfDT_codes")
   colnames(dfDT.co.occurrences)[grep("V\\d+",colnames(dfDT.co.occurrences))] = codedTriNames;
   dfDT.co.occurrences$ENA_UNIT = dfDT_codes$ENA_UNIT;
-
-
-    colnames(dfDT.co.occurrences)[grep("V\\d+",colnames(dfDT.co.occurrences))] = codedTriNames
-    #dfDT.co.occurrences$ENA_UNIT = merge_columns_c(dfDT.co.occurrences, cols=unitsBy, sep=".") #dfDT_codes$ENA_UNIT;
 
   ##
   # If units aren't supplied, use all available
@@ -204,7 +199,10 @@ accumulate.data <- function(enadata) {
     #### update unit.names w/ the created unique unit column
 
     #### SHOULDN'T ACTUALLY NEED TO UPDATE THIS, units was never altered
-    enadata$units = dfDT.summed.units[,units.by, with=F];
+    if(is.null(enadata$units)) {
+      #enadata$units = dfDT.summed.units[,units.by, with=F];
+      enadata$units = dfDT.co.occurrences[,units.by, with=F];
+    }
 
     return(enadata);
 }
