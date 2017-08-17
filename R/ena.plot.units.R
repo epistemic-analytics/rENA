@@ -8,7 +8,7 @@ ena.plot.units = function(
   dimension.labels = c("x","y"),
   dimension.show.variance = T,
 
-  units = unique(enaset$get("enaData")$get("units")),
+  units = unique(enaset$enadata$get("units")),
   unit.size = 1,
   unit.size.multiplier = 5,
   unit.colors = rep(I("blue"), nrow(data)),
@@ -31,6 +31,7 @@ ena.plot.units = function(
 ) {
   unit.group_by <- match.arg(unit.group_by);
 
+
   dfDT = data[ENA_UNIT %in% units];
   df.names = dfDT$ENA_UNIT;
   if(is.null(df.names)) {
@@ -39,6 +40,7 @@ ena.plot.units = function(
   }
   dfDT[,name:=ENA_UNIT] # Create a name column
 
+  # network vertices?
   network.vertices.df = dfDT[ENA_UNIT %in% units,c(ncol(dfDT),1:ncol(dfDT)-1),with=F];
   network.font.text = list(
     family = font.family,

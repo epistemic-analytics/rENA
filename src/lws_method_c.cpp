@@ -164,8 +164,8 @@ Rcpp::List linderoth_pos(Eigen::MatrixXd adjMats, Eigen::MatrixXd t) { // = R_Ni
 }
 
 /*** R
-#linderoth_pos(4, enaset$data$normed)
-#linderoth_pos(enaset$data$normed[1,4])
+#linderoth_pos(4, enaset$line.weights)
+#linderoth_pos(enaset$line.weights[1,4])
 #linderoth_pos(testAdjMatsTris)
-# out = linderoth_pos(enasetNewcomb$data$normed)
+# out = linderoth_pos(enasetNewcomb$line.weights)
 */

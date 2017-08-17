@@ -5,21 +5,22 @@ context("Test plotting sets");
 df.file <- system.file("extdata", "rs.data.csv", package="rENA")
 codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
 
-df.accum = ena.accumulate.data(
+df.accum = ena.accumulate.data.file(
   df.file,
   units.by = c("UserName","Condition"),
   conversations.by = c("ActivityNumber","GroupName"),
-  code.names = codeNames
+  codes = codeNames, window.size.back = 4
 );
+
 df.set.lws = ena.make.set(df.accum, position.method = lws.positions.es);
 
-df.accum.traj = ena.accumulate.data(
+df.accum.traj = ena.accumulate.data.file(
   df.file,
   units.by = c("UserName","Condition"),
   conversations.by = c("ActivityNumber","GroupName"),
-  code.names = codeNames,
-  trajectory.by = c("ActivityNumber"),
-  trajectory.type = "accumulated"
+  codes = codeNames,
+  trajectory.by = c("ActivityNumber")
+  #trajectory.type = "accumulated"
 );
 df.set.traj.lws = ena.make.set(df.accum.traj, position.method = lws.positions.es);
 
@@ -100,3 +101,7 @@ test_that("Plot a mean trajectory", {
 test_that("Plot a combined plot of units and nodes", {
   message("Test for units+nodes: not implemented")
 })
+
+
+
+
