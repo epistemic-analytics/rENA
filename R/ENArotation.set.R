@@ -27,11 +27,12 @@ ENARotationSet = R6::R6Class("ENARotationSet",
     ### Constructor - documented in main class declaration
     #######
     initialize = function(
-      file,
+      enaset,
 
       ...
     ) {
 
+      node.positions = enaset$node.positions
 
 
     },

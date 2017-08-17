@@ -1,21 +1,26 @@
 
-ena.plot.network = function(
-  enaset = NULL, plot = NULL,
-  units.by = enaset$enadata$get('units.by'),
-  group.by = enaset$enadata$get('conversations.by'), #"Condition",
+ena.plot.network3 = function(
+  enaplot = NULL,
+  network = enaplot$enaset$line.weights,
+  #method = mean,
+  #colors = c("red", "blue"),
+  color = NULL,
+  show.all.nodes = T,
+  label.offset = NULL, #### NOT AN OPTION FOR HOVERTEXT
 
-  selection.one.color = "#5399c7",
-  selection.one.name = NULL,
-  selection.one.title = NULL,
+  threshold = c(0, 1),
+  opacity = c(0.3, 1),
+  saturation = c(0.25, 1),
+  thickness = c(0, 1),
+  range = c(set.min, set.max),
+  thin.lines.in.front = T,
 
-  selection.two.color = "#FF0000",
-  selection.two.name = NULL,
-  selection.two.title = NULL,
+  ### OLD PARAMS
 
   weight.multiplier = 20,
-  font.size = 10,
-  font.color = "000000",
-  font.family = "Arial",
+  font.size = enaplot$font.size,
+  font.color = enaplot$font.color,
+  font.family = enaplot$font.family,
 
   node.weight.multiplier = weight.multiplier,
   node.color = "#464646",
@@ -32,19 +37,58 @@ ena.plot.network = function(
   network.edge.threshold = 0,
   network.show.all.codes = F
 ) {
-  df = data.frame(enaset$data$normed, attr(enaset$data$normed, rENA::opts$UNIT_NAMES));
+  ####### NEW
+  original.network = network;
+
+  ### if network for more than one unit, reduce to one row using method
+  if(nrow(network) > 1) {
+    network = colMeans(network);
+  }
+
+  codeWeights = data.frame(matrix(NA, ncol = length(enaplot$enaset$codes)));
+  names(codeWeights) = enaplot$enaset$codes;
+  ### nested for loop, for each code find its adj codes and sum them, remove ones with all zero
+  for(code in names(codeWeights)) {
+    codeSum = 0;
+    adjIndex = 1;
+
+    for(adj.code in network) {
+      ### if adj.code column corresponds to code - add column's value to the codeSum
+      if(grepl(code, names(network)[adjIndex])) {
+        codeSum <- codeSum + adj.code;
+      }
+      adjIndex = adjIndex + 1;
+    }
+
+    codeWeights[,code] <- codeSum;
+  }
+
+  ### if not showing all nodes remove nodes with value of zero
+  if(!show.all.nodes) {
+    for(col in names(codeWeights)) {
+      #print(col)
+      if(codeWeights[,col] == 0) codeWeights[,col] <- NULL;
+    }
+  }
+
+  ###### END NEW
+
+  df = data.frame(enaplot$enaset$line.weights, attr(enaplot$enaset$line.weights, rENA::opts$UNIT_NAMES));
+
   dfDT= data.table::as.data.table(df);
-  dfDT$handle = merge_columns_c(dfDT,units.by, sep="."); #rownames(df);
+
+  #dfDT$handle = merge_columns_c(dfDT, units.by, sep="."); #rownames(df);
 
   units.to.plot = c(selection.one.name, selection.two.name);
 
   sdcols=colnames(dfDT)[sapply(dfDT, is.numeric)];
+
   minDT = dfDT[handle %in% units.to.plot, lapply(.SD,sum,na.rm=T), by=units.by, .SDcols=sdcols];
 
   minDT$ENA_UNIT = merge.columns(x = minDT, from.cols = units.by);
   minDT = minDT[match(ENA_UNIT, units.to.plot),];
 
-  minDTc =minDT[,apply(.SD,2,make.network.node, types=c(selection.one.color, selection.two.color)),.SDcols=sdcols, with = T];
+  minDTc = minDT[,apply(.SD,2,make.network.node, types=c(selection.one.color, selection.two.color)),.SDcols=sdcols, with = T];
   minDTsizes = minDTc[1,!is.na(minDTc[2,]), with=F];
   minDTcolors = minDTc[2,!is.na(minDTc[2,]), with=F];
   minDTsizes = minDTsizes[,which(!names(minDTcolors) %in% group.by),with=F];
@@ -70,21 +114,21 @@ ena.plot.network = function(
   }
   network.edges.length = nrow(network.edges.table);
 
-  df.names = rownames(enaset$nodes$positions$scaled);
+  df.names = rownames(enaplot$enaset$node.positions);
   if(is.null(df.names)) {
-   df.names = as.character(1:nrow(enaset$nodes$positions$scaled))
-   rownames(enaset$nodes$positions$scaled) = df.names;
+    df.names = as.character(1:nrow(enaplot$enaset$node.positions))
+    rownames(enaplot$enaset$node.positions) = df.names;
   }
   network.vertices.df = data.frame(
     name = df.names, ## New LWS method needs to assign names/attr
-    enaset$nodes$positions$scaled
+    enaplot$enaset$node.positions
   );
   network.graph = igraph::graph_from_data_frame(
     minDTnodes_trans,
     directed = F,
     vertices = network.vertices.df
   )
-  network.layout = enaset$nodes$positions$scaled;
+  network.layout = enaplot$enaset$node.positions;
   network.vertices = igraph::V(network.graph);
   network.vertices.length = length(network.vertices);
   network.font.text = list(
@@ -122,12 +166,11 @@ ena.plot.network = function(
     node.sizes = node.sizes[which(data.frame(node.sizes)$node.sizes != 0)]
     network.layout = network.layout[rownames(network.layout) %in% names(node.sizes),]
   }
-  network.plot = plotly::plot_ly(
-    data.frame(network.layout),
-    type="scatter",
+
+  enaplot$plot %<>% plotly::add_markers(
+    data = data.frame(network.layout),
     x = ~X1,
     y = ~X2,
-    mode="markers",
     marker = list(
       color = I(node.color),
       size = as.numeric(node.sizes)
@@ -135,8 +178,10 @@ ena.plot.network = function(
     showlegend = F,
     text = rownames(network.layout)
   );
-  network.plot = plotly::add_annotations(
-    network.plot,
+
+  ### ADD ANNOTATIONS
+  enaplot$plot %<>% plotly::add_annotations(
+    text = rownames(network.layout),
     textfont = network.font.text,
     xref = "x",
     yref = "y",
@@ -153,17 +198,13 @@ ena.plot.network = function(
 
   selection.one.title = stringr::str_c("<b style=\"color:",selection.one.color,"\">",selection.one.name,"</b>");
 
-  if(!is.null(selection.two.name)) {
-    selection.two.title = stringr::str_c("<b style=\"color:",selection.two.color,"\">",selection.two.name,"</b>");
-  }
 
-  network.plot.layout = plotly::layout(
-    network.plot,
+  enaplot$plot %<>% plotly::layout(
     title =  stringr::str_c(selection.one.title, selection.two.title, sep = " - "),
     shapes = network.edges.shapes,
     xaxis = network.graph.axis,
     yaxis = network.graph.axis
   )
 
-  network.plot.layout
+  enaplot;
 }

@@ -5,7 +5,7 @@
 #
 # @export
 ##
-egr.positions <- function(enaset) {
+egr.positions <- function(enaset, checkUnique = F) {
   ###
   # Calculate the rotation distances
   ###
@@ -18,7 +18,7 @@ egr.positions <- function(enaset) {
     #OLD
     #enaset$data$optim = enaset$function.params$optim.method(enaset, inPar = enaset$get("inPar"));
 
-    #NEW - just uses temporary local variable  --- SHOULD enaset$function.params$optim.method be replaced w/ do_optimization
+    #NEW - just uses temporary local variable
     optim = do_optimization(enaset, inPar = enaset$get("inPar"));
   ###
 
@@ -43,16 +43,16 @@ egr.positions <- function(enaset) {
     #   dims = enaset$get("dimensions"), num_samples = enaset$get("samples")
     #   ,checkUnique = enaset$function.params$check.unique.positions
     # );
-    # rownames(enaset$nodes$positions$unscaled$positions) = enaset$enaData$codes;
+    # rownames(enaset$nodes$positions$unscaled$positions) = enaset$enadata$codes;
   ### --- NEW
     nodes.positions.unscaled = full_opt_c(
       normed = enaset$line.weights.non.zero,
       rotated = enaset$points.rotated.non.zero,
       optim_nodes = nodes.positions.optim,
       dims = enaset$get("dimensions"), num_samples = enaset$get("samples")
-      ,checkUnique = enaset$function.params$check.unique.positions
+      ,checkUnique = checkUnique
     );
-    rownames(nodes.positions.unscaled$positions) = enaset$enaData$codes;
+    rownames(nodes.positions.unscaled$positions) = enaset$enadata$codes;
 
   ###
   # Scale the node positions
@@ -62,7 +62,7 @@ egr.positions <- function(enaset) {
       enaset$line.weights.non.zero,
       enaset$points.rotated.non.zero
     )$positions;
-    rownames(enaset$node.positions) = enaset$enaData$codes;
+    rownames(enaset$node.positions) = enaset$enadata$codes;
   ###
 
   return(enaset);

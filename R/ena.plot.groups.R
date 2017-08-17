@@ -18,15 +18,12 @@
 
 #' @param unit.size change size of unit label
 #' @param unit.size.multiplier Change size multiplier of unit labels
-#' @param show.confidence.intervals Show confidence intervals of a unit
+#' @param show.confidence.interval Show confidence intervals of a unit
 #' @param group [TBD]
-#' @param group_by [TBD]
+#' @param method [TBD]
 #' @param group.labels [TBD]
-#' @param group.labels.positions [TBD]
 #' @param group.labels.colors [TBD]
 #' @param group.size [TBD]
-#' @param group.size.multiplier [TBD]
-
 #' @param ... Additional parameters addressed in inner function
 #'
 #' @keywords ENA, plot, set
@@ -41,41 +38,50 @@
 #' }
 #' @return Plot of groups of \code{\link{ENAplot}}
 ##
-ena.plot.groups <- function(
+ena.plot.group <- function(
   enaplot,
 
-  plot.title = "ENA Plot",
-  plot.mode = "units+network",
-  plot.color = I("black"),
+  by = NULL,
 
-  multiplier = 5,
+  label = NULL,
+  method = mean,
+  colors = NULL,
+  shape = c("square", "triangle", "diamond", "circle"),
 
-  units = unique(enaplot$enaset$get("enaData")$get("units")),
+  #unit.colors = rep(plot.color, nrow(enaset$points.rotated)),
 
-  unit.colors = rep(plot.color, nrow(enaset$points.rotated)),
+  #unit.size = 1,
+  #unit.size.multiplier = multiplier,
 
-  unit.size = 1,
-  unit.size.multiplier = multiplier,
+  show.confidence.interval = F,
+  show.outlier.interval = F,
 
-  trajectory.by = NULL,
+  label.font.size = enaplot$font.size,
+  label.font.color = enaplot$font.color,
+  label.font.family = enaplot$font.family,
 
-  show.confidence.intervals = T,
-
+  ###OLD - to be removed
   group = NULL,
   group.values = as.character(t(unique(data[,c(group),with=F]))),
-  group_by = c("mean","sum"),
+
   group.labels = names(groups),
-  group.labels.positions = "top right",
-  group.labels.colors = rep(plot.color, length(group)),
+  #group.labels.colors = rep(plot.color, length(group)),
+
   group.size = unit.size,
-  group.size.multiplier = unit.size.multiplier,
+  #group.size.multiplier = unit.size.multiplier,
+
+  multiplier = 5,
 
   ...
 ) {
 
+  shape = match.arg(shape);
 
+  ###maybe not needed
+  units = unique(enaplot$enaset$enadata$get("units"));
+  trajectory.by = enaplot$enaset$enadata$get("trajectory.by");
+  ###
 
-  #group_by <- match.arg(group_by);
   data = enaplot$enaset$get.data("rotated",with.meta=T);
 
   dfDT = data[ENA_UNIT %in% units];
@@ -98,7 +104,7 @@ ena.plot.groups <- function(
     unit.colors = sapply(1:nrow(data), function(x) {
       default.colors[which(group.values == unlist(data[x,c(group),with=F]))]
     })
-    dfDT.groups = dfDT[,lapply(.SD,get(group_by)),by=group,.SDcols=c("V1","V2")];
+    dfDT.groups = dfDT[,lapply(.SD,get(method)),by=group,.SDcols=c("V1","V2")];
     dfDT.groups$ENA_UNIT = dfDT.groups$name = dfDT.groups[,c(group),with=F]
     dfDT = data.table::rbindlist(list(dfDT,dfDT.groups), fill=T)
 
@@ -126,14 +132,14 @@ ena.plot.groups <- function(
     unit.colors = sapply(1:nrow(data), function(x) {
       default.colors[which(group.values == unlist(data[x,c(group),with=F]))]
     })
-    dfDT.groups = dfDT[,lapply(.SD,get(group_by)),by=group,.SDcols=c("V1","V2")];
+    dfDT.groups = dfDT[,lapply(.SD,get(method)),by=group,.SDcols=c("V1","V2")];
     dfDT.groups$ENA_UNIT = dfDT.groups$name = dfDT.groups[,c(group),with=F]
     dfDT = data.table::rbindlist(list(dfDT,dfDT.groups), fill=T)
 
     unit.colors = c(unit.colors, default.colors[1:length(group.values)]);
 
     #calculate CI's
-    if(show.confidence.intervals == T) {
+    if(show.confidence.interval == T) {
       message("Confidence intervals on means not yet implemented.")
       conf.ints = data[, { cis = t.test(.SD)$conf.int; data.table::data.table(ci.x=cis[1], ci.y=cis[2]) },by=c(group),.SDcols=c("V1","V2")]
 
@@ -156,6 +162,9 @@ ena.plot.groups <- function(
           "y1" = x[['ci.y2']]
         );
       });
+    }
+    if(show.outlier.interval == T) {
+      ###calculate outlier intervals
     }
 
     group.layout = data.frame(dfDT);
@@ -203,7 +212,7 @@ ena.plot.groups <- function(
       marker = list(
         symbol = c(rep("circle",nrow(data)),rep("square", ifelse(!is.null(dfDT.groups), nrow(dfDT.groups), 0))),
         color = unit.colors,
-        size = c(rep(unit.size * unit.size.multiplier, nrow(data)), rep(group.size * group.size.multiplier, ifelse(!is.null(dfDT.groups),nrow(dfDT.groups), 0)))
+        size = c(rep(unit.size * unit.size.multiplier, nrow(data)), rep(group.size, ifelse(!is.null(dfDT.groups),nrow(dfDT.groups), 0)))
       ),
       showlegend = F,
       text = ~name,

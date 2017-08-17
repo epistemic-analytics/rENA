@@ -15,7 +15,6 @@ test_that("Simple data.frame to accumulate and make set", {
 
   testthat::expect_equal(length(df.set.lws$codes), 16);
 
-
   testthat::expect_equal(
     dim(df.set$points.rotated),
     c(48,2)

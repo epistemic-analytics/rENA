@@ -12,7 +12,7 @@ lws.positions <- function(enaset) {
   positions = linderoth_pos(enaset$line.weights.non.zero, enaset$points.rotated);
 
   enaset$node.positions = positions$nodes;
-  rownames(enaset$node.positions) = enaset$enaData$codes;
+  rownames(enaset$node.positions) = enaset$enadata$codes;
   return(enaset);
 }
 
@@ -23,7 +23,7 @@ lws.positions.es <- function(enaset) {
   positions = linderoth_pos_es(enaset$line.weights.non.zero, enaset$points.rotated);
 
   enaset$node.positions = positions$nodes;
-  rownames(enaset$node.positions) = enaset$enaData$codes;
+  rownames(enaset$node.positions) = enaset$enadata$codes;
   return(enaset);
 }
 

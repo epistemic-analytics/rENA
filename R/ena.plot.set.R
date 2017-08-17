@@ -66,7 +66,7 @@ ena.plot.set <- function(
 
   multiplier = 5,
 
-  units = unique(enaset$get("enaData")$get("units")),
+  units = unique(enaset$enadata$get("units")),
   unit.colors = rep(plot.color, nrow(enaset$data$centered$rotated)),
   unit.labels = units,
   unit.labels.positions = NULL,

@@ -65,7 +65,7 @@ ena.accumulate.data <- function(
   window.size.back = 1,
   window.size.forward = NULL,
 
-  mask = upper.tri(as.matrix(units)), #matrix (default - upper triangle of 1's)
+  mask = NULL, #matrix (default - upper triangle of 1's)
 
   units.exclude = c(),      #leave for now
 

@@ -1,8 +1,22 @@
 
 ena.plot.network2 = function(
   enaplot = NULL,
-  units.by = enaplot$enaset$enaData$get('units.by'),
-  group.by = enaplot$enaset$enaData$get('conversations.by'), #"Condition",
+  network = enaplot$enaset$line.weights,
+  method = mean,
+  colors = c("red", "blue"),
+  show.all.nodes = T,
+  label.offset = NULL, #### NOT AN OPTION FOR HOVERTEXT
+
+  threshold = c(0, 1),
+  opacity = c(0.3, 1),
+  saturation = c(0.25, 1),
+  thickness = c(0, 1),
+  range = c(set.min, set.max),
+  thin.lines.in.front = T,
+
+  ##### OLD PARAMS
+  units.by = enaplot$enaset$enadata$get('units.by'),
+  group.by = enaplot$enaset$enadata$get('conversations.by'), #"Condition",
 
   selection.one.name = NULL,
   selection.one.color = "#5399c7",
@@ -32,10 +46,49 @@ ena.plot.network2 = function(
   network.edge.threshold = 0,
   network.show.all.codes = F
 ) {
+  ####### NEW
+  ### if network for more than one unit, reduce to one row using method
+  if(nrow(network) > 1) {
+    network = colMeans(network);
+  }
+  ### if given network 2 and it has more than one unit, reduce to one row using method
+  # if(!is.null(network2) && nrow(network2) > 1) {
+  #   network2 = colMeans(network2);
+  # }
+
+  codeWeights = data.frame(matrix(NA, ncol = length(enaplot$enaset$codes)));
+  names(codeWeights) = enaplot$enaset$codes;
+  ### nested for loop, for each code find its adj codes and sum them, remove ones with all zero
+  for(code in names(codeWeights)) {
+    codeSum = 0;
+    adjIndex = 1;
+
+    for(adj.code in network) {
+      ### if adj.code column corresponds to code - add column's value to the codeSum
+      if(grepl(code, names(network)[adjIndex])) {
+        codeSum <- codeSum + adj.code;
+      }
+      adjIndex = adjIndex + 1;
+    }
+
+    codeWeights[,code] <- codeSum;
+  }
+
+  ### if not showing all nodes remove nodes with value of zero
+  if(!show.all.nodes) {
+    for(col in names(codeWeights)) {
+      #print(col)
+      if(codeWeights[,col] == 0) codeWeights[,col] <- NULL;
+    }
+  }
+
+  ###### END NEW
+
   df = data.frame(enaplot$enaset$line.weights, attr(enaplot$enaset$line.weights, rENA::opts$UNIT_NAMES));
+
   dfDT= data.table::as.data.table(df);
 
-  dfDT$handle = merge_columns_c(dfDT, units.by, sep="."); #rownames(df);
+  #dfDT$handle = merge_columns_c(dfDT, units.by, sep="."); #rownames(df);
 
   units.to.plot = c(selection.one.name, selection.two.name);
 

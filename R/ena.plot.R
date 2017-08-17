@@ -3,40 +3,36 @@
 ena.plot <- function(
   enaset,
 
-  plot.mode = "units+network",
-  plot.title = "ENA Plot",
-  plot.color = I("black"),
+  title = "ENA Plot",
 
   dimensions = c(1,2),
-  dimension.labels = c("x","y"),
+  dimension.labels = c("X","Y"),
   dimension.show.variance = T,
 
-  multiplier = 5,
+  end.points = F,
 
-  ###NEW - may not need
-  units = unique(enaset$get("enaData")$get("units")),
-  unit.colors = rep(plot.color, nrow(enaset$points.rotated)),
-  unit.labels = units,
-  unit.labels.positions = NULL,
-  unit.size = 1,
-  unit.size.multiplier = multiplier,
-  unit.show.confidence.intervals = T,
-  ####END NEW
+  flip.axis.x = F,
+  flip.axis.y = F,
 
-  trajectory.by = enaset$get("enadata")$get("trajectory.by"),
-
+  font.size = 10,
+  font.color = "000000",
+  font.family = "Arial",
 
   ...
 ) {
 
-  plot = ENAplot$new(enaset, plot.mode);
-
-  #show.modes = unlist(strsplit(plot.mode,split="\\+"))
-  #show.units = "units" %in% show.modes;
-  #show.networks = "network" %in% show.modes;
-
-  #unit.group_by <- match.arg(unit.group_by);
-  #estimate.network.over <- match.arg(estimate.network.over);
+  plot = ENAplot$new(enaset,
+                     title,
+                     dimensions,
+                     dimension.labels,
+                     dimension.show.variance,
+                     end.points,
+                     flip.axis.x,
+                     flip.axis.y,
+                     font.size,
+                     font.color,
+                     font.family
+                     );
 
   return(plot);
 }
