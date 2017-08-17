@@ -64,7 +64,7 @@ ena.accumulate.data.file <- function(
 
   weight.by = "binary",
 
-  units.exclude = c(),      #leave for now
+  units.exclude = c(),
 
   model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),   #use match arg and list?
   #trajectory.by = NULL,     #no longer used, trajectories are always by activity

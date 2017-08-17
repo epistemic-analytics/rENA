@@ -4,22 +4,30 @@ ena.plot.points = function(
 
   points = NULL,    #vector of unit names or row indices
 
-  #dimension.labels = c("x","y"),
-  #dimension.show.variance = T,
-
   labels = unique(enaplot$enaset$enadata$units),
-
   label.offset = NULL,
 
   label.font.size = enaplot$get("font.size"),
   label.font.color = enaplot$get("font.color"),
-  label.font.family = enaplot$get("font.family"),
+  label.font.family = c("Arial", "Courier New", "Times New Roman"),
 
-  colors = rep(I("black"), nrow(enaplot$enaset$get.data("rotated", with.meta=T)))
+  shape = c("circle", "square", "triangle", "diamond"),
+  colors = rep(I("black"), nrow(enaplot$enaset$get.data("rotated", with.meta=T))),
+
+  confidence.interval = NULL,
+  confidence.interval.shape = c("none", "crosshairs"),
+
+  outlier.interval = NULL,
+  outlier.interval.shape = c("none", "crosshairs")
 
 ) {
 
   data = enaplot$enaset$get.data("rotated", with.meta=T);
+
+  ### TEST
+  if(!is.character(label.font.family)) {
+    label.font.size = enaplot$get("font.family");
+  }
 
   ### probably doesnt work for subsetting - TEST IT
   if(!is.null(points)){
@@ -111,7 +119,7 @@ ena.plot.points = function(
     enaplot$plot %<>% plotly::add_data(points.layout) %>% plotly::add_trace(x = ~V1, y = ~V2, data = points.layout,
       mode = "markers", type = "scatter",
         marker = list(
-          symbol = c(rep("circle",nrow(points.layout))),
+          symbol = c(rep(shape, nrow(points.layout))),
           color = colors,
           size = c(rep(size, nrow(points.layout)))
         ),
