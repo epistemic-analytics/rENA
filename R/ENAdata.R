@@ -70,6 +70,8 @@ ENAdata = R6::R6Class("ENAdata",
       private$conversations.by <- conversations.by;
 
       private$trajectory.by <- trajectory.by;
+
+      ### Why is this happening
       if(is.null(trajectory.by)) private$trajectory.by = conversations.by;
 
       self$codes <- codes;
@@ -88,7 +90,7 @@ ENAdata = R6::R6Class("ENAdata",
 
       if(self$model == "EndPoint") private$trajectory.by <- NULL;
 
-      private$mask = mask;
+      private$mask <- mask;
 
       private$loadFile();
 
@@ -116,13 +118,15 @@ ENAdata = R6::R6Class("ENAdata",
     adjacency.vectors.raw = NULL,
 
     units = NULL,
-    units.names = NULL,
+    unit.names = NULL,
 
     metadata = NULL,
 
-    trajectories.unit = NULL,
-    trajectories.step = NULL,
-    trajectories.point.names = NULL,
+    trajectories = list(
+      unit = NULL,
+      step = NULL
+    ),
+    trajectory.point.names = NULL,
 
     codes = NULL,
 

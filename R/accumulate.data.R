@@ -6,7 +6,7 @@ accumulate.data <- function(enadata) {
 
   units.by = enadata$get("units.by"); ### COLUMNS TO BE COMBINED TO FORM ENA_UNIT
 
-  #### FIX FOR ISSUE - codes given as vector for accum.data.file but is a data frame for accum.data
+  #### FIX FOR ISSUE - codes given as vector for accum.data.file but is a df for accum.data
   codes = enadata$codes;
   if(is.data.frame(codes)) codes = colnames(codes);
 
@@ -198,7 +198,10 @@ accumulate.data <- function(enadata) {
     #### update unit.names w/ the created unique unit column
 
     #### SHOULDN'T ACTUALLY NEED TO UPDATE THIS, units was never altered
-    enadata$units = dfDT.summed.units[,units.by, with=F];
+    if(is.null(enadata$units)) {
+      #enadata$units = dfDT.summed.units[,units.by, with=F];
+      enadata$units = dfDT.co.occurrences[,units.by, with=F];
+    }
 
     return(enadata);
 }

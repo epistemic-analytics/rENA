@@ -83,7 +83,7 @@ ENAset = R6::R6Class("ENAset",
       self$function.call <- sys.call();
 
       self$function.params$norm.by <- norm.by;    #was sphere_norm
-      self$function.params$center.data <- center.data;
+      #self$function.params$center.data <- center.data;
       self$function.params$node.position.method <- node.position.method;    #was position.method
 
       private$endpoints.only <- endpoints.only;
@@ -149,7 +149,7 @@ ENAset = R6::R6Class("ENAset",
     function.call = NULL,     #new - string reping function call
     function.params = list(   #list containing parameters function was called with
       norm.by = NULL,
-      center.data = NULL,
+      #center.data = NULL,
       node.position.method = NULL
     ),
 
@@ -421,11 +421,14 @@ ENAset = R6::R6Class("ENAset",
       private$k2 = triIndices(private$K, 1) + 1;
       ###
 
+
       ###
       # Center the normed data
       # FIX - store as $data$centered
       ###
-      self$points.normed.centered = self$function.params$center_data_c(self$line.weights);
+      #### ISSUE
+      #print(self$function.params$center.data)
+      self$points.normed.centered = center_data_c(self$line.weights);
 
       colnames(self$points.normed.centered) = codeNames_tri;
       rownames(self$points.normed.centered) = rownames(df);
@@ -443,25 +446,26 @@ ENAset = R6::R6Class("ENAset",
       #   c(FUN = "ena.rotate.by.mean", list("Condition" = c("A","B"), "group" = c("1","2"))),
       #   c(FUN = "orthogonal.svd")
       # )
-      print(df.set$line.weights)
+      #print(df.set$line.weights)
       # ### END TESTING CODE
       #
       # if no rotation set provided, construct one using the parameters in rotation.by
-      if(is.null(self$rotation)) {
-        for(vector in rotation.by) {
 
-          this.function = vector$FUN
-          this.params = vector[2];
-
-          self$rotation = do.call(this.function, list(df.set$line.weights, this.params))
-
-        }
-      ### else use provided Rotation Set
-      } else {
-
-      }
-
-      print(df.set$line.weights)
+       # if(is.null(self$rotation)) {
+      #   for(vector in rotation.by) {
+      #
+      #     this.function = vector$FUN
+      #     this.params = vector[2];
+      #
+      #     self$rotation = do.call(this.function, list(df.set$line.weights, this.params))
+      #
+      #   }
+      # ### else use provided Rotation Set
+      # } else {
+      #
+      # }
+      #
+      # print(df.set$line.weights)
 
       ###### END NEW ROTATION
 
