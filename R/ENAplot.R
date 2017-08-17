@@ -23,18 +23,20 @@ ENAplot = R6::R6Class("ENAplot",
     initialize = function(
       enaset = NULL,
 
-      plot.mode = "units+network",
+      title = "ENA Plot",
 
-      units = NULL,
-      plot = NULL,
+      dimensions = c(1,2),
+      dimension.labels = c("X","Y"),
+      dimension.show.variance = T,
 
-      units.by = NULL,
+      end.points = F,
+
+      flip.axis.x = F,
+      flip.axis.y = F,
 
       font.size = 10,
       font.color = "000000",
       font.family = "Arial",
-
-      #traces = NULL,
 
       ...
     ) {
@@ -44,14 +46,18 @@ ENAplot = R6::R6Class("ENAplot",
          mode = "markers",
          type ="scatter"
        )
-      self$trajectory.by <- enaset$get("enaData")$get("trajectory.by");
 
-      self$plot.mode <- plot.mode;
-      self$units.by <- enaset$get('enaData')$get('units.by');
+      private$title <- title;
+      private$dimensions <- dimensions;
+      private$dimension.labels <- dimension.labels;
+      private$dimension.show.variance <- dimension.show.variance;
+      private$end.points <- end.points;
+      private$flip.axis.x <- flip.axis.x;
+      private$flip.axis.y <- flip.axis.y;
+      private$font.size <- font.size;
+      private$font.color <- font.color;
+      private$font.family <- font.family;
 
-      private$units <- unique(enaset$get("enaData")$get("units"));
-
-      #self$traces <- character(0);
     },
 
     ####
@@ -59,25 +65,25 @@ ENAplot = R6::R6Class("ENAplot",
     ####
 
     enaset = NULL,
-    plot.mode = NULL,
 
     plot = NULL,
-
-    plot.title = "ENA Plot",
-
-    units.by = NULL,
-
-    font.size = 10,
-    font.color = "000000",
-    font.family = "Arial",
-
-    #traces = character(0),
 
     ####
     ## Public Functions
     ####
     print = function() {
       print(self$plot);
+    },
+
+    ####
+    #' \code{get()} - Return a read-only property
+    #' \preformatted{  Example:
+    #'     get( x = 'title' )}
+    #' \preformatted{  Parameters:
+    #'      x - Property to return. Defaults to 'title', returning the title}
+    ####
+    get = function(x) {
+      return(private[[x]])
     }
 
   ),
@@ -87,17 +93,24 @@ ENAplot = R6::R6Class("ENAplot",
     ####
     ## Private Properties
     ####
-
-    plot.color = I("black"),
+    title = "ENA Plot",
 
     dimensions = c(1,2),
-    dimension.labels = c("x","y"),
+    dimension.labels = c("X","Y"),
     dimension.show.variance = T,
-    multiplier = 5,
 
-    ###re-introduced
-    units = NULL
+    end.points = F,
 
+    flip.axis.x = F,
+    flip.axis.y = F,
+
+    font.size = 10,
+    font.color = "000000",
+    font.family = "Arial",
+
+    #plot.color = I("black"),
+
+    multiplier = 5
 
     ####
     ## Private Functions

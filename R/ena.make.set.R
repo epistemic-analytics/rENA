@@ -7,8 +7,8 @@
 #'
 #' @export
 #'
-#' @param enaData \code{\link{ENAdata}} that will be used to generate an ENA set
-#' @param dims Number of dimensions in the set
+#' @param enadata \code{\link{ENAdata}} that will be used to generate an ENA set
+#' @param dims Number of dimensions to be in the set
 #' @param samples [TBD]
 #' @param inPar [TBD]
 #' @param codeColumns Number of columns of codes in the ENA set
@@ -38,11 +38,11 @@
 #' @return \code{\link{ENAset}} class object
 ##
 ena.make.set <- function(
-  enaData,
-
+  enadata,
+  dimensions = 2,
   #NEW
   norm.by = sphere_norm_c,  #was sphere_norm
-  rotation.by = c("SVD"),
+  rotation.by = NULL,
   rotation.set = NULL,
   endpoints.only = T,
   node.position.method = lws.positions.es,     #was position.method
@@ -55,7 +55,7 @@ ena.make.set <- function(
 
   ####
   #sphere.norm=dont_sphere_norm_c,   #now called norm.by
-  center.data=center_data_c,     ### leave for now
+  #center.data=center_data_c,     ### made local in run - always center_data_c
   #optim.method=do_optimization,  # - now local to ENAset, used by egr.position
   #position.method=egr.positions, #-> node.position.method
 
@@ -71,24 +71,27 @@ ena.make.set <- function(
   ...
 ) {
   set = ENAset$new(
-    enaData = enaData,
+    enadata = enadata,
 
-    #dims = dims,
+    dimensions,
     #samples = samples,
     #inPar = inPar,
 
     norm.by = norm.by,
-    center.data = center.data,
+
+    rotation.by = rotation.by,
+    rotation.set = rotation.set,
+
+    #center.data = center.data,
     #optim.method = optim.method,
     node.position.method = node.position.method,
-    check.unique.positions = check.unique.positions,
+
+    endpoints.only,
+
+    #### TO BE REMOVED
     set.seed = set.seed,
     rotate.means = rotate.means,
     rotate.means.by = rotate.means.by,
-
-    #unit.names = as.matrix(enaData$adjacency.vectors[,1])[,1],
-
-    #codes = enaData$codes,
 
     ...
 

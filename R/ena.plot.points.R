@@ -1,46 +1,56 @@
 
 ena.plot.points = function(
   enaplot,
-  data = enaplot$enaset$get.data("rotated", with.meta=T),
 
-  dimension.labels = c("x","y"),
-  dimension.show.variance = T,
+  points = NULL,    #vector of unit names or row indices
 
-  units = unique(enaplot$enaset$get("enaData")$get("units")),
+  #dimension.labels = c("x","y"),
+  #dimension.show.variance = T,
 
-  size = 1,
-  size.multiplier = 5,
-  colors = rep(I("blue"), nrow(data)),
+  labels = unique(enaplot$enaset$enadata$units),
 
-  ##### ena.plot.group now completely separate function
-  #group.by = NULL,
-  #group.size = NULL,
+  label.offset = NULL,
 
-  trajectory.by = enaplot$trajectory.by,
+  label.font.size = enaplot$get("font.size"),
+  label.font.color = enaplot$get("font.color"),
+  label.font.family = enaplot$get("font.family"),
 
-  font.size = enaplot$font.size,
-  font.color = enaplot$font.color,
-  font.family = enaplot$font.family
+  colors = rep(I("black"), nrow(enaplot$enaset$get.data("rotated", with.meta=T)))
 
 ) {
 
-  dfDT = data[ENA_UNIT %in% units];
+  data = enaplot$enaset$get.data("rotated", with.meta=T);
 
+  ### probably doesnt work for subsetting - TEST IT
+  if(!is.null(points)){
+    if(is.numeric(points[1])) {
+      data = data[points,];
+    } else {
+      data = data[ENA_UNIT %in% points];
+    }
+  }
+
+  size = 5;
+
+  #### used to determine trajectory or not, make sure it is null if not doing traject
+  trajectory.by = enaplot$enaset$enadata$get("trajectory.by");
+
+  #### MAY NOT BE HOW WE WANT TO USE LABELS
+  # if(!is.null(labels)) {
+  #   dfDT = data[ENA_UNIT %in% labels];
+  # } else dfDT = data;
+  dfDT = data;
+
+  ### THIS CHUNK SHOULDNT BE NEEDED, ENA_UNIT should always be a column
   df.names = dfDT$ENA_UNIT;
   if(is.null(df.names)) {
     df.names = as.character(1:nrow(data))
     rownames(data) = df.names;
   }
+
   dfDT[,name:=ENA_UNIT] # Create a name column
 
-  ##### relevant to units - change to plot.vertices ###### NOT USED ANYWHERE?
-  # network.vertices.df = dfDT[ENA_UNIT %in% units,c(ncol(dfDT),1:ncol(dfDT)-1),with=F];
-  # network.font.text = list(
-  #   family = font.family,
-  #   size = font.size,
-  #   color = font.color
-  # );
-  #####
+
 
   evs = enaplot$enaset$data$centered$latent[1:enaplot$enaset$get("dimensions")];
   evs = floor(evs/sum(evs)*100);
@@ -48,13 +58,13 @@ ena.plot.points = function(
   network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T);
   network.graph.axis.x = network.graph.axis.y = network.graph.axis;
 
-  if(dimension.show.variance == T) {
-    network.graph.axis.x$title = paste(dimension.labels[1], " (", evs[1], "%)", sep = "");
-    network.graph.axis.y$title = paste(dimension.labels[2], " (", evs[2], "%)", sep = "");
-  } else {
-    network.graph.axis.x$title = dimension.labels[1];
-    network.graph.axis.y$title = dimension.labels[2];
-  }
+  # if(dimension.show.variance == T) {
+  #   network.graph.axis.x$title = paste(dimension.labels[1], " (", evs[1], "%)", sep = "");
+  #   network.graph.axis.y$title = paste(dimension.labels[2], " (", evs[2], "%)", sep = "");
+  # } else {
+  #   network.graph.axis.x$title = dimension.labels[1];
+  #   network.graph.axis.y$title = dimension.labels[2];
+  # }
 
   ## Trajectory model
   if(!is.null(trajectory.by)) {
@@ -95,24 +105,24 @@ ena.plot.points = function(
     points.layout = data.frame(dfDT);
 
     if(length(colors) == 1) {
-      colors = rep(colors, nrow(data))
+      colors = rep(colors, nrow(points.layout))
     }
 
-    enaplot$plot %<>% plotly::add_data(points.layout) %>% plotly::add_trace(enaplot$plot, x = ~V1, y = ~V2, data = points.layout, mode = "markers", type = "scatter",
-      marker = list(
-        symbol = c(rep("circle",nrow(data))),
-        color = colors,
-        size = c(rep(size * size.multiplier, nrow(data)))
-      ),
-    text = ~name, hoverinfo = "text+x+y");
+    enaplot$plot %<>% plotly::add_data(points.layout) %>% plotly::add_trace(x = ~V1, y = ~V2, data = points.layout,
+      mode = "markers", type = "scatter",
+        marker = list(
+          symbol = c(rep("circle",nrow(points.layout))),
+          color = colors,
+          size = c(rep(size, nrow(points.layout)))
+        ),
+      text = ~name, hoverinfo = "text+x+y");
 
-    enaplot$plot %<>% plotly::hide_legend();
+    #enaplot$plot %<>% plotly::hide_legend();
 
     enaplot$plot %<>% plotly::layout(
       title = enaplot$plot.title,
       xaxis = network.graph.axis.x,
       yaxis = network.graph.axis.y
-      #shapes = lines
     )
 
     return(enaplot);

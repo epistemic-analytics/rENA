@@ -54,6 +54,7 @@ ENAdata = R6::R6Class("ENAdata",
       units.exclude = c(),
 
       model = NULL,
+      mask = NULL,
       trajectory.by = NULL,
       ...
     ) {
@@ -86,6 +87,8 @@ ENAdata = R6::R6Class("ENAdata",
       self$model <- model;
 
       if(self$model == "EndPoint") private$trajectory.by <- NULL;
+
+      private$mask = mask;
 
       private$loadFile();
 
@@ -270,6 +273,8 @@ ENAdata = R6::R6Class("ENAdata",
 
     units.exclude = NULL,
 
+    mask = NULL,
+
     trajectory.by = NULL,
 
     ####
@@ -298,6 +303,8 @@ ENAdata = R6::R6Class("ENAdata",
 
       # save raw adjacency vectors prior to corrections
       self$adjacency.vectors.raw = self$adjacency.vectors;
+
+      #private$mask = upper.tri(as.matrix(self$adjacency.vectors))
 
       # If weighted (not binary) and correction specified, invoke correction --- OLD VERSION
       # if(private$binary == F & !is.null(private$correction)) {

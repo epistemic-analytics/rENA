@@ -70,6 +70,8 @@ ena.accumulate.data.file <- function(
   #trajectory.by = NULL,     #no longer used, trajectories are always by activity
   #trajectory.type = c("accumulated","non-accumulated"),     #into model
 
+  mask = NULL,
+
   output = c("class","json"),    #keep for now
   output.fields = NULL,       #keep for now
   ...
@@ -103,6 +105,7 @@ ena.accumulate.data.file <- function(
     units.exclude,
 
     model = model,
+    mask,
 
     ...
   );

@@ -8,7 +8,7 @@ ena.plot.units = function(
   dimension.labels = c("x","y"),
   dimension.show.variance = T,
 
-  units = unique(enaset$get("enaData")$get("units")),
+  units = unique(enaset$enadata$get("units")),
   unit.size = 1,
   unit.size.multiplier = 5,
   unit.colors = rep(I("blue"), nrow(data)),
