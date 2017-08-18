@@ -305,6 +305,8 @@ ENAdata = R6::R6Class("ENAdata",
 
       self %<>% accumulate.data();
 
+      self$unit.names <- self$adjacency.vectors$ENA_UNIT;
+
       # save raw adjacency vectors prior to corrections
       self$adjacency.vectors.raw = self$adjacency.vectors;
 

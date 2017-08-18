@@ -40,14 +40,17 @@
 ##
 ena.make.set <- function(
   enadata,
+
   dimensions = 2,
-  #NEW
-  norm.by = sphere_norm_c,  #was sphere_norm
+
+  norm.by = sphere_norm_c,
+
   rotation.by = NULL,
+  rotation.parameters = NULL,
   rotation.set = NULL,
+
   endpoints.only = T,
-  node.position.method = lws.positions.es,     #was position.method
-  #end new
+  node.position.method = lws.positions.es,
 
   # private properties of ENAset
   #dims=2,    #usein in egr.pos/optimization --- to be determined
@@ -60,54 +63,57 @@ ena.make.set <- function(
   #optim.method=do_optimization,  # - now local to ENAset, used by egr.position
   #position.method=egr.positions, #-> node.position.method
 
-  ### what to do with these?
-  check.unique.positions=F,    #remove from here for now
-  set.seed = F,       #remove from here for now
-  rotate.means = F,    #### replaced by rotation.by
-  rotate.means.by = NULL,    #### replaced by rotation.by
+  ### what to do with these 2?
+  check.unique.positions=F,
+  set.seed = F,
+
+  ### leaving for now so testing can occur w/o errors
+  rotate.means = F,
+  rotate.means.by = NULL,
   #
 
-  output = c("class","json"),
-  output.fields = NULL,
+  ### NO LONGER BEING INCLUDED
+  #output = c("class","json"),
+  #output.fields = NULL,
+
   ...
 ) {
   set = ENAset$new(
     enadata = enadata,
 
-    dimensions,
-    #samples = samples,
-    #inPar = inPar,
+    dimensions = dimensions,
 
     norm.by = norm.by,
 
     rotation.by = rotation.by,
+    rotation.parameters = rotation.parameters,
     rotation.set = rotation.set,
 
-    #center.data = center.data,
-    #optim.method = optim.method,
     node.position.method = node.position.method,
 
-    endpoints.only,
+    endpoints.only = endpoints.only,
 
     #### TO BE REMOVED
     set.seed = set.seed,
     rotate.means = rotate.means,
     rotate.means.by = rotate.means.by,
+    ####
 
     ...
 
   )$process();
 
-  output = match.arg(output);
+  #output = match.arg(output);
 
-  if(output == "json") {
-    output.class = get(class(set))
-
-    if(is.null(output.fields)) {
-      output.fields = names(output.class$public_fields)
-    }
-
-    r6.to.json(set, o.class = output.class, o.fields = output.fields)
-  }
-  else set
+  # if(output == "json") {
+  #   output.class = get(class(set))
+  #
+  #   if(is.null(output.fields)) {
+  #     output.fields = names(output.class$public_fields)
+  #   }
+  #
+  #   r6.to.json(set, o.class = output.class, o.fields = output.fields)
+  # }
+  # else
+  set
 }

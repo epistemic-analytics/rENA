@@ -10,8 +10,8 @@ test_that("Simple data.frame to accumulate and make set", {
   df.set = ena.make.set(df.accum, node.position.method = egr.positions)
   df.set.lws = ena.make.set(df.accum, node.position.method = lws.positions.es)
 
-  ###NEW TESTs - length of unit.names and codes equal to known number of unit names and codes
-  testthat::expect_equal(length(df.set.lws$unit.names), 48);
+  ###NEW TESTs - change to checking at ENAdata level or remove from this test
+  #testthat::expect_equal(length(df.set.lws$unit.names), 48);
 
   testthat::expect_equal(length(df.set.lws$codes), 16);
 
