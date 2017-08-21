@@ -15,6 +15,7 @@ accumulate.data <- function(enadata) {
   window = enadata$get("window.size");
 
   binary = T;
+  binaryStanzas = F;
 
   units.exclude = enadata$get("units.exclude");
 
@@ -26,6 +27,8 @@ accumulate.data <- function(enadata) {
   ### should work to determine if binary is desired
   if(!identical(enadata$get("weight.by"), "binary")) {
     binary = F;
+  } else {
+    binary = T;
   }
 
   if(model == "EndPoint") trajectory.by = NULL;
@@ -83,7 +86,7 @@ accumulate.data <- function(enadata) {
 
   } else {
     dfDT.co.occurrences = dfDT_codes[,{
-        ocs = ref_window_df(.SD, windowSize=window$back, binary = binary);
+        ocs = ref_window_df(.SD, windowSize=window$back, windowForward=window$forward, binary = binary, binaryStanzas = binaryStanzas);
 
         # Return value from data.table back to dfDT.co.occurrences
         data.table::data.table(.SD,ocs)

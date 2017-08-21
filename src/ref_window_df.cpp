@@ -72,14 +72,18 @@ arma::mat rows_to_co_occurrences(DataFrame df) {
 //' @description TBD
 //' @param df A dataframe
 //' @param windowSize Integer for number of rows in the stanza window
+//' @param windowForward Integer for number of rows in the stanza window forward
 //' @param binary Logical, treat codes as binary or leave as weighted
+//' @param binaryStanzas Logical, treat codes as binary or leave as weighted
 //' @export
 // [[Rcpp::export]]
 DataFrame ref_window_df(
     DataFrame df,
-    int windowSize = 0,
-    bool binary = true
-) {
+    int windowSize = 1,
+    int windowForward = 0,
+    bool binary = true,
+    bool binaryStanzas = false
+  ) {
   int dfRows = df.nrows();
   int dfCols = df.size();
   int numCoOccurences = ( (dfCols * (dfCols + 1)) / 2) - dfCols;
@@ -95,22 +99,41 @@ DataFrame ref_window_df(
     /**
      * The rows in the current window. CurrentRow + Referrants == windowSize
      */
-    arma::mat currRows2 = df_AsMatrix2( span( (row-(windowSize-1)>=0)?(row-(windowSize-1)):0,row ), span::all );
+
+    // NOTE: change the span to always use 0 if infinite window
+    int earliestRow = 0, lastRow = row;
+    if ( row - (windowSize-1) >= 0 ) {
+      earliestRow = row - (windowSize-1);
+    }
+    if ( windowForward > 0 &&  (row + (windowForward) <= dfRows-1)) {
+      lastRow = row + windowForward;
+    }
+
+    arma::mat currRows2 = df_AsMatrix2( span( earliestRow, lastRow ), span::all );
     arma::mat currRowsSummed = arma::sum(currRows2);
     arma::rowvec toUT = vector_to_ut(currRowsSummed);
 
     if(windowSize > 1 && row-1>=0) {
-      //arma::mat currRows2_refs = df_AsMatrix2( span( (row-(windowSize-1)>=0)?(row-(windowSize-1)):0,(row-1>0)?row-1:0 ), span::all );
-      arma::mat currRows2_refs = currRows2.head_rows(currRows2.n_rows-1);
-
+      int headRows = windowSize-1-windowForward;
+      if(headRows < 0) {
+        headRows = 0;
+      }
+      arma::mat currRows2_refs = currRows2.head_rows(headRows);
       arma::mat currRow_refsSummed = arma::sum(currRows2_refs);
       arma::rowvec toUT_refs = vector_to_ut(currRow_refsSummed);
-      arma::rowvec toUT_subs = toUT - toUT_refs;
-
-      df_CoOccurred.row(row) = toUT_subs;
-    } else {
-      df_CoOccurred.row(row) = toUT;
+      toUT = toUT - toUT_refs;
     }
+    if(windowForward > 0 && row+windowForward <= (dfRows-1)) {
+      arma::mat currRows2_refs = currRows2.tail_rows(windowForward);
+      arma::mat currRow_refsSummed = arma::sum(currRows2_refs);
+      arma::rowvec toUT_refs = vector_to_ut(currRow_refsSummed);
+      toUT = toUT - toUT_refs;
+    }
+
+    if (binaryStanzas==true) {
+      toUT.elem( find(toUT > 0) ).ones();
+    }
+    df_CoOccurred.row(row) = toUT;
   }
 
   if(binary == true) {
@@ -127,7 +150,7 @@ DataFrame ref_window_df(
 //' @param df A dataframe
 //' @param windowSize Integer for number of rows in the stanza window
 //' @param binary Logical, treat codes as binary or leave as weighted
-// [[Rcpp::export]]
+//' FIXME Delete this function
 NumericMatrix ref_window_df2(
     DataFrame df,
     int windowSize = 1,
@@ -231,3 +254,16 @@ DataFrame ref_window_lag(
 
   return wrap(df_LagSummed);
 }
+
+/*** R
+acc = ENAdata$new(
+  df[22:24,],
+  units.by = unitsBy,
+  conversations.by = stanzasBy,    #column names of conversation df, automatically accumulating by all cols for accum from dfs
+  codes = codeNames[1:4],
+  window.size.back = 4,
+  window.size.forward = 1,
+  weight.by = "Binary",
+  model = "EndPoint"
+)
+*/

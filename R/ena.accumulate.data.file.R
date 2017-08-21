@@ -87,26 +87,18 @@ ena.accumulate.data.file <- function(
 
   data = ENAdata$new(
     file,
-
     units,
     units.used,
-
     units.by,
     conversations.by,
-
     codes,
-
     window.size,
     window.size.back,
     window.size.forward,
-
     weight.by,
-
     units.exclude,
-
     model = model,
-    mask,
-
+    mask = mask,
     ...
   );
 

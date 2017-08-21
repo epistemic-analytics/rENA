@@ -1,5 +1,5 @@
 suppressMessages(library(rENA, quietly = T, verbose = F))
-context("Test accumulating data");
+context("Test accumulating data file");
 
 
 test_that("Simple data.frame to accumulate", {
@@ -24,7 +24,7 @@ test_that("Simple data.frame to accumulate", {
     as.matrix(df.accum$adjacency.vectors[, attr(df.accum$adjacency.vectors,"adjacency.codes"), with=F])
       ==
     #matrix(c(2,2,2,0,1,0), nrow=length(unique(df.accum$units)))
-    matrix(c(2,2,2,0,1,0), nrow=nrow(df.accum$units))
+    matrix(c(2,2,2,0,1,0), nrow=2)
   ));
 })
 
