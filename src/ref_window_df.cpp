@@ -166,7 +166,6 @@ NumericMatrix ref_window_df2(
   for(int row = 0; row < dfRows; row++) {
     /** The rows in the CurrentWindow. CurrentRow + ReferringRows == windowSize */
     NumericMatrix currRows = df_asMatrix( Range( (row-(windowSize-1)>=0)?(row-(windowSize-1)):0,row ), _ );
-    Rcpp::Rcout << "Window " << row << ":" << std::endl << currRows << std::endl;
 
     /** Sum of the entire CurrentWindow */
     NumericVector currRowsSummed1 = Rcpp::colSums(currRows);
@@ -184,7 +183,6 @@ NumericMatrix ref_window_df2(
     if(windowSize > 1 && row-1>=0) {
       /** Select ReferringRows for the CurrentWindow */
       NumericMatrix currRow_refs = df_asMatrix( Range( (row-(windowSize-1)>=0) ? (row-(windowSize-1)): 0, (row-1>0)?row-1:0 ), _ );
-      Rcpp::Rcout << "Refs " << row << ":" << std::endl << currRow_refs << std::endl;
 
       /** Sum the ReferringRows for the CurrentWindow */
       NumericVector currRow_refsSummed = Rcpp::colSums(currRow_refs);
@@ -256,14 +254,14 @@ DataFrame ref_window_lag(
 }
 
 /*** R
-acc = ENAdata$new(
-  df[22:24,],
-  units.by = unitsBy,
-  conversations.by = stanzasBy,    #column names of conversation df, automatically accumulating by all cols for accum from dfs
-  codes = codeNames[1:4],
-  window.size.back = 4,
-  window.size.forward = 1,
-  weight.by = "Binary",
-  model = "EndPoint"
-)
+# acc = ENAdata$new(
+#   df[22:24,],
+#   units.by = unitsBy,
+#   conversations.by = stanzasBy,    #column names of conversation df, automatically accumulating by all cols for accum from dfs
+#   codes = codeNames[1:4],
+#   window.size.back = 4,
+#   window.size.forward = 1,
+#   weight.by = "Binary",
+#   model = "EndPoint"
+# )
 */

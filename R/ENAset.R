@@ -43,7 +43,7 @@ ENAset = R6::R6Class("ENAset",
       norm.by = sphere_norm_c,
 
       rotation.by = NULL,
-      rotation.parameters = NULL,
+      rotation.params = NULL,
       rotation.set = NULL,
 
       #center.data = center_data_c,    ### made local to run
@@ -87,7 +87,7 @@ ENAset = R6::R6Class("ENAset",
       #self$function.params$center.data <- center.data;
       self$function.params$node.position.method <- node.position.method;    #was position.method
       self$function.params$rotation.by <- rotation.by;
-      self$function.params$rotation.parameters <- rotation.parameters;
+      self$function.params$rotation.params <- rotation.params;
       self$function.params$endpoints.only <- endpoints.only;
 
     },
@@ -154,7 +154,7 @@ ENAset = R6::R6Class("ENAset",
       norm.by = NULL,
       node.position.method = NULL,
       rotation.by = NULL,
-      rotation.parameters = NULL,
+      rotation.params = NULL,
       endpoints.only = NULL
     ),
 
@@ -470,42 +470,47 @@ ENAset = R6::R6Class("ENAset",
 
       ###### END NEW ROTATION
 
-      ###OLD ROTATION
-      if(private$rotate.means == T) {
-        #for(group in names(private$rotate.means.by)) {
-        self$line.weights.unrotated = self$line.weights;
-            ### used to be  self$data$centered$pca
-        self$rotation.set = ena.rotate.by.mean(self$line.weights, private$rotate.means.by); #[[group]]);
-        #}
+      if(!is.null(self$function.params$rotation.by)) {
+        self$rotation.set = do.call(self$function.params$rotation.by, list(self, self$function.params$rotation.params))
       }
+
+
+      ###OLD ROTATION
+      # if(private$rotate.means == T) {
+      #   #for(group in names(private$rotate.means.by)) {
+      #   self$line.weights.unrotated = self$line.weights;
+      #       ### used to be  self$data$centered$pca
+      #   self$rotation.set = ena.rotate.by.mean(self$line.weights, private$rotate.means.by); #[[group]]);
+      #   #}
+      # }
 
       ###
       # Principal Component results
       ###
-      else {
-        to.norm = data.table::data.table(
-          self$points.normed.centered,
-          merge_columns_c(
-            attr(
-              self$points.normed.centered,
-              rENA::opts$UNIT_NAMES
-            ),
-            self$enadata$get("units.by")
-          )
-        )
-        to.norm = as.matrix(to.norm[,tail(.SD,n=1),.SDcols=colnames(to.norm)[which(colnames(to.norm) != "V2")],by=c("V2")][,2:ncol(to.norm)]);
-        pcaResults = pca_c(to.norm, dims = private$dimensions);
-        ### used to be  self$data$centered$pca
-        self$rotation.set = pcaResults$pca;
-        ### used to be self$data$centered$latent
-        self$variance = pcaResults$latent[private$dimensions];
-      }
+      # else {
+      #   to.norm = data.table::data.table(
+      #     self$points.normed.centered,
+      #     merge_columns_c(
+      #       attr(
+      #         self$points.normed.centered,
+      #         rENA::opts$UNIT_NAMES
+      #       ),
+      #       self$enadata$get("units.by")
+      #     )
+      #   )
+      #   to.norm = as.matrix(to.norm[,tail(.SD,n=1),.SDcols=colnames(to.norm)[which(colnames(to.norm) != "V2")],by=c("V2")][,2:ncol(to.norm)]);
+      #   pcaResults = pca_c(to.norm, dims = private$dimensions);
+      #   ### used to be  self$data$centered$pca
+      #   self$rotation.set = pcaResults$pca;
+      #   ### used to be self$data$centered$latent
+      #   self$variance = pcaResults$latent[private$dimensions];
+      # }
       ###
 
       ###
       # Generated the rotated points
       ###
-      self$points.rotated = self$points.normed.centered %*% self$rotation.set;
+      self$points.rotated = self$points.normed.centered %*% self$rotation.set$rotation;
       attr(self$points.rotated, rENA::opts$UNIT_NAMES) = attr(self$points.normed.centered, rENA::opts$UNIT_NAMES);
       ###
 
