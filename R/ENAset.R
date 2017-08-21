@@ -40,12 +40,10 @@ ENAset = R6::R6Class("ENAset",
       enadata,
       dimensions = 2,
 
-      #samples = 3,
-      #inPar = F,
-
       norm.by = sphere_norm_c,
 
       rotation.by = NULL,
+      rotation.parameters = NULL,
       rotation.set = NULL,
 
       #center.data = center_data_c,    ### made local to run
@@ -76,24 +74,29 @@ ENAset = R6::R6Class("ENAset",
       private$rotate.means.by <- rotate.means.by;
       ###
 
-      #originally had here just to have at a high level, move to ENAplot?
-      self$unit.names <- as.matrix(enadata$adjacency.vectors[,1])[,1];
+      #CHECK FORMAT
+      #self$unit.names <- as.matrix(enadata$adjacency.vectors[,1])[,1];
+
       self$codes <- enadata$codes;
+
+      self$rotation.set <- rotation.set;
 
       self$function.call <- sys.call();
 
       self$function.params$norm.by <- norm.by;    #was sphere_norm
       #self$function.params$center.data <- center.data;
       self$function.params$node.position.method <- node.position.method;    #was position.method
+      self$function.params$rotation.by <- rotation.by;
+      self$function.params$rotation.parameters <- rotation.parameters;
+      self$function.params$endpoints.only <- endpoints.only;
 
-      private$endpoints.only <- endpoints.only;
     },
 
     ####
     ## Public Properties
     ####
 
-    unit.names = NULL,
+    #unit.names = NULL,
 
 
      #####changed to list - function.params
@@ -139,9 +142,9 @@ ENAset = R6::R6Class("ENAset",
     #### NEW
     node.positions = NULL,  #was nodes$positions$scaled
 
-    codes = NULL,   #same as before
+    codes = NULL,
 
-    rotation = NULL,   ## new - ENARotation object
+    rotation.set = NULL,   ## new - ENARotation object
 
     correlation = NULL,   #not formerly listed, comes from optimized node positions in egr.positions
     variance = NULL,     #was self$data$centered$latent
@@ -149,8 +152,10 @@ ENAset = R6::R6Class("ENAset",
     function.call = NULL,     #new - string reping function call
     function.params = list(   #list containing parameters function was called with
       norm.by = NULL,
-      #center.data = NULL,
-      node.position.method = NULL
+      node.position.method = NULL,
+      rotation.by = NULL,
+      rotation.parameters = NULL,
+      endpoints.only = NULL
     ),
 
     ####
@@ -192,7 +197,7 @@ ENAset = R6::R6Class("ENAset",
         self$enadata <- self$enadata$update(...);
       }
 
-      self$unit.names <- as.matrix(enadata$adjacency.vectors[,1])[,1];
+      #self$unit.names <- as.matrix(enadata$adjacency.vectors[,1])[,1];
       self$codes <- enadata$get("codes");
 
       return(self$process());
@@ -344,8 +349,6 @@ ENAset = R6::R6Class("ENAset",
     data.original = NULL,
     optim = NULL,
 
-    endpoints.only = T,
-
     #moved from public
     dimensions = 2,
     samples = 3,
@@ -358,13 +361,11 @@ ENAset = R6::R6Class("ENAset",
     k1 = NULL,
     k2 = NULL,
 
-    rotation.by = NULL,
-    rotation.set = NULL,
-
-    # what to do with these?
+    ### TO BE REMOVED ONCE NEW ROTATION ALGORITHM IMPLEMENTED
     set.seed = F,
     rotate.means = F,
     rotate.means.by = NULL,
+    ###
 
     ####
     ## Private Functions
@@ -474,7 +475,7 @@ ENAset = R6::R6Class("ENAset",
         #for(group in names(private$rotate.means.by)) {
         self$line.weights.unrotated = self$line.weights;
             ### used to be  self$data$centered$pca
-        self$rotation = ena.rotate.by.mean(self$line.weights, private$rotate.means.by); #[[group]]);
+        self$rotation.set = ena.rotate.by.mean(self$line.weights, private$rotate.means.by); #[[group]]);
         #}
       }
 
@@ -495,7 +496,7 @@ ENAset = R6::R6Class("ENAset",
         to.norm = as.matrix(to.norm[,tail(.SD,n=1),.SDcols=colnames(to.norm)[which(colnames(to.norm) != "V2")],by=c("V2")][,2:ncol(to.norm)]);
         pcaResults = pca_c(to.norm, dims = private$dimensions);
         ### used to be  self$data$centered$pca
-        self$rotation = pcaResults$pca;
+        self$rotation.set = pcaResults$pca;
         ### used to be self$data$centered$latent
         self$variance = pcaResults$latent[private$dimensions];
       }
@@ -504,7 +505,7 @@ ENAset = R6::R6Class("ENAset",
       ###
       # Generated the rotated points
       ###
-      self$points.rotated = self$points.normed.centered %*% self$rotation;
+      self$points.rotated = self$points.normed.centered %*% self$rotation.set;
       attr(self$points.rotated, rENA::opts$UNIT_NAMES) = attr(self$points.normed.centered, rENA::opts$UNIT_NAMES);
       ###
 
@@ -515,7 +516,6 @@ ENAset = R6::R6Class("ENAset",
       ###
 
       self = self$function.params$node.position.method(self);
-      #private$rotateNodes();
 
       return(self);
     }

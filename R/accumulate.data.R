@@ -25,6 +25,7 @@ accumulate.data <- function(enadata) {
   trajectory.type = NULL;
 
   ### should work to determine if binary is desired
+  binary = T;
   if(!identical(enadata$get("weight.by"), "binary")) {
     binary = F;
   } else {
@@ -58,8 +59,9 @@ accumulate.data <- function(enadata) {
   # Create a column representing the ENA_UNIT as defined
   # by the the `units.by` parameter
   ###
-    #dfDT_codes$ENA_UNIT = dfDT_codes[,{apply(.SD,1,function(x){paste(trimws(x),collapse=".")})},with=T,.SDcols=units.by];
+  #dfDT_codes$ENA_UNIT = dfDT_codes[,{apply(.SD,1,function(x){paste(trimws(x),collapse=".")})},with=T,.SDcols=units.by];
   dfDT_codes$ENA_UNIT = merge_columns_c(dfDT_codes, cols=units.by, sep=".");
+
   ##
   # String vector of codesnames representing the names of the co-occurrences
   ##
