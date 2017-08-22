@@ -60,7 +60,7 @@ ena.accumulate.data.file <- function(
 
   #window.size = 1,
   window.size.back = 1,
-  window.size.forward = NULL,
+  window.size.forward = 0,
 
   weight.by = "binary",
 
