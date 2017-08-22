@@ -163,7 +163,7 @@ accumulate.data <- function(enadata) {
             TRAJ_UNIT = .SD[,c(trajectory.by),with=F];
             incCols = cols[! cols %in% c(trajectory.by, "ENA_ROW_IDX") ];
             lag = ref_window_lag(.SD[,.SD,.SDcols=incCols], .N);
-            data.table(ENA_ROW_IDX, TRAJ_UNIT, lag, ENA_UNIT=ENA_UNIT);
+            data.table::data.table(ENA_ROW_IDX, TRAJ_UNIT, lag, ENA_UNIT=ENA_UNIT);
           },
           by=c(units.by),
           .SDcols=c(codedTriNames,trajectory.by,"ENA_ROW_IDX")

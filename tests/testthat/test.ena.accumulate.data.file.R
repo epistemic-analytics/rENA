@@ -42,7 +42,9 @@ test_that("Accumulate weighted data.", {
                           window.size.back=4,
                           weight.by = "weighted")
 
-  testthat::expect_true(all(apply(x$metadata[,.SD,.SDcols=colnames(x$metadata)[grep("^adj",colnames(x$metadata))]], 2, is.double)))
+  testthat::expect_true(all(
+    apply(x$adjacency.vectors[,grep("^adj",colnames(x$adjacency.vectors)), with=F], 2, is.double)
+  ))
 })
 
 ### NEW TEST
