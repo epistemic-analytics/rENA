@@ -114,7 +114,7 @@ DataFrame ref_window_df(
     arma::rowvec toUT = vector_to_ut(currRowsSummed);
 
     if(windowSize > 1 && row-1>=0) {
-      int headRows = windowSize-1-windowForward;
+      int headRows = currRows2.n_rows - 1 - windowForward;
       if(headRows < 0) {
         headRows = 0;
       }
@@ -254,10 +254,10 @@ DataFrame ref_window_lag(
 }
 
 /*** R
-# acc = ENAdata$new(
-#   df[22:24,],
-#   units.by = unitsBy,
-#   conversations.by = stanzasBy,    #column names of conversation df, automatically accumulating by all cols for accum from dfs
+# acc = ena.accumulate.data.file(
+#   df,
+#   units.by = c("UserName","Condition"),
+#   conversations.by = c("ActivityNumber","GroupName"),
 #   codes = codeNames[1:4],
 #   window.size.back = 4,
 #   window.size.forward = 1,

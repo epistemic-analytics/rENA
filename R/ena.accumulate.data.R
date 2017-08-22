@@ -13,7 +13,6 @@
 #' @param conversations.by Columns to be used in the conversation accumulation (list of column names)
 #' @param conversation NEW data frame of conversation columns w/ values
 #' @param codes Columns used based on codes
-#' @param window.size Number of lines in the stanza
 #' @param window.size.back Number of lines back to include window in stanza
 #' @param window.size.forward Number of lines forward in stanza window
 #' @param binary [TBD]
@@ -60,9 +59,8 @@ ena.accumulate.data <- function(
 
   weight.by = "binary",
 
-  window.size = 1,
   window.size.back = 1,
-  window.size.forward = NULL,
+  window.size.forward = 0,
 
   mask = NULL, #matrix (default - upper triangle of 1's)
 
@@ -107,7 +105,6 @@ ena.accumulate.data <- function(
 
     codes,
 
-    window.size,
     window.size.back,
     window.size.forward,
 
