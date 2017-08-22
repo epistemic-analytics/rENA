@@ -42,7 +42,7 @@ ENAset = R6::R6Class("ENAset",
 
       norm.by = sphere_norm_c,
 
-      rotation.by = NULL,
+      rotation.by = ena.svd,
       rotation.params = NULL,
       rotation.set = NULL,
 
