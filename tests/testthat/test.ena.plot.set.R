@@ -65,7 +65,6 @@ test_that("Plot a trajectory set", {
   p = ena.plot.set(
     df.set.traj.lws,
     plot.mode="units",
-    units = sample(df.set.lws$get.data("centered")$ENA_UNIT,3),
     unit.group = "Condition",
     unit.group.size = 2,
     unit.trajectory.by = c("ActivityNumber")

@@ -23,7 +23,6 @@
 #' @param rotate.means [TBD]
 #' @param rotate.means.by [TBD]
 #' @param output [TBD]
-#' @param output.fields Fields to be included in JSON output
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords ENA, generate, set

@@ -179,6 +179,7 @@ accumulate.data <- function(enadata) {
 
       dfDT.summed.units$ENA_UNIT = merge_columns_c(dfDT.summed.units, units.by, sep=".");
     }
+      # dfDT.summed.units$ENA_UNIT = merge_columns_c(dfDT.summed.units, unitsBy, sep=".");
 
   ###
   # Name the rows an columns accordingly

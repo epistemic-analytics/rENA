@@ -12,7 +12,6 @@
 #' @param units.by unit columns to accumulate by
 #' @param conversations.by Columns used in the conversation
 #' @param codes Columns used based on codes
-#' @param window.size Number of lines in the stanza
 #' @param window.size.back Number of lines back to include window in stanza
 #' @param window.size.forward Number of lines forward in stanza window
 #' @param binary [TBD]
@@ -58,7 +57,6 @@ ena.accumulate.data.file <- function(
 
   codes = NULL,
 
-  #window.size = 1,
   window.size.back = 1,
   window.size.forward = 0,
 
@@ -92,7 +90,6 @@ ena.accumulate.data.file <- function(
     units.by,
     conversations.by,
     codes,
-    window.size,
     window.size.back,
     window.size.forward,
     weight.by,

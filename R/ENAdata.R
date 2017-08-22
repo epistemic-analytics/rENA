@@ -39,8 +39,7 @@ ENAdata = R6::R6Class("ENAdata",
       units.by = NULL,  # unit col names that will be grouped by to determine ENA_UNIT
       conversations.by = NULL,   # conversation col names that will be grouped by to determine conversations
       codes = NULL,  #vector of code column names to use in accumulation
-      window.size = 1,
-      window.size.back = window.size,
+      window.size.back = 1,
       window.size.forward = 0,
       weight.by = "binary",
       units.selected = NULL,
@@ -257,7 +256,7 @@ ENAdata = R6::R6Class("ENAdata",
       if(any(class(private$file) == "data.table")) {
         df_DT = private$file;
       } else {
-        if(is.data.frame(private$file)) {
+        if(any(class(private$file) == "data.frame")) {
           df = private$file;
         } else {
           df = read.csv(private$file);

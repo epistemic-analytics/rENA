@@ -9,7 +9,7 @@ ena.accumulate.data(file, units.by = NULL, units = NULL,
   window.size.back = window.size, window.size.forward = NULL, binary = T,
   units.exclude = c(), trajectory.by = NULL,
   trajectory.type = c("accumulated", "non-accumulated"), output = c("class",
-  "json"), output.fields = NULL, ...)
+  "json"), ...)
 }
 \arguments{
 \item{file}{The csv file location or data.frame for the function}
@@ -36,9 +36,7 @@ ena.accumulate.data(file, units.by = NULL, units = NULL,
 
 \item{trajectory.type}{[TBD]}
 
-\item{output}{ENAdata object or JSON string. Default: ENAdata}
-
-\item{output.fields}{Fields to be included in JSON output}
+\item{output}{[TBD]}
 
 \item{...}{additional parameters addressed in inner function}
 }

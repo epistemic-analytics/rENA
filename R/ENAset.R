@@ -225,7 +225,7 @@ ENAset = R6::R6Class("ENAset",
       df.to.return = NULL;
       if(with.meta == T) {
         data.units = attr(data, rENA::opts$UNIT_NAMES);
-        df.to.return = cbind(
+        df.to.return = merge(
           data.table::data.table(
             data, data.units,
             ENA_UNIT=merge_columns_c(data.units, self$enadata$get("units.by")),
@@ -329,12 +329,17 @@ ENAset = R6::R6Class("ENAset",
       fields = NULL;
       to.print = list();
       if(is.null(args$fields)) {
-        fields = names(get(class(self))$public_fields)
+        fields = Filter(function(f) { (class(self[[f]]) != "function") }, names(get(class(self))$public_fields))
       } else {
         fields = args$fields
       }
-      for(f in fields) {
-        to.print[[f]] = self[[f]]
+      for(field in fields) {
+        if(grepl("\\$", field)) {
+          parts = Filter(function(f) { f!="" }, strsplit(field,"\\$")[[1]])
+          to.print[[field]] = Reduce(function(o, i) { o[[i]] }, parts, self)
+        } else {
+          to.print[[field]] = self[[field]]
+        }
       }
       return(to.print);
     }
@@ -391,7 +396,7 @@ ENAset = R6::R6Class("ENAset",
       ###
       self$line.weights = self$function.params$norm.by(self$points.raw);
 
-      ##
+      ###
       # Convert the string vector of code names to their corresponding
       # co-occurence names and set as colnames for the self$line.weights
       ##
