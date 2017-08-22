@@ -1,11 +1,13 @@
 # This needs to take the full list for defaltion, not just a single
 # grouping
 
-ena.rotate.by.mean = function(data, groups) {
+#ena.rotate.by.mean = function(data, groups) {
+ena.rotate.by.mean = function(self, ...) {
+  args = list(...);
+  groups = args[[1]];
 
-
-#ena.rotate.by.mean = function(data, col, vals) {
-  attrData = attr(data, rENA::opts$UNIT_NAMES)
+  data = self$line.weights;
+  attrData = self$enadata$metadata; # attr(data, rENA::opts$UNIT_NAMES)
 
   data = scale(data, scale=F, center=T);
 
@@ -42,8 +44,8 @@ ena.rotate.by.mean = function(data, groups) {
      paste('V',as.character(1:ncol(deflated.data.svd)), sep='')
   );
 
-
-  return(deflated.data.svd[,1:2]);
+  rotationSet = ENARotationSet$new(node.positions=NULL, rotation=deflated.data.svd[,1:2], codes=self$codes);
+  return(rotationSet);
 }
 
 orthogonal.svd = function(data, weights) {

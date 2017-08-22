@@ -10,8 +10,8 @@ test_that("Simple data.frame to accumulate and make set", {
   df.set = ena.make.set(df.accum, node.position.method = egr.positions)
   df.set.lws = ena.make.set(df.accum, node.position.method = lws.positions.es)
 
-  ###NEW TESTs - length of unit.names and codes equal to known number of unit names and codes
-  testthat::expect_equal(length(df.set.lws$unit.names), 48);
+  ###NEW TESTs - change to checking at ENAdata level or remove from this test
+  #testthat::expect_equal(length(df.set.lws$unit.names), 48);
 
   testthat::expect_equal(length(df.set.lws$codes), 16);
 
@@ -24,9 +24,6 @@ test_that("Simple data.frame to accumulate and make set", {
     length(attr(df.set$points.rotated, rENA::opts$UNIT_NAMES)[,UserName]),
     48
   );
-
-  df.set.json = ena.make.set(df.accum, node.position.method = lws.positions, output = "json")
-  testthat::expect_is(df.set.json, "list")
 })
 
 test_that("Simple data.frame to accumulate and make set with Linderoth method(s)", {

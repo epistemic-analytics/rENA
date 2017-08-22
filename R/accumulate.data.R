@@ -15,6 +15,7 @@ accumulate.data <- function(enadata) {
   window = enadata$get("window.size");
 
   binary = T;
+  binaryStanzas = F;
 
   units.exclude = enadata$get("units.exclude");
 
@@ -24,8 +25,11 @@ accumulate.data <- function(enadata) {
   trajectory.type = NULL;
 
   ### should work to determine if binary is desired
+  binary = T;
   if(!identical(enadata$get("weight.by"), "binary")) {
     binary = F;
+  } else {
+    binary = T;
   }
 
   if(model == "EndPoint") trajectory.by = NULL;
@@ -55,8 +59,9 @@ accumulate.data <- function(enadata) {
   # Create a column representing the ENA_UNIT as defined
   # by the the `units.by` parameter
   ###
-    #dfDT_codes$ENA_UNIT = dfDT_codes[,{apply(.SD,1,function(x){paste(trimws(x),collapse=".")})},with=T,.SDcols=units.by];
+  #dfDT_codes$ENA_UNIT = dfDT_codes[,{apply(.SD,1,function(x){paste(trimws(x),collapse=".")})},with=T,.SDcols=units.by];
   dfDT_codes$ENA_UNIT = merge_columns_c(dfDT_codes, cols=units.by, sep=".");
+
   ##
   # String vector of codesnames representing the names of the co-occurrences
   ##
@@ -83,7 +88,7 @@ accumulate.data <- function(enadata) {
 
   } else {
     dfDT.co.occurrences = dfDT_codes[,{
-        ocs = ref_window_df(.SD, windowSize=window$back, binary = binary);
+        ocs = ref_window_df(.SD, windowSize=window$back, windowForward=window$forward, binary = binary, binaryStanzas = binaryStanzas);
 
         # Return value from data.table back to dfDT.co.occurrences
         data.table::data.table(.SD,ocs)
@@ -158,7 +163,7 @@ accumulate.data <- function(enadata) {
             TRAJ_UNIT = .SD[,c(trajectory.by),with=F];
             incCols = cols[! cols %in% c(trajectory.by, "ENA_ROW_IDX") ];
             lag = ref_window_lag(.SD[,.SD,.SDcols=incCols], .N);
-            data.table(ENA_ROW_IDX, TRAJ_UNIT, lag, ENA_UNIT=ENA_UNIT);
+            data.table::data.table(ENA_ROW_IDX, TRAJ_UNIT, lag, ENA_UNIT=ENA_UNIT);
           },
           by=c(units.by),
           .SDcols=c(codedTriNames,trajectory.by,"ENA_ROW_IDX")

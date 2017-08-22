@@ -45,18 +45,19 @@ test_that("Case 4: Stats", {
 })
 
 test_that("Case 5: Code Masking", {
+  mask = matrix(1, nrow=length(codeNames), ncol=length(codeNames), dimnames=list(codeNames,codeNames));
+  mask["E.data", "S.data"] = 0;
 
-  df.accum = ena.accumulate.data.file(
+  df.accum.masked = ena.accumulate.data.file(
     df.file,
     units.by = c("UserName","Condition"),
     conversations.by = c("Condition","GroupName"),
     codes = codeNames, window.size.back = 4,
-    ###### NEED TO CREATE SPECIFIED MASK
-    mask = NULL
+    mask = mask
   );
-  p = ena.plot
+  adj.vec.code = adjacency.vector(df.accum.masked, codes=c("E.data", "S.data"))
 
-  testthat::expect_is(p, "plotly");
+  testthat::expect_true(all(adj.vec.code[,1] == 0));
 })
 
 df.accum = ena.accumulate.data.file(

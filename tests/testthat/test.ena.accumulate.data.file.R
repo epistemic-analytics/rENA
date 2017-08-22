@@ -1,5 +1,5 @@
 suppressMessages(library(rENA, quietly = T, verbose = F))
-context("Test accumulating data");
+context("Test accumulating data file");
 
 
 test_that("Simple data.frame to accumulate", {
@@ -24,7 +24,7 @@ test_that("Simple data.frame to accumulate", {
     as.matrix(df.accum$adjacency.vectors[, attr(df.accum$adjacency.vectors,"adjacency.codes"), with=F])
       ==
     #matrix(c(2,2,2,0,1,0), nrow=length(unique(df.accum$units)))
-    matrix(c(2,2,2,0,1,0), nrow=nrow(df.accum$units))
+    matrix(c(2,2,2,0,1,0), nrow=2)
   ));
 })
 
@@ -42,7 +42,9 @@ test_that("Accumulate weighted data.", {
                           window.size.back=4,
                           weight.by = "weighted")
 
-  testthat::expect_true(all(apply(x$metadata[,.SD,.SDcols=colnames(x$metadata)[grep("^adj",colnames(x$metadata))]], 2, is.double)))
+  testthat::expect_true(all(
+    apply(x$adjacency.vectors[,grep("^adj",colnames(x$adjacency.vectors)), with=F], 2, is.double)
+  ))
 })
 
 ### NEW TEST

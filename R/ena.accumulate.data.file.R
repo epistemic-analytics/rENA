@@ -60,7 +60,7 @@ ena.accumulate.data.file <- function(
 
   #window.size = 1,
   window.size.back = 1,
-  window.size.forward = NULL,
+  window.size.forward = 0,
 
   weight.by = "binary",
 
@@ -87,26 +87,18 @@ ena.accumulate.data.file <- function(
 
   data = ENAdata$new(
     file,
-
     units,
     units.used,
-
     units.by,
     conversations.by,
-
     codes,
-
     window.size,
     window.size.back,
     window.size.forward,
-
     weight.by,
-
     units.exclude,
-
     model = model,
-    mask,
-
+    mask = mask,
     ...
   );
 
