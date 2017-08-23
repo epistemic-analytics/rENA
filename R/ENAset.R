@@ -377,7 +377,7 @@ ENAset = R6::R6Class("ENAset",
     ####
     run = function() {
       # Reference for the ENAdata object
-      df = self$enadata$metadata;
+      df = self$enadata$adjacency.vectors;
       ###
       # Backup of ENA data, this is not touched again.
       ###

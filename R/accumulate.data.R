@@ -118,22 +118,32 @@ accumulate.data <- function(enadata) {
       dfDT.co.occurrences$ENA_UNIT = merge_columns_c(dfDT.co.occurrences, cols=units.by, sep=".");
   } else {
     ### Calculate occurrences of code within the provided window
-      dfDT.co.occurrences = dfDT_codes[,{
-          ocs = ref_window_df(.SD, windowSize=window$back, windowForward=window$forward, binary = binary, binaryStanzas = binaryStanzas);
-
-          # Return value from data.table back to dfDT.co.occurrences
-          data.table::data.table(.SD,ocs)
-        },
+      dfDT.co.occurrences = dfDT_codes[,
+        (codedTriNames) := ref_window_df(
+          .SD[,.SD, .SDcols=codes, with=T],
+          windowSize=window$back, windowForward=window$forward,
+          binary = binary, binaryStanzas = binaryStanzas
+        ),
         by=conversations.by,
-        .SDcols=codes,
+        .SDcols=c(units.by, codes),
         with=T
       ];
+      # dfDT.co.occurrences = dfDT_codes[,{
+      #     ocs = ref_window_df(.SD, windowSize=window$back, windowForward=window$forward, binary = binary, binaryStanzas = binaryStanzas);
+      #
+      #     # Return value from data.table back to dfDT.co.occurrences
+      #     data.table::data.table(.SD,ocs)
+      #   },
+      #   by=conversations.by,
+      #   .SDcols=codes,
+      #   with=T
+      # ];
 
     ### Generate the ENA_UNIT column
-      dfDT.co.occurrences$ENA_UNIT = dfDT_codes$ENA_UNIT;
+      # dfDT.co.occurrences$ENA_UNIT = dfDT_codes$ENA_UNIT;
 
     ### Keep original columns used for units
-      dfDT.co.occurrences[, (units.by) := dfDT_codes[,.SD,.SDcols=units.by]];
+      #dfDT.co.occurrences[, (units.by) := dfDT_codes[,.SD,.SDcols=units.by]];
   }
 
   ###
