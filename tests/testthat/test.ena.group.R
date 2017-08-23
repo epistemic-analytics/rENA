@@ -8,7 +8,7 @@ set = ena.make.set(accum, position.method = lws.positions.es)
 
 
 test_that("Mean set points and edges (default)", {
-  means = ena.group(enaset=set, by=accum$metadata$Condition)
+  means = ena.group(set, by=accum$metadata$Condition)
   testthat::expect_equal(
     label="Group result row count same has unique values of by",
     object=nrow(means$points),
@@ -16,7 +16,7 @@ test_that("Mean set points and edges (default)", {
   );
 })
 test_that("Mean arbitrary point matrix", {
-  means = ena.group(points = set$points.rotated, by =accum$metadata$Condition);
+  means = ena.group(set$points.rotated, by =accum$metadata$Condition);
   testthat::expect_equal(
     label="Group result row count same has unique values of by",
     object=nrow(means),
@@ -27,7 +27,7 @@ test_that("Use custom method", {
   custom <- function(x) {
     return(99)
   };
-  means=ena.group(points=set$points.rotated, by =accum$metadata$Condition, method = custom)
+  means=ena.group(set$points.rotated, by =accum$metadata$Condition, method = custom)
   testthat::expect_true(all(means==99))
   # testthat::expect_equal(
   #   label = "48 units by 2 dimensions",
