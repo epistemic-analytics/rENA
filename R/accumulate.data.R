@@ -12,9 +12,7 @@ accumulate.data <- function(enadata) {
 
   conversations.by = enadata$get("conversations.by");
 
-  window = enadata$get("window.size");
-
-  units.exclude = enadata$get("units.exclude");
+  window = enadata$get("window.size.back");
 
   model = enadata$model;
 
@@ -70,7 +68,7 @@ accumulate.data <- function(enadata) {
   # FIXME: Don't append on the results to the initial data.table, keep a separate
   #        to lookup the results for the co-occurred values later on.
   ##
-  if(window$back == 1) {
+  if(window == 1) {
     dfDT.co.occurrences = dfDT_codes[,{
       ocs = data.table::as.data.table(rows_to_co_occurrences(.SD[,.SD,.SDcols=codes, with=T]));
 
@@ -83,7 +81,7 @@ accumulate.data <- function(enadata) {
 
   } else {
     dfDT.co.occurrences = dfDT_codes[,{
-        ocs = ref_window_df(.SD, windowSize=window$back, binary = binary);
+        ocs = ref_window_df(.SD, windowSize=window, binary = binary);
 
         # Return value from data.table back to dfDT.co.occurrences
         data.table::data.table(.SD,ocs)
@@ -102,9 +100,6 @@ accumulate.data <- function(enadata) {
   ## --- MAY BE ABLE TO REMOVE THIS SECTION - should have already been
   if(is.null(units.used)) {
     units.used = dfDT_codes$ENA_UNIT;
-  }
-  if(!is.null(units.exclude) && length(units.exclude)>0){
-    units.used = units.used[which(!units.used %in% units.exclude)];
   }
 
   ###
@@ -132,6 +127,8 @@ accumulate.data <- function(enadata) {
       ];
 
       dfDT.summed.units$ENA_UNIT = merge_columns_c(dfDT.summed.units, units.by, sep=".");
+
+      enadata$unit.names = dfDT.summed.units$ENA_UNIT;
     }
     ## Trajectory
     else {
@@ -147,6 +144,10 @@ accumulate.data <- function(enadata) {
       ];
       dfDT.summed.traj.by$ENA_UNIT = merge_columns_c(dfDT.summed.traj.by, units.by, sep=".");
       dfDT.summed.traj.by$TRAJ_UNIT = merge_columns_c(dfDT.summed.traj.by,trajectory.by, sep = ".");
+
+      ###NEW - test
+      enadata$trajectories$step = dfDT.summed.traj.by$TRAJ_UNIT;
+      ###
 
       # Accumulated
       if(trajectory.type == rENA::opts$TRAJ_TYPES[1]) {
@@ -198,10 +199,10 @@ accumulate.data <- function(enadata) {
     #### update unit.names w/ the created unique unit column
 
     #### SHOULDN'T ACTUALLY NEED TO UPDATE THIS, units was never altered
-    if(is.null(enadata$units)) {
-      #enadata$units = dfDT.summed.units[,units.by, with=F];
-      enadata$units = dfDT.co.occurrences[,units.by, with=F];
-    }
+    # if(is.null(enadata$units)) {
+    #   #enadata$units = dfDT.summed.units[,units.by, with=F];
+    #   enadata$units = dfDT.co.occurrences[,units.by, with=F];
+    # }
 
     return(enadata);
 }

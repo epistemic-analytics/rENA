@@ -106,12 +106,12 @@ test_that("Test trajectories", {
   );
 
   df.accum = ena.accumulate.data.file(
-    df, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"),
-    model = "AccumulatedTrajectory", trajectory.by = c("ActivityNumber")
+    df, units.by = c("Name"), conversations.by = c("Day", "ActivityNumber"), codes = c("c1","c2","c3"),
+    model = "AccumulatedTrajectory"
   );
   df.non.accum = ena.accumulate.data.file(
-    df, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"),
-    model = "SeparateTrajectory", trajectory.by = c("ActivityNumber")
+    df, units.by = c("Name"), conversations.by = c("Day", "ActivityNumber"), codes = c("c1","c2","c3"),
+    model = "SeparateTrajectory"
   );
 
   # Test for expected accumulated value
@@ -124,10 +124,10 @@ test_that("Test trajectories", {
   # Test that the first summed trajectory is 1
   expect_equal(df.accum$adjacency.vectors[Name == "Z" & ActivityNumber == 1, adjacency.code.1], 1);
   # Test that the second summed trajectory is 1, even thought it had a zero accumulation for it's conversations
-  expect_equal(df.accum$adjacency.vectors[Name == "Z" & ActivityNumber == 2, adjacency.code.1], 1);
+  expect_equal(df.accum$adjacency.vectors[Name == "Z" & ActivityNumber == 2 & Day == 1, adjacency.code.1], 1);
 
   # Test that non-accumulation is properly leaving second trajectory group 0 (different than the previous test)
-  expect_identical(c(1,0,1), df.non.accum$adjacency.vectors[Name == "Z", adjacency.code.1]);
+  expect_identical(c(1,0,0,1), df.non.accum$adjacency.vectors[Name == "Z", adjacency.code.1]);
 })
 
 
@@ -162,14 +162,14 @@ test_that("Test accumulation with dplyr::tbl_df", {
   testthat::expect_is(pn.accum, "ENAdata")
 })
 
-test_that("Test accumulation output JSON", {
-  pn.file = system.file("extdata", "sample-data", "PinterestMock2.csv", package="rENA")
-  pn.accum = ena.accumulate.data.file(pn.file, units.by =  c("Teacher"), conversations.by = c("Board"), codes = c("Kinesthetic", "Algorithmic"), output = "json")
-
-  pn.accum.less = ena.accumulate.data.file(pn.file, units.by =  c("Teacher"), conversations.by = c("Board"), codes = c("Kinesthetic", "Algorithmic"), output = "json", output.fields = c("metadata"))
-
-  testthat::expect_is(pn.accum, "list")
-  testthat::expect_is(pn.accum$accumulated.adjacency.vectors, "data.frame")
-  testthat::expect_is(pn.accum.less, "list")
-  testthat::expect_null(pn.accum.less$accumulated.adjacency.vectors)
-})
+# test_that("Test accumulation output JSON", {
+#   pn.file = system.file("extdata", "sample-data", "PinterestMock2.csv", package="rENA")
+#   pn.accum = ena.accumulate.data.file(pn.file, units.by =  c("Teacher"), conversations.by = c("Board"), codes = c("Kinesthetic", "Algorithmic"), output = "json")
+#
+#   pn.accum.less = ena.accumulate.data.file(pn.file, units.by =  c("Teacher"), conversations.by = c("Board"), codes = c("Kinesthetic", "Algorithmic"), output = "json", output.fields = c("metadata"))
+#
+#   testthat::expect_is(pn.accum, "list")
+#   testthat::expect_is(pn.accum$accumulated.adjacency.vectors, "data.frame")
+#   testthat::expect_is(pn.accum.less, "list")
+#   testthat::expect_null(pn.accum.less$accumulated.adjacency.vectors)
+# })

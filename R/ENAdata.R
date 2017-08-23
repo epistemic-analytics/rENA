@@ -19,7 +19,6 @@
 # @param binary Logical, whether to convert code values to binary or allow for weigthed values  --- NO LONGER INCLUDED
 # @param correction math operation by which to modify data for weighted values (i.e. log, sqrt) --- NO LONGER INCLUDED
 # @param units.selected deprecated
-# @param units.exclude [TBD]
 # @param model - type of ENA model: endpoint or trajectory, if trajectory what type
 # @param trajectory.by [TBD]
 # @param trajectory.type [TBD]
@@ -38,24 +37,21 @@ ENAdata = R6::R6Class("ENAdata",
       units = NULL,     #data frame of unit columns and values
       units.used = NULL,    #vector of unit values to include (a subset of rows of the units df)
 
-      units.by = NULL,  # unit col names that will be grouped by to determine ENA_UNIT
+      units.by = NULL,  # col names that will be grouped by to determine ENA_UNIT
 
-      conversations.by = NULL,   # conversation col names that will be grouped by to determine conversations
+      conversations.by = NULL,   # col names that will be grouped by to determine conversations
 
       codes = NULL,  #vector of code column names to use in accumulation
 
-      window.size = 1,
-      window.size.back = window.size,
-      window.size.forward = NULL,
+      model = NULL,  # model type selection: EndPoint, AccumulatedTrajectory, or SeparateTrajectory
 
       weight.by = "binary",
 
-      units.selected = NULL,
-      units.exclude = c(),
+      window.size.back = 1,
+      window.size.forward = NULL,
 
-      model = NULL,
       mask = NULL,
-      trajectory.by = NULL,
+
       ...
     ) {
       self$function.call <- sys.call(-1);
@@ -69,26 +65,21 @@ ENAdata = R6::R6Class("ENAdata",
       private$units.by <- units.by
       private$conversations.by <- conversations.by;
 
-      private$trajectory.by <- trajectory.by;
-
-      ### Why is this happening
-      if(is.null(trajectory.by)) private$trajectory.by = conversations.by;
-
       self$codes <- codes;
       if(is.data.frame(self$codes)) self$codes <- colnames(self$codes);
 
-      private$window.size <- list(
-        "back" = window.size.back,
-        "forward" = window.size.forward
-      );
+      private$window.size.back = window.size.back;
+      private$window.size.forward = window.size.forward;
 
       private$weight.by <- weight.by;
 
-      private$units.exclude <- units.exclude;
-
       self$model <- model;
 
-      if(self$model == "EndPoint") private$trajectory.by <- NULL;
+      if(self$model == "EndPoint") {
+        private$trajectory.by <- NULL;
+      } else {
+        private$trajectory.by <- private$conversations.by
+      }
 
       private$mask <- mask;
 
@@ -123,7 +114,7 @@ ENAdata = R6::R6Class("ENAdata",
     metadata = NULL,
 
     trajectories = list(
-      unit = NULL,
+      units = NULL,
       step = NULL
     ),
     trajectory.point.names = NULL,
@@ -191,7 +182,6 @@ ENAdata = R6::R6Class("ENAdata",
       codes = self$codes,
       conversations.by = private$conversations.by,
       units = self$units,
-      units.exclude = private$units.exclude,
       windowSize = private$windowSize,
       reload = F
     ) {
@@ -203,9 +193,6 @@ ENAdata = R6::R6Class("ENAdata",
       }
       if( is.null(units) || !all(units == self$units) ) {
         self$units <- units; reload = T;
-      }
-      if( identical(units.exclude, private$units.exclude) == F ) {
-        private$units.exclude <- units.exclude; reload = T;
       }
       if( is.null(conversations.by) || !all(conversations.by == private$conversations.by) ) {
         private$conversations.by <- conversations.by; reload = T;
@@ -266,7 +253,9 @@ ENAdata = R6::R6Class("ENAdata",
     ### Private Properties
     ####
     file = NULL,
-    window.size = NULL,
+
+    window.size.back = NULL,
+    window.size.forward = NULL,
 
     units.used = NULL,
 
@@ -274,8 +263,6 @@ ENAdata = R6::R6Class("ENAdata",
     conversations.by = NULL,
 
     weight.by = NULL,
-
-    units.exclude = NULL,
 
     mask = NULL,
 
@@ -305,7 +292,30 @@ ENAdata = R6::R6Class("ENAdata",
 
       self %<>% accumulate.data();
 
-      self$unit.names <- self$adjacency.vectors$ENA_UNIT;
+      if(is.null(private$trajectory.by)) {
+        self$unit.names <- self$adjacency.vectors$ENA_UNIT;
+      } else {
+        self$trajectories$units <- self$units;
+
+        #### ISSUE WHEN CONVERSATIONS.BY MORE THAN 1 COL
+        conversation = df_DT[,private$conversations.by, with=F];
+
+        #print(conversation)
+        #print(df_DT)
+
+        self$trajectories$step <- conversation;
+        self$units <- cbind(self$units, conversation);
+
+        #print(self$adjacency.vectors$TRAJ_UNIT);
+        #print(self$adjacency.vectors);
+
+        #if(is.null(self$adjacency.vectors$TRAJ_UNIT)) {
+        #  self$unit.names <- paste(self$adjacency.vectors$ENA_UNIT, conversation, sep = ".");
+        #} else {
+          self$unit.names <- paste(self$adjacency.vectors$ENA_UNIT, self$adjacency.vectors$TRAJ_UNIT, sep = ".");
+        #}
+
+      }
 
       # save raw adjacency vectors prior to corrections
       self$adjacency.vectors.raw = self$adjacency.vectors;

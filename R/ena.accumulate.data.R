@@ -18,8 +18,6 @@
 #' @param window.size.forward Number of lines forward in stanza window
 #' @param binary [TBD]
 #' @param correction [TBD]
-#' @param units.exclude Exclude certain columns based on units
-#' @param trajectory.by [TBD]
 #' @param trajectory.type [TBD]
 #' @param output ENAdata object or JSON string. Default: ENAdata
 #' @param output.fields Fields to be included in JSON output
@@ -61,23 +59,20 @@ ena.accumulate.data <- function(
 
   weight.by = "binary",
 
-  window.size = 1,
   window.size.back = 1,
   window.size.forward = NULL,
 
   mask = NULL, #matrix (default - upper triangle of 1's)
 
-  units.exclude = c(),      #leave for now
-
-  output = c("class","json"),    #keep for now
-  output.fields = NULL,       #keep for now
+  ### PARAMS NOT IN SPECS
+  # output = c("class","json"),    #keep for now
+  # output.fields = NULL,       #keep for now
   ...
 ) {
 
   if(is.null(units) || is.null(conversation) || is.null(codes)) {
     print("ACCUMULATION FROM DATA FRAMES REQUIRES: units, conversation, and codes");
   }
-
   if(nrow(units) != nrow(conversation) || nrow(conversation) != nrow(codes)) {
     print("Data Frames do not have the same number of rows!");
     ### throw error
@@ -98,23 +93,20 @@ ena.accumulate.data <- function(
   model = match.arg(model)
 
   data = ENAdata$new(
-    df,
+    file = df,
 
-    units,    #data frame of unit columns (including values)
-    units.used,
+    units = units,    #data frame of unit columns (including values)
+    units.used = units.used,
 
-    units.by,    # KEEP- automatically uses all units for accumulation from separate data frames
-    conversations.by,    #column names of conversation df, automatically accumulating by all cols for accum from dfs
+    units.by = units.by,    # KEEP- automatically uses all units for accumulation from separate data frames
+    conversations.by = conversations.by,    #column names of conversation df, automatically accumulating by all cols for accum from dfs
 
-    codes,
+    codes = codes,
 
-    window.size,
-    window.size.back,
-    window.size.forward,
+    window.size.back = window.size.back,
+    window.size.forward = window.size.forward,
 
-    weight.by,
-
-    units.exclude,
+    weight.by = weight.by,
 
     model = model,
 
@@ -122,16 +114,17 @@ ena.accumulate.data <- function(
   );
 
   data$function.call = sys.call();
-  output = match.arg(output);
-  if(output == "json") {
-    output.class = get(class(data))
-
-    if(is.null(output.fields)) {
-      output.fields = names(output.class$public_fields)
-    }
-
-    r6.to.json(data, o.class = output.class, o.fields = output.fields)
-  }
-  else data
+  # output = match.arg(output);
+  # if(output == "json") {
+  #   output.class = get(class(data))
+  #
+  #   if(is.null(output.fields)) {
+  #     output.fields = names(output.class$public_fields)
+  #   }
+  #
+  #   r6.to.json(data, o.class = output.class, o.fields = output.fields)
+  # }
+  #else
+  data
 }
 

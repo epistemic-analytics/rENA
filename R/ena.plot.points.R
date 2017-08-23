@@ -22,19 +22,21 @@ ena.plot.points = function(
 
 ) {
 
-  data = enaplot$enaset$get.data("rotated", with.meta=T);
+  dfDT = enaplot$enaset$get.data("rotated", with.meta=T);
 
   ### TEST
   if(!is.character(label.font.family)) {
     label.font.size = enaplot$get("font.family");
   }
 
+  shape = match.arg(shape);
+
   ### probably doesnt work for subsetting - TEST IT
   if(!is.null(points)){
     if(is.numeric(points[1])) {
-      data = data[points,];
+      dfDT = dfDT[points,];
     } else {
-      data = data[ENA_UNIT %in% points];
+      dfDT = dfDT[ENA_UNIT %in% points];
     }
   }
 
@@ -42,12 +44,6 @@ ena.plot.points = function(
 
   #### used to determine trajectory or not, make sure it is null if not doing traject
   trajectory.by = enaplot$enaset$enadata$get("trajectory.by");
-
-  #### MAY NOT BE HOW WE WANT TO USE LABELS
-  # if(!is.null(labels)) {
-  #   dfDT = data[ENA_UNIT %in% labels];
-  # } else dfDT = data;
-  dfDT = data;
 
   ### THIS CHUNK SHOULDNT BE NEEDED, ENA_UNIT should always be a column
   df.names = dfDT$ENA_UNIT;
@@ -104,11 +100,6 @@ ena.plot.points = function(
 
   ## Non-trajectory model
  else {
-
-    ###### PLOT GROUP BACK TO ITS OWN FUNCTION
-    # if(!is.null(group.by)) {
-    #   return(enaplot %<>% ena.plot.groups(unit.group = group.by, unit.group.size = group.size))
-    # }
 
     points.layout = data.frame(dfDT);
 

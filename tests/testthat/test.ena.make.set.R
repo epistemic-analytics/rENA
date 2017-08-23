@@ -25,8 +25,9 @@ test_that("Simple data.frame to accumulate and make set", {
     48
   );
 
-  df.set.json = ena.make.set(df.accum, node.position.method = lws.positions, output = "json")
-  testthat::expect_is(df.set.json, "list")
+  #### REMOVED json FUNCTIONALITY - AT LEAST FOR NOW
+  #df.set.json = ena.make.set(df.accum, node.position.method = lws.positions, output = "json")
+  #testthat::expect_is(df.set.json, "list")
 })
 
 test_that("Simple data.frame to accumulate and make set with Linderoth method(s)", {

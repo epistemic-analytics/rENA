@@ -17,60 +17,35 @@ df.set.lws = ena.make.set(df.accum, position.method = lws.positions.es);
 df.accum.traj = ena.accumulate.data.file(
   df.file,
   units.by = c("UserName","Condition"),
-  conversations.by = c("ActivityNumber","GroupName"),
+  conversations.by = c("ActivityNumber"),
   codes = codeNames,
-  trajectory.by = c("ActivityNumber")
-  #trajectory.type = "accumulated"
+  model = "A"
 );
 df.set.traj.lws = ena.make.set(df.accum.traj, position.method = lws.positions.es);
 
 test_that("Plot all units in set", {
-  p = ena.plot.set(
-    df.set.lws,
-    plot.mode="units",
-    unit.group = "Condition",
-    unit.group.size = 2
-  );
+  p <- ena.plot(df.set.lws) %>% ena.plot.points()
 
   testthat::expect_is(p, "plotly");
 })
 
-test_that("Plot all units without group", {
-  p = ena.plot.set(
-    df.set.lws,
-    plot.mode="units"
-  );
+test_that("Plot only some units, sampled from centered data", {
+  p.color <- ena.plot(df.set.lws);
+  p.color %<>% ena.plot.points(points = sample(df.set.lws$get.data("centered")$ENA_UNIT,10), color = "yellow");
+  p.color %<>% ena.plot.points(points = sample(df.set.lws$get.data("centered")$ENA_UNIT,10), color = "green");
 
-  testthat::expect_is(p, "plotly");
-})
-
-test_that("Plot only some units without a group", {
-  p = ena.plot.set(
-    df.set.lws,
-    plot.mode="units",
-    units = sample(df.set.lws$get.data("centered")$ENA_UNIT,10)
-  );
-
-  p.colored = ena.plot.set(
-    df.set.lws,
-    plot.mode="units",
-    units = sample(df.set.lws$get.data("centered")$ENA_UNIT,10),
-    unit.colors = I("red")
-  );
-
-  testthat::expect_is(p, "plotly");
+  testthat::expect_is(p.color, "plotly");
 })
 
 test_that("Plot a trajectory set", {
-  p = ena.plot.set(
-    df.set.traj.lws,
-    plot.mode="units",
-    units = sample(df.set.lws$get.data("centered")$ENA_UNIT,3),
-    unit.group = "Condition",
-    unit.group.size = 2,
-    unit.trajectory.by = c("ActivityNumber")
-  );
+  p.traj <- ena.plot(df.set.traj.lws);
 
+  p.traj %<>% ena.plot.points(
+    points = sample(df.set.lws$get.data("centered")$ENA_UNIT,3)
+  );
+  p.traj %<>% ena.plot.points(
+    points = sample(df.set.lws$get.data("rotated")$ENA_UNIT,3)
+  );
   testthat::expect_is(p, "plotly");
 })
 
