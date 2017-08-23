@@ -9,8 +9,9 @@ codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client
 df.accum = ena.accumulate.data.file(
   df.file,
   units.by = c("UserName","Condition"),
-  conversations.by = c("Condition","GroupName"),
-  codes = codeNames, window.size.back = 4
+  conversations.by = c("ActivityNumber","GroupName"),
+  codes = codeNames,
+  window.size.back = 4
 );
 
 df.set = ena.make.set(df.accum, rotation.by = list(c(FUN = "ena.rotate.by.mean", list("Condition" = c("FirstGame","SecondGame"))),
