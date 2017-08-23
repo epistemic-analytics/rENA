@@ -26,8 +26,40 @@ test_that("Simple data.frame to accumulate", {
     #matrix(c(2,2,2,0,1,0), nrow=length(unique(df.accum$units)))
     matrix(c(2,2,2,0,1,0), nrow=2)
   ));
-})
+});
+test_that("Accumulate using conversation model", {
+  fake.codes.len = 10;
+  fake.codes <- function(x) sample(0:1,fake.codes.len, replace=T)
 
+  codes = paste("Codes",LETTERS[1:fake.codes.len],sep="-");
+
+  df = data.frame(
+    Name=c("J","Z"),
+    Day=c(1,1,1,1,1,1,2,2,2,2,2,2),
+    c1=c(1,1,1,1,1,0,0,1,1,0,0,1),
+    c2=c(1,1,1,0,0,1,0,1,0,1,0,0),
+    c3=c(0,0,1,0,1,0,1,0,0,0,1,0),
+    c4=c(1,1,1,0,0,1,0,1,0,1,0,0)
+  );
+
+  df.accum = ena.accumulate.data.file(
+    df,
+    units.by = c("Name"),
+    conversations.by = c("Day"),
+    codes = c("c1","c2","c3"),
+    window.size.back = "Conversation"
+  );
+
+  # Check co-occurrences for unit `J` in conversation `1`
+  expected = tcrossprod(colSums(df[df$Name=="J"&df$Day==1,df.accum$codes]));
+  expected.co = expected[upper.tri(expected)]
+  actual.co = as.numeric(df.accum$accumulated.adjacency.vectors[ENA_UNIT=="J"&Day==1,grep("^adj",colnames(df.accum$accumulated.adjacency.vectors)),with=F])
+  testthat::expect_equal(
+    label = "Verify the co-occurences for unit J in conversation 1",
+    object=actual.co,
+    expected=expected.co
+  )
+})
 test_that("Accumulate weighted data.", {
   testdata = runif(24, 0, 1)
   testmat = matrix(testdata, 4, dimnames=list(NULL,LETTERS[1:6]))
@@ -46,8 +78,6 @@ test_that("Accumulate weighted data.", {
     apply(x$adjacency.vectors[,grep("^adj",colnames(x$adjacency.vectors)), with=F], 2, is.double)
   ))
 })
-
-### NEW TEST
 test_that("Corrected adjacency.vectors equals manually corrected raw data (correction = log)", {
   testdata = runif(24, 0, 1)
   testmat = matrix(testdata, 4, dimnames=list(NULL,LETTERS[1:6]))
@@ -71,7 +101,6 @@ test_that("Corrected adjacency.vectors equals manually corrected raw data (corre
 
   testthat::expect_identical(x$adjacency.vectors, xtest);
 })
-
 test_that("Simple forwarded metadata", {
   fake.codes.len = 10;
   fake.codes <- function(x) sample(0:1,fake.codes.len, replace=T)
@@ -131,8 +160,6 @@ test_that("Test trajectories", {
   # Test that non-accumulation is properly leaving second trajectory group 0 (different than the previous test)
   expect_identical(c(1,0,1), df.non.accum$adjacency.vectors[Name == "Z", adjacency.code.1]);
 })
-
-
 test_that("Test accumulation with data.frame and matrix", {
   df.file <- system.file("extdata", "rs.data.csv", package="rENA")
 
@@ -154,8 +181,6 @@ test_that("Test accumulation with data.frame and matrix", {
 
   testthat::expect_is(pn.accum, "ENAdata")
 })
-
-
 test_that("Test accumulation with dplyr::tbl_df", {
   pn.file = system.file("extdata", "sample-data", "PinterestMock2.csv", package="rENA")
   PinterestMock2 <- readr::read_csv(pn.file)
@@ -163,7 +188,6 @@ test_that("Test accumulation with dplyr::tbl_df", {
 
   testthat::expect_is(pn.accum, "ENAdata")
 })
-
 test_that("Test accumulation output JSON", {
   pn.file = system.file("extdata", "sample-data", "PinterestMock2.csv", package="rENA")
   pn.accum = ena.accumulate.data.file(pn.file, units.by =  c("Teacher"), conversations.by = c("Board"), codes = c("Kinesthetic", "Algorithmic"), output = "json")
