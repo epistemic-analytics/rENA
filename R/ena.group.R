@@ -1,17 +1,17 @@
 ##
-#' @title Generate ENA Set
+#' @title Aggregate groups of points by arbitrary method
 #'
-#' @description Generates an ENA set from a given ENA data object.
+#' @description Uses rotated points for group positions and normed data to get
+#' the group edge weights
 #'
 #' @details [TBD]
 #'
 #' @export
 #'
-#' @param enadata \code{\link{ENAdata}} that will be used to generate an ENA set
-#' @param dims Number of dimensions in the set
-#' @param samples [TBD]
-#' @param inPar [TBD]
-#' @param ... additional parameters addressed in inner function
+#' @param enaset ENAset (optional)
+#' @param points matrix (optional)
+#' @param by vector to segment data using
+#' @param method Function referance
 #'
 #' @keywords ENA, set, group
 #'
@@ -27,29 +27,29 @@
 ##
 
 ena.group <- function(
-  enaset,   #ENAset object to form groups from
+  enaset = NULL,   #ENAset object to form groups from
+  points = NULL,
 
   by = NULL, #Vector of values  the same length as units.
-  #Uses rotated points for group positions and normed data to get the group edge weights
 
-  method = mean,  #method by which to form groups from specified attribute/vector of values
-
-  ...
+  method = mean  #method by which to form groups from specified attribute/vector of values
 ) {
+  run.method = function(pts) {
+    points.dt = data.table::data.table(pts);
+    points.dt.means = points.dt[, lapply(.SD,method), by=by];
+    return(data.frame(points.dt.means[,colnames(points.dt),with=F],row.names=points.dt.means$by))
+  }
 
-  ### FOR TESTING
-  # enaset = df.set;
-  # by = data.frame(by = rep(c(1,1,2,2,3,3), 8));
-  # by = data.frame(by = rep(c("big","med","small","tiny","huge","large"), 8));
-  # by = rep(c("big","med","small","tiny","huge","large"), 8);
-  # method = mean;
-  ###
+  if(!is.null(enaset)) {
+    group.points <- aggregate(enaset$points.rotated, list(by), method);
+    group.weights <- aggregate(enaset$line.weights, list(by), method);
 
-  points <- as.data.table(enaset$points.rotated);
-  weights <- as.data.table(enaset$line.weights);
-  group.points.edges <- cbind(points, weights);
-
-  group.points.edges <- aggregate(group.points.edges, list(by), method);
-
-  return(group.points.edges);
+    return(list(
+      "points" = run.method(enaset$points.rotated),
+      "line.weights" = run.method(enaset$line.weights)
+    ));
+  } else {
+    #browser()
+    return(run.method(points))
+  }
 }
