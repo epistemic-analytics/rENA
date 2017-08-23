@@ -58,7 +58,7 @@ ena.accumulate.data <- function(
   model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),   #use match arg and list?
 
   weight.by = "binary",
-
+  window = c("Moving Stanza", "Conversation"),
   window.size.back = 1,
   window.size.forward = 0,
 
@@ -89,6 +89,10 @@ ena.accumulate.data <- function(
 
   units.by = colnames(units);   #accumulating by all unit columns provided in units df
   conversations.by = colnames(conversation); #accumulating by all columns provided in conversation df
+  if(identical(window, "Conversation")) {
+    conversations.by = c(conversations.by, units.by);
+    window.size.back = window;
+  }
 
   units.used = NULL;   # when accumulating from data frames, all units are used
 

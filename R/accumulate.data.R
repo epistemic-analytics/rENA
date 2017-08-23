@@ -101,8 +101,7 @@ accumulate.data <- function(enadata) {
     # First sum all lines by conversation and unit to get vectors of codes
     # occurring in the whole conversation for each unit
     ###
-      dfDT.conv.sum = dfDT_codes[, ena.group(points=.SD,method=sum) ,by=c(conversations.by,units.by),.SDcols=c(codes),with=T]
-
+      dfDT.conv.sum = dfDT_codes[, ena.group(.SD,method=sum), by=c(conversations.by),.SDcols=c(codes),with=T]
     ###
     # Convert each units converstation sums into adjacency vectors
     ###

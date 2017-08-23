@@ -47,7 +47,7 @@ test_that("Accumulate using conversation model", {
     units.by = c("Name"),
     conversations.by = c("Day"),
     codes = c("c1","c2","c3"),
-    window.size.back = "Conversation"
+    window = "Conversation"
   );
 
   # Check co-occurrences for unit `J` in conversation `1`
