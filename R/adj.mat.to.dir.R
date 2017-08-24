@@ -1,7 +1,7 @@
-mat = matrix(c(1,0,0,1,0,0,1,0,1,1,1,0,1,1,1), ncol=3)
-colnames(mat) = LETTERS[1:ncol(mat)]
-mat.dir = adj.mat.to.dir(mat)
-mat.dir.adj = adj.mat.to.vec(mat.dir, upper = F)
+# mat = matrix(c(1,0,0,1,0,0,1,0,1,1,1,0,1,1,1), ncol=3)
+# colnames(mat) = LETTERS[1:ncol(mat)]
+# mat.dir = adj.mat.to.dir(mat)
+# mat.dir.adj = adj.mat.to.vec(mat.dir, upper = F)
 
 adj.mat.to.dir <- function(mat, binary = T) {
   mat.refs = mat[1:nrow(mat)-1,];
