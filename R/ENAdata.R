@@ -95,7 +95,6 @@ ENAdata = R6::R6Class("ENAdata", public = list(
         units = NULL,
         step = NULL
       ),
-      trajectory.point.names = NULL,
       codes = NULL,
       function.call = NULL,
       function.params = NULL,
@@ -117,6 +116,7 @@ ENAdata = R6::R6Class("ENAdata", public = list(
       #'      x - Property to return. Defaults to 'file', returning the original data}
       ####
       get = function(x = "data") {
+        browser()
         return(private[[x]])
       },
 
@@ -191,6 +191,7 @@ ENAdata = R6::R6Class("ENAdata", public = list(
 
         return(self);
       },
+
       add.metadata = function(merge = F) {
         ### get columns which arent in codes, units.by, or conversations.by
         metaAvail=colnames(self$raw)[-which(colnames(self$raw) %in% c(self$codes, private$units.by, private$conversations.by))];
@@ -247,6 +248,7 @@ ENAdata = R6::R6Class("ENAdata", public = list(
       conversations.by = NULL,
       weight.by = NULL,
       #units.exclude = NULL,
+
       mask = NULL,
       trajectory.by = NULL,
     ####

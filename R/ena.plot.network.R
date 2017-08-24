@@ -32,9 +32,9 @@ ena.plot.network = function(
   network.edge.threshold = 0,
   network.show.all.codes = F
 ) {
-  df = data.frame(enaset$data$normed, attr(enaset$data$normed, rENA::opts$UNIT_NAMES));
+  df = data.frame(enaset$points.normed.centered, unique(enaset$enadata$units), ENA_UNIT = enaset$enadata$unit.names);
   dfDT= data.table::as.data.table(df);
-  dfDT$handle = merge_columns_c(dfDT,units.by, sep="."); #rownames(df);
+  dfDT$handle = dfDT$ENA_UNIT; #merge_columns_c(dfDT,units.by, sep="."); #rownames(df);
 
   units.to.plot = c(selection.one.name, selection.two.name);
 
@@ -70,21 +70,21 @@ ena.plot.network = function(
   }
   network.edges.length = nrow(network.edges.table);
 
-  df.names = rownames(enaset$nodes$positions$scaled);
+  df.names = rownames(enaset$node.positions);
   if(is.null(df.names)) {
-   df.names = as.character(1:nrow(enaset$nodes$positions$scaled))
-   rownames(enaset$nodes$positions$scaled) = df.names;
+   df.names = as.character(1:nrow(enaset$node.positions))
+   rownames(enaset$node.positions) = df.names;
   }
   network.vertices.df = data.frame(
     name = df.names, ## New LWS method needs to assign names/attr
-    enaset$nodes$positions$scaled
+    enaset$node.positions
   );
   network.graph = igraph::graph_from_data_frame(
     minDTnodes_trans,
     directed = F,
     vertices = network.vertices.df
   )
-  network.layout = enaset$nodes$positions$scaled;
+  network.layout = enaset$node.positions;
   network.vertices = igraph::V(network.graph);
   network.vertices.length = length(network.vertices);
   network.font.text = list(
@@ -98,7 +98,6 @@ ena.plot.network = function(
 
   network.edges.shapes = list();
   for (i in 1:network.edges.length) {
-    # browser()
     v0 <- unlist(network.edges.table[i,][[1]]); #network.edges.table[i,][[1]];
     v1 <- unlist(network.edges.table[i,][[2]]); #network.edges.table[i,][[2]];
     edge_shape = list(
