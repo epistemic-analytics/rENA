@@ -14,35 +14,38 @@ df.accum = ena.accumulate.data.file(
   window.size.back = 4
 );
 
-df.set = ena.make.set(df.accum, rotation.by = list(c(FUN = "ena.rotate.by.mean", list("Condition" = c("FirstGame","SecondGame"))),
-    c(FUN = "orthogonal.svd")));
+df.set = ena.make.set(
+  df.accum,
+  rotation.by = ena.rotate.by.mean,
+  rotation.params = list( df.accum$metadata$Condition=="FirstGame", df.accum$metadata$Condition=="SecondGame")
+);
 
-df.plot = ena.plot(df.set.lws);
+df.plot = ena.plot(df.set);
 
 test_that("Case 1: Group Plotting 1", {
 
 
-  testthat::expect_is(p, "plotly");
+  # testthat::expect_is(p, "plotly");
 })
 
 test_that("Case 2: Individual Plotting", {
 
-  p = ena.plot.
+  # p = ena.plot.
 
-  testthat::expect_is(p, "plotly");
+  # testthat::expect_is(p, "plotly");
 })
 
 test_that("Case 3: Group Plotting 2", {
 
-  p = ena.plot.
+  # p = ena.plot.
 
-  testthat::expect_is(p, "plotly");
+  # testthat::expect_is(p, "plotly");
 })
 test_that("Case 4: Stats", {
 
-  p = ena.plot.
+  # p = ena.plot.
 
-  testthat::expect_is(p, "plotly");
+  # testthat::expect_is(p, "plotly");
 })
 
 test_that("Case 5: Code Masking", {
@@ -56,9 +59,11 @@ test_that("Case 5: Code Masking", {
     codes = codeNames, window.size.back = 4,
     mask = mask
   );
-  adj.vec.code = adjacency.vector(df.accum.masked, codes=c("E.data", "S.data"))
-
-  testthat::expect_true(all(adj.vec.code[,1] == 0));
+  mc = c("E.data", "S.data");
+  #adj.vec.code = adjacency.vector(df.accum.masked, codes=mc)
+  mat = attr(df.accum.masked$adjacency.vectors,"adjacency.matrix");
+  adj.col = which(as.logical((mat[1,]==mc[1]&mat[2,]==mc[2]) + (mat[2,]==mc[1]&mat[1,]==mc[2])));
+  testthat::expect_true(all(df.accum.masked$adjacency.vectors[[paste0("adjacency.code.",adj.col)]] == 0));
 })
 
 df.accum = ena.accumulate.data.file(
@@ -67,26 +72,27 @@ df.accum = ena.accumulate.data.file(
   conversations.by = c("Condition","GroupName"),
   codes = codeNames, window.size.back = 4
 );
-df.set = ena.make.set(df.accum, rotation.by = list(c(FUN = "ena.rotate.by.mean", list("Condition" = c("FirstGame","SecondGame"))),
-                                                   c(FUN = "orthogonal.svd"),
-                                                   c(FUN = "pca_c", list("dims" = 2))));
-df.plot = ena.plot(df.set);
+
+# df.set = ena.make.set(df.accum, rotation.by = list(c(FUN = "ena.rotate.by.mean", list("Condition" = c("FirstGame","SecondGame"))),
+#                                                   c(FUN = "orthogonal.svd"),
+#                                                   c(FUN = "pca_c", list("dims" = 2))));
+# df.plot = ena.plot(df.set);
 
 test_that("Case 6: Other Rotation Functions", {
 
-  p = ena.plot.
-
-  testthat::expect_is(p, "plotly");
+  # p = ena.plot.
+  #
+  # testthat::expect_is(p, "plotly");
 })
 test_that("Case 7: Bidirectional ENA", {
 
-  p = ena.plot.
-
-  testthat::expect_is(p, "plotly");
+  # p = ena.plot.
+  #
+  # testthat::expect_is(p, "plotly");
 })
 test_that("Case 8: Expected Value ENA", {
 
-  p = ena.plot.
-
-  testthat::expect_is(p, "plotly");
+  # p = ena.plot.
+  #
+  # testthat::expect_is(p, "plotly");
 })

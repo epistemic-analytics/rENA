@@ -5,7 +5,10 @@
 ena.rotate.by.mean = function(self, ...) {
   args = list(...);
   groups = args[[1]];
-
+  if(length(groups) < 1) return();
+  if(!is(groups[[1]], "list")) {
+    groups = list(groups);
+  }
   data = self$line.weights;
   attrData = self$enadata$metadata; # attr(data, rENA::opts$UNIT_NAMES)
 
@@ -18,14 +21,12 @@ ena.rotate.by.mean = function(self, ...) {
   i = 1;
   weights = matrix(0, nrow = ncol(deflated.data), ncol = length(groups));
 
-  for(group in names(groups)) {
+  for(group in 1:length(groups)) {
     col = group;
     vals = groups[[group]];
 
-    colOne.rows = as.logical(attrData[, c(col), with=F] == vals[1]);
-    colTwo.rows = as.logical(attrData[, c(col), with=F] == vals[2]);
-    colOne.vals = deflated.data[colOne.rows,]
-    colTwo.vals = deflated.data[colTwo.rows,]
+    colOne.vals = deflated.data[vals[[1]],]; #deflated.data[colOne.rows,]
+    colTwo.vals = deflated.data[vals[[2]],]; #deflated.data[colTwo.rows,]
     colOne.means = colMeans(colOne.vals)
     colTwo.means = colMeans(colTwo.vals)
     col.mean.diff = colOne.means - colTwo.means
