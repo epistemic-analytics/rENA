@@ -199,12 +199,12 @@ ENAdata = R6::R6Class("ENAdata",
 
         df.to.return = NULL;
         if(merge == T) {
-          df.to.return = merge(self$adjacency.vectors, raw.meta[,unique(colnames(raw.meta)),with=F], by=c("ENA_UNIT"), suffixes=c("",".y"))
+          df.to.return = merge(self$adjacency.vectors, raw.meta[,unique(colnames(raw.meta)),with=F], by=c("ENA_UNIT"), suffixes=c("",".y"), sort=F)
         } else {
-          df.to.return = merge(self$adjacency.vectors[,c("ENA_UNIT", private$trajectory.by),with=F],raw.meta,by=c("ENA_UNIT"), suffixes=c("","y"))
+          df.to.return = raw.meta; #merge(self$adjacency.vectors[,c("ENA_UNIT", private$trajectory.by),with=F],raw.meta,by=c("ENA_UNIT"), suffixes=c("","y"))
         }
 
-        attr(df.to.return, rENA::opts$UNIT_NAMES) = df.to.return[,  .SD ,with=T,.SDcols=c(private$units.by,private$trajectory.by)];
+        #attr(df.to.return, rENA::opts$UNIT_NAMES) = df.to.return[,  .SD ,with=T,.SDcols=c(private$units.by,private$trajectory.by)];
         #self$adjacency.vectors[,  .SD ,with=T,.SDcols=c(private$units.by,private$trajectory.by)]
 
         df.to.return
@@ -298,7 +298,7 @@ ENAdata = R6::R6Class("ENAdata",
         self$adjacency.vectors[, (cols) := lapply(.SD, private$weight.by), .SDcols = cols];
       }
 
-      self$metadata = self$add.metadata(merge = T);
+      self$metadata = self$add.metadata(merge = F);
 
       return(self);
     }

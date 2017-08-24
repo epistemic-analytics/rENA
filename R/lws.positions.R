@@ -16,7 +16,7 @@ lws.positions <- function(enaset) {
   return(enaset);
 }
 
-# Ellipsoidal scaling versino
+# Ellipsoidal scaling version
 lws.positions.es <- function(enaset) {
   message("Running positions using the LWS method and ellipsoidal scaling.");
 

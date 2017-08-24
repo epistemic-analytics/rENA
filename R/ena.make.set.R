@@ -45,7 +45,7 @@ ena.make.set <- function(
   norm.by = sphere_norm_c,
 
   rotation.by = ena.svd,
-  rotation.parameters = NULL,
+  rotation.params = NULL,
   rotation.set = NULL,
 
   endpoints.only = T,
@@ -85,7 +85,7 @@ ena.make.set <- function(
     norm.by = norm.by,
 
     rotation.by = rotation.by,
-    rotation.parameters = rotation.parameters,
+    rotation.params = rotation.params,
     rotation.set = rotation.set,
 
     node.position.method = node.position.method,

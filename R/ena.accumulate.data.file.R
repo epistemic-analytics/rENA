@@ -57,6 +57,7 @@ ena.accumulate.data.file <- function(
 
   codes = NULL,
 
+  window = c("Moving Stanza", "Conversation"),
   window.size.back = 1,
   window.size.forward = 0,
 
@@ -81,8 +82,12 @@ ena.accumulate.data.file <- function(
 
   units = NULL;    #will be populated once csv is read
 
-  model = match.arg(model)
-
+  model = match.arg(model);
+  window = match.arg(window);
+  if(identical(window, "Conversation")) {
+    conversations.by = c(conversations.by, units.by);
+    window.size.back = window;
+  }
   data = ENAdata$new(
     file,
     units,

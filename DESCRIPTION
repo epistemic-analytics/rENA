@@ -9,7 +9,7 @@ Author: Cody L Marquart [aut, cre]
 Maintainer: Cody L Marquart <cody.marquart@wisc.edu>
 License: GPL (>= 2)
 LazyData: TRUE
-LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppEigen 
+LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppEigen
 Imports:
     data.table,
     Rcpp,
@@ -28,4 +28,4 @@ Imports:
 Suggests:
     microbenchmark,
     testthat
-RoxygenNote: 6.0.1
+RoxygenNote: 5.0.1

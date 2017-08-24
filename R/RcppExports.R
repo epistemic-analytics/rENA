@@ -119,7 +119,7 @@ rows_to_co_occurrences <- function(df) {
 #' @param binary Logical, treat codes as binary or leave as weighted
 #' @param binaryStanzas Logical, treat codes as binary or leave as weighted
 #' @export
-ref_window_df <- function(df, windowSize = 1L, windowForward = 0L, binary = TRUE, binaryStanzas = FALSE) {
+ref_window_df <- function(df, windowSize = 1, windowForward = 0, binary = TRUE, binaryStanzas = FALSE) {
     .Call('rENA_ref_window_df', PACKAGE = 'rENA', df, windowSize, windowForward, binary, binaryStanzas)
 }
 

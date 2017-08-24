@@ -79,8 +79,8 @@ arma::mat rows_to_co_occurrences(DataFrame df) {
 // [[Rcpp::export]]
 DataFrame ref_window_df(
     DataFrame df,
-    int windowSize = 1,
-    int windowForward = 0,
+    float windowSize = 1,
+    float windowForward = 0,
     bool binary = true,
     bool binaryStanzas = false
   ) {
@@ -89,7 +89,6 @@ DataFrame ref_window_df(
   int numCoOccurences = ( (dfCols * (dfCols + 1)) / 2) - dfCols;
 
   arma::mat df_CoOccurred(dfRows, numCoOccurences, fill::zeros);
-
   arma::mat df_AsMatrix2(dfRows, dfCols, fill::zeros);
   for (int i=0; i<dfCols;i++) {
     df_AsMatrix2.col(i) = Rcpp::as<arma::vec>(df[i]);
@@ -102,10 +101,16 @@ DataFrame ref_window_df(
 
     // NOTE: change the span to always use 0 if infinite window
     int earliestRow = 0, lastRow = row;
-    if ( row - (windowSize-1) >= 0 ) {
-      earliestRow = row - (windowSize-1);
+
+    if (windowSize == std::numeric_limits<double>::infinity()) {
+      earliestRow = 0;
+    } else if ( row - (windowSize-1) >= 0 ) {
+      earliestRow = row - (windowSize - 1);
     }
-    if ( windowForward > 0 &&  (row + (windowForward) <= dfRows-1)) {
+
+    if (windowForward == std::numeric_limits<double>::infinity()) {
+      lastRow = dfRows-1;
+    } else if ( windowForward > 0 &&  (row + (windowForward) <= dfRows-1)) {
       lastRow = row + windowForward;
     }
 
@@ -254,14 +259,14 @@ DataFrame ref_window_lag(
 }
 
 /*** R
-# acc = ena.accumulate.data.file(
-#   df,
-#   units.by = c("UserName","Condition"),
-#   conversations.by = c("ActivityNumber","GroupName"),
-#   codes = codeNames[1:4],
-#   window.size.back = 4,
-#   window.size.forward = 1,
-#   weight.by = "Binary",
-#   model = "EndPoint"
-# )
+ # acc = ena.accumulate.data.file(
+ #   df,
+ #   units.by = c("UserName","Condition"),
+ #   conversations.by = c("ActivityNumber","GroupName"),
+ #   codes = codeNames[1:4],
+ #   window.size.back = 3,
+ #   window.size.forward = Inf,
+ #   weight.by = "Binary",
+ #   model = "EndPoint"
+ # )
 */
