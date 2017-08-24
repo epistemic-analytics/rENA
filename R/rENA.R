@@ -11,6 +11,7 @@
 #' @import doParallel
 #' @import parallel
 #' @import RcppRoll
+#' @import magrittr
 # @import igraph
 #' @useDynLib rENA
 NULL

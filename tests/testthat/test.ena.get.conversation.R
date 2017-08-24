@@ -4,7 +4,7 @@ context("Test getting conversations");
 df.file <- system.file("extdata", "rs.data.csv", package="rENA")
 test_that("Getting convserations from data.frame", {
   df.dt = data.table::data.table(read.csv(df.file));
-    conversations = c("ActivityNumber", "GroupName") #,"Condition");
+  conversations = c("ActivityNumber", "GroupName") #,"Condition");
   convs = ena.get.conversation(df.file, conversations)
 
   conversations2 = c("ActivityNumber", "GroupName", "Condition");

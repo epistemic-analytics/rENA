@@ -13,14 +13,12 @@
 #' @param conversations.by Columns to be used in the conversation accumulation (list of column names)
 #' @param conversation NEW data frame of conversation columns w/ values
 #' @param codes Columns used based on codes
-#' @param window.size Number of lines in the stanza
 #' @param window.size.back Number of lines back to include window in stanza
 #' @param window.size.forward Number of lines forward in stanza window
 #' @param binary [TBD]
 #' @param correction [TBD]
 #' @param trajectory.type [TBD]
-#' @param output ENAdata object or JSON string. Default: ENAdata
-#' @param output.fields Fields to be included in JSON output
+#' @param output [TBD]
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords data, accumulate
@@ -58,9 +56,13 @@ ena.accumulate.data <- function(
   model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),   #use match arg and list?
 
   weight.by = "binary",
+<<<<<<< HEAD
 
+=======
+  window = c("Moving Stanza", "Conversation"),
+>>>>>>> 215a9f02e75f2d18d407e1cea1dd219a6140da2a
   window.size.back = 1,
-  window.size.forward = NULL,
+  window.size.forward = 0,
 
   mask = NULL, #matrix (default - upper triangle of 1's)
 
@@ -87,6 +89,10 @@ ena.accumulate.data <- function(
 
   units.by = colnames(units);   #accumulating by all unit columns provided in units df
   conversations.by = colnames(conversation); #accumulating by all columns provided in conversation df
+  if(identical(window, "Conversation")) {
+    conversations.by = c(conversations.by, units.by);
+    window.size.back = window;
+  }
 
   units.used = NULL;   # when accumulating from data frames, all units are used
 
@@ -101,7 +107,12 @@ ena.accumulate.data <- function(
     units.by = units.by,    # KEEP- automatically uses all units for accumulation from separate data frames
     conversations.by = conversations.by,    #column names of conversation df, automatically accumulating by all cols for accum from dfs
 
+<<<<<<< HEAD
     codes = codes,
+=======
+    window.size.back,
+    window.size.forward,
+>>>>>>> 215a9f02e75f2d18d407e1cea1dd219a6140da2a
 
     window.size.back = window.size.back,
     window.size.forward = window.size.forward,
@@ -114,6 +125,7 @@ ena.accumulate.data <- function(
   );
 
   data$function.call = sys.call();
+<<<<<<< HEAD
   # output = match.arg(output);
   # if(output == "json") {
   #   output.class = get(class(data))
@@ -126,5 +138,10 @@ ena.accumulate.data <- function(
   # }
   #else
   data
+=======
+  output = match.arg(output);
+  if(output == "json") r6.to.json(data)
+  else data
+>>>>>>> 215a9f02e75f2d18d407e1cea1dd219a6140da2a
 }
 

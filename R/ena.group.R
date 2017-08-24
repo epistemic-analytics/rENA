@@ -1,17 +1,17 @@
 ##
-#' @title Generate ENA Set
+#' @title Aggregate groups of points by arbitrary method
 #'
-#' @description Generates an ENA set from a given ENA data object.
+#' @description Uses rotated points for group positions and normed data to get
+#' the group edge weights
 #'
 #' @details [TBD]
 #'
 #' @export
 #'
-#' @param enadata \code{\link{ENAdata}} that will be used to generate an ENA set
-#' @param dims Number of dimensions in the set
-#' @param samples [TBD]
-#' @param inPar [TBD]
-#' @param ... additional parameters addressed in inner function
+#' @param enaset ENAset (optional)
+#' @param points matrix (optional)
+#' @param by vector to segment data using
+#' @param method Function referance
 #'
 #' @keywords ENA, set, group
 #'
@@ -25,31 +25,24 @@
 #'
 #' @return \code{\link{dataframe}}
 ##
-
 ena.group <- function(
-  enaset,   #ENAset object to form groups from
-
+  enaset = NULL,   #ENAset object to form groups from
   by = NULL, #Vector of values  the same length as units.
-  #Uses rotated points for group positions and normed data to get the group edge weights
-
-  method = mean,  #method by which to form groups from specified attribute/vector of values
-
-  ...
+  method = mean  #method by which to form groups from specified attribute/vector of values
 ) {
+  run.method = function(pts) {
+    points.dt = data.table::data.table(pts);
+    points.dt.means = points.dt[, lapply(.SD,method), by=by];
+    return(as.data.frame(points.dt.means[,colnames(points.dt),with=F]))
+  }
 
-  ### FOR TESTING
-  # enaset = df.set;
-  # by = data.frame(by = rep(c(1,1,2,2,3,3), 8));
-  # by = data.frame(by = rep(c("big","med","small","tiny","huge","large"), 8));
-  # by = rep(c("big","med","small","tiny","huge","large"), 8);
-  # method = mean;
-  ###
-
-  points <- as.data.table(enaset$points.rotated);
-  weights <- as.data.table(enaset$line.weights);
-  group.points.edges <- cbind(points, weights);
-
-  group.points.edges <- aggregate(group.points.edges, list(by), method);
-
-  return(group.points.edges);
+  if("ENAset" %in% class(enaset)) {
+    return(list(
+      "names" = as.vector(unique(by)),
+      "points" = run.method(enaset$points.rotated),
+      "line.weights" = run.method(enaset$line.weights)
+    ));
+  } else {
+    return(run.method(enaset))
+  }
 }

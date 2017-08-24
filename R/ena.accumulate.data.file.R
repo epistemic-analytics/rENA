@@ -12,7 +12,6 @@
 #' @param units.by unit columns to accumulate by
 #' @param conversations.by Columns used in the conversation
 #' @param codes Columns used based on codes
-#' @param window.size Number of lines in the stanza
 #' @param window.size.back Number of lines back to include window in stanza
 #' @param window.size.forward Number of lines forward in stanza window
 #' @param binary [TBD]
@@ -57,7 +56,13 @@ ena.accumulate.data.file <- function(
 
   codes = NULL,
 
+<<<<<<< HEAD
   model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),
+=======
+  window = c("Moving Stanza", "Conversation"),
+  window.size.back = 1,
+  window.size.forward = 0,
+>>>>>>> 215a9f02e75f2d18d407e1cea1dd219a6140da2a
 
   weight.by = "binary",
 
@@ -78,9 +83,14 @@ ena.accumulate.data.file <- function(
 
   units = NULL;    #will be populated once csv is read
 
-  model = match.arg(model)
-
+  model = match.arg(model);
+  window = match.arg(window);
+  if(identical(window, "Conversation")) {
+    conversations.by = c(conversations.by, units.by);
+    window.size.back = window;
+  }
   data = ENAdata$new(
+<<<<<<< HEAD
     file = file,
 
     units = units,
@@ -99,6 +109,20 @@ ena.accumulate.data.file <- function(
     model = model,
     mask = mask,
 
+=======
+    file,
+    units,
+    units.used,
+    units.by,
+    conversations.by,
+    codes,
+    window.size.back,
+    window.size.forward,
+    weight.by,
+    units.exclude,
+    model = model,
+    mask = mask,
+>>>>>>> 215a9f02e75f2d18d407e1cea1dd219a6140da2a
     ...
   );
 

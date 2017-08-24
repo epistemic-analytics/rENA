@@ -82,10 +82,6 @@ linderoth_pos <- function(adjMats, t) {
 }
 
 #' @title Multiobjective, Component by Component, with Ellipsoidal Scaling
-#' @description Position method using Multiobjective, Component by Component,
-#' with Ellipsoidal Scaling
-#' @param adjMats Matrix of adjacency vectors
-#' @param t plotted po
 linderoth_pos_es <- function(adjMats, t) {
     .Call('rENA_linderoth_pos_es', PACKAGE = 'rENA', adjMats, t)
 }
@@ -100,6 +96,15 @@ merge_columns_c <- function(df, cols, sep = ".") {
     .Call('rENA_merge_columns_c', PACKAGE = 'rENA', df, cols, sep)
 }
 
+#' @title ref_window_df2
+#' @name ref_window_df2
+#' @description TBD
+#' @param df A dataframe
+#' @param windowSize Integer for number of rows in the stanza window
+#' @param binary Logical, treat codes as binary or leave as weighted
+#' FIXME Delete this function
+NULL
+
 rows_to_co_occurrences <- function(df) {
     .Call('rENA_rows_to_co_occurrences', PACKAGE = 'rENA', df)
 }
@@ -110,20 +115,12 @@ rows_to_co_occurrences <- function(df) {
 #' @description TBD
 #' @param df A dataframe
 #' @param windowSize Integer for number of rows in the stanza window
+#' @param windowForward Integer for number of rows in the stanza window forward
 #' @param binary Logical, treat codes as binary or leave as weighted
+#' @param binaryStanzas Logical, treat codes as binary or leave as weighted
 #' @export
-ref_window_df <- function(df, windowSize = 0L, binary = TRUE) {
-    .Call('rENA_ref_window_df', PACKAGE = 'rENA', df, windowSize, binary)
-}
-
-#' @title ref_window_df2
-#' @name ref_window_df2
-#' @description TBD
-#' @param df A dataframe
-#' @param windowSize Integer for number of rows in the stanza window
-#' @param binary Logical, treat codes as binary or leave as weighted
-ref_window_df2 <- function(df, windowSize = 1L, binary = TRUE) {
-    .Call('rENA_ref_window_df2', PACKAGE = 'rENA', df, windowSize, binary)
+ref_window_df <- function(df, windowSize = 1, windowForward = 0, binary = TRUE, binaryStanzas = FALSE) {
+    .Call('rENA_ref_window_df', PACKAGE = 'rENA', df, windowSize, windowForward, binary, binaryStanzas)
 }
 
 #' @title ref_window_lag

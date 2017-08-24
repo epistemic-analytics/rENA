@@ -23,7 +23,6 @@
 #' @param rotate.means [TBD]
 #' @param rotate.means.by [TBD]
 #' @param output [TBD]
-#' @param output.fields Fields to be included in JSON output
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords ENA, generate, set
@@ -45,8 +44,8 @@ ena.make.set <- function(
 
   norm.by = sphere_norm_c,
 
-  rotation.by = NULL,
-  rotation.parameters = NULL,
+  rotation.by = ena.svd,
+  rotation.params = NULL,
   rotation.set = NULL,
 
   endpoints.only = T,
@@ -86,7 +85,7 @@ ena.make.set <- function(
     norm.by = norm.by,
 
     rotation.by = rotation.by,
-    rotation.parameters = rotation.parameters,
+    rotation.params = rotation.params,
     rotation.set = rotation.set,
 
     node.position.method = node.position.method,

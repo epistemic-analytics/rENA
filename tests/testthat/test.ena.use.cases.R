@@ -9,8 +9,9 @@ codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client
 df.accum = ena.accumulate.data.file(
   df.file,
   units.by = c("UserName","Condition"),
-  conversations.by = c("Condition","GroupName"),
-  codes = codeNames, window.size.back = 4
+  conversations.by = c("ActivityNumber","GroupName"),
+  codes = codeNames,
+  window.size.back = 4
 );
 
 df.set = ena.make.set(df.accum, rotation.by = list(c(FUN = "ena.rotate.by.mean", list("Condition" = c("FirstGame","SecondGame"))),
@@ -45,18 +46,19 @@ test_that("Case 4: Stats", {
 })
 
 test_that("Case 5: Code Masking", {
+  mask = matrix(1, nrow=length(codeNames), ncol=length(codeNames), dimnames=list(codeNames,codeNames));
+  mask["E.data", "S.data"] = 0;
 
-  df.accum = ena.accumulate.data.file(
+  df.accum.masked = ena.accumulate.data.file(
     df.file,
     units.by = c("UserName","Condition"),
     conversations.by = c("Condition","GroupName"),
     codes = codeNames, window.size.back = 4,
-    ###### NEED TO CREATE SPECIFIED MASK
-    mask = NULL
+    mask = mask
   );
-  p = ena.plot
+  adj.vec.code = adjacency.vector(df.accum.masked, codes=c("E.data", "S.data"))
 
-  testthat::expect_is(p, "plotly");
+  testthat::expect_true(all(adj.vec.code[,1] == 0));
 })
 
 df.accum = ena.accumulate.data.file(

@@ -45,8 +45,6 @@ ena.make.set(enaData, dims = 2, samples = 3, inPar = F,
 
 \item{output}{[TBD]}
 
-\item{output.fields}{Fields to be included in JSON output}
-
 \item{...}{additional parameters addressed in inner function}
 }
 \value{
