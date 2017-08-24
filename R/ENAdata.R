@@ -20,8 +20,6 @@
 # @param correction math operation by which to modify data for weighted values (i.e. log, sqrt) --- NO LONGER INCLUDED
 # @param units.selected deprecated
 # @param model - type of ENA model: endpoint or trajectory, if trajectory what type
-# @param trajectory.by [TBD]
-# @param trajectory.type [TBD]
 #'
 #' @section Public ENAdata methods:
 ####
@@ -106,7 +104,6 @@ ENAdata = R6::R6Class("ENAdata", public = list(
       #'      x - Property to return. Defaults to 'file', returning the original data}
       ####
       get = function(x = "data") {
-        browser()
         return(private[[x]])
       },
 
@@ -248,7 +245,6 @@ ENAdata = R6::R6Class("ENAdata", public = list(
     ## Private Functions
     ####
     loadFile = function() {
-      print("LOADING FILE")
       if(any(class(private$file) == "data.table")) {
         df_DT = private$file;
       } else {
@@ -270,9 +266,9 @@ ENAdata = R6::R6Class("ENAdata", public = list(
 
       self %<>% accumulate.data();
 
-      print(self$adjacency.vectors);
+      #print(self$adjacency.vectors);
 
-      self$units = self$adjacency.vectors[private$units.by];
+      self$units = self$adjacency.vectors[,private$units.by, with=F];
 
       if(is.null(private$trajectory.by)) {
         self$unit.names <- self$adjacency.vectors$ENA_UNIT;
@@ -281,7 +277,7 @@ ENAdata = R6::R6Class("ENAdata", public = list(
         #self$units = unique(self$units);
 
         #### ISSUE WHEN CONVERSATIONS.BY MORE THAN 1 COL
-        conversation = adjacency.vectors[,private$conversations.by, with=F];
+        conversation = self$adjacency.vectors[,private$conversations.by, with=F];
 
         #print(conversation)
         #print(df_DT)
@@ -293,7 +289,7 @@ ENAdata = R6::R6Class("ENAdata", public = list(
         #print(self$adjacency.vectors);
 
         #if(is.null(self$adjacency.vectors$TRAJ_UNIT)) {
-        #  self$unit.names <- paste(self$adjacency.vectors$ENA_UNIT, conversation, sep = ".");
+        #self$unit.names <- paste(self$adjacency.vectors$ENA_UNIT, unique(conversation), sep = ".");
         #} else {
         self$unit.names <- paste(self$adjacency.vectors$ENA_UNIT, self$adjacency.vectors$TRAJ_UNIT, sep = ".");
         #}

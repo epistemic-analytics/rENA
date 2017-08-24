@@ -4,6 +4,8 @@ accumulate.data <- function(enadata) {
   units.used = enadata$get("units.used"); ###new - replaces old "units"     #### THIS IS ACTUAL UNITS TO USE
   units.by = enadata$get("units.by"); ### COLUMNS TO BE COMBINED TO FORM ENA_UNIT
 
+  trajectory.by = enadata$get("trajectory.by");
+
   #### FIX FOR ISSUE - codes given as vector for accum.data.file but is a df for accum.data
   codes = enadata$codes;
   if(is.data.frame(codes)) {
@@ -38,10 +40,8 @@ accumulate.data <- function(enadata) {
   #       get rid of `trajectory.type`
   ###
   if(enadata$model == "AccumulatedTrajectory") {
-    trajectory.by = conversations.by;
     trajectory.type <- "accumulated";
   } else if(enadata$model == "SeparateTrajectory") {
-    trajectory.by = conversations.by;
     trajectory.type <- "non-accumulated";
   }
 
@@ -165,6 +165,7 @@ accumulate.data <- function(enadata) {
   # Trajectory Checks
   ###
   ## Not a Trajectory
+
   if(is.null(trajectory.type)) {
     ###
     # Sum each unit found in dfDT.co.occurrences
@@ -217,6 +218,7 @@ accumulate.data <- function(enadata) {
         by=c(units.by),
         .SDcols=c(codedTriNames,trajectory.by,"ENA_ROW_IDX")
         ]
+        dfDT.summed.units$TRAJ_UNIT = merge_columns_c(dfDT.summed.units,trajectory.by, sep = ".");
       }
       # Non-accumulated
       else if(trajectory.type == rENA::opts$TRAJ_TYPES[2]) {

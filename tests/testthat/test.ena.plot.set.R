@@ -18,8 +18,8 @@ df.accum.traj = ena.accumulate.data.file(
   df.file,
   units.by = c("UserName","Condition"),
   conversations.by = c("ActivityNumber"),
-  codes = codeNames,
-  model = "A"
+  codes = codeNames
+  #model = "A"
 );
 df.set.traj.lws = ena.make.set(df.accum.traj, position.method = lws.positions.es);
 
