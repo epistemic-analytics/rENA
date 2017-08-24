@@ -63,6 +63,7 @@ ENAdata = R6::R6Class("ENAdata", public = list(
     self$model <- model;
 
     private$mask <- mask;
+    private$trajectory.by <- conversations.by;
     private$loadFile();
 
     self
@@ -235,7 +236,7 @@ ENAdata = R6::R6Class("ENAdata", public = list(
       conversations.by = NULL,
       weight.by = NULL,
       #units.exclude = NULL,
-
+      trajectory.by = NULL,
       mask = NULL,
     ####
     ## END: Private Properties
