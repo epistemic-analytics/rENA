@@ -26,60 +26,50 @@
 #' @section Public ENAdata methods:
 ####
 ENAdata = R6::R6Class("ENAdata",
-                      public = list(
+    public = list(
 
-                        ####
-                        ## Constructor - documented in main class declaration
-                        ####
-                        initialize = function(
-                          file,    #csv or data frame containing units, codes, conversations, and metadata
-                          units = NULL,     #data frame of unit columns and values
-                          units.used = NULL,    #vector of unit values to include (a subset of rows of the units df)
-                          units.by = NULL,  # unit col names that will be grouped by to determine ENA_UNIT
-                          conversations.by = NULL,   # conversation col names that will be grouped by to determine conversations
-                          codes = NULL,  #vector of code column names to use in accumulation
-                          model = NULL,
-                          weight.by = "binary",
-                          window.size.back = 1,
-                          window.size.forward = 0,
-                          # units.selected = NULL,
-                          # units.exclude = c(),
-                          mask = NULL,
-                          ...
-                        ) {
-                          self$function.call <- sys.call(-1);
-                          private$file <- file;
-                          self$units <- units;
-                          private$units.used <- units.used;
-                          private$units.by <- units.by
-                          private$conversations.by <- conversations.by;
-                          self$codes <- codes;
+      ####
+      ## Constructor - documented in main class declaration
+      ####
+      initialize = function(
+        file,    #csv or data frame containing units, codes, conversations, and metadata
+        units = NULL,     #data frame of unit columns and values
+        units.used = NULL,    #vector of unit values to include (a subset of rows of the units df)
+        units.by = NULL,  # unit col names that will be grouped by to determine ENA_UNIT
+        conversations.by = NULL,   # conversation col names that will be grouped by to determine conversations
+        codes = NULL,  #vector of code column names to use in accumulation
+        model = NULL,
+        weight.by = "binary",
+        window.size.back = 1,
+        window.size.forward = 0,
+        # units.selected = NULL,
+        # units.exclude = c(),
+        mask = NULL,
+        ...
+      ) {
+        self$function.call <- sys.call(-1);
+        private$file <- file;
+        self$units <- units;
+        private$units.used <- units.used;
+        private$units.by <- units.by
+        private$conversations.by <- conversations.by;
+        self$codes <- codes;
 
-                          if(is.data.frame(self$codes)) self$codes <- colnames(self$codes);
+        if(is.data.frame(self$codes)) self$codes <- colnames(self$codes);
 
-                          private$weight.by <- weight.by;
-                          private$window.size <- list(
-                            "back" = window.size.back,
-                            "forward" = window.size.forward
-                          );
-                          private$units.exclude <- units.exclude;
-                          self$model <- model;
+        private$weight.by <- weight.by;
+        private$window.size <- list(
+          "back" = window.size.back,
+          "forward" = window.size.forward
+        );
+        # private$units.exclude <- units.exclude;
+        self$model <- model;
 
-                          private$trajectory.by <- trajectory.by;
+        private$mask <- mask;
+        private$loadFile();
 
-                          ### Why is this happening
-                          if(is.null(trajectory.by)) private$trajectory.by = conversations.by;
-                          if(self$model == "EndPoint") {
-                            private$trajectory.by <- NULL;
-                          } else {
-                            private$trajectory.by <- private$conversations.by
-                          }
-
-                          private$mask <- mask;
-                          private$loadFile();
-
-                          self
-                        },
+        self
+      },
 
     ####
     ## Public Properties
@@ -96,7 +86,6 @@ ENAdata = R6::R6Class("ENAdata",
         units = NULL,
         step = NULL
       ),
-      trajectory.point.names = NULL,
       codes = NULL,
       function.call = NULL,
       function.params = NULL,
@@ -143,6 +132,7 @@ ENAdata = R6::R6Class("ENAdata",
       #'      x - Property to return. Defaults to 'file', returning the original data}
       ####
       get = function(x = "data") {
+        browser()
         return(private[[x]])
       },
 
@@ -161,61 +151,6 @@ ENAdata = R6::R6Class("ENAdata",
           colnames(namedData)[grep("adjacency.code",colnames(namedData))] = apply(namedRows, 2, function(x) paste(x[1], x[2], sep=sep))
         }
         namedData
-      },
-
-      ####
-      #' \code{update()} - Change any of the allowed properties then reprocess the ENAdata.
-      #' \preformatted{  Example:
-      #'     update(
-      #'       file = private$file,
-      #'       codes = self$codes,
-      #'       conversations.by = private$conversations.by,
-      #'       units = self$units,
-      #'       unitsSelected = private$unitsSelected,
-      #'       windowSize = private$windowSize,
-      #'       reload = FALSE
-      #'       ...
-      #'     )}
-      #'
-      #' \preformatted{  Parameters:
-      #'     file - The original data to accumulate, as a data.frame or data.table
-      #'     codes - String vector of column names to use as codes
-      #'     conversations.by - String vector of column names to create the conversations
-      #'     units - String vector of which units to include in the ENAset
-      #'      windowSize - Integer used to select the size of each stanza window within a conversation
-      #'     reload - Logical, force reloading of the ENAdata object}
-      ####
-      update = function(
-        file = private$file,
-        codes = self$codes,
-        conversations.by = private$conversations.by,
-        units = self$units,
-        units.exclude = private$units.exclude,
-        windowSize = private$windowSize,
-        reload = F
-      ) {
-        if(all.equal.raw(file, private$file) == FALSE) {
-          private$file <- file; reload = T;
-        }
-        if( identical(codes, self$codes) == F ) {
-          self$codes <- codes; reload = T;
-        }
-        if( is.null(units) || !all(units == self$units) ) {
-          self$units <- units; reload = T;
-        }
-        if( identical(units.exclude, private$units.exclude) == F ) {
-          private$units.exclude <- units.exclude; reload = T;
-        }
-        if( is.null(conversations.by) || !all(conversations.by == private$conversations.by) ) {
-          private$conversations.by <- conversations.by; reload = T;
-        }
-        if( identical(windowSize, private$windowSize) == F) {
-          private$windowSize = windowSize; reload = T;
-        }
-
-        if(reload == T) self$data <- private$loadFile();
-
-        return(self);
       },
       add.metadata = function(merge = F) {
         ### get columns which arent in codes, units.by, or conversations.by
@@ -272,7 +207,7 @@ ENAdata = R6::R6Class("ENAdata",
       units.by = NULL,
       conversations.by = NULL,
       weight.by = NULL,
-      units.exclude = NULL,
+      # units.exclude = NULL,
       mask = NULL,
       trajectory.by = NULL,
     ####

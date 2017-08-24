@@ -42,7 +42,7 @@ ENAplot = R6::R6Class("ENAplot",
     ) {
 
       self$enaset <- enaset;
-      self$plot <- plot_ly(
+      self$plot <- plotly::plot_ly(
          mode = "markers",
          type ="scatter"
        )
