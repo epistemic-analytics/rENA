@@ -64,16 +64,6 @@ ENAdata = R6::R6Class("ENAdata", public = list(
     #private$units.exclude <- units.exclude;
     self$model <- model;
 
-    private$trajectory.by <- trajectory.by;
-
-    ### Why is this happening
-    if(is.null(trajectory.by)) private$trajectory.by = conversations.by;
-    if(self$model == "EndPoint") {
-      private$trajectory.by <- NULL;
-    } else {
-      private$trajectory.by <- private$conversations.by
-    }
-
     private$mask <- mask;
     private$loadFile();
 
@@ -250,7 +240,6 @@ ENAdata = R6::R6Class("ENAdata", public = list(
       #units.exclude = NULL,
 
       mask = NULL,
-      trajectory.by = NULL,
     ####
     ## END: Private Properties
     ####
