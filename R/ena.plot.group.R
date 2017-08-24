@@ -38,24 +38,17 @@
 #' }
 #' @return Plot of groups of \code{\link{ENAplot}}
 ##
-ena.plot.groups <- function(
+ena.plot.group <- function(
   enaplot,
 
   points = NULL,
 
-  #by = NULL,
-
   label = NULL,
 
-  colors = NULL,
+  color = "black",
   shape = c("square", "triangle", "diamond", "circle"),
 
-  #unit.colors = rep(plot.color, nrow(enaset$points.rotated)),
-
-  #unit.size = 1,
-  #unit.size.multiplier = multiplier,
-
-  show.confidence.interval = F,
+  show.confidence.interval = T,
   show.outlier.interval = F,
 
   label.font.size = enaplot$font.size,
@@ -65,14 +58,6 @@ ena.plot.groups <- function(
   ###OLD - to be removed
   group = NULL,
   group.values = as.character(t(unique(data[,c(group),with=F]))),
-
-  group.labels = names(groups),
-  #group.labels.colors = rep(plot.color, length(group)),
-
-  group.size = unit.size,
-  #group.size.multiplier = unit.size.multiplier,
-
-  multiplier = 5,
 
   ...
 ) {
@@ -89,21 +74,11 @@ ena.plot.groups <- function(
   ### is there a purpose for this?
   data = enaplot$enaset$get.data("rotated",with.meta=T);
 
-  dfDT = data[ENA_UNIT %in% units];
+  if(is.null(points)) points = enaplot$enaset$points.rotated;
+  #dfDT = data[ENA_UNIT %in% units];
 
   ### save raw points for later calculations of confidence/outlier intervals
   points.raw = points;
-
-  #### probably un-needed for this function
-  # if(is.null(df.names)) {
-  #   df.names = as.character(1:nrow(data))
-  #   rownames(data) = df.names;
-  # }
-  # dfDT[,name:=ENA_UNIT] # Create a name column2
-
-  # show.modes = unlist(strsplit(plot.mode,split="\\+"))
-  # show.units = "units" %in% show.modes;
-  # show.networks = "network" %in% show.modes;
 
 
   ### TRAJECTORY PLOT
@@ -138,36 +113,21 @@ ena.plot.groups <- function(
 
     return(enaplot);
   } else {     #### NON-TRAJECTORY PLOT
-
-    # unit.colors = sapply(1:nrow(data), function(x) {
-    #   default.colors[which(group.values == unlist(data[x,c(group),with=F]))]
-    # })
-    #dfDT.groups = dfDT[,lapply(.SD,get(method)),by=group,.SDcols=c("V1","V2")];
-    # dfDT.groups$ENA_UNIT = dfDT.groups$name = dfDT.groups[,c(group),with=F]
-    # dfDT = data.table::rbindlist(list(dfDT,dfDT.groups), fill=T)
-    #
-    # unit.colors = c(unit.colors, default.colors[1:length(group.values)]);
-
+    print(points)
     ### if group more than one row, combine to mean
     if(nrow(points) > 1) {
       points = colMeans(points);
     }
+    print(points)
 
     #calculate CI's
     if(show.confidence.interval == T) {
-      message("Confidence intervals on means not yet implemented.")
 
       conf.ints = points.raw[, { cis = t.test(.SD)$conf.int; data.table::data.table(ci.x=cis[1], ci.y=cis[2]) },,.SDcols=c("V1","V2")]
-
-      ### OLD
-      dfDT.groups = merge(dfDT.groups, conf.ints);
-      dfDT.groups[, c("ci.x1", "ci.x2", "ci.y1", "ci.y2") := .(V1 - ci.x, V1 + ci.x, V2 - ci.y, V2 + ci.y)]
-      ### NEW
       dfDT.points = merge(points, conf.ints);
       dfDT.points[, c("ci.x1", "ci.x2", "ci.y1", "ci.y2") := .(V1 - ci.x, V1 + ci.x, V2 - ci.y, V2 + ci.y)]
-      ###
 
-      lines = apply(dfDT.groups,1,function(x) {
+      lines = apply(dfDT.points,1,function(x) {
         list(
           "type" = "square",
           "line" = list(
@@ -186,45 +146,11 @@ ena.plot.groups <- function(
     }
     if(show.outlier.interval == T) {
       ###calculate outlier intervals
+
     }
 
     group.layout = data.frame(dfDT);
 
-    ### new - modify colors of points trace, then will need to add trace
-    # if("points" %in% p$traces) {
-    #   print("points already plotted");
-    #   enaplot$plot %<>% style(
-    #     type="scatter",
-    #     # x = ~V1, y = ~V2,
-    #     mode="markers",
-    #     marker = list(
-    #       symbol = c(rep("circle",nrow(data)),rep("square", ifelse(!is.null(dfDT.groups), nrow(dfDT.groups), 0))),
-    #       color = unit.colors,
-    #       size = c(rep(unit.size * unit.size.multiplier, nrow(data)), rep(group.size * group.size.multiplier, ifelse(!is.null(dfDT.groups),nrow(dfDT.groups), 0)))
-    #     ),
-    #     showlegend = F,
-    #     text = ~name,
-    #     hoverinfo = "text+x+y",
-    #
-    #     traces = which(p$traces == "points"))
-    # } else {
-    #   enaplot$plot %<>% plotly::add_trace(
-    #     data = group.layout,
-    #     type="scatter",
-    #     x = ~V1, y = ~V2,
-    #     mode="markers",
-    #     marker = list(
-    #       symbol = c(rep("circle",nrow(data)),rep("square", ifelse(!is.null(dfDT.groups), nrow(dfDT.groups), 0))),
-    #       color = unit.colors,
-    #       size = c(rep(unit.size * unit.size.multiplier, nrow(data)), rep(group.size * group.size.multiplier, ifelse(!is.null(dfDT.groups),nrow(dfDT.groups), 0)))
-    #     ),
-    #     showlegend = F,
-    #     text = ~name,
-    #     hoverinfo = "text+x+y"
-    #   )
-    # }
-
-    ### OLD VERSION - plot and color points and means - now used via plot.points instead of separately
     enaplot$plot %<>% plotly::add_trace(
       data = group.layout,
       type="scatter",
@@ -237,13 +163,12 @@ ena.plot.groups <- function(
         size = size
       ),
       showlegend = F,
-      text = ~name,
+      #text = ~name,
       hoverinfo = "text+x+y"
     )
 
     ### plot CI's
     enaplot$plot %<>% plotly::layout(
-      title = plot.title,
       shapes = lines
     )
 

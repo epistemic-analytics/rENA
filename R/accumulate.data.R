@@ -14,7 +14,6 @@ accumulate.data <- function(enadata) {
 
   window = enadata$get("window.size");
 
-  binary = T;
   binaryStanzas = F;
 
   units.exclude = enadata$get("units.exclude");
@@ -23,25 +22,24 @@ accumulate.data <- function(enadata) {
   trajectory.type = NULL;
 
   ### should work to determine if binary is desired
+  binary = T;
+  if(!identical(enadata$get("weight.by"), "binary")) {
+    binary = F;
+  } else {
     binary = T;
-    if(!identical(enadata$get("weight.by"), "binary")) {
-      binary = F;
-    } else {
-      binary = T;
-    }
+  }
 
 
   ### We need data
-    if(is.null(dfDT) || nrow(dfDT) < 1) return(-1);
+  if(is.null(dfDT) || nrow(dfDT) < 1) return(-1);
 
   ###
   # Convert model type to trajectory option
   # FIXME can probably just use the `model` directly and
   #       get rid of `trajectory.type`
   ###
-
   if(enadata$model == "EndPoint") {
-    trajectory.by = NULL;
+    trajectory.type = NULL;
   } else if(enadata$model == "AccumulatedTrajectory") {
     trajectory.type <- "accumulated";
   } else if(enadata$model == "SeparateTrajectory") {
@@ -51,27 +49,27 @@ accumulate.data <- function(enadata) {
   ###
   # We need a data.table, it's worth it.
   ###
-    if(!data.table::is.data.table(dfDT)) {
-      dfDT = data.table::as.data.table(dfDT);
-    }
+  if(!data.table::is.data.table(dfDT)) {
+    dfDT = data.table::as.data.table(dfDT);
+  }
 
   ###
   # Make a copy of the data for safe usage
   ###
-    dfDT_codes = data.table::copy(dfDT);
+  dfDT_codes = data.table::copy(dfDT);
 
   ###
   # Create a column representing the ENA_UNIT as defined
   # by the the `units.by` parameter
   ###
-    dfDT_codes$ENA_UNIT = merge_columns_c(dfDT_codes, cols=units.by, sep=".");
+  dfDT_codes$ENA_UNIT = merge_columns_c(dfDT_codes, cols=units.by, sep=".");
 
   ##
   # String vector of codesnames representing the names of the co-occurrences
   ##
-    vL = length(codes);
-    adjacency.length = ( (vL * (vL + 1)) / 2) - vL ;
-    codedTriNames = paste("adjacency.code",rep(1:adjacency.length), sep=".");
+  vL = length(codes);
+  adjacency.length = ( (vL * (vL + 1)) / 2) - vL ;
+  codedTriNames = paste("adjacency.code",rep(1:adjacency.length), sep=".");
 
   ##
   # Accumulated windows appended to the end of each row
@@ -81,21 +79,21 @@ accumulate.data <- function(enadata) {
   ##
   if(window$back == 1) {
     ### Special case for window of 1, skip window check and convert each line to co-occurrences
-      dfDT.co.occurrences = dfDT_codes[,{
-        ocs = data.table::as.data.table(rows_to_co_occurrences(.SD[,.SD,.SDcols=codes, with=T]));
+    dfDT.co.occurrences = dfDT_codes[,{
+      ocs = data.table::as.data.table(rows_to_co_occurrences(.SD[,.SD,.SDcols=codes, with=T]));
 
-        # Return value from data.table back to dfDT.co.occurrences
-          data.table::data.table(.SD,ocs)
-        },
-        .SDcols=c(codes, conversations.by, trajectory.by),
-          with=T
-      ];
+      # Return value from data.table back to dfDT.co.occurrences
+      data.table::data.table(.SD,ocs)
+    },
+    .SDcols=c(codes, conversations.by, trajectory.by),
+    with=T
+    ];
 
     ### Generate the ENA_UNIT column
-      dfDT.co.occurrences$ENA_UNIT = dfDT_codes$ENA_UNIT;
+    dfDT.co.occurrences$ENA_UNIT = dfDT_codes$ENA_UNIT;
 
     ### Keep original columns used for units
-      dfDT.co.occurrences[, (units.by) := dfDT_codes[,.SD,.SDcols=units.by]];
+    dfDT.co.occurrences[, (units.by) := dfDT_codes[,.SD,.SDcols=units.by]];
   } else if(window$back=="Conversation") {
     ###
     # First sum all lines by conversation and unit to get vectors of codes
@@ -156,9 +154,13 @@ accumulate.data <- function(enadata) {
     if(is.null(units.used)) {
       units.used = dfDT_codes$ENA_UNIT;
     }
-    if(!is.null(units.exclude) && length(units.exclude)>0){
-      units.used = units.used[which(!units.used %in% units.exclude)];
-    }
+    # if(!is.null(units.exclude) && length(units.exclude)>0){
+    #   units.used = units.used[which(!units.used %in% units.exclude)];
+    # }
+    ###
+    # Keep original columns used for units
+    ###
+    # dfDT.co.occurrences[, (units.by) := dfDT_codes[,.SD,.SDcols=units.by]];
 
   ###
   # Trajectory Checks
@@ -179,6 +181,8 @@ accumulate.data <- function(enadata) {
       ];
 
       dfDT.summed.units$ENA_UNIT = merge_columns_c(dfDT.summed.units, units.by, sep=".");
+
+      enadata$unit.names = dfDT.summed.units$ENA_UNIT;
     }
     ## Trajectory
     else {
@@ -194,6 +198,10 @@ accumulate.data <- function(enadata) {
       ];
       dfDT.summed.traj.by$ENA_UNIT = merge_columns_c(dfDT.summed.traj.by, units.by, sep=".");
       dfDT.summed.traj.by$TRAJ_UNIT = merge_columns_c(dfDT.summed.traj.by,trajectory.by, sep = ".");
+
+      ###NEW - test
+      enadata$trajectories$step = dfDT.summed.traj.by$TRAJ_UNIT;
+      ###
 
       # Accumulated
       if(trajectory.type == rENA::opts$TRAJ_TYPES[1]) {
@@ -249,10 +257,10 @@ accumulate.data <- function(enadata) {
     #### update unit.names w/ the created unique unit column
 
     #### SHOULDN'T ACTUALLY NEED TO UPDATE THIS, units was never altered
-    if(is.null(enadata$units)) {
-      #enadata$units = dfDT.summed.units[,units.by, with=F];
-      enadata$units = dfDT.co.occurrences[,units.by, with=F];
-    }
+    # if(is.null(enadata$units)) {
+    #   #enadata$units = dfDT.summed.units[,units.by, with=F];
+    #   enadata$units = dfDT.co.occurrences[,units.by, with=F];
+    # }
   ###
   # END: Set attributes
   ###

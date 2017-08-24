@@ -16,7 +16,6 @@
 #' @param window.size.forward Number of lines forward in stanza window
 #' @param binary [TBD]
 #' @param correction [TBD]
-#' @param units.exclude Exclude certain columns based on units
 #' @param trajectory.by [TBD]
 #' @param trajectory.type [TBD]
 #' @param output ENAdata object or JSON string. Default: ENAdata
@@ -57,22 +56,19 @@ ena.accumulate.data.file <- function(
 
   codes = NULL,
 
+  model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),
+
   window = c("Moving Stanza", "Conversation"),
   window.size.back = 1,
   window.size.forward = 0,
 
   weight.by = "binary",
 
-  units.exclude = c(),
-
-  model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),   #use match arg and list?
-  #trajectory.by = NULL,     #no longer used, trajectories are always by activity
-  #trajectory.type = c("accumulated","non-accumulated"),     #into model
-
   mask = NULL,
 
-  output = c("class","json"),    #keep for now
-  output.fields = NULL,       #keep for now
+  ### PARAMS NOT IN SPECS
+  # output = c("class","json"),    #keep for now
+  # output.fields = NULL,       #keep for now
   ...
 ) {
   #print(file);
@@ -89,31 +85,31 @@ ena.accumulate.data.file <- function(
     window.size.back = window;
   }
   data = ENAdata$new(
-    file,
-    units,
-    units.used,
-    units.by,
-    conversations.by,
-    codes,
-    window.size.back,
-    window.size.forward,
-    weight.by,
-    units.exclude,
+    file = file,
+    units = units,
+    units.used = units.used,
+    units.by = units.by,
+    conversations.by = conversations.by,
+    codes = codes,
+    window.size.back = window.size.back,
+    window.size.forward = window.size.forward,
+    weight.by = weight.by,
     model = model,
     mask = mask,
     ...
   );
 
   data$function.call = sys.call();
-  output = match.arg(output);
-  if(output == "json") {
-    output.class = get(class(data))
-
-    if(is.null(output.fields)) {
-      output.fields = names(output.class$public_fields)
-    }
-
-    r6.to.json(data, o.class = output.class, o.fields = output.fields)
-  }
-  else data
+  # output = match.arg(output);
+  # if(output == "json") {
+  #   output.class = get(class(data))
+  #
+  #   if(is.null(output.fields)) {
+  #     output.fields = names(output.class$public_fields)
+  #   }
+  #
+  #   r6.to.json(data, o.class = output.class, o.fields = output.fields)
+  # }
+  #else
+  data
 }

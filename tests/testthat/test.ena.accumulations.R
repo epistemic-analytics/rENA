@@ -115,6 +115,7 @@ test_that("Test trajectories", {
   );
   df = data.frame(
     Name=c("J","Z"),
+    #Name=rep(c("J","Z"), 6),
     Day=c(1,1,1,1,1,1,2,2,2,2,2,2),
     ActivityNumber=c(1,1,1,1,2,2,2,2,3,3,3,3),
     c1=c(1,1,1,1,1,0,0,1,1,0,0,1),
@@ -123,16 +124,16 @@ test_that("Test trajectories", {
   );
 
   df.accum = ena.accumulate.data.file(df, units.by = c("Name"), conversations.by = c("Day", "ActivityNumber"),
-    codes = c("c1","c2","c3"), model = "AccumulatedTrajectory", trajectory.by = c("ActivityNumber")
+    codes = c("c1","c2","c3"), model = "AccumulatedTrajectory"
   );
   df.non.accum = ena.accumulate.data.file(df, units.by = c("Name"), conversations.by = c("Day", "ActivityNumber"),
-    codes = c("c1","c2","c3"), model = "SeparateTrajectory", trajectory.by = c("ActivityNumber")
+    codes = c("c1","c2","c3"), model = "SeparateTrajectory"
   );
   df.accum.sep = ena.accumulate.data(units = df.units, conversation = df.conversation,
-    codes = df.codes, model = "AccumulatedTrajectory", trajectory.by = c("ActivityNumber")
+    codes = df.codes, model = "AccumulatedTrajectory"
   );
   df.non.accum.sep = ena.accumulate.data(units = df.units, conversation = df.conversation,
-    codes = df.codes, model = "SeparateTrajectory", trajectory.by = c("ActivityNumber")
+    codes = df.codes, model = "SeparateTrajectory"
   );
 
   # Test for expected accumulated value
@@ -142,18 +143,65 @@ test_that("Test trajectories", {
   # Test for a value of 1 in the first accumulation of the trajectory of code 1
   expect_true(sum(df.accum$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 1, adjacency.code.1]) == 1);
   expect_true(sum(df.accum.sep$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 1, adjacency.code.1]) == 1);
+
   # Test for a value of 0 in the second accumulation of the trajectory of code 1
   expect_true(all(df.accum$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 2, adjacency.code.1] == 0));
   expect_true(all(df.accum.sep$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 2, adjacency.code.1] == 0));
+
   # Test that the first summed trajectory is 1
   expect_equal(df.accum$adjacency.vectors[Name == "Z" & ActivityNumber == 1, adjacency.code.1], 1);
   expect_equal(df.accum.sep$adjacency.vectors[Name == "Z" & ActivityNumber == 1, adjacency.code.1], 1);
+
   # Test that the second summed trajectory is 1, even thought it had a zero accumulation for it's conversations
-  expect_equal(df.accum$adjacency.vectors[Name == "Z" & ActivityNumber == 2, adjacency.code.1], 1);
-  expect_equal(df.accum.sep$adjacency.vectors[Name == "Z" & ActivityNumber == 2, adjacency.code.1], 1);
+  expect_equal(df.accum$adjacency.vectors[Name == "Z" & ActivityNumber == 2 & Day == 1, adjacency.code.1], 1);
+  expect_equal(df.accum.sep$adjacency.vectors[Name == "Z" & ActivityNumber == 2 & Day == 1, adjacency.code.1], 1);
 
   # Test that non-accumulation is properly leaving second trajectory group 0 (different than the previous test)
-  expect_identical(c(1,0,1), df.non.accum$adjacency.vectors[Name == "Z", adjacency.code.1]);
-  expect_identical(c(1,0,1), df.non.accum.sep$adjacency.vectors[Name == "Z", adjacency.code.1]);
+  expect_identical(c(1,0,0,1), df.non.accum$adjacency.vectors[Name == "Z", adjacency.code.1]);
+  expect_identical(c(1,0,0,1), df.non.accum.sep$adjacency.vectors[Name == "Z", adjacency.code.1]);
 })
 
+
+test_that("COPY OF FIRST TEST FOR units/unit.names/trajectories$ TESTING PURPOSES", {
+  fake.codes.len = 10;
+  fake.codes <- function(x) sample(0:1,fake.codes.len, replace=T)
+
+  codes = paste("Codes",LETTERS[1:fake.codes.len],sep="-");
+
+  df.units = data.frame(
+    Name=rep(c("J","Z"), 6),
+    #Day=c(1,1,1,1,1,1,2,2,2,2,2,2)#,
+    Group=c("First","First","Second","Second","First","First","Second","Second","First","First","Second","Second")
+  );
+  df.conversation = data.frame(
+    Day=c(1,1,1,1,1,1,2,2,2,2,2,2),
+    ActivityNumber=c(1,1,1,1,2,2,2,2,3,3,3,3)
+  );
+  df.codes = data.frame(
+    c1=c(1,1,1,1,1,0,0,1,1,0,0,1),
+    c2=c(1,1,1,0,0,1,0,1,0,1,0,0),
+    c3=c(0,0,1,0,1,0,1,0,0,0,1,0)#,
+    #c4=c(1,1,1,0,0,1,0,1,0,1,0,0)
+  );
+  df.whole = data.frame(
+    Name=c("J","Z"),
+    Day=c(1,1,1,1,1,1,2,2,2,2,2,2),
+    ActivityNumber=c(1,1,1,1,2,2,2,2,3,3,3,3),
+    Group=c("First","First","Second","Second","First","First","Second","Second","First","First","Second","Second"),
+    c1=c(1,1,1,1,1,0,0,1,1,0,0,1),
+    c2=c(1,1,1,0,0,1,0,1,0,1,0,0),
+    c3=c(0,0,1,0,1,0,1,0,0,0,1,0),
+    c4=c(1,1,1,0,0,1,0,1,0,1,0,0)
+  );
+
+  df.accum.sep = ena.accumulate.data(units = df.units, conversation = df.conversation, codes = df.codes, model = "A");
+  df.accum.weighted.sep = ena.accumulate.data(units = df.units, conversation = df.conversation, codes = df.codes);
+
+  df.accum.whole = ena.accumulate.data.file(df.whole, units.by = c("Name", "Group"), conversations.by = c("Day", "ActivityNumber"), codes = c("c1","c2","c3"), model = "A");
+  df.accum.weighted.whole = ena.accumulate.data.file(df.whole, units.by = c("Name", "Group"), conversations.by = c("Day", "ActivityNumber"), codes = c("c1","c2","c3"), weight.by = "weighted");
+
+  ### expect results equivalent from each version
+  expect_equal(df.accum.sep$adjacency.vectors,df.accum.whole$adjacency.vectors)
+  expect_equal(df.accum.weighted.sep$adjacency.vectors, df.accum.weighted.whole$adjacency.vectors);
+
+})

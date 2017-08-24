@@ -23,7 +23,6 @@ test_that("Simple data.frame to accumulate and make set", {
     object = length(df.set$enadata$unit.names),
     expected = 48
   );
-
 })
 test_that("Simple data.frame to accumulate and make set with Linderoth method(s)", {
   df.set.lws.es = ena.make.set(df.accum, position.method = lws.positions.es)
