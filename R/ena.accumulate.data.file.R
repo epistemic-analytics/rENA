@@ -56,18 +56,13 @@ ena.accumulate.data.file <- function(
 
   codes = NULL,
 
-<<<<<<< HEAD
   model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),
-=======
+
   window = c("Moving Stanza", "Conversation"),
   window.size.back = 1,
   window.size.forward = 0,
->>>>>>> 215a9f02e75f2d18d407e1cea1dd219a6140da2a
 
   weight.by = "binary",
-
-  window.size.back = 1,
-  window.size.forward = NULL,
 
   mask = NULL,
 
@@ -90,39 +85,17 @@ ena.accumulate.data.file <- function(
     window.size.back = window;
   }
   data = ENAdata$new(
-<<<<<<< HEAD
     file = file,
-
     units = units,
     units.used = units.used,
-
     units.by = units.by,
     conversations.by = conversations.by,
-
     codes = codes,
-
     window.size.back = window.size.back,
     window.size.forward = window.size.forward,
-
     weight.by = weight.by,
-
     model = model,
     mask = mask,
-
-=======
-    file,
-    units,
-    units.used,
-    units.by,
-    conversations.by,
-    codes,
-    window.size.back,
-    window.size.forward,
-    weight.by,
-    units.exclude,
-    model = model,
-    mask = mask,
->>>>>>> 215a9f02e75f2d18d407e1cea1dd219a6140da2a
     ...
   );
 

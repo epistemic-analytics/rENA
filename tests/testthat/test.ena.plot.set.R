@@ -43,22 +43,8 @@ test_that("Plot a trajectory set", {
   p.traj %<>% ena.plot.points(
     points = sample(df.set.lws$get.data("centered")$ENA_UNIT,3)
   );
-<<<<<<< HEAD
   p.traj %<>% ena.plot.points(
     points = sample(df.set.lws$get.data("rotated")$ENA_UNIT,3)
-=======
-
-  testthat::expect_is(p, "plotly");
-})
-
-test_that("Plot a trajectory set", {
-  p = ena.plot.set(
-    df.set.traj.lws,
-    plot.mode="units",
-    unit.group = "Condition",
-    unit.group.size = 2,
-    unit.trajectory.by = c("ActivityNumber")
->>>>>>> 215a9f02e75f2d18d407e1cea1dd219a6140da2a
   );
   testthat::expect_is(p, "plotly");
 })

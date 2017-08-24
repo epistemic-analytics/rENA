@@ -52,18 +52,11 @@ ena.accumulate.data <- function(
   conversation = NULL,    # df containing conversation lines
   codes = NULL,   # df containing codes
   metadata = NULL,   #optional - df containing metadata
-
   model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),   #use match arg and list?
-
   weight.by = "binary",
-<<<<<<< HEAD
-
-=======
   window = c("Moving Stanza", "Conversation"),
->>>>>>> 215a9f02e75f2d18d407e1cea1dd219a6140da2a
   window.size.back = 1,
   window.size.forward = 0,
-
   mask = NULL, #matrix (default - upper triangle of 1's)
 
   ### PARAMS NOT IN SPECS
@@ -106,13 +99,7 @@ ena.accumulate.data <- function(
 
     units.by = units.by,    # KEEP- automatically uses all units for accumulation from separate data frames
     conversations.by = conversations.by,    #column names of conversation df, automatically accumulating by all cols for accum from dfs
-
-<<<<<<< HEAD
     codes = codes,
-=======
-    window.size.back,
-    window.size.forward,
->>>>>>> 215a9f02e75f2d18d407e1cea1dd219a6140da2a
 
     window.size.back = window.size.back,
     window.size.forward = window.size.forward,
@@ -125,7 +112,7 @@ ena.accumulate.data <- function(
   );
 
   data$function.call = sys.call();
-<<<<<<< HEAD
+
   # output = match.arg(output);
   # if(output == "json") {
   #   output.class = get(class(data))
@@ -138,10 +125,5 @@ ena.accumulate.data <- function(
   # }
   #else
   data
-=======
-  output = match.arg(output);
-  if(output == "json") r6.to.json(data)
-  else data
->>>>>>> 215a9f02e75f2d18d407e1cea1dd219a6140da2a
 }
 

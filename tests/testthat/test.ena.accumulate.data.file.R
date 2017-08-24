@@ -24,7 +24,7 @@ test_that("Simple data.frame to accumulate", {
     as.matrix(df.accum$adjacency.vectors[, attr(df.accum$adjacency.vectors,"adjacency.codes"), with=F])
       ==
     #matrix(c(2,2,2,0,1,0), nrow=length(unique(df.accum$units)))
-    matrix(c(2,2,2,0,1,0), nrow=2)
+      matrix(c(2,2,2,0,1,0), nrow=2)
   ));
 });
 test_that("Accumulate using conversation model", {
@@ -67,12 +67,12 @@ test_that("Accumulate weighted data.", {
   testdf = cbind(testmeta, testmat)
 
   x = ena.accumulate.data.file(testdf,
-                          units.by='unit',
-                          conversations.by='tr',
-                          #units='1',
-                          codes=LETTERS[1:6],
-                          window.size.back=4,
-                          weight.by = "weighted")
+                               units.by='unit',
+                               conversations.by='tr',
+                               #units='1',
+                               codes=LETTERS[1:6],
+                               window.size.back=4,
+                               weight.by = "weighted")
 
   testthat::expect_true(all(
     apply(x$adjacency.vectors[,grep("^adj",colnames(x$adjacency.vectors)), with=F], 2, is.double)
@@ -85,14 +85,14 @@ test_that("Corrected adjacency.vectors equals manually corrected raw data (corre
   testdf = cbind(testmeta, testmat)
 
   x = ena.accumulate.data.file(testdf,
-                           units.by='unit',
-                           conversations.by='tr',
-                           #units='1',
-                           codes=LETTERS[1:6],
-                           window.size.back=4,
-                           weight.by = log)
-                           #binary=F,
-                           #correction = log)
+                               units.by='unit',
+                               conversations.by='tr',
+                               #units='1',
+                               codes=LETTERS[1:6],
+                               window.size.back=4,
+                               weight.by = log)
+  #binary=F,
+  #correction = log)
 
   xtest = x$adjacency.vectors.raw;
 
@@ -188,7 +188,6 @@ test_that("Test accumulation with dplyr::tbl_df", {
 
   testthat::expect_is(pn.accum, "ENAdata")
 })
-<<<<<<< HEAD
 
 # test_that("Test accumulation output JSON", {
 #   pn.file = system.file("extdata", "sample-data", "PinterestMock2.csv", package="rENA")
@@ -201,16 +200,3 @@ test_that("Test accumulation with dplyr::tbl_df", {
 #   testthat::expect_is(pn.accum.less, "list")
 #   testthat::expect_null(pn.accum.less$accumulated.adjacency.vectors)
 # })
-=======
-test_that("Test accumulation output JSON", {
-  pn.file = system.file("extdata", "sample-data", "PinterestMock2.csv", package="rENA")
-  pn.accum = ena.accumulate.data.file(pn.file, units.by =  c("Teacher"), conversations.by = c("Board"), codes = c("Kinesthetic", "Algorithmic"), output = "json")
-
-  pn.accum.less = ena.accumulate.data.file(pn.file, units.by =  c("Teacher"), conversations.by = c("Board"), codes = c("Kinesthetic", "Algorithmic"), output = "json", output.fields = c("metadata"))
-
-  testthat::expect_is(pn.accum, "list")
-  testthat::expect_is(pn.accum$accumulated.adjacency.vectors, "data.frame")
-  testthat::expect_is(pn.accum.less, "list")
-  testthat::expect_null(pn.accum.less$accumulated.adjacency.vectors)
-})
->>>>>>> 215a9f02e75f2d18d407e1cea1dd219a6140da2a
