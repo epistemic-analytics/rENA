@@ -8,7 +8,7 @@ ena.plot.trajectory = function(
   label.font.color = enaplot$get("font.color"),
   label.font.family = c("Arial", "Courier New", "Times New Roman"),
   shape = c("circle", "square", "triangle", "diamond"),
-  colors = rep(I("black"), nrow(enaplot$enaset$get.data("rotated", with.meta=T)))
+  colors = rep(I("black"), length(unique(by)))
 ) {
 
   if(!is.character(label.font.family)) {
@@ -46,18 +46,20 @@ ena.plot.trajectory = function(
   if(!is(points, "data.table")) {
     points = data.table::as.data.table(points);
   }
-  dfDT.trajs = points[,{ data.table::data.table(lines = list(.SD))  } ,by=by]
+  tbl = cbind(points, labels)
+  dfDT.trajs = tbl[,{ data.table::data.table(lines = list(.SD))  } ,by=by]
 
+  browser()
   for(x in 1:nrow(dfDT.trajs)) {
     #toPlot = unique(colnames(dfDT.trajs[x]$lines[[1]]))
     enaplot$plot %<>% plotly::add_trace(
       data = dfDT.trajs[x]$lines[[1]],
       x = ~V1, y = ~V2,
-      name = dfDT.trajs[x][[1]],
-      mode = "lines+markers",
-      text = dfDT.trajs[x][[1]],
-
-      hoverinfo = "text+x+y"
+      name = dfDT.trajs[x]$lines[[1]]$labels,
+      mode = "lines+markers+text",
+      text = dfDT.trajs[x]$lines[[1]]$labels,
+      textposition = 'middle right',
+      hoverinfo = "x+y"
     )
   }
 
