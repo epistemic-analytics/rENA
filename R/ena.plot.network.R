@@ -4,7 +4,8 @@ ena.plot.network = function(
   network = NULL,
   title = "ENA Network",
   colors = c(pos="#e53939", "#116cff"),
-  show.all.nodes = T
+  show.all.nodes = T,
+  ...
   # units.by = enaset$enadata$get('units.by'),
   # group.by = enaset$enadata$get('conversations.by'), #"Condition",
   #
@@ -39,6 +40,7 @@ ena.plot.network = function(
   if(choose(nrow(enaplot$enaset$node.positions), 2) != length(network)) {
     stop(paste0("Network vector needs to be of length ", choose(nrow(enaplot$enaset$node.positions), 2)))
   }
+  args = list(...);
   # df = data.frame(enaset$points.normed.centered, unique(enaset$enadata$units), ENA_UNIT = enaset$enadata$unit.names);
   # dfDT= data.table::as.data.table(df);
   # dfDT$handle = dfDT$ENA_UNIT; #merge_columns_c(dfDT,units.by, sep="."); #rownames(df);
@@ -177,18 +179,44 @@ ena.plot.network = function(
   nodes$color = "black";
   node.rows = rownames(enaplot$enaset$node.positions);
   mat = attr(enaplot$enaset$enadata$adjacency.vectors,"adjacency.matrix");
-  # network.edges.shapes = list();
+
+  network.scaled = network;
+  if(!is.null(args$scale.weights) && args$scale.weights == T) {
+    network.scaled = network * (1 / max(abs(network)));
+  }
+
+  colors.hsv = rgb2hsv(col2rgb(colors))
+  if(ncol(colors.hsv) == 1) {
+    colors.hsv[[4]] = colors.hsv[1] + 0.5;
+    if(colors.hsv[4] > 1) {
+      colors.hsv[4] = colors.hsv[4] - 1;
+    }
+
+    colors.hsv[[5]] = colors.hsv[2];
+    colors.hsv[[6]] = colors.hsv[3];
+    dim(colors.hsv) = c(3,2);
+  }
+
+  browser()
   for (i in 1:ncol(mat)) {
     v0 <- enaplot$enaset$node.positions[ node.rows==mat[1,i],];
     v1 <- enaplot$enaset$node.positions[ node.rows==mat[2,i],];
-    nodes[node.rows==mat[,i],]$weight = nodes[node.rows==mat[,i],]$weight + network[i];
+    nodes[node.rows==mat[,i],]$weight = nodes[node.rows==mat[,i],]$weight + network.scaled[i];
+
+    col = NULL
+    if(network.scaled[i]>0) {
+      col = colors.hsv[,1];
+    } else {
+      col = colors.hsv[,2];
+    }
+    col[2] = abs(network.scaled[i]);
 
     edge_shape = list(
       type = "line",
-      opacity = adjustWeight(network[i]),
+      opacity = network.scaled[i], #adjustWeight(network[i]),
       line = list(
-        color= ifelse(network[i]>0, colors[1], colors[2]), #unlist(network.edges.table[i,][[4]]), #network.edges.table[i,][[4]],
-        width= abs(network[i]*10) #unlist(network.edges.table[i,][[3]]) * edge.weight.multiplier #network.edges.table[i,][[3]]
+        color= hsv(col[1],col[2],col[3]), #unlist(network.edges.table[i,][[4]]), #network.edges.table[i,][[4]],
+        width= abs(network.scaled[i]) * enaplot$get("multiplier") #unlist(network.edges.table[i,][[3]]) * edge.weight.multiplier #network.edges.table[i,][[3]]
       ),
       x0 = v0[1],
       y0 = v0[2],
@@ -211,8 +239,8 @@ ena.plot.network = function(
     mode = "markers+text",
     textposition = 'middle right',
     marker = list(
-      color = nodes$color,
-      size = abs(nodes$weight)*10
+      color = "#000000", #nodes$color,
+      size = abs(nodes$weight)  * enaplot$get("multiplier")  #*10
     ),
     text = rownames(nodes),
     hoverinfo = 'none'

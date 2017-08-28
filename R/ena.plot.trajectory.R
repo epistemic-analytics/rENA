@@ -3,6 +3,7 @@ ena.plot.trajectory = function(
   points,    #dataframe of points
   by = NULL,
   labels = unique(enaplot$enaset$enadata$units),
+  names = NULL,
   label.offset = NULL,
   label.font.size = enaplot$get("font.size"),
   label.font.color = enaplot$get("font.color"),
@@ -49,17 +50,17 @@ ena.plot.trajectory = function(
   tbl = cbind(points, labels)
   dfDT.trajs = tbl[,{ data.table::data.table(lines = list(.SD))  } ,by=by]
 
-  browser()
   for(x in 1:nrow(dfDT.trajs)) {
     #toPlot = unique(colnames(dfDT.trajs[x]$lines[[1]]))
     enaplot$plot %<>% plotly::add_trace(
       data = dfDT.trajs[x]$lines[[1]],
       x = ~V1, y = ~V2,
-      name = dfDT.trajs[x]$lines[[1]]$labels,
+      name = as.character(names[x]), #dfDT.trajs[x]$lines[[1]]$labels,
       mode = "lines+markers+text",
       text = dfDT.trajs[x]$lines[[1]]$labels,
       textposition = 'middle right',
-      hoverinfo = "x+y"
+      hoverinfo = "x+y",
+      visible = "legendonly"
     )
   }
 

@@ -63,7 +63,7 @@ ENAdata = R6::R6Class("ENAdata", public = list(
     self$model <- model;
 
     private$mask <- mask;
-    private$trajectory.by <- conversations.by;
+    # private$trajectory.by <- conversations.by;
     private$loadFile();
 
     self
@@ -188,7 +188,7 @@ ENAdata = R6::R6Class("ENAdata", public = list(
         metaAvail = colnames(dfDT.meta.poss)[rapply(dfDT.meta.poss, function(x) all(x == 1))]
         metaAvail = metaAvail[metaAvail != "ENA_UNIT"];
 
-        raw.meta = self$raw[!duplicated(ENA_UNIT)][ENA_UNIT %in% unique(self$accumulated.adjacency.vectors$ENA_UNIT),c("ENA_UNIT",private$units.by,private$trajectory.by, metaAvail),,with=F];
+        raw.meta = self$raw[!duplicated(ENA_UNIT)][ENA_UNIT %in% unique(self$accumulated.adjacency.vectors$ENA_UNIT),c("ENA_UNIT",private$units.by,private$conversations.by, metaAvail),,with=F];
 
         df.to.return = NULL;
         if(merge == T) {
@@ -271,7 +271,7 @@ ENAdata = R6::R6Class("ENAdata", public = list(
 
       self$units = self$adjacency.vectors[,private$units.by, with=F];
 
-      if(is.null(private$trajectory.by)) {
+      if(!self$model %in% c("AccumulatedTrajectory","SeparateTrajectory")) {
         self$unit.names <- self$adjacency.vectors$ENA_UNIT;
       } else {
         self$trajectories$units <- self$units;

@@ -40,8 +40,10 @@ accumulate.data <- function(enadata) {
   #       get rid of `trajectory.type`
   ###
   if(enadata$model == "AccumulatedTrajectory") {
+    trajectory.by = conversations.by
     trajectory.type <- "accumulated";
   } else if(enadata$model == "SeparateTrajectory") {
+    trajectory.by = conversations.by
     trajectory.type <- "non-accumulated";
   }
 
