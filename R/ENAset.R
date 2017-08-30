@@ -381,8 +381,8 @@ ENAset = R6::R6Class("ENAset",
       ###
       # Backup of ENA data, this is not touched again.
       ###
-      private$data.original = df[,grep("adjacency.code", colnames(df)), with=F]
-
+      #private$data.original = df[,grep("adjacency.code", colnames(df)), with=F];
+      private$data.original = df;
       ###
       # Copy of the original data, this is used for all
       # further operations. Unlike, `data.original`, this
@@ -438,23 +438,14 @@ ENAset = R6::R6Class("ENAset",
 
       colnames(self$points.normed.centered) = codeNames_tri;
       rownames(self$points.normed.centered) = rownames(df);
-      attr(self$points.normed.centered, rENA::opts$UNIT_NAMES) = attr(self$line.weights, rENA::opts$UNIT_NAMES)
+      #attr(self$points.normed.centered, rENA::opts$UNIT_NAMES) = attr(self$line.weights, rENA::opts$UNIT_NAMES)
+      attr(self$points.normed.centered, rENA::opts$UNIT_NAMES) = attr(self$enadata$adjacency.vectors.raw, rENA::opts$UNIT_NAMES)
       ###
 
       ###
       # Means Rotations
       ###
 
-      #######NEW ROTATION FUNCTION
-
-      ### FOR TESTING
-      # rotation.by = list(
-      #   c(FUN = "ena.rotate.by.mean", list("Condition" = c("A","B"), "group" = c("1","2"))),
-      #   c(FUN = "orthogonal.svd")
-      # )
-      #print(df.set$line.weights)
-      # ### END TESTING CODE
-      #
       # if no rotation set provided, construct one using the parameters in rotation.by
 
        # if(is.null(self$rotation)) {

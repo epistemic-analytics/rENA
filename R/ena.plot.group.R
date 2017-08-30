@@ -19,11 +19,7 @@
 #' @param unit.size change size of unit label
 #' @param unit.size.multiplier Change size multiplier of unit labels
 #' @param show.confidence.interval Show confidence intervals of a unit
-#' @param group [TBD]
 #' @param method [TBD]
-#' @param group.labels [TBD]
-#' @param group.labels.colors [TBD]
-#' @param group.size [TBD]
 #' @param ... Additional parameters addressed in inner function
 #'
 #' @keywords ENA, plot, set
@@ -48,109 +44,150 @@ ena.plot.group <- function(
   color = "black",
   shape = c("square", "triangle", "diamond", "circle"),
 
-  show.confidence.interval = T,
-  show.outlier.interval = F,
+  confidence.interval = c("none", "crosshairs", "box"),
+  outlier.interval = c("none", "crosshairs", "box"),
+
+  label.offset = NULL,
 
   label.font.size = enaplot$font.size,
   label.font.color = enaplot$font.color,
   label.font.family = enaplot$font.family,
-
-  ###OLD - to be removed
-  group = NULL,
-  group.values = as.character(t(unique(data[,c(group),with=F]))),
-
   ...
 ) {
+
+
+  confidence.interval = match.arg(confidence.interval);
+  outlier.interval = match.arg(outlier.interval);
+  ### problem if outlier and confidence intervals selected for crosshair
+  if(confidence.interval == "crosshair" && outlier.interval == "crosshair") {
+    print("Confidence Interval and Outlier Interval cannot both be crosshair");
+    print("Plotting Outlier Interval as box");
+    outlier.interval = "box";
+  }
 
   shape = match.arg(shape);
 
   size = 5;
 
-  ###maybe not needed
-  units = unique(enaplot$enaset$enadata$get("units"));
-  trajectory.by = enaplot$enaset$enadata$get("trajectory.by");
-  ###
+  text.info = list(
+    family = label.font.family,
+    size = label.font.size,
+    color = label.font.color
+  )
 
-  ### is there a purpose for this?
-  data = enaplot$enaset$get.data("rotated",with.meta=T);
-
+  #### should we plot mean for all points if points not provided?
   if(is.null(points)) points = enaplot$enaset$points.rotated;
-  #dfDT = data[ENA_UNIT %in% units];
+  colnames(points) = c("V1", "V2");
 
   ### save raw points for later calculations of confidence/outlier intervals
   points.raw = points;
 
+  ### if group more than one row, combine to mean
+  if(nrow(points) > 1) {
+    points = colMeans(points);
+    dfDT.points = data.table("V1" = points[1], "V2" = points[2]);
+  } else {
+    dfDT.points = data.table("V1" = points[,1], "V2" = points[,2]);
+  }
+  group.layout = data.frame(dfDT.points);
 
-  ### TRAJECTORY PLOT
-  if(!is.null(trajectory.by)) {
-    ### FOR TESTING
-    print("GROUP MEAN TRAJECTORY");
+  ### INTERVAL CALCULATIONS
+  error = NULL;
+  lines = list();
 
-    unit.colors = sapply(1:nrow(data), function(x) {
-      default.colors[which(group.values == unlist(data[x,c(group),with=F]))]
-    })
+  if(show.confidence.interval == "crosshair") {
+    ci.x = t.test(points.raw, conf.level = .95)$conf.int[1];
+    ci.y = t.test(points.raw, conf.level = .95)$conf.int[2];
+    error = list(
+      x = list(type = "data", array = ci.x),
+      y = list(type = "data", array = ci.y)
+    )
+  } else if(show.outlier.interval == "crosshair") {
+    oi.x = IQR(points.raw$V1) * 1.5;
+    oi.y = IQR(points.raw$V2) * 1.5;
+    error = list(
+      x = list(type = "data", array = oi.x),
+      y = list(type = "data", array = oi.y)
+    )
+  }
 
-    dfDT.groups = dfDT[,lapply(.SD,get(method)),by=group,.SDcols=c("V1","V2")];
-    dfDT.groups$ENA_UNIT = dfDT.groups$name = dfDT.groups[,c(group),with=F]
-    dfDT = data.table::rbindlist(list(dfDT,dfDT.groups), fill=T)
+  if(show.confidence.interval == "box") {
 
-    unit.colors = c(unit.colors, default.colors[1:length(group.values)]);
+    conf.ints = t.test(points.raw, conf.level = .95)$conf.int;
+    dfDT.points[,c("ci.x", "ci.y") := .(conf.ints[1], conf.ints[2])]
 
-    dfDT.trajs = dfDT[,{ data.table::data.table(lines = list(.SD))  } ,by=ENA_UNIT]
+    #add cols for coordinates of CI lines
+    dfDT.points[, c("ci.x1", "ci.x2", "ci.y1", "ci.y2") := .(V1 - ci.x, V1 + ci.x, V2 - ci.y, V2 + ci.y)]
 
-    for(x in 1:nrow(dfDT.trajs)) {
-      toPlot = unique(colnames(dfDT.trajs[x][[2]][[1]]))
-      enaplot$plot %<>% plotly::add_trace(
-        data = dfDT.trajs[x][[2]][[1]][,toPlot,with=FALSE],
-        x = ~V1, y = ~V2,
-        name = dfDT.trajs[x][[1]],
-        mode = "lines+markers",
-        text = dfDT.trajs[x][[2]][[1]]$TRAJ_UNIT,
-        hoverinfo = "text+x+y"
-      )
-    }
-    enaplot$plot %<>% plotly::hide_legend();
+    lines.CI = apply(dfDT.points,1,function(x) {
+      list(
+        "type" = "square",
+        "line" = list(
+          width = 1,
+          color = color,
+          dash="dash"
+        ),
+        "xref" = "x",
+        "yref" = "y",
+        "x0" = x[['ci.x1']],
+        "x1" = x[['ci.x2']],
+        "y0" = x[['ci.y1']],
+        "y1" = x[['ci.y2']]
+      );
+    });
+    lines = lines.CI;
+  }
+  if(show.outlier.interval == "box") {
 
-    return(enaplot);
-  } else {     #### NON-TRAJECTORY PLOT
-    print(points)
-    ### if group more than one row, combine to mean
-    if(nrow(points) > 1) {
-      points = colMeans(points);
-    }
-    print(points)
+    oi.x = IQR(points.raw$V1) * 1.5;
+    oi.y = IQR(points.raw$V2) * 1.5;
 
-    #calculate CI's
-    if(show.confidence.interval == T) {
+    dfDT.points[,c("oi.x", "oi.y") := .(oi.x, oi.y)]
 
-      conf.ints = points.raw[, { cis = t.test(.SD)$conf.int; data.table::data.table(ci.x=cis[1], ci.y=cis[2]) },,.SDcols=c("V1","V2")]
-      dfDT.points = merge(points, conf.ints);
-      dfDT.points[, c("ci.x1", "ci.x2", "ci.y1", "ci.y2") := .(V1 - ci.x, V1 + ci.x, V2 - ci.y, V2 + ci.y)]
+    #add cols for coordinates of CI lines
+    dfDT.points[, c("oi.x1", "oi.x2", "oi.y1", "oi.y2") := .(V1 - oi.x, V1 + oi.x, V2 - oi.y, V2 + oi.y)]
 
-      lines = apply(dfDT.points,1,function(x) {
-        list(
-          "type" = "square",
-          "line" = list(
-            width = 1,
-            color = default.colors[which(group.values == x[[group]])],
-            dash="dash"
-          ),
-          "xref" = "x",
-          "yref" = "y",
-          "x0" = x[['ci.x1']],
-          "x1" = x[['ci.x2']],
-          "y0" = x[['ci.y1']],
-          "y1" = x[['ci.y2']]
-        );
-      });
-    }
-    if(show.outlier.interval == T) {
-      ###calculate outlier intervals
+    lines.OI = apply(dfDT.points,1,function(x) {
+      list(
+        "type" = "square",
+        "line" = list(
+          width = 1,
+          color = color,
+          dash="dash"
+        ),
+        "xref" = "x",
+        "yref" = "y",
+        "x0" = x[['oi.x1']],
+        "x1" = x[['oi.x2']],
+        "y0" = x[['oi.y1']],
+        "y1" = x[['oi.y2']]
+      );
+    });
 
-    }
+    lines = c(lines, lines.OI);
+  }
 
-    group.layout = data.frame(dfDT);
 
+  if(!is.null(error)) {
+    #plot group w/ crosshair error bars
+    enaplot$plot %<>% plotly::add_trace(
+      data = group.layout,
+      type="scatter",
+      x = ~V1, y = ~V2,
+      mode="markers",
+      marker = list(
+        symbol =  shape,
+        color = color,
+        size = size
+      ),
+      error_x = error$x,
+      error_y = error$y,
+      showlegend = F,
+      text = label,
+      hoverinfo = "text+x+y"
+    )
+  } else {
+    #plot group w/o crosshair error bars
     enaplot$plot %<>% plotly::add_trace(
       data = group.layout,
       type="scatter",
@@ -163,16 +200,29 @@ ena.plot.group <- function(
         size = size
       ),
       showlegend = F,
-      #text = ~name,
+      text = label,
       hoverinfo = "text+x+y"
     )
-
-    ### plot CI's
-    enaplot$plot %<>% plotly::layout(
-      shapes = lines
-    )
-
   }
+
+  ##### WEIGHTING OFFSET
+  if(is.null(label.offset)) { label.offset = c(.05,.05) }
+  else label.offset = c(label.offset[1] * 0.1, label.offset[2] * 0.1)
+
+  enaplot$plot %<>% plotly::add_annotations( x = group.layout$V1[1] + label.offset[1],
+                                             y = group.layout$V2[1] + label.offset[2],
+                                             text = label,
+                                             font = text.info,
+                                             xref = "x",
+                                             yref = "y",
+                                             ax = label.offset[1],
+                                             ay = label.offset[2],
+                                             #xanchor = "left",
+                                             showarrow = F);
+  enaplot$plot %<>% plotly::layout(
+    shapes = lines
+    #annotations = label.info
+  )
 
   return(enaplot);
 }
