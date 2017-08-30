@@ -22,9 +22,6 @@ ena.plot.points = function(
 
 ) {
 
-  dfDT = points;
-
-  ### TEST
   if(!is.character(label.font.family)) {
     label.font.size = enaplot$get("font.family");
   }
@@ -43,7 +40,7 @@ ena.plot.points = function(
   network.graph.axis.x = network.graph.axis.y = network.graph.axis;
   #####
 
-  points.layout = data.frame(dfDT);
+  points.layout = data.frame(points);
 
   if(length(colors) == 1) {
     colors = rep(colors, nrow(points.layout))

@@ -16,10 +16,12 @@ ena.plot <- function(
 
   font.size = 10,
   font.color = "000000",
-  font.family = "Arial",
+  font.family = c("Arial", "Courier New", "Times New Roman"),
 
   ...
 ) {
+
+  font.family = match.arg(font.family);
 
   plot = ENAplot$new(enaset,
                      title,

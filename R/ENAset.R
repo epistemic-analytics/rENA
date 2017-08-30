@@ -65,17 +65,12 @@ ENAset = R6::R6Class("ENAset",
       #private$samples <- samples;
       #private$inPar <- inPar;
 
-      ### new rotation properties
-
       #old rotation properties
       private$set.seed <- set.seed;
 
       private$rotate.means <- rotate.means;
       private$rotate.means.by <- rotate.means.by;
       ###
-
-      #CHECK FORMAT
-      #self$unit.names <- as.matrix(enadata$adjacency.vectors[,1])[,1];
 
       self$codes <- enadata$codes;
 
