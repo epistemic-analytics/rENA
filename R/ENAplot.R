@@ -41,7 +41,7 @@ ENAplot = R6::R6Class("ENAplot",
         ...
       ) {
         args = list(...);
-        if(args$multiplier) {
+        if(!is.null(args$multiplier)) {
           private$multiplier = args$multiplier
         }
         self$enaset <- enaset;
@@ -62,8 +62,6 @@ ENAplot = R6::R6Class("ENAplot",
           color = private$font.color,
           family = private$font.family
         );
-
-        private$multiplier <- multiplier;
 
         self$plot <- plotly::plot_ly(
           mode = "markers",
