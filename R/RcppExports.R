@@ -105,8 +105,8 @@ merge_columns_c <- function(df, cols, sep = ".") {
 #' FIXME Delete this function
 NULL
 
-rows_to_co_occurrences <- function(df) {
-    .Call('rENA_rows_to_co_occurrences', PACKAGE = 'rENA', df)
+rows_to_co_occurrences <- function(df, binary = TRUE) {
+    .Call('rENA_rows_to_co_occurrences', PACKAGE = 'rENA', df, binary)
 }
 
 #' @title ref_window_df

@@ -48,7 +48,7 @@ NumericVector vector_to_ut2(NumericVector v) {
 }
 
 // [[Rcpp::export]]
-arma::mat rows_to_co_occurrences(DataFrame df) {
+arma::mat rows_to_co_occurrences(DataFrame df, bool binary = true) {
   int dfRows = df.nrows();
   int dfCols = df.size();
   int numCoOccurences = ( (dfCols * (dfCols + 1)) / 2) - dfCols;
@@ -61,6 +61,10 @@ arma::mat rows_to_co_occurrences(DataFrame df) {
   arma::mat df_CoOccurred(dfRows, numCoOccurences, fill::zeros);
   for(int row = 0; row < dfRows; row++) {
     df_CoOccurred.row(row) = vector_to_ut(df_AsMatrix2.row(row));
+  }
+
+  if(binary == true) {
+    df_CoOccurred.elem( find(df_CoOccurred > 0) ).ones();
   }
 
   return df_CoOccurred;

@@ -20,19 +20,18 @@ ena.plot <- function(
 
   ...
 ) {
-
   plot = ENAplot$new(enaset,
-                     title,
-                     dimensions,
-                     dimension.labels,
-                     dimension.show.variance,
-                     end.points,
-                     flip.axis.x,
-                     flip.axis.y,
-                     font.size,
-                     font.color,
-                     font.family
-                     );
-
+           title = title,
+           dimensions = dimensions,
+           dimension.labels = dimension.labels,
+           dimension.show.variance = dimension.show.variance,
+           end.points = end.points,
+           flip.axis.x = flip.axis.x,
+           flip.axis.y = flip.axis.y,
+           font.size = font.size,
+           font.color = font.color,
+           font.family = font.family,
+           ...
+  );
   return(plot);
 }

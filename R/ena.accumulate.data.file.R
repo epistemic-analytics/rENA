@@ -63,6 +63,8 @@ ena.accumulate.data.file <- function(
 
   weight.by = "binary",
 
+  binary.stanzas = F,
+
   mask = NULL,
 
   ### PARAMS NOT IN SPECS
