@@ -14,6 +14,20 @@ df.accum = ena.accumulate.data.file(
 
 df.set.lws = ena.make.set(df.accum, position.method = lws.positions.es);
 
+##### TESTING PLOT.GROUP
+group1.points = df.set.lws$points.rotated[df.set.lws$enadata$units$Condition == "FirstGame",]
+
+##### FOR TESTING ALREADY MEANED GROUP
+#group.points = colMeans(group.points)
+#group.points = data.frame("V1" = group.points[1], "V2" = group.points[2])
+
+df.plot <- ena.plot(df.set.lws);
+df.plot %<>% ena.plot.points(points = data.frame(group1.points));
+df.plot %<>% ena.plot.group(group1.points, color = "blue", label = "First Game Mean", show.confidence.interval = T);
+
+
+#####
+
 df.accum.traj = ena.accumulate.data.file(
   df.file,
   units.by = c("UserName","Condition"),

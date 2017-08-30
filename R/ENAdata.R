@@ -267,33 +267,17 @@ ENAdata = R6::R6Class("ENAdata", public = list(
 
       self %<>% accumulate.data();
 
-      #print(self$adjacency.vectors);
-
       self$units = self$adjacency.vectors[,private$units.by, with=F];
 
       if(!self$model %in% c("AccumulatedTrajectory","SeparateTrajectory")) {
         self$unit.names <- self$adjacency.vectors$ENA_UNIT;
       } else {
         self$trajectories$units <- self$units;
-        #self$units = unique(self$units);
-
-        #### ISSUE WHEN CONVERSATIONS.BY MORE THAN 1 COL
         conversation = self$adjacency.vectors[,private$conversations.by, with=F];
-
-        #print(conversation)
-        #print(df_DT)
-
         self$trajectories$step <- conversation;
         self$units <- cbind(self$units, conversation);
 
-        #print(self$adjacency.vectors$TRAJ_UNIT);
-        #print(self$adjacency.vectors);
-
-        #if(is.null(self$adjacency.vectors$TRAJ_UNIT)) {
-        #self$unit.names <- paste(self$adjacency.vectors$ENA_UNIT, unique(conversation), sep = ".");
-        #} else {
         self$unit.names <- paste(self$adjacency.vectors$ENA_UNIT, self$adjacency.vectors$TRAJ_UNIT, sep = ".");
-        #}
 
       }
 
@@ -308,20 +292,16 @@ ENAdata = R6::R6Class("ENAdata", public = list(
         self$adjacency.vectors[,c(adjCols),with=F] *
         rep(private$mask[upper.tri(private$mask)], rep(nrow(self$adjacency.vectors),length(adjCols)))
 
-      #private$mask = upper.tri(as.matrix(self$adjacency.vectors))
-
-      # If weighted (not binary) and correction specified, invoke correction --- OLD VERSION
-      # if(private$binary == F & !is.null(private$correction)) {
-      #   cols = colnames(self$adjacency.vectors)[grep("adjacency.code", colnames(self$adjacency.vectors))];
-      #   self$adjacency.vectors[, (cols) := lapply(.SD, private$correction), .SDcols = cols];
-      # }
-      #### NEW VERSION
       if(is.function(private$weight.by)) {
         cols = colnames(self$adjacency.vectors)[grep("adjacency.code", colnames(self$adjacency.vectors))];
         self$adjacency.vectors[, (cols) := lapply(.SD, private$weight.by), .SDcols = cols];
       }
 
       self$metadata = self$add.metadata(merge = F);
+
+      ### remove non-adjacency vector columns from adj.vecs
+      ####### idea: if those cols are needed later - use adjacency.vectors.raw
+      self$adjacency.vectors = self$adjacency.vectors[,grep("adjacency.code", colnames(self$adjacency.vectors)), with=F]
 
       return(self);
     }

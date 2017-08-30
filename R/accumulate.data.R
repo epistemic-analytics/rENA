@@ -1,12 +1,11 @@
 accumulate.data <- function(enadata) {
   dfDT = enadata$raw;
 
-  units.used = enadata$get("units.used"); ###new - replaces old "units"     #### THIS IS ACTUAL UNITS TO USE
+  units.used = enadata$get("units.used"); ###new - replaces old "units"
   units.by = enadata$get("units.by"); ### COLUMNS TO BE COMBINED TO FORM ENA_UNIT
 
   trajectory.by = enadata$get("trajectory.by");
 
-  #### FIX FOR ISSUE - codes given as vector for accum.data.file but is a df for accum.data
   codes = enadata$codes;
   if(is.data.frame(codes)) {
     codes = colnames(codes);
