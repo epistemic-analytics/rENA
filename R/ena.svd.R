@@ -1,5 +1,8 @@
 ###
-#'
+#' @title ENA SVD
+#' @description ENA method for rotation using SVD
+#' @param self [TBD]
+#' @param ... [TBD]
 #' @export
 ###
 ena.svd <- function(self, ...) {

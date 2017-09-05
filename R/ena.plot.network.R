@@ -95,12 +95,17 @@ ena.plot.network = function(
   if(show.all.nodes == F) {
     nodes = nodes[rownames(nodes) %in% unique(as.character(sapply(network.edges.shapes, "[[", "nodes"))), ]
   }
+  mode = "markers+text"
+  if(!is.null(args$labels.hide) && args$labels.hide == T) {
+    mode="markers"
+  }
   nodes$weight = scales::rescale((nodes$weight * (1 / max(abs(nodes$weight)))), node.size) # * enaplot$get("multiplier"));
-  enaplot$plot %<>% plotly::add_trace(
+  enaplot$plot = plotly::add_trace(
+    enaplot$plot,
     data = nodes,
     x = ~X1,
     y = ~X2,
-    mode = "markers",
+    mode = mode,
     textposition = 'middle right',
     marker = list(
       color = "#000000",
@@ -110,7 +115,8 @@ ena.plot.network = function(
     text = rownames(nodes),
     hoverinfo = 'none'
   );
-  enaplot$plot %<>% plotly::layout(
+  enaplot$plot = plotly::layout(
+    enaplot$plot,
     title =  enaplot$title,
     shapes = network.edges.shapes,
     showlegend = F

@@ -8,18 +8,16 @@
 #' @export
 #'
 #' @param enaplot \code{\link{ENAplot}} used to generate the plot
-#' @param plot.title Title of the plot
-#' @param plot.mode [TBD]
-#' @param plot.color Color of the plot
-
-#' @param multiplier Size multiplier for the plot
-
-#' @param unit.colors Color of units
-
-#' @param unit.size change size of unit label
-#' @param unit.size.multiplier Change size multiplier of unit labels
-#' @param show.confidence.interval Show confidence intervals of a unit
-#' @param method [TBD]
+#' @param confidence.interval Show confidence intervals of a unit
+#' @param points [TBD]
+#' @param color [TBD]
+#' @param shape [TBD]
+#' @param outlier.interval [TBD]
+#' @param label [TBD]
+#' @param label.offset [TBD]
+#' @param label.font.size [TBD]
+#' @param label.font.color [TBD]
+#' @param label.font.family [TBD]
 #' @param ... Additional parameters addressed in inner function
 #'
 #' @keywords ENA, plot, set
@@ -54,7 +52,6 @@ ena.plot.group <- function(
   label.font.family = enaplot$font.family,
   ...
 ) {
-
 
   confidence.interval = match.arg(confidence.interval);
   outlier.interval = match.arg(outlier.interval);
@@ -95,14 +92,14 @@ ena.plot.group <- function(
   error = NULL;
   lines = list();
 
-  if(show.confidence.interval == "crosshair") {
+  if(confidence.interval == "crosshair") {
     ci.x = t.test(points.raw, conf.level = .95)$conf.int[1];
     ci.y = t.test(points.raw, conf.level = .95)$conf.int[2];
     error = list(
       x = list(type = "data", array = ci.x),
       y = list(type = "data", array = ci.y)
     )
-  } else if(show.outlier.interval == "crosshair") {
+  } else if(outlier.interval == "crosshair") {
     oi.x = IQR(points.raw$V1) * 1.5;
     oi.y = IQR(points.raw$V2) * 1.5;
     error = list(
@@ -111,7 +108,7 @@ ena.plot.group <- function(
     )
   }
 
-  if(show.confidence.interval == "box") {
+  if(confidence.interval == "box") {
 
     conf.ints = t.test(points.raw, conf.level = .95)$conf.int;
     dfDT.points[,c("ci.x", "ci.y") := .(conf.ints[1], conf.ints[2])]
@@ -137,7 +134,7 @@ ena.plot.group <- function(
     });
     lines = lines.CI;
   }
-  if(show.outlier.interval == "box") {
+  if(outlier.interval == "box") {
 
     oi.x = IQR(points.raw$V1) * 1.5;
     oi.y = IQR(points.raw$V2) * 1.5;
@@ -170,7 +167,8 @@ ena.plot.group <- function(
 
   if(!is.null(error)) {
     #plot group w/ crosshair error bars
-    enaplot$plot %<>% plotly::add_trace(
+    enaplot$plot = plotly::add_trace(
+      enaplot$plot,
       data = group.layout,
       type="scatter",
       x = ~V1, y = ~V2,
@@ -188,7 +186,8 @@ ena.plot.group <- function(
     )
   } else {
     #plot group w/o crosshair error bars
-    enaplot$plot %<>% plotly::add_trace(
+    enaplot$plot = plotly::add_trace(
+      enaplot$plot,
       data = group.layout,
       type="scatter",
       x = ~V1, y = ~V2,
@@ -209,17 +208,22 @@ ena.plot.group <- function(
   if(is.null(label.offset)) { label.offset = c(.05,.05) }
   else label.offset = c(label.offset[1] * 0.1, label.offset[2] * 0.1)
 
-  enaplot$plot %<>% plotly::add_annotations( x = group.layout$V1[1] + label.offset[1],
-                                             y = group.layout$V2[1] + label.offset[2],
-                                             text = label,
-                                             font = text.info,
-                                             xref = "x",
-                                             yref = "y",
-                                             ax = label.offset[1],
-                                             ay = label.offset[2],
-                                             #xanchor = "left",
-                                             showarrow = F);
-  enaplot$plot %<>% plotly::layout(
+  enaplot$plot = plotly::add_annotations(
+    enaplot$plot,
+    x = group.layout$V1[1] + label.offset[1],
+    y = group.layout$V2[1] + label.offset[2],
+    text = label,
+    font = text.info,
+    xref = "x",
+    yref = "y",
+    ax = label.offset[1],
+    ay = label.offset[2],
+    #xanchor = "left",
+    showarrow = F
+  );
+
+  enaplot$plot = plotly::layout(
+    enaplot$plot,
     shapes = lines
     #annotations = label.info
   )

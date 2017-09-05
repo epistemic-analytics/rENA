@@ -13,7 +13,7 @@
 # @param binary Logical, whether to convert code values to binary or allow for weigthed values
 # @param unitsSelected deprecated
 #
-#' @section Public ENARotationSet methods:
+# @section Public ENARotationSet methods:
 #######
 ENARotationSet = R6::R6Class("ENARotationSet",
   public = list(

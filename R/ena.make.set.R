@@ -8,21 +8,14 @@
 #' @export
 #'
 #' @param enadata \code{\link{ENAdata}} that will be used to generate an ENA set
-#' @param dims Number of dimensions to be in the set
-#' @param samples [TBD]
-#' @param inPar [TBD]
-#' @param codeColumns Number of columns of codes in the ENA set
-#' @param binary [TBD]
-#' @param correction [TBD]
-#' @param sphere.norm [TBD]
-#' @param center.data [TBD]
-#' @param optim.method [TBD]
-#' @param position.method [TBD]
+#' @param dimensions Number of dimensions to be in the set
+#' @param norm.by [TBD]
+#' @param rotation.by [TBD]
+#' @param rotation.params [TBD]
+#' @param rotation.set [TBD]
+#' @param endpoints.only [TBD]
+#' @param node.position.method [TBD]
 #' @param check.unique.positions [TBD]
-#' @param set.seed [TBD]
-#' @param rotate.means [TBD]
-#' @param rotate.means.by [TBD]
-#' @param output [TBD]
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords ENA, generate, set
@@ -64,11 +57,11 @@ ena.make.set <- function(
 
   ### what to do with these 2?
   check.unique.positions=F,
-  set.seed = F,
+  # set.seed = F,
 
   ### leaving for now so testing can occur w/o errors
-  rotate.means = F,
-  rotate.means.by = NULL,
+  # rotate.means = F,
+  # rotate.means.by = NULL,
   #
 
   ### NO LONGER BEING INCLUDED
@@ -81,9 +74,6 @@ ena.make.set <- function(
     enadata = enadata,
 
     dimensions = dimensions,
-
-    norm.by = norm.by,
-
     rotation.by = rotation.by,
     rotation.params = rotation.params,
     rotation.set = rotation.set,
@@ -93,9 +83,9 @@ ena.make.set <- function(
     endpoints.only = endpoints.only,
 
     #### TO BE REMOVED
-    set.seed = set.seed,
-    rotate.means = rotate.means,
-    rotate.means.by = rotate.means.by,
+    # set.seed = set.seed,
+    # rotate.means = rotate.means,
+    # rotate.means.by = rotate.means.by,
     ####
 
     ...

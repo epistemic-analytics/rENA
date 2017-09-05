@@ -265,7 +265,7 @@ ENAdata = R6::R6Class("ENAdata", public = list(
       self$raw = df_DT;
       self$raw$ENA_UNIT = merge_columns_c(self$raw,private$units.by);
 
-      self %<>% accumulate.data();
+      self = accumulate.data(self);
 
       self$units = self$adjacency.vectors[,private$units.by, with=F];
 

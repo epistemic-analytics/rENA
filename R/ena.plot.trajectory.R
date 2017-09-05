@@ -52,7 +52,8 @@ ena.plot.trajectory = function(
 
   for(x in 1:nrow(dfDT.trajs)) {
     #toPlot = unique(colnames(dfDT.trajs[x]$lines[[1]]))
-    enaplot$plot %<>% plotly::add_trace(
+    enaplot$plot = plotly::add_trace(
+      enaplot$plot,
       data = dfDT.trajs[x]$lines[[1]],
       x = ~V1, y = ~V2,
       name = as.character(names[x]), #dfDT.trajs[x]$lines[[1]]$labels,

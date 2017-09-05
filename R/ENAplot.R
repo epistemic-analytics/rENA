@@ -84,7 +84,8 @@ ENAplot = R6::R6Class("ENAplot",
 
         graph.axis.y = graph.axis
         graph.axis.y$title = dimension.labels[2];
-        self$plot %<>% plotly::layout(
+        self$plot = plotly::layout(
+          self$plot,
           title =  title,
           xaxis = graph.axis.x,
           yaxis = graph.axis.y

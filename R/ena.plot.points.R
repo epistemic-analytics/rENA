@@ -49,8 +49,8 @@ ena.plot.points = function(
     colors = rep(colors, nrow(points.layout))
   }
 
-  enaplot$plot %<>% plotly::add_data(points.layout)
-  enaplot$plot %<>% plotly::add_trace(x = ~X1, y = ~X2, data = points.layout,
+  enaplot$plot = plotly::add_data(enaplot$plot, points.layout)
+  enaplot$plot = plotly::add_trace(enaplot$plot, x = ~X1, y = ~X2, data = points.layout,
                                       mode = "markers", type = "scatter",
                                       marker = list(
                                         symbol = shape,
@@ -65,10 +65,10 @@ ena.plot.points = function(
     if(is.null(label.offset)) { label.offset = c(.05,.05) }
     else label.offset = c(label.offset[1] * 0.1, label.offset[2] * 0.1)
 
-    enaplot$plot %<>% plotly::add_annotations( x = points.layout$V1 + label.offset[,1],
-                                               y = group.layout$V2 + label.offset[,2],
+    enaplot$plot = plotly::add_annotations( enaplot$plot, x = points.layout$V1 + label.offset[,1],
+                                               y = points.layout$V2 + label.offset[,2],
                                                text = labels,
-                                               font = text.info,
+                                               # font = text.info,
                                                xref = "x",
                                                yref = "y",
                                                ax = label.offset[1],
@@ -78,7 +78,8 @@ ena.plot.points = function(
 
   #enaplot$plot %<>% plotly::hide_legend();
 
-  enaplot$plot %<>% plotly::layout(
+  enaplot$plot = plotly::layout(
+    enaplot$plot,
     title = enaplot$plot.title,
     #### do these 2 lines do anything?
     xaxis = network.graph.axis.x,
