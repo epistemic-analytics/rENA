@@ -15,10 +15,11 @@
 #' @param window.size.back Number of lines back to include window in stanza
 #' @param window.size.forward Number of lines forward in stanza window
 #' @param binary [TBD]
-#' @param correction [TBD]
-#' @param trajectory.type [TBD]
-#' @param output ENAdata object or JSON string. Default: ENAdata
-#' @param output.fields Fields to be included in JSON output
+#' @param model [TBD]
+#' @param window [TBD]
+#' @param weight.by [TBD]
+#' @param binary.stanzas [TBD]
+#' @param mask [TBD]
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords data, accumulate

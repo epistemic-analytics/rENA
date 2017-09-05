@@ -9,21 +9,18 @@
 #' @export
 #'
 #' @param enaset ENAset (optional)
-#' @param points matrix (optional)
 #' @param by vector to segment data using
 #' @param method Function referance
 #'
 #' @keywords ENA, set, group
-#'
-#' @seealso
-#'
+#'#'
 #' @examples
 #' \dontrun{
 #' #Given an \code{\link{ENAset}}
 #' ena.group(\code{\link{ENAset}})
 #' }
 #'
-#' @return \code{\link{dataframe}}
+#' @return \code{\link{data.frame}}
 ##
 ena.group <- function(
   enaset = NULL,   #ENAset object to form groups from

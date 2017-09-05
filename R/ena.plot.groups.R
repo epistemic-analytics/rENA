@@ -8,22 +8,21 @@
 #' @export
 #'
 #' @param enaplot \code{\link{ENAplot}} used to generate the plot
-#' @param plot.title Title of the plot
-#' @param plot.mode [TBD]
-#' @param plot.color Color of the plot
-
 #' @param multiplier Size multiplier for the plot
-
-#' @param unit.colors Color of units
-
-#' @param unit.size change size of unit label
-#' @param unit.size.multiplier Change size multiplier of unit labels
+#' @param show.outlier.interval [TBD]
 #' @param show.confidence.interval Show confidence intervals of a unit
 #' @param group [TBD]
 #' @param method [TBD]
 #' @param group.labels [TBD]
-#' @param group.labels.colors [TBD]
 #' @param group.size [TBD]
+#' @param points [TBD]
+#' @param label [TBD]
+#' @param colors [TBD]
+#' @param shape [TBD]
+#' @param label.font.size [TBD]
+#' @param label.font.color [TBD]
+#' @param label.font.family [TBD]
+#' @param group.values [TBD]
 #' @param ... Additional parameters addressed in inner function
 #'
 #' @keywords ENA, plot, set
@@ -66,14 +65,14 @@ ena.plot.groups <- function(
   group = NULL,
   group.values = as.character(t(unique(data[,c(group),with=F]))),
 
-  group.labels = names(groups),
+  group.labels = names(points),
   #group.labels.colors = rep(plot.color, length(group)),
 
-  group.size = unit.size,
+  group.size = 1,
   #group.size.multiplier = unit.size.multiplier,
 
   multiplier = 5,
-
+  method = mean,
   ...
 ) {
 
@@ -125,7 +124,8 @@ ena.plot.groups <- function(
 
     for(x in 1:nrow(dfDT.trajs)) {
       toPlot = unique(colnames(dfDT.trajs[x][[2]][[1]]))
-      enaplot$plot %<>% plotly::add_trace(
+      enaplot$plot = plotly::add_trace(
+        enaplot$plot,
         data = dfDT.trajs[x][[2]][[1]][,toPlot,with=FALSE],
         x = ~V1, y = ~V2,
         name = dfDT.trajs[x][[1]],
@@ -134,7 +134,7 @@ ena.plot.groups <- function(
         hoverinfo = "text+x+y"
       )
     }
-    enaplot$plot %<>% plotly::hide_legend();
+    enaplot$plot = plotly::hide_legend(enaplot$plot);
 
     return(enaplot);
   } else {     #### NON-TRAJECTORY PLOT
@@ -225,14 +225,15 @@ ena.plot.groups <- function(
     # }
 
     ### OLD VERSION - plot and color points and means - now used via plot.points instead of separately
-    enaplot$plot %<>% plotly::add_trace(
+    enaplot$plot = plotly::add_trace(
+      enaplot$plot,
       data = group.layout,
       type="scatter",
       x = ~V1, y = ~V2,
       mode="markers",
       marker = list(
         symbol =  shape,  #c(rep("circle",nrow(data)),rep("square", ifelse(!is.null(dfDT.groups), nrow(dfDT.groups), 0))),
-        color = color,
+        color = default.colors[which(group.values == x[[group]])],
         #size = c(rep(unit.size * unit.size.multiplier, nrow(data)), rep(group.size, ifelse(!is.null(dfDT.groups),nrow(dfDT.groups), 0)))
         size = size
       ),
@@ -242,8 +243,9 @@ ena.plot.groups <- function(
     )
 
     ### plot CI's
-    enaplot$plot %<>% plotly::layout(
-      title = plot.title,
+    enaplot$plot = plotly::layout(
+      enaplot$plot,
+      title = enaplot$get("title"),
       shapes = lines
     )
 

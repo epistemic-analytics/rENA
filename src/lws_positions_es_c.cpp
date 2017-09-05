@@ -87,6 +87,9 @@ double component_norm(MatrixXd w, VectorXd t, VectorXd x) {
 }
 
 //' @title Multiobjective, Component by Component, with Ellipsoidal Scaling
+//' @description [TBD]
+//' @param adjMats [TBD]
+//' @param t [TBD]
 // [[Rcpp::export]]
 Rcpp::List linderoth_pos_es(Eigen::MatrixXd adjMats, Eigen::MatrixXd t) { // = R_NilValue ) {
   int upperTriSize = adjMats.cols();

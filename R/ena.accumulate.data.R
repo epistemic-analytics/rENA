@@ -7,18 +7,17 @@
 #'
 #' @export
 #'
-#' @param file The csv file location or data.frame for the function
-#' @param units.by Columns to be used in the unit accumulation (list of column names)
 #' @param units Data frame of unit columns and values
-#' @param conversations.by Columns to be used in the conversation accumulation (list of column names)
 #' @param conversation NEW data frame of conversation columns w/ values
 #' @param codes Columns used based on codes
 #' @param window.size.back Number of lines back to include window in stanza
 #' @param window.size.forward Number of lines forward in stanza window
 #' @param binary [TBD]
-#' @param correction [TBD]
-#' @param trajectory.type [TBD]
-#' @param output [TBD]
+#' @param metadata [TBD]
+#' @param model [TBD]
+#' @param weight.by [TBD]
+#' @param window [TBD]
+#' @param mask [TBD]
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords data, accumulate
