@@ -95,14 +95,14 @@ ena.plot.group <- function(
   error = NULL;
   lines = list();
 
-  if(show.confidence.interval == "crosshair") {
+  if(confidence.interval == "crosshair") {
     ci.x = t.test(points.raw, conf.level = .95)$conf.int[1];
     ci.y = t.test(points.raw, conf.level = .95)$conf.int[2];
     error = list(
       x = list(type = "data", array = ci.x),
       y = list(type = "data", array = ci.y)
     )
-  } else if(show.outlier.interval == "crosshair") {
+  } else if(outlier.interval == "crosshair") {
     oi.x = IQR(points.raw$V1) * 1.5;
     oi.y = IQR(points.raw$V2) * 1.5;
     error = list(
@@ -111,7 +111,7 @@ ena.plot.group <- function(
     )
   }
 
-  if(show.confidence.interval == "box") {
+  if(confidence.interval == "box") {
 
     conf.ints = t.test(points.raw, conf.level = .95)$conf.int;
     dfDT.points[,c("ci.x", "ci.y") := .(conf.ints[1], conf.ints[2])]
@@ -137,7 +137,7 @@ ena.plot.group <- function(
     });
     lines = lines.CI;
   }
-  if(show.outlier.interval == "box") {
+  if(outlier.interval == "box") {
 
     oi.x = IQR(points.raw$V1) * 1.5;
     oi.y = IQR(points.raw$V2) * 1.5;

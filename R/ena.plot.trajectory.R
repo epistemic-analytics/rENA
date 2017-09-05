@@ -1,23 +1,16 @@
 ena.plot.trajectory = function(
   enaplot,
-
-  points = NULL,    #vector of unit names or row indices
-
+  points,    #dataframe of points
   by = NULL,
-
   labels = unique(enaplot$enaset$enadata$units),
+  names = NULL,
   label.offset = NULL,
-
   label.font.size = enaplot$get("font.size"),
   label.font.color = enaplot$get("font.color"),
   label.font.family = c("Arial", "Courier New", "Times New Roman"),
-
   shape = c("circle", "square", "triangle", "diamond"),
-  colors = rep(I("black"), nrow(enaplot$enaset$get.data("rotated", with.meta=T)))
-
+  colors = rep(I("black"), length(unique(by)))
 ) {
-
-  dfDT = enaplot$enaset$get.data("rotated", with.meta=T);
 
   if(!is.character(label.font.family)) {
     label.font.size = enaplot$get("font.family");
@@ -48,21 +41,30 @@ ena.plot.trajectory = function(
   network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T);
   network.graph.axis.x = network.graph.axis.y = network.graph.axis;
 
-  dfDT.trajs = dfDT[,{ data.table::data.table(lines = list(.SD))  } ,by=ENA_UNIT]
+  if(is.null(by)) {
+    by = rep(T, nrow(points));
+  }
+  if(!is(points, "data.table")) {
+    points = data.table::as.data.table(points);
+  }
+  tbl = cbind(points, labels)
+  dfDT.trajs = tbl[,{ data.table::data.table(lines = list(.SD))  } ,by=by]
 
   for(x in 1:nrow(dfDT.trajs)) {
-    toPlot = unique(colnames(dfDT.trajs[x][[2]][[1]]))
+    #toPlot = unique(colnames(dfDT.trajs[x]$lines[[1]]))
     enaplot$plot %<>% plotly::add_trace(
-      data = dfDT.trajs[x][[2]][[1]][,toPlot,with=FALSE],
+      data = dfDT.trajs[x]$lines[[1]],
       x = ~V1, y = ~V2,
-      name = dfDT.trajs[x][[1]],
-      mode = "lines+markers",
-      text = dfDT.trajs[x][[2]][[1]]$TRAJ_UNIT,
-      hoverinfo = "text+x+y"
+      name = as.character(names[x]), #dfDT.trajs[x]$lines[[1]]$labels,
+      mode = "lines+markers+text",
+      text = dfDT.trajs[x]$lines[[1]]$labels,
+      textposition = 'middle right',
+      hoverinfo = "x+y",
+      visible = "legendonly"
     )
   }
 
-  enaplot$plot %<>% plotly::hide_legend();
+  # enaplot$plot %<>% plotly::hide_legend();
 
 
   return(enaplot);

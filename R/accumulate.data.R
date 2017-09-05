@@ -39,8 +39,10 @@ accumulate.data <- function(enadata) {
   #       get rid of `trajectory.type`
   ###
   if(enadata$model == "AccumulatedTrajectory") {
+    trajectory.by = conversations.by
     trajectory.type <- "accumulated";
   } else if(enadata$model == "SeparateTrajectory") {
+    trajectory.by = conversations.by
     trajectory.type <- "non-accumulated";
   }
 
@@ -102,11 +104,11 @@ accumulate.data <- function(enadata) {
     # Convert each units converstation sums into adjacency vectors
     ###
     dfDT.co.occurrences = dfDT.conv.sum[,{
-      ocs = data.table::as.data.table(rows_to_co_occurrences(.SD[,.SD,.SDcols=codes, with=T]));
-      data.table::data.table(.SD,ocs)
-    },
-    .SDcols=c(codes, conversations.by, trajectory.by, units.by),
-    with=T
+        ocs = data.table::as.data.table(rows_to_co_occurrences(.SD[,.SD,.SDcols=codes, with=T], binary));
+        data.table::data.table(.SD,ocs)
+      },
+      .SDcols=c(codes, conversations.by, trajectory.by, units.by),
+      with=T
     ];
 
     ### Generate the ENA_UNIT column
@@ -122,7 +124,7 @@ accumulate.data <- function(enadata) {
                                      by=conversations.by,
                                      .SDcols=c(units.by, codes),
                                      with=T
-                                     ];
+                                  ];
     # dfDT.co.occurrences = dfDT_codes[,{
     #     ocs = ref_window_df(.SD, windowSize=window$back, windowForward=window$forward, binary = binary, binaryStanzas = binaryStanzas);
     #
