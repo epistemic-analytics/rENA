@@ -16,22 +16,25 @@ ena.plot <- function(
 
   font.size = 10,
   font.color = "000000",
-  font.family = "Arial",
+  font.family = c("Arial", "Courier New", "Times New Roman"),
 
   ...
 ) {
+
+  font.family = match.arg(font.family);
+
   plot = ENAplot$new(enaset,
-           title = title,
-           dimensions = dimensions,
-           dimension.labels = dimension.labels,
-           dimension.show.variance = dimension.show.variance,
-           end.points = end.points,
-           flip.axis.x = flip.axis.x,
-           flip.axis.y = flip.axis.y,
-           font.size = font.size,
-           font.color = font.color,
-           font.family = font.family,
-           ...
-  );
+                     title,
+                     dimensions,
+                     dimension.labels,
+                     dimension.show.variance,
+                     end.points,
+                     flip.axis.x,
+                     flip.axis.y,
+                     font.size,
+                     font.color,
+                     font.family
+                     );
+
   return(plot);
 }
