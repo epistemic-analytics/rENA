@@ -137,28 +137,34 @@ test_that("Test trajectories", {
   );
 
   # Test for expected accumulated value
-  expect_equal(df.accum$adjacency.vectors[Name == "J" & ActivityNumber == 3, adjacency.code.1],df.accum$accumulated.adjacency.vectors[Name == "J", sum(adjacency.code.1)]);
-  expect_equal(df.accum.sep$adjacency.vectors[Name == "J" & ActivityNumber == 3, adjacency.code.1],df.accum.sep$accumulated.adjacency.vectors[Name == "J", sum(adjacency.code.1)]);
+  testthat::expect_equal(
+    df.accum$adjacency.vectors[df.accum$units$Name=="J" & df.accum$units$ActivityNumber == 3, adjacency.code.1],
+    df.accum$accumulated.adjacency.vectors[Name == "J", sum(adjacency.code.1)]
+  );
+  testthat::expect_equal(
+    df.accum.sep$adjacency.vectors[df.accum$units$Name=="J" & df.accum$units$ActivityNumber == 3, adjacency.code.1],
+    df.accum.sep$accumulated.adjacency.vectors[Name == "J", sum(adjacency.code.1)]
+  );
 
   # Test for a value of 1 in the first accumulation of the trajectory of code 1
-  expect_true(sum(df.accum$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 1, adjacency.code.1]) == 1);
-  expect_true(sum(df.accum.sep$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 1, adjacency.code.1]) == 1);
+  testthat::expect_true(sum(df.accum$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 1, adjacency.code.1]) == 1);
+  testthat::expect_true(sum(df.accum.sep$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 1, adjacency.code.1]) == 1);
 
   # Test for a value of 0 in the second accumulation of the trajectory of code 1
-  expect_true(all(df.accum$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 2, adjacency.code.1] == 0));
-  expect_true(all(df.accum.sep$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 2, adjacency.code.1] == 0));
+  testthat::expect_true(all(df.accum$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 2, adjacency.code.1] == 0));
+  testthat::expect_true(all(df.accum.sep$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 2, adjacency.code.1] == 0));
 
   # Test that the first summed trajectory is 1
-  expect_equal(df.accum$adjacency.vectors[Name == "Z" & ActivityNumber == 1, adjacency.code.1], 1);
-  expect_equal(df.accum.sep$adjacency.vectors[Name == "Z" & ActivityNumber == 1, adjacency.code.1], 1);
+  testthat::expect_equal(df.accum$adjacency.vectors[df.accum$units$Name=="Z" & df.accum$units$ActivityNumber == 1, adjacency.code.1], 1);
+  testthat::expect_equal(df.accum.sep$adjacency.vectors[df.accum$units$Name=="Z" & df.accum$units$ActivityNumber == 1, adjacency.code.1], 1);
 
   # Test that the second summed trajectory is 1, even thought it had a zero accumulation for it's conversations
-  expect_equal(df.accum$adjacency.vectors[Name == "Z" & ActivityNumber == 2 & Day == 1, adjacency.code.1], 1);
-  expect_equal(df.accum.sep$adjacency.vectors[Name == "Z" & ActivityNumber == 2 & Day == 1, adjacency.code.1], 1);
+  testthat::expect_equal(df.accum$adjacency.vectors[df.accum$units$Name == "Z" & df.accum$units$ActivityNumber == 2 & df.accum$units$Day == 1, adjacency.code.1], 1);
+  testthat::expect_equal(df.accum.sep$adjacency.vectors[df.accum$units$Name == "Z" & df.accum$units$ActivityNumber == 2 & df.accum$units$Day == 1, adjacency.code.1], 1);
 
   # Test that non-accumulation is properly leaving second trajectory group 0 (different than the previous test)
-  expect_identical(c(1,0,0,1), df.non.accum$adjacency.vectors[Name == "Z", adjacency.code.1]);
-  expect_identical(c(1,0,0,1), df.non.accum.sep$adjacency.vectors[Name == "Z", adjacency.code.1]);
+  testthat::expect_identical(c(1,0,0,1), df.non.accum$adjacency.vectors[df.non.accum$units$Name == "Z", adjacency.code.1]);
+  testthat::expect_identical(c(1,0,0,1), df.non.accum.sep$adjacency.vectors[df.non.accum$units$Name == "Z", adjacency.code.1]);
 })
 
 

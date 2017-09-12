@@ -4,7 +4,6 @@
 #' @description Gets a conversation from an ENA set from a given ENA data object.
 #
 #' @export
-#
 #' @param data.file data.frame or file path to CSV
 #' @param conversations Vector of conversations
 # @param filter.by

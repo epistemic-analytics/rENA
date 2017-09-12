@@ -20,7 +20,7 @@ test_that("Simple data.frame to accumulate", {
   df.accum = ena.accumulate.data.file(df, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"));
   df.accum.weighted = ena.accumulate.data.file(df, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"), weight.by = "weighted");
 
-  expect_true(all(
+  testthat::expect_true(all(
     as.matrix(df.accum$adjacency.vectors[, attr(df.accum$adjacency.vectors,"adjacency.codes"), with=F])
       ==
     #matrix(c(2,2,2,0,1,0), nrow=length(unique(df.accum$units)))
@@ -46,12 +46,15 @@ test_that("Accumulate using conversation model", {
     df,
     units.by = c("Name"),
     conversations.by = c("Day"),
+    #weight.by = function(x) { return(x) },
     codes = c("c1","c2","c3"),
     window = "Conversation"
   );
 
   # Check co-occurrences for unit `J` in conversation `1`
-  expected = tcrossprod(colSums(df[df$Name=="J"&df$Day==1,df.accum$codes]));
+  expected.sums = colSums(df[df$Name=="J"&df$Day==1,df.accum$codes]);
+  expected.sums[expected.sums > 1] = 1
+  expected = tcrossprod(expected.sums);
   expected.co = expected[upper.tri(expected)]
   actual.co = as.numeric(df.accum$accumulated.adjacency.vectors[ENA_UNIT=="J"&Day==1,grep("^adj",colnames(df.accum$accumulated.adjacency.vectors)),with=F])
   testthat::expect_equal(
@@ -99,7 +102,7 @@ test_that("Corrected adjacency.vectors equals manually corrected raw data (corre
   cols = colnames(xtest)[grep("adjacency.code", colnames(xtest))];
   xtest[, (cols) := lapply(.SD, log), .SDcols = cols];
 
-  testthat::expect_identical(x$adjacency.vectors, xtest);
+  testthat::expect_identical(x$adjacency.vectors, xtest[,grep("^adjacency", colnames(xtest)), with=F]);
 })
 test_that("Simple forwarded metadata", {
   fake.codes.len = 10;
@@ -119,7 +122,7 @@ test_that("Simple forwarded metadata", {
 
   df.accum = ena.accumulate.data.file(df, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"));
 
-  expect_true("m1" %in% colnames(df.accum$metadata));
+  testthat::expect_true("m1" %in% colnames(df.accum$metadata));
 });
 test_that("Test trajectories", {
   fake.codes.len = 10;
@@ -146,19 +149,21 @@ test_that("Test trajectories", {
   );
 
   # Test for expected accumulated value
-  expect_equal(df.accum$adjacency.vectors[Name == "J" & ActivityNumber == 3, adjacency.code.1],df.accum$accumulated.adjacency.vectors[Name == "J", sum(adjacency.code.1)]);
+  testthat::expect_equal(df.accum$adjacency.vectors[df.accum$units$Name == "J" & df.accum$units$ActivityNumber == 3, adjacency.code.1],df.accum$accumulated.adjacency.vectors[Name == "J", sum(adjacency.code.1)]);
 
   # Test for a value of 1 in the first accumulation of the trajectory of code 1
-  expect_true(sum(df.accum$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 1, adjacency.code.1]) == 1);
+  testthat::expect_true(sum(df.accum$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 1, adjacency.code.1]) == 1);
   # Test for a value of 0 in the second accumulation of the trajectory of code 1
-  expect_true(all(df.accum$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 2, adjacency.code.1] == 0));
+  testthat::expect_true(all(df.accum$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 2, adjacency.code.1] == 0));
+
   # Test that the first summed trajectory is 1
-  expect_equal(df.accum$adjacency.vectors[Name == "Z" & ActivityNumber == 1, adjacency.code.1], 1);
+  testthat::expect_equal(df.accum$adjacency.vectors[df.accum$units$Name == "Z" & df.accum$units$ActivityNumber == 1, adjacency.code.1], 1);
+
   # Test that the second summed trajectory is 1, even thought it had a zero accumulation for it's conversations
-  expect_equal(df.accum$adjacency.vectors[Name == "Z" & ActivityNumber == 2 & Day == 1, adjacency.code.1], 1);
+  testthat::expect_true(all(df.accum$adjacency.vectors[df.accum$units$Name == "J" & df.accum$units$ActivityNumber==3,] == c(2,2,1)));
 
   # Test that non-accumulation is properly leaving second trajectory group 0 (different than the previous test)
-  expect_identical(c(1,0,0,1), df.non.accum$adjacency.vectors[Name == "Z", adjacency.code.1]);
+  testthat::expect_true(all(df.non.accum$adjacency.vectors[df.non.accum$units$Name == "J" & df.non.accum$units$ActivityNumber==3,] == c(0,0,0)));
 })
 test_that("Test accumulation with data.frame and matrix", {
   df.file <- system.file("extdata", "rs.data.csv", package="rENA")

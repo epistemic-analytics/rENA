@@ -22,8 +22,8 @@ group1.points = df.set.lws$points.rotated[df.set.lws$enadata$units$Condition == 
 #group.points = data.frame("V1" = group.points[1], "V2" = group.points[2])
 
 df.plot <- ena.plot(df.set.lws);
-df.plot %<>% ena.plot.points(points = data.frame(group1.points));
-df.plot %<>% ena.plot.group(group1.points, color = "blue", label = "First Game Mean", show.confidence.interval = T);
+df.plot = ena.plot.points(df.plot, points = data.frame(group1.points));
+df.plot = ena.plot.group(df.plot, group1.points, color = "blue", label = "First Game Mean", show.confidence.interval = T);
 
 
 #####
@@ -45,8 +45,8 @@ test_that("Plot all units in set", {
 
 test_that("Plot only some units, sampled from centered data", {
   p.color <- ena.plot(df.set.lws);
-  p.color %<>% ena.plot.points(points = sample(df.set.lws$get.data("centered")$ENA_UNIT,10), color = "yellow");
-  p.color %<>% ena.plot.points(points = sample(df.set.lws$get.data("centered")$ENA_UNIT,10), color = "green");
+  p.color = ena.plot.points(p.color, points = df.set.lws$get.data("centered")$ENA_UNIT, color = "yellow");
+  p.color = ena.plot.points(p.color, points = df.set.lws$get.data("centered")$ENA_UNIT, color = "green");
 
   # testthat::expect_is(p, "plotly");
 })
@@ -54,8 +54,9 @@ test_that("Plot only some units, sampled from centered data", {
 test_that("Plot a trajectory set", {
   p.traj <- ena.plot(df.set.traj.lws);
 
-  p.traj %<>% ena.plot.points(
-    points = sample(df.set.lws$get.data("centered")$ENA_UNIT,3)
+  p.traj = ena.plot.points(
+    enaplot = p.traj,
+    points = df.set.traj.lws$get.data("centered")$ENA_UNIT
   );
 
   # testthat::expect_is(p, "plotly");
@@ -63,36 +64,38 @@ test_that("Plot a trajectory set", {
 
 test_that("Plot a trajectory set", {
   p.traj <- ena.plot(df.set.traj.lws);
-  p.traj %<>% ena.plot.points(
-    points = sample(df.set.lws$get.data("centered")$ENA_UNIT,3)
+  p.traj = ena.plot.points(
+    p.traj,
+    points = df.set.traj.lws$get.data("centered")$ENA_UNIT
   );
-  p.traj %<>% ena.plot.points(
-    points = sample(df.set.lws$get.data("rotated")$ENA_UNIT,3)
-  );
-
-  # testthat::expect_is(p, "plotly");
-})
-
-test_that("Plot a network", {
-  p = ena.plot.set(
-    df.set.lws,
-    plot.mode="network",
-    network.one="brandon f.SecondGame"
+  p.traj = ena.plot.points(
+    p.traj,
+    points = df.set.traj.lws$get.data("rotated")$ENA_UNIT
   );
 
   # testthat::expect_is(p, "plotly");
 })
 
-test_that("Plot two networks", {
-  p = ena.plot.set(
-    df.set.lws,
-    plot.mode="network",
-    network.one="brandon f.SecondGame",
-    network.two="arden f.FirstGame"
-  );
+# test_that("Plot a network", {
+  # p = ena.plot.set(
+  #   df.set.lws,
+  #   plot.mode="network",
+  #   network.one="brandon f.SecondGame"
+  # );
 
   # testthat::expect_is(p, "plotly");
-})
+# })
+
+# test_that("Plot two networks", {
+#   p = ena.plot.set(
+#     df.set.lws,
+#     plot.mode="network",
+#     network.one="brandon f.SecondGame",
+#     network.two="arden f.FirstGame"
+#   );
+#
+#   # testthat::expect_is(p, "plotly");
+# })
 
 test_that("Plot a mean trajectory", {
   message("Testing a mean trajectory: not implemented")

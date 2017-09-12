@@ -82,6 +82,9 @@ linderoth_pos <- function(adjMats, t) {
 }
 
 #' @title Multiobjective, Component by Component, with Ellipsoidal Scaling
+#' @description [TBD]
+#' @param adjMats [TBD]
+#' @param t [TBD]
 linderoth_pos_es <- function(adjMats, t) {
     .Call('rENA_linderoth_pos_es', PACKAGE = 'rENA', adjMats, t)
 }
