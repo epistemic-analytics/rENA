@@ -21,7 +21,7 @@ ena.plot.points = function(
   outlier.interval = c("none", "crosshairs", "box")
 
 ) {
-
+  group.layout = NULL;
   if(!is.character(label.font.family)) {
     label.font.size = enaplot$get("font.family");
   }
@@ -55,6 +55,8 @@ ena.plot.points = function(
     colors = rep(colors, nrow(points.layout))
   }
 
+  color = label.font.color
+  error = NULL;
   if(confidence.interval == "crosshair" && !is.null(confidence.interval.values)) {
     ci.x = confidence.interval.values[1];
     ci.y = confidence.interval.values[2];
@@ -77,7 +79,7 @@ ena.plot.points = function(
     dfDT.points[,c("ci.x", "ci.y") := .(conf.ints[1], conf.ints[2])]
 
     #add cols for coordinates of CI lines
-    dfDT.points[, c("ci.x1", "ci.x2", "ci.y1", "ci.y2") := .(V1 - ci.x, V1 + ci.x, V2 - ci.y, V2 + ci.y)]
+    dfDT.points[, c("ci.x1", "ci.x2", "ci.y1", "ci.y2") := .(X1 - ci.x, X1 + ci.x, X2 - ci.y, X2 + ci.y)]
 
     lines.CI = apply(dfDT.points,1,function(x) {
       list(
@@ -127,40 +129,44 @@ ena.plot.points = function(
     lines = c(lines, lines.OI);
   }
 
-  #### NEW
-  if(!is.null(error)) {
-    #plot group w/ crosshair error bars
-    enaplot$plot %<>% plotly::add_trace(
-      data = group.layout,
-      type="scatter",
-      x = ~V1, y = ~V2,
-      mode="markers",
-      marker = list(
-        symbol =  shape,
-        color = color,
-        size = size
-      ),
-      error_x = error$x,
-      error_y = error$y,
-      showlegend = F,
-      hoverinfo = "text+x+y"
-    )
-  } else {
-    #plot group w/o crosshair error bars
-    enaplot$plot %<>% plotly::add_trace(
-      data = group.layout,
-      type="scatter",
-      x = ~V1, y = ~V2,
-      mode="markers",
-      marker = list(
-        symbol =  shape,  #c(rep("circle",nrow(data)),rep("square", ifelse(!is.null(dfDT.groups), nrow(dfDT.groups), 0))),
-        color = color,
-        #size = c(rep(unit.size * unit.size.multiplier, nrow(data)), rep(group.size, ifelse(!is.null(dfDT.groups),nrow(dfDT.groups), 0)))
-        size = size
-      ),
-      showlegend = F,
-      hoverinfo = "text+x+y"
-    )
+  if(!is.null(points.layout)) {
+    #### NEW
+    if(!is.null(error)) {
+      #plot group w/ crosshair error bars
+      enaplot$plot = plotly::add_trace(
+        enaplot$plot,
+        data = points.layout,
+        type="scatter",
+        x = ~X1, y = ~X2,
+        mode="markers",
+        marker = list(
+          symbol =  shape,
+          color = color,
+          size = size
+        ),
+        error_x = error$x,
+        error_y = error$y,
+        showlegend = F,
+        hoverinfo = "text+x+y"
+      )
+    } else {
+      #plot group w/o crosshair error bars
+      enaplot$plot = plotly::add_trace(
+        enaplot$plot,
+        data = points.layout,
+        type="scatter",
+        x = ~X1, y = ~X2,
+        mode="markers",
+        marker = list(
+          symbol =  shape,  #c(rep("circle",nrow(data)),rep("square", ifelse(!is.null(dfDT.groups), nrow(dfDT.groups), 0))),
+          color = color,
+          #size = c(rep(unit.size * unit.size.multiplier, nrow(data)), rep(group.size, ifelse(!is.null(dfDT.groups),nrow(dfDT.groups), 0)))
+          size = size
+        ),
+        showlegend = F,
+        hoverinfo = "text+x+y"
+      )
+    }
   }
 
   #### OLD
@@ -182,8 +188,8 @@ ena.plot.points = function(
     if(is.null(label.offset)) { label.offset = c(.05,.05) }
     else label.offset = c(label.offset[1] * 0.1, label.offset[2] * 0.1)
 
-    enaplot$plot = plotly::add_annotations( enaplot$plot, x = points.layout$V1 + label.offset[,1],
-                                               y = points.layout$V2 + label.offset[,2],
+    enaplot$plot = plotly::add_annotations( enaplot$plot, x = points.layout$X1 + label.offset[,1],
+                                               y = points.layout$X2 + label.offset[,2],
                                                text = labels,
                                                # font = text.info,
                                                xref = "x",

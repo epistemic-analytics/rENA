@@ -252,6 +252,7 @@ accumulate.data <- function(enadata) {
     attr(dfDT.summed.units, "adjacency.codes") = codedTriNames;
     attr(dfDT.summed.units, rENA::opts$UNIT_NAMES) = dfDT.summed.units[,  .SD ,with=T,.SDcols=units.by]
 
+    enadata$adjacency.matrix =  rbind(codedRow1, codedRow2);
     enadata$accumulated.adjacency.vectors = dfDT.co.occurrences;
     enadata$adjacency.vectors = dfDT.summed.units;
 
