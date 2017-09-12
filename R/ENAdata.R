@@ -253,11 +253,6 @@ ENAdata = R6::R6Class("ENAdata", public = list(
           df = private$file;
         } else {
           df = read.csv(private$file);
-
-          ###NEW LINE - taking unit cols of df, the columns specified in units.by (wasn't supplied if from csv)
-
-          #### NEEEDS TO HAPPEN AFTER ACCUMULATE - shouldnt have 3800 rows
-          #self$units = df[,private$units.by];
         }
         df_DT = data.table::as.data.table(df);
       }
