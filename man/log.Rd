@@ -6,9 +6,13 @@
 \usage{
 log(x)
 }
+\arguments{
+\item{x}{[TBD]}
+}
 \description{
 adds 1 before computing to avoid indef. results from zeros
 }
 \details{
 [TBD]
 }
+

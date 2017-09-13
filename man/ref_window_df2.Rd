@@ -3,15 +3,13 @@
 \name{ref_window_df2}
 \alias{ref_window_df2}
 \title{ref_window_df2}
-\usage{
-ref_window_df2(df, windowSize = 1L, binary = TRUE)
-}
 \arguments{
 \item{df}{A dataframe}
 
 \item{windowSize}{Integer for number of rows in the stanza window}
 
-\item{binary}{Logical, treat codes as binary or leave as weighted}
+\item{binary}{Logical, treat codes as binary or leave as weighted
+FIXME Delete this function}
 }
 \description{
 TBD

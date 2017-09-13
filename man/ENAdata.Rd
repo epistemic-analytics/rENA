@@ -28,9 +28,9 @@ ENAdata R6class
 \preformatted{  Example:
     update(
       file = private$file,
-      code.names = private$code.names,
+      codes = self$codes,
       conversations.by = private$conversations.by,
-      units = private$units,
+      units = self$units,
       unitsSelected = private$unitsSelected,
       windowSize = private$windowSize,
       reload = FALSE
@@ -39,7 +39,7 @@ ENAdata R6class
 
 \preformatted{  Parameters:
     file - The original data to accumulate, as a data.frame or data.table
-    code.names - String vector of column names to use as codes
+    codes - String vector of column names to use as codes
     conversations.by - String vector of column names to create the conversations
     units - String vector of which units to include in the ENAset
      windowSize - Integer used to select the size of each stanza window within a conversation
