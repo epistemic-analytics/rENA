@@ -5,8 +5,11 @@
 #'
 #' @details [TBD]
 #'
-#' @param data.params [TBD]
-#' @param set.params [TBD]
+#' @param file [TBD]
+#' @param window.size.back [TBD]
+#' @param units.by [TBD]
+#' @param conversations.by [TBD]
+#' @param code [TBD]
 #'
 #' @export
 #'
@@ -18,7 +21,7 @@ ena.generate <- function(file, window.size.back, units.by, conversations.by, cod
     window.size.back = window.size.back,
     units.by = units.by,
     conversations.by = conversations.by,
-    code = code
+    codes = code
   )
   set = ena.make.set(
     enadata = accum
