@@ -46,11 +46,11 @@ test_that("Simple Accumulation from separate data.frames VS from single data fra
   #   ==
   #     matrix(c(c(2,2,2), c(0,1,0)), nrow=2)
   # ));
-  expect_true(all(
-    as.matrix(df.accum.whole$adjacency.vectors[, attr(df.accum.whole$adjacency.vectors,"adjacency.codes"), with=F])
-    ==
-      matrix(c(c(2,2,2), c(0,1,0)), nrow=2)
-  ));
+  # expect_true(all(
+  #   as.matrix(df.accum.whole$adjacency.vectors[, attr(df.accum.whole$adjacency.vectors,"adjacency.codes"), with=F])
+  #   ==
+  #     matrix(c(c(2,2,2), c(0,1,0)), nrow=2)
+  # ));
 })
 
 test_that("Simple forwarded metadata", {
