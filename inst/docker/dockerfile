@@ -37,6 +37,6 @@ RUN apt-get update -qq \
 # install R packages
 RUN Rscript -e "install.packages(c('xml2'))"
 RUN Rscript -e "install.packages(c('devtools','roxygen2','data.table','Rcpp','RcppArmadillo','RcppParallel','R6','RcppEigen','RcppRoll','microbenchmark','testthat'))"
-RUN Rscript -e "install.packages(c('plotly','igraph'))"
+RUN Rscript -e "install.packages(c('plotly','igraph','foreach','doParallel','data.tree'))"
 
 CMD ["R","--no-save"]
