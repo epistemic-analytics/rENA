@@ -1,42 +1,60 @@
-FROM docker.io/ubuntu:16.04
+stages:
+  - image
+  - build
+  - test
+  - archive
+  - deploy
+before_script:
+#  - docker info
+  - pwd
+  - whoami
+build_image:
+  stage: image
+  script:
+    - echo "Building image..."
+    - docker build -t r-package-builder $CI_PROJECT_DIR/inst/docker/
+#  - docker run r-package-builder
 
-MAINTAINER Jan Gorecki j.gorecki@wit.edu.pl
+image: r-package-builder:latest
+build:
+  stage: build
+  tags:
+    - R-package
+  script:
+    - echo "Running build checks..."
+    #- Rscript -e "devtools::test()"
 
-RUN apt-get clean && apt-get update -qq && apt-get upgrade -y && apt-get install -y --no-install-recommends \
-  apt-transport-https \
-  software-properties-common \
-  curl \
-  locales \
-  wget \
-  git \
-  libssl-dev \
-  libcurl4-gnutls-dev \
-  vim \
-  libxml2-dev
-
-RUN rm -rf /var/lib/apt/lists/*
-
-#RUN apt-get clean && apt-get update && apt-get install -y locales
-#RUN locale-gen en_US.UTF-8
-RUN apt-get clean && apt-get -y update && apt-get install -y locales && locale-gen en_US.UTF-8
-
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
-
-RUN add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)/" \
-  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
-
-RUN apt-get update -qq \
-  && apt-get install -y --no-install-recommends \
-    r-base-dev \
-    r-recommended \
-  && echo 'options(repos = c(CRAN = "https://cloud.r-project.org"), download.file.method = "libcurl")' >> /etc/R/Rprofile.site \
-  && rm -rf /var/lib/apt/lists/*
-
-# install R packages
-RUN Rscript -e "install.packages(c('xml2'))"
-RUN Rscript -e "install.packages(c('devtools','roxygen2','data.table','Rcpp','RcppArmadillo','RcppParallel','R6','RcppEigen','RcppRoll','microbenchmark','testthat'))"
-RUN Rscript -e "install.packages(c('plotly','igraph'))"
-
-CMD ["R","--no-save"]
+    #- Rscript -e "install.packages(c('xml2','devtools','roxygen2','data.table','Rcpp','RcppArmadillo','RcppParallel','R6','RcppEigen','RcppRoll','microbenchmark','testthat'), repos='http://cran.us.r-project.org')"
+    #- Rscript -e "install.packages(c('git2r','curl','openssl','httr'), repos='http://cran.us.r-project.org')"
+    #- Rscript -e "install.packages(c('plotly','igraph','foreach','doParallel'), repos='http://cran.us.r-project.org')"
+    #- Rscript -e "install.packages(c('readr'), repos='http://cran.us.r-project.org')"
+    #- Rscript -e "install.packages(c('data.table'), repos='http://cran.us.r-project.org')"
+    - Rscript -e "Rcpp::compileAttributes()"
+    - R CMD build . --no-build-vignettes --no-manual
+  artifacts:
+    paths:
+      - $(ls -1t *.tar.gz | head -n 1)
+test:
+  stage: test
+  tags:
+    - R-package
+  script:
+    - PKG_FILE_NAME=$(ls -1t *.tar.gz | head -n 1)
+    - R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual --as-cran
+  dependencies:
+    - build
+  artifacts:
+    paths:
+      - $(ls -1t *.tar.gz | head -n 1)
+archive:
+  stage: archive
+  tags:
+    - R-package
+  script:
+    - echo "Archiving package..."
+  dependencies:
+    - test
+  artifacts:
+    expire_in: 10 years
+    paths:
+      - $(ls -1t *.tar.gz | head -n 1)
