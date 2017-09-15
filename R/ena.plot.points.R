@@ -12,7 +12,7 @@ ena.plot.points = function(
   label.font.family = c("Arial", "Courier New", "Times New Roman"),
 
   shape = c("circle", "square", "triangle", "diamond"),
-  colors = rep(I("black"), nrow(enaplot$enaset$get.data("rotated", with.meta=T))),
+  colors = c("black"), #rep(I("black"), nrow(points)),
 
   confidence.interval.values = NULL,
   confidence.interval = c("none", "crosshairs", "box"),
@@ -21,6 +21,10 @@ ena.plot.points = function(
   outlier.interval = c("none", "crosshairs", "box")
 
 ) {
+  if(is.numeric(points)){
+    points = matrix(points);
+    dim(points) = c(1,nrow(points))
+  }
   group.layout = NULL;
   if(!is.character(label.font.family)) {
     label.font.size = enaplot$get("font.family");
@@ -55,7 +59,7 @@ ena.plot.points = function(
     colors = rep(colors, nrow(points.layout))
   }
 
-  color = label.font.color
+  color = colors; #label.font.color
   error = NULL;
   if(confidence.interval == "crosshair" && !is.null(confidence.interval.values)) {
     ci.x = confidence.interval.values[1];
