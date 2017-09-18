@@ -191,15 +191,14 @@ ena.plot.points = function(
     #### label offset weighting
     if(is.null(label.offset)) { label.offset = c(.05,.05) }
     else label.offset = c(label.offset[1] * 0.1, label.offset[2] * 0.1)
-
-    enaplot$plot = plotly::add_annotations( enaplot$plot, x = points.layout$X1 + label.offset[,1],
-                                               y = points.layout$X2 + label.offset[,2],
+    enaplot$plot = plotly::add_annotations( enaplot$plot, x = points.layout$X1 + label.offset[1],
+                                               y = points.layout$X2 + label.offset[2],
                                                text = labels,
                                                # font = text.info,
                                                xref = "x",
                                                yref = "y",
-                                               ax = label.offset[,1],
-                                               ay = label.offset[,2],
+                                               ax = label.offset[1],
+                                               ay = label.offset[2],
                                                showarrow = F);
   }
 
