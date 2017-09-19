@@ -1,5 +1,5 @@
 stages:
-  - build_image
+  #- build_image
   - image
   - build
   - test
@@ -16,9 +16,9 @@ build_image:
     - docker build -t r-package-builder $CI_PROJECT_DIR/inst/docker/
     - docker run r-package-builder
 
-image: r-package-builder:latest
 build:
   stage: build
+  image: r-package-builder:latest
   tags:
     - R-package
   script:
