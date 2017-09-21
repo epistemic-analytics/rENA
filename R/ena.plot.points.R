@@ -4,7 +4,7 @@ ena.plot.points = function(
 
   points = NULL,    #vector of unit names or row indices
 
-  labels = unique(enaplot$enaset$enadata$units),
+  labels = rownames(points), #unique(enaplot$enaset$enadata$unit.names),
   label.offset = NULL,
 
   label.font.size = enaplot$get("font.size"),
@@ -21,7 +21,7 @@ ena.plot.points = function(
   outlier.interval = c("none", "crosshairs", "box")
 
 ) {
-  if(is.numeric(points)){
+  if(is(points, "numeric")){
     points = matrix(points);
     dim(points) = c(1,nrow(points))
   }
@@ -77,6 +77,7 @@ ena.plot.points = function(
     )
   }
 
+  colnames(points.layout) = paste0("X", rep(1:ncol(points.layout)));
   if(confidence.interval == "box" && !is.null(confidence.interval.values)) {
 
     conf.ints = t.test(points.raw, conf.level = .95)$conf.int;
@@ -185,11 +186,11 @@ ena.plot.points = function(
   #                                     text = ~labels, hoverinfo = "text+x+y");
   ####
 
-
+  # browser()
   ### if number of labels provided is equal to number of points, add labels
   if(length(labels) == nrow(points.layout)) {
     #### label offset weighting
-    if(is.null(label.offset)) { label.offset = c(.05,.05) }
+    if(is.null(label.offset)) { label.offset = c(0.05,0.02) }
     else label.offset = c(label.offset[1] * 0.1, label.offset[2] * 0.1)
     enaplot$plot = plotly::add_annotations( enaplot$plot, x = points.layout$X1 + label.offset[1],
                                                y = points.layout$X2 + label.offset[2],
