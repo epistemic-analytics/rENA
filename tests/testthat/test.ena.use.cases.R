@@ -1,6 +1,7 @@
 suppressMessages(library(rENA, quietly = T, verbose = F))
 context("Test Use Cases");
 
+fileName = system.file("extdata","rs.data.csv", package = "rENA")
 file = read.csv(fileName);
 codeNames = c("Tradeoffs", "Performance.Parameters", "Constraints.and.Requests", "Collaboration", "Data");
 
@@ -11,13 +12,11 @@ accum = ena.accumulate.data(
   window.size.back = 4
 );
 
-set = ena.make.set(accum,
-                   rotation.by = ena.rotate.by.mean,
-                   rotation.params =
-                     list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
+set = ena.make.set(
+  enadata = accum,
+  rotation.by = ena.rotate.by.mean,
+  rotation.params = list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
 )
-
-df.plot = ena.plot(df.set);
 
 test_that("Case 1: Group Plotting 1", {
   ### GROUP PLOTTING VERSION 1
