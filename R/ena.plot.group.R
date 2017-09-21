@@ -37,7 +37,7 @@ ena.plot.group <- function(
 
   points = NULL,
 
-  label = NULL,
+  label = unique(enaplot$enaset$enadata$units),
 
   color = "black",
   shape = c("square", "triangle", "diamond", "circle"),

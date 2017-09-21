@@ -23,8 +23,9 @@ Imports:
     parallel,
     RcppRoll,
     data.tree,
-    scales
+    scales,
+    magrittr
 Suggests:
     microbenchmark,
     testthat
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
