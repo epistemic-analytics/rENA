@@ -7,12 +7,11 @@
 linderoth_pos_es(adjMats, t)
 }
 \arguments{
-\item{adjMats}{Matrix of adjacency vectors}
+\item{adjMats}{[TBD]}
 
-\item{t}{plotted po}
+\item{t}{[TBD]}
 }
 \description{
-Position method using Multiobjective, Component by Component,
-with Ellipsoidal Scaling
+[TBD]
 }
 

@@ -1,11 +1,19 @@
-# This needs to take the full list for defaltion, not just a single
-# grouping
-
-ena.rotate.by.mean = function(data, groups) {
-
-
-#ena.rotate.by.mean = function(data, col, vals) {
-  attrData = attr(data, rENA::opts$UNIT_NAMES)
+#' ENA Rotate by mean
+#'
+#' @param self [TBD]
+#' @param ... [TBD]
+#'
+#' @return
+#' @export
+ena.rotate.by.mean = function(self, ...) {
+  args = list(...);
+  groups = args[[1]];
+  if(length(groups) < 1) return();
+  if(!is(groups[[1]], "list")) {
+    groups = list(groups);
+  }
+  data = self$line.weights;
+  attrData = self$enadata$metadata; # attr(data, rENA::opts$UNIT_NAMES)
 
   data = scale(data, scale=F, center=T);
 
@@ -16,14 +24,12 @@ ena.rotate.by.mean = function(data, groups) {
   i = 1;
   weights = matrix(0, nrow = ncol(deflated.data), ncol = length(groups));
 
-  for(group in names(groups)) {
+  for(group in 1:length(groups)) {
     col = group;
     vals = groups[[group]];
 
-    colOne.rows = as.logical(attrData[, c(col), with=F] == vals[1]);
-    colTwo.rows = as.logical(attrData[, c(col), with=F] == vals[2]);
-    colOne.vals = deflated.data[colOne.rows,]
-    colTwo.vals = deflated.data[colTwo.rows,]
+    colOne.vals = deflated.data[vals[[1]],]; #deflated.data[colOne.rows,]
+    colTwo.vals = deflated.data[vals[[2]],]; #deflated.data[colTwo.rows,]
     colOne.means = colMeans(colOne.vals)
     colTwo.means = colMeans(colTwo.vals)
     col.mean.diff = colOne.means - colTwo.means
@@ -42,8 +48,8 @@ ena.rotate.by.mean = function(data, groups) {
      paste('V',as.character(1:ncol(deflated.data.svd)), sep='')
   );
 
-
-  return(deflated.data.svd[,1:2]);
+  rotationSet = ENARotationSet$new(node.positions=NULL, rotation=deflated.data.svd[,1:2], codes=self$codes);
+  return(rotationSet);
 }
 
 orthogonal.svd = function(data, weights) {

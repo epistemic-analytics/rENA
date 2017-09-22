@@ -37,7 +37,7 @@ e_ = e;
 
 e = e_ = enaset;
 e_list = list(
-  data.normed = e$data$normed.non.zero,
+  data.normed = e$line.weights.non.zero,
   rotation_dists = e$rotation_dists,
   dims = e$get("dimensions"),
   samples = e$get("samples"),

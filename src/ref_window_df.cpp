@@ -48,7 +48,7 @@ NumericVector vector_to_ut2(NumericVector v) {
 }
 
 // [[Rcpp::export]]
-arma::mat rows_to_co_occurrences(DataFrame df) {
+arma::mat rows_to_co_occurrences(DataFrame df, bool binary = true) {
   int dfRows = df.nrows();
   int dfCols = df.size();
   int numCoOccurences = ( (dfCols * (dfCols + 1)) / 2) - dfCols;
@@ -63,6 +63,10 @@ arma::mat rows_to_co_occurrences(DataFrame df) {
     df_CoOccurred.row(row) = vector_to_ut(df_AsMatrix2.row(row));
   }
 
+  if(binary == true) {
+    df_CoOccurred.elem( find(df_CoOccurred > 0) ).ones();
+  }
+
   return df_CoOccurred;
 }
 
@@ -72,20 +76,23 @@ arma::mat rows_to_co_occurrences(DataFrame df) {
 //' @description TBD
 //' @param df A dataframe
 //' @param windowSize Integer for number of rows in the stanza window
+//' @param windowForward Integer for number of rows in the stanza window forward
 //' @param binary Logical, treat codes as binary or leave as weighted
+//' @param binaryStanzas Logical, treat codes as binary or leave as weighted
 //' @export
 // [[Rcpp::export]]
 DataFrame ref_window_df(
     DataFrame df,
-    int windowSize = 0,
-    bool binary = true
-) {
+    float windowSize = 1,
+    float windowForward = 0,
+    bool binary = true,
+    bool binaryStanzas = false
+  ) {
   int dfRows = df.nrows();
   int dfCols = df.size();
   int numCoOccurences = ( (dfCols * (dfCols + 1)) / 2) - dfCols;
 
   arma::mat df_CoOccurred(dfRows, numCoOccurences, fill::zeros);
-
   arma::mat df_AsMatrix2(dfRows, dfCols, fill::zeros);
   for (int i=0; i<dfCols;i++) {
     df_AsMatrix2.col(i) = Rcpp::as<arma::vec>(df[i]);
@@ -95,24 +102,49 @@ DataFrame ref_window_df(
     /**
      * The rows in the current window. CurrentRow + Referrants == windowSize
      */
-    arma::mat currRows2 = df_AsMatrix2( span( (row-(windowSize-1)>=0)?(row-(windowSize-1)):0,row ), span::all );
+
+    // NOTE: change the span to always use 0 if infinite window
+    int earliestRow = 0, lastRow = row;
+
+    if (windowSize == std::numeric_limits<double>::infinity()) {
+      earliestRow = 0;
+    } else if ( row - (windowSize-1) >= 0 ) {
+      earliestRow = row - (windowSize - 1);
+    }
+
+    if (windowForward == std::numeric_limits<double>::infinity()) {
+      lastRow = dfRows-1;
+    } else if ( windowForward > 0 &&  (row + (windowForward) <= dfRows-1)) {
+      lastRow = row + windowForward;
+    }
+
+    arma::mat currRows2 = df_AsMatrix2( span( earliestRow, lastRow ), span::all );
     arma::mat currRowsSummed = arma::sum(currRows2);
     arma::rowvec toUT = vector_to_ut(currRowsSummed);
 
     if(windowSize > 1 && row-1>=0) {
-      //arma::mat currRows2_refs = df_AsMatrix2( span( (row-(windowSize-1)>=0)?(row-(windowSize-1)):0,(row-1>0)?row-1:0 ), span::all );
-      arma::mat currRows2_refs = currRows2.head_rows(currRows2.n_rows-1);
+      int headRows = currRows2.n_rows - 1 - windowForward;
+      if(headRows < 0) {
+        headRows = 0;
+      }
+      arma::mat currRows2_refs = currRows2.head_rows(headRows);
+      arma::mat currRow_refsSummed = arma::sum(currRows2_refs);
 
+      arma::rowvec toUT_refs = vector_to_ut(currRow_refsSummed);
+      toUT = toUT - toUT_refs;
+    }
+    if(windowForward > 0 && row+windowForward <= (dfRows-1)) {
+      arma::mat currRows2_refs = currRows2.tail_rows(windowForward);
       arma::mat currRow_refsSummed = arma::sum(currRows2_refs);
       arma::rowvec toUT_refs = vector_to_ut(currRow_refsSummed);
-      arma::rowvec toUT_subs = toUT - toUT_refs;
-
-      df_CoOccurred.row(row) = toUT_subs;
-    } else {
-      df_CoOccurred.row(row) = toUT;
+      toUT = toUT - toUT_refs;
     }
-  }
 
+    if (binaryStanzas==true) {
+      toUT.elem( find(toUT > 0) ).ones();
+    }
+    df_CoOccurred.row(row) = toUT;
+  }
   if(binary == true) {
     df_CoOccurred.elem( find(df_CoOccurred > 0) ).ones();
   }
@@ -127,7 +159,7 @@ DataFrame ref_window_df(
 //' @param df A dataframe
 //' @param windowSize Integer for number of rows in the stanza window
 //' @param binary Logical, treat codes as binary or leave as weighted
-// [[Rcpp::export]]
+//' FIXME Delete this function
 NumericMatrix ref_window_df2(
     DataFrame df,
     int windowSize = 1,
@@ -143,7 +175,6 @@ NumericMatrix ref_window_df2(
   for(int row = 0; row < dfRows; row++) {
     /** The rows in the CurrentWindow. CurrentRow + ReferringRows == windowSize */
     NumericMatrix currRows = df_asMatrix( Range( (row-(windowSize-1)>=0)?(row-(windowSize-1)):0,row ), _ );
-    Rcpp::Rcout << "Window " << row << ":" << std::endl << currRows << std::endl;
 
     /** Sum of the entire CurrentWindow */
     NumericVector currRowsSummed1 = Rcpp::colSums(currRows);
@@ -161,7 +192,6 @@ NumericMatrix ref_window_df2(
     if(windowSize > 1 && row-1>=0) {
       /** Select ReferringRows for the CurrentWindow */
       NumericMatrix currRow_refs = df_asMatrix( Range( (row-(windowSize-1)>=0) ? (row-(windowSize-1)): 0, (row-1>0)?row-1:0 ), _ );
-      Rcpp::Rcout << "Refs " << row << ":" << std::endl << currRow_refs << std::endl;
 
       /** Sum the ReferringRows for the CurrentWindow */
       NumericVector currRow_refsSummed = Rcpp::colSums(currRow_refs);
@@ -231,3 +261,16 @@ DataFrame ref_window_lag(
 
   return wrap(df_LagSummed);
 }
+
+/*** R
+ # acc = ena.accumulate.data.file(
+ #   df,
+ #   units.by = c("UserName","Condition"),
+ #   conversations.by = c("ActivityNumber","GroupName"),
+ #   codes = codeNames[1:4],
+ #   window.size.back = 3,
+ #   window.size.forward = Inf,
+ #   weight.by = "Binary",
+ #   model = "EndPoint"
+ # )
+*/

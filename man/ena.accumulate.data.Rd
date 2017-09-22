@@ -2,45 +2,38 @@
 % Please edit documentation in R/ena.accumulate.data.R
 \name{ena.accumulate.data}
 \alias{ena.accumulate.data}
-\title{Accumulate Data}
+\title{Accumulate Data from separate data frames}
 \usage{
-ena.accumulate.data(file, units.by = NULL, units = NULL,
-  conversations.by = NULL, code.names = NULL, window.size = 1,
-  window.size.back = window.size, window.size.forward = NULL, binary = T,
-  units.exclude = c(), trajectory.by = NULL,
-  trajectory.type = c("accumulated", "non-accumulated"), output = c("class",
-  "json"), output.fields = NULL, ...)
+ena.accumulate.data(units = NULL, conversation = NULL, codes = NULL,
+  metadata = NULL, model = c("EndPoint", "AccumulatedTrajectory",
+  "SeparateTrajectory"), weight.by = "binary", window = c("Moving Stanza",
+  "Conversation"), window.size.back = 1, window.size.forward = 0,
+  mask = NULL, ...)
 }
 \arguments{
-\item{file}{The csv file location or data.frame for the function}
+\item{units}{Data frame of unit columns and values}
 
-\item{units.by}{Delimits columns based on the units}
+\item{conversation}{NEW data frame of conversation columns w/ values}
 
-\item{units}{Columns used based on units}
+\item{codes}{Columns used based on codes}
 
-\item{conversations.by}{Columns used in the conversation}
+\item{metadata}{[TBD]}
 
-\item{code.names}{Columns used based on codes}
+\item{model}{[TBD]}
 
-\item{window.size}{Number of lines in the stanza}
+\item{weight.by}{[TBD]}
+
+\item{window}{[TBD]}
 
 \item{window.size.back}{Number of lines back to include window in stanza}
 
 \item{window.size.forward}{Number of lines forward in stanza window}
 
-\item{binary}{[TBD]}
-
-\item{units.exclude}{Exclude certain columns based on units}
-
-\item{trajectory.by}{[TBD]}
-
-\item{trajectory.type}{[TBD]}
-
-\item{output}{ENAdata object or JSON string. Default: ENAdata}
-
-\item{output.fields}{Fields to be included in JSON output}
+\item{mask}{[TBD]}
 
 \item{...}{additional parameters addressed in inner function}
+
+\item{binary}{[TBD]}
 }
 \value{
 \code{\link{ENAdata}} class object with accumulated data
@@ -65,7 +58,7 @@ df.file <- system.file("extdata", "rs.data.csv", package="rENA")
 ena.accumulate.data(
   df.file, units.by = c("UserName","Condition"),
   conversations.by = c("ActivityNumber","GroupName"),
-  code.names = codeNames
+  codes = codeNames
 )
 }
 }

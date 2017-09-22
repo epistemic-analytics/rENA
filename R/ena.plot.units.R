@@ -8,7 +8,7 @@ ena.plot.units = function(
   dimension.labels = c("x","y"),
   dimension.show.variance = T,
 
-  units = unique(enaset$get("enaData")$get("units")),
+  units = unique(enaset$enadata$get("units")),
   unit.size = 1,
   unit.size.multiplier = 5,
   unit.colors = rep(I("blue"), nrow(data)),
@@ -31,6 +31,7 @@ ena.plot.units = function(
 ) {
   unit.group_by <- match.arg(unit.group_by);
 
+
   dfDT = data[ENA_UNIT %in% units];
   df.names = dfDT$ENA_UNIT;
   if(is.null(df.names)) {
@@ -39,6 +40,7 @@ ena.plot.units = function(
   }
   dfDT[,name:=ENA_UNIT] # Create a name column
 
+  # network vertices?
   network.vertices.df = dfDT[ENA_UNIT %in% units,c(ncol(dfDT),1:ncol(dfDT)-1),with=F];
   network.font.text = list(
     family = font.family,
@@ -73,15 +75,14 @@ ena.plot.units = function(
     )
 
     for(x in 1:nrow(dfDT.trajs)) {
-      toPlot = unique(colnames(dfDT.trajs[x][[2]][[1]]))
       network.plot = plotly::add_trace(
         network.plot,
-        data=dfDT.trajs[x][[2]][[1]][,toPlot,with=FALSE],
+        data=dfDT.trajs[x][[2]][[1]],
         x = ~V1, y = ~V2,
         name=dfDT.trajs[x][[1]],
         mode="lines+markers",
         text = dfDT.trajs[x][[2]][[1]]$TRAJ_UNIT,
-        hoverinfo = "text+x+y"
+        hoverinfo = "text"
       )
     }
 
@@ -145,8 +146,8 @@ ena.plot.units = function(
         size = c(rep(unit.size * unit.size.multiplier, nrow(data)), rep(unit.group.size * unit.group.size.multiplier, ifelse(!is.null(dfDT.groups),nrow(dfDT.groups), 0)))
       ),
       showlegend = F,
-      text = ~name,
-      hoverinfo = "text+x+y"
+      text = dfDT$name,
+      hoverinfo = "text"
     )
     network.plot.layout = plotly::layout(
       network.plot,

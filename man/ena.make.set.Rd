@@ -4,48 +4,29 @@
 \alias{ena.make.set}
 \title{Generate ENA Set}
 \usage{
-ena.make.set(enaData, dims = 2, samples = 3, inPar = F,
-  codeColumns = NULL, binary = T, correction = NULL,
-  sphere.norm = dont_sphere_norm_c, center.data = center_data_c,
-  optim.method = do_optimization, position.method = egr.positions,
-  check.unique.positions = F, set.seed = F, rotate.means = F,
-  rotate.means.by = NULL, output = c("class", "json"),
-  output.fields = NULL, ...)
+ena.make.set(enadata, dimensions = 2, norm.by = sphere_norm_c,
+  rotation.by = ena.svd, rotation.params = NULL, rotation.set = NULL,
+  endpoints.only = T, node.position.method = lws.positions.es,
+  check.unique.positions = F, ...)
 }
 \arguments{
-\item{enaData}{\code{\link{ENAdata}} that will be used to generate an ENA set}
+\item{enadata}{\code{\link{ENAdata}} that will be used to generate an ENA set}
 
-\item{dims}{Number of dimensions in the set}
+\item{dimensions}{Number of dimensions to be in the set}
 
-\item{samples}{[TBD]}
+\item{norm.by}{[TBD]}
 
-\item{inPar}{[TBD]}
+\item{rotation.by}{[TBD]}
 
-\item{codeColumns}{Number of columns of codes in the ENA set}
+\item{rotation.params}{[TBD]}
 
-\item{binary}{[TBD]}
+\item{rotation.set}{[TBD]}
 
-\item{correction}{[TBD]}
+\item{endpoints.only}{[TBD]}
 
-\item{sphere.norm}{[TBD]}
-
-\item{center.data}{[TBD]}
-
-\item{optim.method}{[TBD]}
-
-\item{position.method}{[TBD]}
+\item{node.position.method}{[TBD]}
 
 \item{check.unique.positions}{[TBD]}
-
-\item{set.seed}{[TBD]}
-
-\item{rotate.means}{[TBD]}
-
-\item{rotate.means.by}{[TBD]}
-
-\item{output}{[TBD]}
-
-\item{output.fields}{Fields to be included in JSON output}
 
 \item{...}{additional parameters addressed in inner function}
 }

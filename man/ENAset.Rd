@@ -17,7 +17,7 @@ ENAset R6class
 \preformatted{  Example:
     update(
       x="set",
-      data=private$enaData,
+      data=self$enadata,
       dims=private$dimensions,
       samples=private$samples,
       ...
@@ -37,9 +37,9 @@ ENAset R6class
    rotation - Defaults to ENAdata$centered$pca}
 \code{get()} - Return a read-only property
 \preformatted{  Example:
-    get( x = 'enaData' )}
+    get( x = 'file' )}
 \preformatted{  Parameters:
-     x - Property to return. Defaults to 'enaData', returning the associated ENAdata object}
+     x - Property to return. Defaults to 'file', returning the original data}
 \code{plot()} - Plot ENAset node locations.
 \preformatted{  Example:
     plot(

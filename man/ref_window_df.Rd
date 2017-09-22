@@ -4,14 +4,19 @@
 \alias{ref_window_df}
 \title{ref_window_df}
 \usage{
-ref_window_df(df, windowSize = 0L, binary = TRUE)
+ref_window_df(df, windowSize = 1, windowForward = 0, binary = TRUE,
+  binaryStanzas = FALSE)
 }
 \arguments{
 \item{df}{A dataframe}
 
 \item{windowSize}{Integer for number of rows in the stanza window}
 
+\item{windowForward}{Integer for number of rows in the stanza window forward}
+
 \item{binary}{Logical, treat codes as binary or leave as weighted}
+
+\item{binaryStanzas}{Logical, treat codes as binary or leave as weighted}
 }
 \description{
 TBD

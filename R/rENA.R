@@ -2,6 +2,9 @@
 #' @description rENA is used to generate ENA sets
 #' @name rENA
 #' @importFrom Rcpp sourceCpp
+#' @importFrom grDevices col2rgb
+#' @importFrom grDevices hsv
+#' @importFrom grDevices rgb2hsv
 #' @importFrom methods is
 #' @import stats
 #' @import data.table
@@ -11,6 +14,8 @@
 #' @import doParallel
 #' @import parallel
 #' @import RcppRoll
+# @import scales
+# @import
 # @import igraph
 #' @useDynLib rENA
 NULL

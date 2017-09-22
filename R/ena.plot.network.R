@@ -1,169 +1,126 @@
-
 ena.plot.network = function(
-  enaset = NULL, plot = NULL,
-  units.by = enaset$get('enaData')$get('units.by'),
-  group.by = enaset$get('enaData')$get('conversations.by'), #"Condition",
-
-  selection.one.color = "#5399c7",
-  selection.one.name = NULL,
-  selection.one.title = NULL,
-
-  selection.two.color = "#FF0000",
-  selection.two.name = NULL,
-  selection.two.title = NULL,
-
-  weight.multiplier = 20,
-  font.size = 10,
-  font.color = "000000",
-  font.family = "Arial",
-
-  node.weight.multiplier = weight.multiplier,
-  node.color = "#464646",
-  node.font.size = font.size,
-  node.font.family = font.family,
-  node.font.color = font.color,
-
-  edge.weight.multiplier = weight.multiplier,
-  edge.font.size = font.size,
-  edge.font.color = font.color,
-  edge.font.family = font.family,
-  edge.hide = NULL,
-
-  network.edge.threshold = 0,
-  network.show.all.codes = F
+  enaplot = NULL,
+  network = NULL,
+  colors = c(pos="#e53939", "#116cff"),
+  show.all.nodes = T,
+  threshold = 0.0,
+  thin.lines.in.front = T,
+  opacity = c(0.3,1),
+  saturation = c(0.25,1),
+  thickness = c(0,1),
+  node.size = c(1,20),
+  range = c(min(network), max(network)),
+  labels = rownames(enaplot$enaset$node.positions),
+  label.offset = NULL,
+  label.font.size = enaplot$get("font.size"),
+  label.font.color = enaplot$get("font.color"),
+  label.font.family = enaplot$get("font.family"),
+  ...
 ) {
-  df = data.frame(enaset$data$normed, attr(enaset$data$normed, rENA::opts$UNIT_NAMES));
-  dfDT= data.table::as.data.table(df);
-  dfDT$handle = merge_columns_c(dfDT,units.by, sep="."); #rownames(df);
-
-  units.to.plot = c(selection.one.name, selection.two.name);
-
-  sdcols=colnames(dfDT)[sapply(dfDT, is.numeric)];
-  minDT = dfDT[handle %in% units.to.plot, lapply(.SD,sum,na.rm=T), by=units.by, .SDcols=sdcols];
-
-  minDT$ENA_UNIT = merge.columns(x = minDT, from.cols = units.by);
-  minDT = minDT[match(ENA_UNIT, units.to.plot),];
-
-  minDTc =minDT[,apply(.SD,2,make.network.node, types=c(selection.one.color, selection.two.color)),.SDcols=sdcols, with = T];
-  minDTsizes = minDTc[1,!is.na(minDTc[2,]), with=F];
-  minDTcolors = minDTc[2,!is.na(minDTc[2,]), with=F];
-  minDTsizes = minDTsizes[,which(!names(minDTcolors) %in% group.by),with=F];
-  minDTcolors = minDTcolors[,which(!names(minDTcolors) %in% group.by),with=F];
-  minDTnodes = minDTc[,!is.na(minDTc[2,]), with=F]
-  minDTnodes = minDTnodes[,which(!names(minDTcolors) %in% group.by),with=F]
-  minDTnodes = minDTnodes[,{ cols=strsplit(colnames(.SD), "...", fixed=T); m=as.matrix(.SD[,,with=F]); lapply(1:length(cols),function(x){ c(m[1,x],m[2,x],cols[[x]]) }); },];
-
-  minDTnodes_trans = t(minDTnodes);
-  minDTnodes_trans = minDTnodes_trans[,c(3:4,1:2)];
-
-  network.edges = minDTnodes_trans; #as.data.frame(get.edgelist(network.graph));
-  network.edges.table = data.table::as.data.table(network.edges);
-
-  ## Remove edges below threshold
-  network.edges.table = network.edges.table[V3 > network.edge.threshold]
-
-  ## Remove nodes without connections
-
-  ## Remove edges explicitly hidden
-  if(!is.null(edge.hide)) {
-    network.edges.table = network.edges.table[!network.edges.table$V2 %in% edge.hide|!network.edges.table$V2 %in% edge.hide,]
+  if(choose(nrow(enaplot$enaset$node.positions), 2) != length(network)) {
+    stop(paste0("Network vector needs to be of length ", choose(nrow(enaplot$enaset$node.positions), 2)))
   }
-  network.edges.length = nrow(network.edges.table);
-
-  df.names = rownames(enaset$nodes$positions$scaled);
-  if(is.null(df.names)) {
-   df.names = as.character(1:nrow(enaset$nodes$positions$scaled))
-   rownames(enaset$nodes$positions$scaled) = df.names;
-  }
-  network.vertices.df = data.frame(
-    name = df.names, ## New LWS method needs to assign names/attr
-    enaset$nodes$positions$scaled
-  );
-  network.graph = igraph::graph_from_data_frame(
-    minDTnodes_trans,
-    directed = F,
-    vertices = network.vertices.df
-  )
-  network.layout = enaset$nodes$positions$scaled;
-  network.vertices = igraph::V(network.graph);
-  network.vertices.length = length(network.vertices);
-  network.font.text = list(
-    family = node.font.family,
-    size = node.font.size,
-    color = node.font.color
-  )
-
-  network.nodes.x = network.layout[,1];
-  network.nodes.y = network.layout[,2];
-
+  args = list(...);
   network.edges.shapes = list();
-  for (i in 1:network.edges.length) {
-    # browser()
-    v0 <- unlist(network.edges.table[i,][[1]]); #network.edges.table[i,][[1]];
-    v1 <- unlist(network.edges.table[i,][[2]]); #network.edges.table[i,][[2]];
+
+  nodes = data.frame(enaplot$enaset$node.positions);
+  nodes$weight = rep(0, nrow(nodes))
+  nodes$color = "black";
+  node.rows = rownames(enaplot$enaset$node.positions);
+
+  network.scaled = network;
+  if(!is.null(args$scale.weights) && args$scale.weights == T) {
+    network.scaled = network * (1 / max(abs(network)));
+  }
+
+  pos.inds = as.numeric(which(network.scaled >=0));
+  neg.inds = as.numeric(which(network.scaled < 0));
+  network.opacity = scales::rescale(abs(network.scaled), opacity);
+  network.saturation = scales::rescale(abs(network.scaled), saturation);
+  network.thickness = scales::rescale(abs(network.scaled), thickness);
+
+  colors.hsv = rgb2hsv(col2rgb(colors))
+  if(ncol(colors.hsv) == 1) {
+    colors.hsv[[4]] = colors.hsv[1] + 0.5;
+    if(colors.hsv[4] > 1) {
+      colors.hsv[4] = colors.hsv[4] - 1;
+    }
+
+    colors.hsv[[5]] = colors.hsv[2];
+    colors.hsv[[6]] = colors.hsv[3];
+    dim(colors.hsv) = c(3,2);
+  }
+
+  mat = attr(enaplot$enaset$enadata$adjacency.vectors.raw,"adjacency.matrix");
+  for (i in 1:ncol(mat)) {
+    v0 <- enaplot$enaset$node.positions[ node.rows==mat[1,i],];
+    v1 <- enaplot$enaset$node.positions[ node.rows==mat[2,i],];
+    nodes[node.rows==mat[,i],]$weight = nodes[node.rows==mat[,i],]$weight + network.thickness[i];
+
+    color = NULL
+    if(i %in% pos.inds) {
+      color = colors.hsv[,1];
+    } else {
+      color = colors.hsv[,2];
+    }
+    color[2] = network.saturation[i];
+
     edge_shape = list(
       type = "line",
+      opacity = network.opacity[i],
+      nodes = c(mat[,i]),
       line = list(
-        color=unlist(network.edges.table[i,][[4]]), #network.edges.table[i,][[4]],
-        width=unlist(network.edges.table[i,][[3]]) * edge.weight.multiplier #network.edges.table[i,][[3]]
+        name = "test",
+        color= hsv(color[1],color[2],color[3]),
+        width= network.thickness[i] * enaplot$get("multiplier")
       ),
-      x0 = network.vertices.df[v0,]$X1, #network.nodes.x[0],
-      y0 = network.vertices.df[v0,]$X2, #network.nodes.y[0],
-      x1 = network.vertices.df[v1,]$X1, #network.nodes.x[1],
-      y1 = network.vertices.df[v1,]$X2 #network.nodes.y[1]
+      x0 = v0[1],
+      y0 = v0[2],
+      x1 = v1[1],
+      y1 = v1[2],
+      layer = "below",
+      size = as.numeric(abs(network.scaled[i]))
     );
     network.edges.shapes[[i]] = edge_shape
-  }
+  };
 
-  network.graph.axis <- list(title = "", showgrid = FALSE, showticklabels = FALSE, zeroline = T);
-  node.sizes = sapply(rownames(network.layout), function(x) { network.edges.table[V1==x|V2==x, sum(unlist(V3)),] }) * node.weight.multiplier
-
-  if(!network.show.all.codes) {
-    node.sizes = node.sizes[which(data.frame(node.sizes)$node.sizes != 0)]
-    network.layout = network.layout[rownames(network.layout) %in% names(node.sizes),]
+  if(thin.lines.in.front) {
+    network.edges.shapes = network.edges.shapes[rev(order(sapply(network.edges.shapes, "[[", "size")))]
+  } else {
+    network.edges.shapes = network.edges.shapes[order(sapply(network.edges.shapes, "[[", "size"))]
   }
-  network.plot = plotly::plot_ly(
-    data.frame(network.layout),
-    type="scatter",
+  if(threshold > 0) {
+    network.edges.shapes = network.edges.shapes[sapply(network.edges.shapes, "[[", "size") > threshold];
+  }
+  if(show.all.nodes == F) {
+    nodes = nodes[rownames(nodes) %in% unique(as.character(sapply(network.edges.shapes, "[[", "nodes"))), ]
+  }
+  mode = "markers+text"
+  if(!is.null(args$labels.hide) && args$labels.hide == T) {
+    mode="markers"
+  }
+  nodes$weight = scales::rescale((nodes$weight * (1 / max(abs(nodes$weight)))), node.size) # * enaplot$get("multiplier"));
+  enaplot$plot = plotly::add_trace(
+    enaplot$plot,
+    data = nodes,
     x = ~X1,
     y = ~X2,
-    mode="markers",
+    mode = mode,
+    textposition = 'middle right',
     marker = list(
-      color = I(node.color),
-      size = as.numeric(node.sizes)
+      color = "#000000",
+      size = abs(nodes$weight),
+      name = rownames(nodes)[i]
     ),
-    showlegend = F,
-    text = rownames(network.layout)
+    text = rownames(nodes),
+    hoverinfo = 'none'
   );
-  network.plot = plotly::add_annotations(
-    network.plot,
-    textfont = network.font.text,
-    xref = "x",
-    yref = "y",
-    xanchor = "center",
-    standoff = 30,
-    #clicktoshow = "onout",
-    #captureevents = T,
-    visible = F,
-    #ax = 20, #sample(200, nrow(network.layout), replace=T),
-    #ay = -90,
-    showarrow = F
-    #textposition = "top right"
-  );
-
-  selection.one.title = stringr::str_c("<b style=\"color:",selection.one.color,"\">",selection.one.name,"</b>");
-
-  if(!is.null(selection.two.name)) {
-    selection.two.title = stringr::str_c("<b style=\"color:",selection.two.color,"\">",selection.two.name,"</b>");
-  }
-
-  network.plot.layout = plotly::layout(
-    network.plot,
-    title =  stringr::str_c(selection.one.title, selection.two.title, sep = " - "),
+  enaplot$plot = plotly::layout(
+    enaplot$plot,
+    title =  enaplot$title,
     shapes = network.edges.shapes,
-    xaxis = network.graph.axis,
-    yaxis = network.graph.axis
-  )
+    showlegend = F
+  );
 
-  network.plot.layout
+  enaplot
 }
