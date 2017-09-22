@@ -34,7 +34,7 @@ ena.plot.points = function(
   outlier.interval = match.arg(outlier.interval);
   shape = match.arg(shape);
 
-  if(confidence.interval == "crosshair" && outlier.interval == "crosshair") {
+  if(grepl("^c", confidence.interval) && grepl("^c", outlier.interval)) {
     print("Confidence Interval and Outlier Interval cannot both be crosshair");
     print("Plotting Outlier Interval as box");
     outlier.interval = "box";
@@ -46,14 +46,13 @@ ena.plot.points = function(
   ##### WHAT IS THIS?
   evs = enaplot$enaset$data$centered$latent[1:enaplot$enaset$get("dimensions")];
   evs = floor(evs/sum(evs)*100);
-  network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T);
+  max.axis = max(abs(points))*1.2;
+  network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T, range=c(-max.axis,max.axis));
   network.graph.axis.x = network.graph.axis.y = network.graph.axis;
   #####
 
-  points.layout = data.frame(points);
+  points.layout = data.table::data.table(points);
 
-  ### Check number of labels equal to number of points given or number of total points if none given
-  #if(length(labels) != )
 
   if(length(colors) == 1) {
     colors = rep(colors, nrow(points.layout))
@@ -61,14 +60,14 @@ ena.plot.points = function(
 
   color = colors; #label.font.color
   error = NULL;
-  if(confidence.interval == "crosshair" && !is.null(confidence.interval.values)) {
+  if(grepl("^c", confidence.interval) && !is.null(confidence.interval.values)) {
     ci.x = confidence.interval.values[1];
     ci.y = confidence.interval.values[2];
     error = list(
       x = list(type = "data", array = ci.x),
       y = list(type = "data", array = ci.y)
     )
-  } else if(outlier.interval == "crosshair" && !is.null(outlier.interval.values)) {
+  } else if(grepl("^c", outlier.interval) && !is.null(outlier.interval.values)) {
     oi.x = outlier.interval.values[1];
     oi.y = outlier.interval.values[2];
     error = list(
@@ -77,16 +76,13 @@ ena.plot.points = function(
     )
   }
 
+  # Control the column names
   colnames(points.layout) = paste0("X", rep(1:ncol(points.layout)));
-  if(confidence.interval == "box" && !is.null(confidence.interval.values)) {
+  if(grepl("^b", confidence.interval) && !is.null(confidence.interval.values)) {
+    points.layout[,c("ci.x", "ci.y") := .(confidence.interval.values[1], confidence.interval.values[2])]
+    points.layout[, c("ci.x1", "ci.x2", "ci.y1", "ci.y2") := .(X1 - ci.x, X1 + ci.x, X2 - ci.y, X2 + ci.y)]
 
-    conf.ints = t.test(points.raw, conf.level = .95)$conf.int;
-    dfDT.points[,c("ci.x", "ci.y") := .(conf.ints[1], conf.ints[2])]
-
-    #add cols for coordinates of CI lines
-    dfDT.points[, c("ci.x1", "ci.x2", "ci.y1", "ci.y2") := .(X1 - ci.x, X1 + ci.x, X2 - ci.y, X2 + ci.y)]
-
-    lines.CI = apply(dfDT.points,1,function(x) {
+    lines.CI = apply(points.layout,1,function(x) {
       list(
         "type" = "square",
         "line" = list(
@@ -104,17 +100,14 @@ ena.plot.points = function(
     });
     lines = lines.CI;
   }
-  if(outlier.interval == "box" && !is.null(outlier.interval.values)) {
-
+  if(grepl("^b", outlier.interval) && !is.null(outlier.interval.values)) {
     oi.x = outlier.interval.values[1];
     oi.y = outlier.interval.values[2];
 
-    dfDT.points[,c("oi.x", "oi.y") := .(oi.x, oi.y)]
+    points.layout[,c("oi.x", "oi.y") := .(oi.x, oi.y)]
+    points.layout[, c("oi.x1", "oi.x2", "oi.y1", "oi.y2") := .(X1 - oi.x, X1 + oi.x, X2 - oi.y, X2 + oi.y)]
 
-    #add cols for coordinates of CI lines
-    dfDT.points[, c("oi.x1", "oi.x2", "oi.y1", "oi.y2") := .(V1 - oi.x, V1 + oi.x, V2 - oi.y, V2 + oi.y)]
-
-    lines.OI = apply(dfDT.points,1,function(x) {
+    lines.OI = apply(points.layout,1,function(x) {
       list(
         "type" = "square",
         "line" = list(
@@ -135,81 +128,71 @@ ena.plot.points = function(
   }
 
   if(!is.null(points.layout)) {
-    #### NEW
     if(!is.null(error)) {
       #plot group w/ crosshair error bars
       enaplot$plot = plotly::add_trace(
         enaplot$plot,
         data = points.layout,
-        type="scatter",
+        # type="scatter",
         x = ~X1, y = ~X2,
-        mode="markers",
+        mode="markers+text",
         marker = list(
           symbol =  shape,
           color = color,
-          size = size
+          size = size,
+          name = "testing"
         ),
+        text = labels,
+        textposition = "top right",
         error_x = error$x,
         error_y = error$y,
-        showlegend = F,
-        hoverinfo = "text+x+y"
+        showlegend = T
+        # hoverinfo = "text+x+y"
       )
     } else {
       #plot group w/o crosshair error bars
       enaplot$plot = plotly::add_trace(
-        enaplot$plot,
+        p = enaplot$plot,
         data = points.layout,
         type="scatter",
         x = ~X1, y = ~X2,
         mode="markers",
         marker = list(
-          symbol =  shape,  #c(rep("circle",nrow(data)),rep("square", ifelse(!is.null(dfDT.groups), nrow(dfDT.groups), 0))),
+          symbol = shape,
           color = color,
-          #size = c(rep(unit.size * unit.size.multiplier, nrow(data)), rep(group.size, ifelse(!is.null(dfDT.groups),nrow(dfDT.groups), 0)))
           size = size
         ),
-        showlegend = F,
+        text = labels,
+        showlegend = T,
         hoverinfo = "text+x+y"
       )
     }
   }
 
-  #### OLD
-  # enaplot$plot %<>% plotly::add_data(points.layout)
-  # enaplot$plot %<>% plotly::add_trace(x = ~X1, y = ~X2, data = points.layout,
-  #                                     mode = "markers", type = "scatter",
-  #                                     marker = list(
-  #                                       symbol = shape,
-  #                                       color = colors,
-  #                                       size = size
-  #                                     ),
-  #                                     text = ~labels, hoverinfo = "text+x+y");
-  ####
-
-  # browser()
   ### if number of labels provided is equal to number of points, add labels
-  if(length(labels) == nrow(points.layout)) {
-    #### label offset weighting
-    if(is.null(label.offset)) { label.offset = c(0.05,0.02) }
-    else label.offset = c(label.offset[1] * 0.1, label.offset[2] * 0.1)
-    enaplot$plot = plotly::add_annotations( enaplot$plot, x = points.layout$X1 + label.offset[1],
-                                               y = points.layout$X2 + label.offset[2],
-                                               text = labels,
-                                               # font = text.info,
-                                               xref = "x",
-                                               yref = "y",
-                                               ax = label.offset[1],
-                                               ay = label.offset[2],
-                                               showarrow = F);
-  }
-
-  #enaplot$plot %<>% plotly::hide_legend();
+  # if(length(labels) == nrow(points.layout)) {
+  #   enaplot$plot = plotly::layout(
+  #       p = enaplot$plot,
+  #       annotations = list(
+  #         x = points.layout$X1,
+  #         y = points.layout$X2,
+  #         text = labels,
+  #         xref = "x",
+  #         yref = "y",
+  #         xanchor = "right",
+  #         yanchor = "bottom",
+  #         clicktoshow = "onoff",
+  #         xshift = label.offset[1],
+  #         yshift = label.offset[2],
+  #         showarrow = F
+  #       )
+  #   );
+  # }
 
   enaplot$plot = plotly::layout(
     enaplot$plot,
     title = enaplot$plot.title,
     shapes = lines,
-    #### do these 2 lines do anything?
     xaxis = network.graph.axis.x,
     yaxis = network.graph.axis.y
   )

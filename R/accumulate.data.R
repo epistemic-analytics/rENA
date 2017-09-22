@@ -114,17 +114,18 @@ accumulate.data <- function(enadata) {
     ### Generate the ENA_UNIT column
     dfDT.co.occurrences$ENA_UNIT = merge_columns_c(dfDT.co.occurrences, cols=units.by, sep=".");
   } else {
+    ## parallell: https://stackoverflow.com/questions/14759905/data-table-and-parallel-computing
     ### Calculate occurrences of code within the provided window
     dfDT.co.occurrences = dfDT_codes[,
-                                     (codedTriNames) := ref_window_df(
-                                       .SD[,.SD, .SDcols=codes, with=T],
-                                       windowSize=window$back, windowForward=window$forward,
-                                       binary = binary, binaryStanzas = binaryStanzas
-                                     ),
-                                     by=conversations.by,
-                                     .SDcols=c(units.by, codes),
-                                     with=T
-                                  ];
+                               (codedTriNames) := ref_window_df(
+                                 .SD[,.SD, .SDcols=codes, with=T],
+                                 windowSize=window$back, windowForward=window$forward,
+                                 binary = binary, binaryStanzas = binaryStanzas
+                               ),
+                               by=conversations.by,
+                               .SDcols=c(units.by, codes),
+                               with=T
+                            ];
     # dfDT.co.occurrences = dfDT_codes[,{
     #     ocs = ref_window_df(.SD, windowSize=window$back, windowForward=window$forward, binary = binary, binaryStanzas = binaryStanzas);
     #
