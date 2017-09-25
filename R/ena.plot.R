@@ -7,17 +7,17 @@
 #'
 #' @export
 #'
-#' @param enaset \code{\link{ENAset}} that will be used to generate an ENA plot
-#' @param title character - title for the plot, default: “ENA Plot”
-#' @param dimensions Number of dimensions to be in the plot, numeric vector - default: c(1,2)
-#' @param dimension.labels	character vector - labels for axes, default: c(“X”, “Y”)
+#' @param enaset The \code{\link{ENAset}} that will be used to generate an ENA plot
+#' @param title A character used for the title of the plot, default: ENA Plot
+#' @param dimensions A numeric vector determining the number of dimensions to be in the plot, default: c(1,2)
+#' @param dimension.labels A character vector containing labels for the axes, default: c(X, Y)
 #' @param dimension.show.variance
-#' @param end.points logical - determines whether to only show endpoints for trajectory models
-#' @param flip.axis.x		logical - ?, default: false
-#' @param flip.axis.y		logical - ?, default: false
-#' @param font.size		integer - size of font for graph labels, default:
-#' @param font.color		character - color of label font, default: “black”
-#' @param font.family		character - font type, choices: Arial, Courier New, Times New Roman, default: “Arial”
+#' @param end.points A logical variable that determines whether to only show endpoints for trajectory models
+#' @param flip.axis.x	A logical - ?, default: false
+#' @param flip.axis.y	A logical - ?, default: false
+#' @param font.size An integer determining the font size for graph labels, default: 10
+#' @param font.color A character, the color of label font, default: black
+#' @param font.family A character, the font type, choices: Arial, Courier New, Times New Roman, default: Arial
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords ENA, generate, plot

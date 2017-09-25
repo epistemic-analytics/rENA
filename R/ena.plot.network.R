@@ -10,20 +10,20 @@
 #' @param enaplot \code{\link{ENAplot}} object to use for plotting
 #' @param network dataframe or matrix - the edge weights for connecting nodes
 
-#' @param colors String or vector of colors for positive and negative line weights. E.g. “red” or c(pos= “red”, neg = “blue”), default: c(pos= “red”, neg = “blue”)
-#' @param show.all.nodes Logical, default: true
-#' @param threshold Vector of numeric min/max values, default: (0,1)
-#' @param thin.lines.in.front Logical, default: true
-#' @param opacity Vector of numeric min/max values, default: (0.3,1)
-#' @param saturation Vector of numeric min/max values, default: (0.25, 1)
-#' @param thickness Vector of numeric min/max values, default: (0, 1)
+#' @param colors A String or vector of colors for positive and negative line weights. E.g. red or c(pos= red, neg = blue), default: c(pos= red, neg = blue)
+#' @param show.all.nodes A Logical variable, default: true
+#' @param threshold A vector of numeric min/max values, default: (0,1)
+#' @param thin.lines.in.front A logical, default: true
+#' @param opacity A vector of numeric min/max values for opacity, default: (0.3,1)
+#' @param saturation A vector of numeric min/max values for saturation, default: (0.25, 1)
+#' @param thickness A vector of numeric min/max values for thickness, default: (0, 1)
 #' @param node.size
-#' @param range  Vector of min/max values. Options are numeric,  “set.min”, “set.max”, “plot.min”, “plot.max”, default: (set.min, set.max)
-#' @param labels character vector - node labels, default: code names
-#' @param label.offset numeric vector - x and y value to offset labels from the coordinates of the points
-#' @param label.font.size integer - font size, default: size given in plot initialization
-#' @param label.font.color character - font color, default: color given in plot initialization
-#' @param label.font.family character - font style, default: font given in plot initialization
+#' @param range  A vector of min/max values. Options are numeric, set.min, set.max, plot.min, plot.max, default: (set.min, set.max)
+#' @param labels A character vector of node labels, default: code names
+#' @param label.offset A numeric vector of an x and y value to offset labels from the coordinates of the points
+#' @param label.font.size An integer which determines the font size for graph labels, default: enaplot$font.size
+#' @param label.font.color A character which determines the color of label font, default: enaplot$font.color
+#' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
 #' @param ... Additional parameters
 #'
 #' @keywords ENA, plot, network, nodes, edges

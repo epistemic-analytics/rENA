@@ -7,16 +7,16 @@
 #'
 #' @export
 #'
-#' @param units data frame - columns are the properties by which units will be formed
-#' @param conversation data frame - columns are the properties by which conversations will be accumulated
-#' @param codes data frame - columns are the codes for which the data has been coded
-#' @param metadata data frame - (OPTIONAL) - additional columns to include with other data
-#' @param model character - choice: EndPoint(E), AccumulatedTrajectory(A), or SeparateTrajectory(S)
-#' @param weight.by function - (OPTIONAL) - function to apply to values after accumulation
-#' @param mask matrix - (OPTIONAL) - 0s in matrix can be used to mask certain code co-occurences
-#' @param window character - “conversation (“C”) or default “moving stanza” (“MS” or “S”)
-#' @param window.size.back integer or character - positive int or “INF” (infinite), default is 1, the number of lines back to include window in stanza
-#' @param window.size.forward integer - default to NULL, the number of lines forward in stanza window
+#' @param units A data frame where the columns are the properties by which units will be constructed
+#' @param conversation A data frame where the columns are the properties by which conversations will be accumulated
+#' @param codes A data frame where the columns are the codes for which the text data has been coded
+#' @param metadata (optional) A data frame with additional columns to be include with other data (units/conversation/codes)
+#' @param model A character, choices: EndPoint(E), AccumulatedTrajectory(A), or SeparateTrajectory(S), default: EndPoint
+#' @param weight.by (optional) A function to apply to values after accumulation
+#' @param mask (optional) A binary matrix where 0s can be used to mask certain code co-occurences
+#' @param window A character, choices are conversation(C) or the default moving stanza (MS or S)
+#' @param window.size.back An integer or character, can be a positive int or INF (infinite), determines the number of lines back to include window in stanza, default: 1
+#' @param window.size.forward (optional) An integer that determines the number of lines forward in stanza window, default to NULL
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords data, accumulate

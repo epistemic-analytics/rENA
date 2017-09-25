@@ -10,19 +10,19 @@
 #'
 #' @section Public ENAdata properties:
 #'
-#' @field raw - data frame constructed from the unit, convo, code, and metadata parameters of ena.accumulate.data
-#' @field adjacency.vectors - data frame of adjacency vectors by row
-#' @field accumulated.adjacency.vectors - data frame of adjacency vectors accumulated per unit.
+#' @field raw - A data frame constructed from the unit, convo, code, and metadata parameters of ena.accumulate.data
+#' @field adjacency.vectors - A data frame of adjacency vectors by row
+#' @field accumulated.adjacency.vectors - A data frame of adjacency vectors accumulated per unit.
 #' @field adjacency.vectors.raw
-#' @field model - type of ENA model: EndPoint, Accumulated Trajectory, or Separate Trajectory
-#' @field units - data frame of columns that were combined to make the unique units. Includes column for trajectory selections. (unique)
-#' @field unit.names - vector of unique unit values
-#' @field metadata - data frame of unique metadata for each unit
-#' @field trajectories - list: $units - data frame, for a given row tells which trajectory it’s a part; $step - data frame, where along the trajectory a row sits
+#' @field model - The type of ENA model: EndPoint, Accumulated Trajectory, or Separate Trajectory
+#' @field units - A data frame of columns that were combined to make the unique units. Includes column for trajectory selections. (unique)
+#' @field unit.names - A vector of unique unit values
+#' @field metadata - A data frame of unique metadata for each unit
+#' @field trajectories - A list: $units - data frame, for a given row tells which trajectory it’s a part; $step - data frame, where along the trajectory a row sits
 #'
-#' @field codes - vector of code names
-#' @field function.call - string representation of function called and parameters provided
-#' @field function.params - list of all parameters sent to function call
+#' @field codes - A vector of code names
+#' @field function.call - The string representation of function called and parameters provided
+#' @field function.params - A list of all parameters sent to function call
 #'
 ####
 ENAdata = R6::R6Class("ENAdata", public = list(

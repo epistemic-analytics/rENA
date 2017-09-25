@@ -11,21 +11,21 @@
 #'
 #' @section Public ENAset properties:
 #'
-#' @field enadata - ENAdata object originally used to create the set
-#' @field points.raw - data frame, accumulated adjacency vectors per unit
-#' @field points.normed.centered - data frame of centered normed accumulated adjacency vectors for each unit
-#' @field points.rotated - data frame of point positions for number of dimensions specified in ena.make.set (i.e., the centered, normed, and rotated data)
+#' @field enadata - An ENAdata object originally used to create the set
+#' @field points.raw - A data frame containing accumulated adjacency vectors per unit
+#' @field points.normed.centered - A data frame of centered normed accumulated adjacency vectors for each unit
+#' @field points.rotated - A data frame of point positions for number of dimensions specified in ena.make.set (i.e., the centered, normed, and rotated data)
 #' @field points.rotated.non.zero
-#' @field line.weights - data frame of connections strengths per unit (Data frame of normed accumulated adjacency vectors for each unit)
+#' @field line.weights - A data frame of connections strengths per unit (Data frame of normed accumulated adjacency vectors for each unit)
 #' @field line.weights.non.zero
 #' @field line.weights.unrotated
-#' @field node.positions - data frame of positions for each code
-#' @field codes - vector of code names
-#' @field rotation.set - ENARotationSet object
-#' @field correlation - data frame of spearman and pearson correlations for each dimension specified
-#' @field variance - vector of variance accounted for by each dimension specified
-#' @field function.call - string representation of function called
-#' @field function.params - list of all parameters sent to function call
+#' @field node.positions - A data frame of positions for each code
+#' @field codes - A vector of code names
+#' @field rotation.set - An ENARotationSet object
+#' @field correlation - A data frame of spearman and pearson correlations for each dimension specified
+#' @field variance - A vector of variance accounted for by each dimension specified
+#' @field function.call - The string representation of function called
+#' @field function.params - A list of all parameters sent to function call
 #'
 ####
 

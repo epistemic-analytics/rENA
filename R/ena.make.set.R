@@ -8,13 +8,13 @@
 #' @export
 #'
 #' @param enadata \code{\link{ENAdata}} that will be used to generate an ENA set
-#' @param dimensions Number of dimensions to be in the set
-#' @param norm.by function - used to norm the data, default: sphere_norm_c()
-#' @param rotation.by function - used to rotate the data, default: ena.svd()
-#' @param rotation.params character vector - parameters for the rotation function
-#' @param rotation.set ENARotationSet object to use for rotation
-#' @param endpoints.only logical - determines whether to only show endpoints for trajectory models
-#' @param node.position.method function - used to determine node positions, default: lws.position.es()
+#' @param dimensions The number of dimensions to be in the set
+#' @param norm.by A function to be used to norm the data, default: sphere_norm_c()
+#' @param rotation.by A function to be used to rotate the data, default: ena.svd()
+#' @param rotation.params A character vector containing the parameters for the rotation function
+#' @param rotation.set An ENARotationSet object to use for rotation
+#' @param endpoints.only A logical variable which determines whether to only show endpoints for trajectory models
+#' @param node.position.method A function to be used to determine node positions, default: lws.position.es()
 #' @param check.unique.positions [TBD]
 #' @param ... additional parameters addressed in inner function
 #'

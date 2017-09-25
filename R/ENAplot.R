@@ -8,14 +8,13 @@
 #'
 # @param enaset ENAplot Object
 #
-# @param
 #'
 #' @section Public ENAplot methods:
 #'
 #' @section Public ENAplot properties
 #'
-#' @field enaset ENAset object from which the ENAplot was constructed
-#' @field plot plotly object used for data visualization
+#' @field enaset - The \code{\link{ENAset}} object from which the ENAplot was constructed
+#' @field plot - The plotly object used for data visualization
 #'
 ####
 

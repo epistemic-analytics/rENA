@@ -9,15 +9,15 @@
 #'
 #' @param enaplot \code{\link{ENAplot}} object to use for plotting
 #' @param points [TBD]
-#' @param label character - label for the group’s point
-#' @param confidence.interval character - markings to use, choices: “none”, “box”, “crosshair”, default: none
-#' @param outlier.interval character - markings to use, choices: “none”, “box”, “crosshair”, default: none
-#' @param color character - marker color, default: enaplot$color
-#' @param shape character - shape of marker, choices: square, triangle, diamond, circle, default: square
-#' @param label.offset numeric vector - x and y value to offset labels from the coordinates of the points
-#' @param label.font.size integer - font size, default: size given in plot initialization
-#' @param label.font.color character - font color, default: color given in plot initialization
-#' @param label.font.family character - font style, default: font given in plot initialization
+#' @param label A character which will be the label for the group’s point
+#' @param confidence.interval A character that determines which confidence interval type to use, choices: none, box, crosshair, default: none
+#' @param outlier.interval A character that determines which outlier interval type to use, choices: none, box, crosshair, default: none
+#' @param color A character, determines marker color, default: enaplot$color
+#' @param shape A character, determines marker shape, choices: square, triangle, diamond, circle, default: square
+#' @param label.offset A numeric vector containing an x and y value to offset labels from the coordinates of the points
+#' @param label.font.size An integer which determines the font size for graph label, default: enaplot$font.size
+#' @param label.font.color A character which determines the color of label font, default: enaplot$font.color
+#' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
 #' @param ... Additional parameters
 #'
 #' @keywords ENA, plot, group

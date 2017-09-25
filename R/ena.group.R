@@ -7,9 +7,9 @@
 #'
 #' @export
 #'
-#' @param enaset ENAset (optional)
-#' @param by Vector of values  the same length as units. Uses rotated points for group positions and normed data to get the group edge weights
-#' @param method Function - used on grouped points. Default: mean()
+#' @param enaset An \code{\link{ENAset}} (optional)
+#' @param by A vector of values the same length as units. Uses rotated points for group positions and normed data to get the group edge weights
+#' @param method A function that is used on grouped points. Default: mean()
 #'
 #' @keywords ENA, set, group
 #'#'

@@ -11,16 +11,16 @@
 #' @param points dataframe of matrix - first two column are X and Y coordinates, each row is a step in some trajectory
 #' @param by vector used to subset points into individual trajectories (subset of trajectories$units)
 #' @param labels character vector - point labels, same length as points or number of total points
-#' @param confidence.interval character - markings to use, choices: “none”, “box”, “crosshair”, default: none
-#' @param outlier.interval character - markings to use, choices: “none”, “box”, “crosshair”, default: none
-#' @param confidence.interval.values matrix/dataframe - x and y CI values for each point
-#' @param outlier.interval.values matrix/dataframe - x and y OI values for each point
-#' @param color character - marker color, default: enaplot$color
-#' @param shape character - shape of marker, choices: square, triangle, diamond, circle, default: circle
-#' @param label.offset numeric vector - x and y value to offset labels from the coordinates of the points
-#' @param label.font.size integer - font size, default: size given in plot initialization
-#' @param label.font.color character - font color, default: color given in plot initialization
-#' @param label.font.family character - font style, default: font given in plot initialization
+#' @param confidence.interval A character that determines which confidence interval type to use, choices: none, box, crosshair, default: none
+#' @param outlier.interval A character that determines which outlier interval type to use, choices: none, box, crosshair, default: none
+#' @param confidence.interval.values A matrix/dataframe where columns are CI x and y values for each point
+#' @param outlier.interval.values A matrix/dataframe where columns are OI x and y values for each point
+#' @param color A character, determines marker color, default: enaplot$color
+#' @param shape A character which determines the shape of markers, choices: square, triangle, diamond, circle, default: circle
+#' @param label.offset A numeric vector of an x and y value to offset labels from the coordinates of the points
+#' @param label.font.size An integer which determines the font size for graph labels, default: enaplot$font.size
+#' @param label.font.color A character which determines the color of label font, default: enaplot$font.color
+#' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
 #' @param ... Additional parameters
 #'
 #' @keywords ENA, plot, trajectory
