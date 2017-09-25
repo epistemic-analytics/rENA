@@ -1,6 +1,44 @@
+##
+#' @title Plot of ENA trajectories
+#'
+#' @description Function used to plot trajectories
+#'
+#' @details
+#'
+#' @export
+#'
+#' @param enaplot \code{\link{ENAplot}} object to use for plotting
+#' @param points dataframe of matrix - first two column are X and Y coordinates, each row is a step in some trajectory
+#' @param by vector used to subset points into individual trajectories (subset of trajectories$units)
+#' @param labels character vector - point labels, same length as points or number of total points
+#' @param confidence.interval character - markings to use, choices: “none”, “box”, “crosshair”, default: none
+#' @param outlier.interval character - markings to use, choices: “none”, “box”, “crosshair”, default: none
+#' @param confidence.interval.values matrix/dataframe - x and y CI values for each point
+#' @param outlier.interval.values matrix/dataframe - x and y OI values for each point
+#' @param color character - marker color, default: enaplot$color
+#' @param shape character - shape of marker, choices: square, triangle, diamond, circle, default: circle
+#' @param label.offset numeric vector - x and y value to offset labels from the coordinates of the points
+#' @param label.font.size integer - font size, default: size given in plot initialization
+#' @param label.font.color character - font color, default: color given in plot initialization
+#' @param label.font.family character - font style, default: font given in plot initialization
+#' @param ... Additional parameters
+#'
+#' @keywords ENA, plot, trajectory
+#'
+#' @seealso \code{\link{ena.plot}}
+#'
+#' @examples
+#' \dontrun{
+#' # Given an ENA plot
+#' ena.plot.trajectory(\code{\link{ENAplot}})
+#'
+#' }
+#' @return The  \code{\link{ENAplot}} provided to the function, with its plot updated to include the trajectories subsetted using the by parameter
+##
+
 ena.plot.trajectory = function(
   enaplot,
-  points,    #dataframe of points
+  points,
   by = NULL,
   labels = unique(enaplot$enaset$enadata$units),
   names = NULL,

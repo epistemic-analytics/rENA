@@ -1,3 +1,44 @@
+##
+#' @title Plot an ENA network
+#'
+#' @description Plot an ENA network: nodes and edges
+#'
+#' @details Plots a network, which includes nodes and the connecting edges provided in the edge weight matrix
+#'
+#' @export
+#'
+#' @param enaplot \code{\link{ENAplot}} object to use for plotting
+#' @param network dataframe or matrix - the edge weights for connecting nodes
+
+#' @param colors String or vector of colors for positive and negative line weights. E.g. “red” or c(pos= “red”, neg = “blue”), default: c(pos= “red”, neg = “blue”)
+#' @param show.all.nodes Logical, default: true
+#' @param threshold Vector of numeric min/max values, default: (0,1)
+#' @param thin.lines.in.front Logical, default: true
+#' @param opacity Vector of numeric min/max values, default: (0.3,1)
+#' @param saturation Vector of numeric min/max values, default: (0.25, 1)
+#' @param thickness Vector of numeric min/max values, default: (0, 1)
+#' @param node.size
+#' @param range  Vector of min/max values. Options are numeric,  “set.min”, “set.max”, “plot.min”, “plot.max”, default: (set.min, set.max)
+#' @param labels character vector - node labels, default: code names
+#' @param label.offset numeric vector - x and y value to offset labels from the coordinates of the points
+#' @param label.font.size integer - font size, default: size given in plot initialization
+#' @param label.font.color character - font color, default: color given in plot initialization
+#' @param label.font.family character - font style, default: font given in plot initialization
+#' @param ... Additional parameters
+#'
+#' @keywords ENA, plot, network, nodes, edges
+#'
+#' @seealso \code{\link{ena.plot}}, \code{ena.plot.points}
+#'
+#' @examples
+#' \dontrun{
+#' # Given an ENA plot
+#' ena.plot.set(\code{\link{ENAplot}})
+#'
+#' }
+#' @return The  \code{\link{ENAplot}} provided to the function, with its plot updated to include the nodes and provided connecting lines.
+##
+
 ena.plot.network = function(
   enaplot = NULL,
   network = NULL,

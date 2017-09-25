@@ -6,22 +6,24 @@
 #' @import data.table
 #' @export
 #'
-# @param file CSV, data.frame, or data.table
-# @param units String vector representing column names to use for units --- FORMERLY units.by  ####OLD
-# @param units data frame with unit columns and values #### NEW
-# @param units.by String vector of which units to include in the ENAset --- FORMERLY units
-# @param conversation String vector of column names to create the conversations --- FORMERLY conversations.by
-# @param codes String vector of column names to use as codes
-# @param window.size Integer used to select the size of each stanza window within a conversation
-# @param window.size.back [TBD]
-# @param window.size.forward [TBD]
-# @param weight.by string or function determining to convert codes to binary, allow weighted, or apply a correcion
-# @param binary Logical, whether to convert code values to binary or allow for weigthed values  --- NO LONGER INCLUDED
-# @param correction math operation by which to modify data for weighted values (i.e. log, sqrt) --- NO LONGER INCLUDED
-# @param units.selected deprecated
-# @param model - type of ENA model: endpoint or trajectory, if trajectory what type
-#'
 #' @section Public ENAdata methods:
+#'
+#' @section Public ENAdata properties:
+#'
+#' @field raw - data frame constructed from the unit, convo, code, and metadata parameters of ena.accumulate.data
+#' @field adjacency.vectors - data frame of adjacency vectors by row
+#' @field accumulated.adjacency.vectors - data frame of adjacency vectors accumulated per unit.
+#' @field adjacency.vectors.raw
+#' @field model - type of ENA model: EndPoint, Accumulated Trajectory, or Separate Trajectory
+#' @field units - data frame of columns that were combined to make the unique units. Includes column for trajectory selections. (unique)
+#' @field unit.names - vector of unique unit values
+#' @field metadata - data frame of unique metadata for each unit
+#' @field trajectories - list: $units - data frame, for a given row tells which trajectory it’s a part; $step - data frame, where along the trajectory a row sits
+#'
+#' @field codes - vector of code names
+#' @field function.call - string representation of function called and parameters provided
+#' @field function.params - list of all parameters sent to function call
+#'
 ####
 ENAdata = R6::R6Class("ENAdata", public = list(
 
@@ -87,8 +89,6 @@ ENAdata = R6::R6Class("ENAdata", public = list(
       codes = NULL,
       function.call = NULL,
       function.params = NULL,
-
-
     ####
     ## END: Public Properties
     ####

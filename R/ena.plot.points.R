@@ -1,4 +1,39 @@
-
+##
+#' @title Plots points using an ENA Plot
+#'
+#' @description Plot all or a subset of the points of an ENAplot using the plotly plotting library
+#'
+#' @details [TBD]
+#'
+#' @export
+#'
+#' @param enaplot \code{\link{ENAplot}} object to use for plotting
+#' @param points dataframe of matrix - first two column are X and Y coordinates
+#' @param labels character vector - point labels, same length as points or number of total points
+#' @param confidence.interval character - markings to use, choices: “none”, “box”, “crosshair”, default: none
+#' @param outlier.interval character - markings to use, choices: “none”, “box”, “crosshair”, default: none
+#' @param confidence.interval.values matrix/dataframe - x and y CI values for each point
+#' @param outlier.interval.values matrix/dataframe - x and y OI values for each point
+#' @param shape character - shape of markers, choices: square, triangle, diamond, circle, default: circle
+#' @param colors character vector - marker colors, if one given it is used for all
+#' @param label.offeset numeric vector - x and y value to offset labels from the coordinates of the points
+#' @param label.font.size		integer - size of font for graph labels, default: size given in plot initialization
+#' @param label.font.color		character - color of label font, default: color given in plot initialization
+#' @param label.font.family		character - font type, choices: Arial, Courier New, Times New Roman, default: font given in plot initialization
+#' @param ... additional parameters addressed in inner function
+#'
+#' @keywords ENA, plot, points
+#'
+#' @seealso \code{\link{ena.plot}}, \code{\link{ENAplot}}, \code{\link{ena.plot.group}}
+#'
+#' @examples
+#' \dontrun{
+#' #Given an \code{\link{ENAplot}}
+#' ena.plot.points(\code{\link{ENAplot}})
+#' }
+#'
+#' @return \code{\link{ENAplot}} The ENAplot provided to the function, with its plot updated to include the new points.
+##
 ena.plot.points = function(
   enaplot,
 

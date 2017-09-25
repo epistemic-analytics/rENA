@@ -1,28 +1,27 @@
 ##
 #' @title Accumulate Data from separate data frames
 #'
-#' @description This function accumulates rows of data.
+#' @description This function initializes an ENAdata object, processing conversations from coded data to generate adjacency vectors.
 #'
-#' @details [TBD]
+#' @details ENAData R6 Objects are created using this function. This accumulation receives separate data frames for units, codes, conversation, and optionally, metadata. It iterates through the data using information including units, conversation, and window size to process the conversations. Options for how the data is accumulated are endpoint, which is the standard, non-trajectory model, and two trajectory model types: accumulated and separate.
 #'
 #' @export
 #'
-#' @param units Data frame of unit columns and values
-#' @param conversation NEW data frame of conversation columns w/ values
-#' @param codes Columns used based on codes
-#' @param window.size.back Number of lines back to include window in stanza
-#' @param window.size.forward Number of lines forward in stanza window
-#' @param binary [TBD]
-#' @param metadata [TBD]
-#' @param model [TBD]
-#' @param weight.by [TBD]
-#' @param window [TBD]
-#' @param mask [TBD]
+#' @param units data frame - columns are the properties by which units will be formed
+#' @param conversation data frame - columns are the properties by which conversations will be accumulated
+#' @param codes data frame - columns are the codes for which the data has been coded
+#' @param metadata data frame - (OPTIONAL) - additional columns to include with other data
+#' @param model character - choice: EndPoint(E), AccumulatedTrajectory(A), or SeparateTrajectory(S)
+#' @param weight.by function - (OPTIONAL) - function to apply to values after accumulation
+#' @param mask matrix - (OPTIONAL) - 0s in matrix can be used to mask certain code co-occurences
+#' @param window character - “conversation (“C”) or default “moving stanza” (“MS” or “S”)
+#' @param window.size.back integer or character - positive int or “INF” (infinite), default is 1, the number of lines back to include window in stanza
+#' @param window.size.forward integer - default to NULL, the number of lines forward in stanza window
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords data, accumulate
 #'
-#' @seealso \code{\link{ena.split.codes}}, \code{\link{ena.make.set}}
+#' @seealso \code{\link{ENAdata}}, \code{\link{ena.make.set}}
 #'
 #' @examples
 #' \dontrun{
@@ -41,9 +40,10 @@
 #'   codes = codeNames
 #' )
 #' }
-#' @return \code{\link{ENAdata}} class object with accumulated data
+#' @return \code{\link{ENAdata}} object with data (adjacency vectors) accumulated from the provided data frames including unit and conversation info as well as code co-occurrences.
 #'
 ##
+
 ena.accumulate.data <- function(
 
   ##### NOTE: units, conversations, codes, and metadata must be data frames with the same number of rows
