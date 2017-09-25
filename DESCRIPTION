@@ -9,7 +9,8 @@ Authors@R: c(person("Cody L Marquart", role = c("aut", "cre"), email="cody.marqu
 Maintainer: Cody L Marquart <cody.marquart@wisc.edu>
 License: GPL (>= 2)
 LazyData: TRUE
-Depends: R (>= 2.10)
+Depends:
+    R (>= 2.10)
 LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppEigen
 Imports:
     data.table,
@@ -28,4 +29,4 @@ Imports:
 Suggests:
     microbenchmark,
     testthat
-RoxygenNote: 6.0.1
+RoxygenNote: 5.0.1

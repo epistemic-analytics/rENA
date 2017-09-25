@@ -140,7 +140,7 @@ Rcpp::List linderoth_pos_es(Eigen::MatrixXd adjMats, Eigen::MatrixXd t) { // = R
   if(min(evalsVec) < 0.001) {
     Rcpp::Environment base("package:base");
     Rcpp::Function message_r = base["message"];
-    message_r("Warning: Sigma not positive definite. Adding 0.1 to diagonal");
+    //message_r("Warning: Sigma not positive definite. Adding 0.1 to diagonal");
 
     sigma = sigma + (0.1 * MatrixXd::Identity(numNodes, numNodes));
   }
