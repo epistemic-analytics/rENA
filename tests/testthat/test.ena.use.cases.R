@@ -1,25 +1,24 @@
 suppressMessages(library(rENA, quietly = T, verbose = F))
 context("Test Use Cases");
 
-#Set up data
-fileName <- system.file("extdata", "rs.data.csv", package="rENA");
+fileName = system.file("extdata","rs.data.csv", package = "rENA")
 file = read.csv(fileName);
 codeNames = c("Tradeoffs", "Performance.Parameters", "Constraints.and.Requests", "Collaboration", "Data");
 
+accum = ena.accumulate.data(
+  units = file[,c("UserName","Condition")],
+  conversation = file[,c("Condition","GroupName")],
+  codes = file[,codeNames],
+  window.size.back = 4
+);
+
+set = ena.make.set(
+  enadata = accum,
+  rotation.by = ena.rotate.by.mean,
+  rotation.params = list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
+)
+
 test_that("Case 1: Group Plotting 1", {
-  accum = ena.accumulate.data(
-    units = file[,c("UserName","Condition")],
-    conversation = file[,c("Condition","GroupName")],
-    codes = file[,codeNames],
-    window.size.back = 4
-  );
-
-  set = ena.make.set(accum,
-                     rotation.by = ena.rotate.by.mean,
-                     rotation.params =
-                       list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
-  )
-
   ### GROUP PLOTTING VERSION 1
 
   unitNames = set$enadata$units
@@ -62,19 +61,19 @@ test_that("Case 1: Group Plotting 1", {
 
   ### END V2
 
-  ### Subset edge weights and plot Condition 1 Mean Network
-  first.game.lineweights = set$line.weights[first.game,]
-  first.game.mean = colMeans(first.game.lineweights)
-  plot %>% ena.plot.network(network = first.game.mean)
+   ### Subset edge weights and plot Condition 1 Mean Network
+   first.game.lineweights = set$line.weights[first.game,]
+   first.game.mean = colMeans(first.game.lineweights)
+   plot = ena.plot(set) %>% ena.plot.network(network = first.game.mean)
 
-  ### Subset edge weights and plot Condition 2 Mean Network
-  second.game.lineweights = set$line.weights[second.game,]
-  second.game.mean = colMeans(second.game.lineweights)
-  plot %>% ena.plot.network(network = second.game.mean)
+   ### Subset edge weights and plot Condition 2 Mean Network
+   second.game.lineweights = set$line.weights[second.game,]
+   second.game.mean = colMeans(second.game.lineweights)
+   plot = ena.plot(set) %>% ena.plot.network(network = second.game.mean)
 
-  ### Subset Plot subtracted mean networks
-  subtracted.network = first.game.mean - second.game.mean
-  plot %>% ena.plot.network(network = subtracted.network, color = c(pos = "red", neg = "blue") )
+   ### Subset Plot subtracted mean networks
+   subtracted.network = first.game.mean - second.game.mean
+   plot = ena.plot(set) %>% ena.plot.network(network = subtracted.network, color = c(pos = "red", neg = "blue") )
 
   testthat::expect_is(plot, c("ENAplot", "R6"));
 })
@@ -83,11 +82,11 @@ test_that("Case 2: Individual Plotting", {
 
   first.game = unitNames$Condition == "FirstGame"
   first.game.points = set$points.rotated[first.game,]
-  plot %<>% ena.plot.points(points = first.game.points)
+  plot = ena.plot(set) %>% ena.plot.points(points = first.game.points)
 
-  user.akashv.rows = which(set$enadata$units$UserName == "akash v")
+  user.akashv.rows = set$enadata$units$UserName == "akash v"
   user.akashv = set$line.weights[user.akashv.rows,]
-  plot %<>% ena.plot.network(network = user.akashv)
+  plot = ena.plot(set) %>% ena.plot.network(network = user.akashv)
 
   testthat::expect_is(plot, c("ENAplot", "R6"));
 })
@@ -99,9 +98,9 @@ test_that("Case 3: Group Plotting 2", {
   ####OR TRY THIS WAY####
   groups = ena.group(set, by = (set$enadata$metadata$C.Change=="Pos.Change"), method="mean") #Test to make sure this returns only 1 group
 
-  plot %<>% ena.plot.points(points = groups$points[groups$group.name=="Pos.Change",], labels = "Positive Confidence Change", shape = "square")
+  plot = ena.plot(set) %>% ena.plot.points(points = groups$points[groups$group.name=="Pos.Change",], labels = "Positive Confidence Change", shape = "square")
 
-  plot %<>% ena.plot.points(points = groups$points[groups$points=="Neg.Change",], labels = "Negative Confidence Change", shape = "square")
+  plot = ena.plot(set) %>% ena.plot.points(points = groups$points[groups$points=="Neg.Change",], labels = "Negative Confidence Change", shape = "square")
 
   testthat::expect_is(plot, c("ENAplot", "R6"))
 })
