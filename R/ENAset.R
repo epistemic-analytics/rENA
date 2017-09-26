@@ -6,27 +6,27 @@
 #' @import data.table
 #' @export
 #'
-# @param enadata ENAdata Object
-# @param dims Number of dimensions
-# @param samples Number of samples
-# @param inPar Peform in parallel
-# @param binary Binary or Weighted
-# @param correction Function to perform weighted correction
-# @param norm.by Function to sphere normalize.  Provided:\cr
-#   \code{dont_sphere_norm_c} - Default\cr
-#   \code{sphere_norm_c}
-# @param center.data Function to center data. Provided:\cr
-#   \code{center_data_c} - Default
-# @param optim.method Function to optimize node positions. Provided:\cr
-#   \code{do_optimization} - Default\cr
-#   \code{do_optimization_2}
-# @param node.position.method [TBD]
-# @param check.unique.positions Check for uniqueness in positions
-# @param set.seed Force uniqueness across function calls, e.g - set.seed=42\cr Defaults to FALSE
-# @param rotate.means [TBD]
-# @param rotate.means.by [TBD]
 #'
 #' @section Public ENAset methods:
+#'
+#' @section Public ENAset properties:
+#'
+#' @field enadata - An ENAdata object originally used to create the set
+#' @field points.raw - A data frame containing accumulated adjacency vectors per unit
+#' @field points.normed.centered - A data frame of centered normed accumulated adjacency vectors for each unit
+#' @field points.rotated - A data frame of point positions for number of dimensions specified in ena.make.set (i.e., the centered, normed, and rotated data)
+#' @field points.rotated.non.zero
+#' @field line.weights - A data frame of connections strengths per unit (Data frame of normed accumulated adjacency vectors for each unit)
+#' @field line.weights.non.zero
+#' @field line.weights.unrotated
+#' @field node.positions - A data frame of positions for each code
+#' @field codes - A vector of code names
+#' @field rotation.set - An ENARotationSet object
+#' @field correlation - A data frame of spearman and pearson correlations for each dimension specified
+#' @field variance - A vector of variance accounted for by each dimension specified
+#' @field function.call - The string representation of function called
+#' @field function.params - A list of all parameters sent to function call
+#'
 ####
 
 ENAset = R6::R6Class("ENAset",
@@ -91,9 +91,6 @@ ENAset = R6::R6Class("ENAset",
     ## Public Properties
     ####
 
-    #unit.names = NULL,
-
-
      #####changed to list - function.params
     # check.unique.positions = NULL,
     # optim.method = NULL,
@@ -134,7 +131,6 @@ ENAset = R6::R6Class("ENAset",
     line.weights.non.zero = NULL,
     line.weights.unrotated = NULL,
 
-    #### NEW
     node.positions = NULL,  #was nodes$positions$scaled
 
     codes = NULL,

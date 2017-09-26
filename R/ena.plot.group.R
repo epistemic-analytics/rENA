@@ -1,31 +1,30 @@
 ##
 #' @title Plot of ENA set groups
 #'
-#' @description Generate a plot of a given groups for an ENA plot.
+#' @description Plot a group point for inputted points
 #'
-#' @details [TBD]
+#' @details Plots a group mean point for the inputted points as well as confidence and outlier intervals if specified.
 #'
 #' @export
 #'
-#' @param enaplot \code{\link{ENAplot}} used to generate the plot
-#' @param confidence.interval Show confidence intervals of a unit
+#' @param enaplot \code{\link{ENAplot}} object to use for plotting
 #' @param points [TBD]
 #' @param method [TBD]
-#' @param colors [TBD]
-#' @param shape [TBD]
-#' @param outlier.interval [TBD]
-#' @param labels [TBD]
-#' @param label.offset [TBD]
-#' @param label.font.size [TBD]
-#' @param label.font.color [TBD]
-#' @param label.font.family [TBD]
-#' @param ... Additional parameters addressed in inner function
+#' @param labels A character which will be the label for the group’s point
+#' @param confidence.interval A character that determines which confidence interval type to use, choices: none, box, crosshair, default: none
+#' @param outlier.interval A character that determines which outlier interval type to use, choices: none, box, crosshair, default: none
+#' @param colors A character, determines marker color, default: enaplot$color
+#' @param shape A character, determines marker shape, choices: square, triangle, diamond, circle, default: square
+#' @param label.offset A numeric vector containing an x and y value to offset labels from the coordinates of the points
+#' @param label.font.size An integer which determines the font size for graph label, default: enaplot$font.size
+#' @param label.font.color A character which determines the color of label font, default: enaplot$font.color
+#' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
+#' @param ... Additional parameters
 #'
 #' @import magrittr
+#' @keywords ENA, plot, group
 #'
-#' @keywords ENA, plot, set
-#'
-#' @seealso \code{\link{ena.make.set}}, \code{ena.update.set}
+#' @seealso \code{\link{ena.plot}}, \code{ena.plot.points}
 #'
 #' @examples
 #' \dontrun{
@@ -33,7 +32,7 @@
 #' ena.plot.set(\code{\link{ENAplot}})
 #'
 #' }
-#' @return Plot of groups of \code{\link{ENAplot}}
+#' @return The  \code{\link{ENAplot}} provided to the function, with its plot updated to include the new group point.
 ##
 ena.plot.group <- function(
   enaplot,

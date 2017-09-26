@@ -1,3 +1,44 @@
+##
+#' @title Plot an ENA network
+#'
+#' @description Plot an ENA network: nodes and edges
+#'
+#' @details Plots a network, which includes nodes and the connecting edges provided in the edge weight matrix
+#'
+#' @export
+#'
+#' @param enaplot \code{\link{ENAplot}} object to use for plotting
+#' @param network dataframe or matrix - the edge weights for connecting nodes
+
+#' @param colors A String or vector of colors for positive and negative line weights. E.g. red or c(pos= red, neg = blue), default: c(pos= red, neg = blue)
+#' @param show.all.nodes A Logical variable, default: true
+#' @param threshold A vector of numeric min/max values, default: (0,1)
+#' @param thin.lines.in.front A logical, default: true
+#' @param opacity A vector of numeric min/max values for opacity, default: (0.3,1)
+#' @param saturation A vector of numeric min/max values for saturation, default: (0.25, 1)
+#' @param thickness A vector of numeric min/max values for thickness, default: (0, 1)
+#' @param node.size
+#' @param range  A vector of min/max values. Options are numeric, set.min, set.max, plot.min, plot.max, default: (set.min, set.max)
+#' @param labels A character vector of node labels, default: code names
+#' @param label.offset A numeric vector of an x and y value to offset labels from the coordinates of the points
+#' @param label.font.size An integer which determines the font size for graph labels, default: enaplot$font.size
+#' @param label.font.color A character which determines the color of label font, default: enaplot$font.color
+#' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
+#' @param ... Additional parameters
+#'
+#' @keywords ENA, plot, network, nodes, edges
+#'
+#' @seealso \code{\link{ena.plot}}, \code{ena.plot.points}
+#'
+#' @examples
+#' \dontrun{
+#' # Given an ENA plot
+#' ena.plot.set(\code{\link{ENAplot}})
+#'
+#' }
+#' @return The  \code{\link{ENAplot}} provided to the function, with its plot updated to include the nodes and provided connecting lines.
+##
+
 #' @importFrom scales rescale
 ena.plot.network = function(
   enaplot = NULL,
