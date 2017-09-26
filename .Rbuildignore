@@ -2,8 +2,9 @@
 ^\.Rproj\.user$
 /\.Rproj\.user/
 ^\.gitlab-ci\.yml
-^inst/extdata/bigdata/.*
-^inst/extdata/small-data/.*
+^inst/extdata/.*
+^inst/docker/.*
+^demo/backup/
 ^.*.\.tar\.gz$
 ^\.git/.*
 /\.DS_Store$
