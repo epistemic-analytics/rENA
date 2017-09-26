@@ -5,12 +5,11 @@
 using namespace Rcpp;
 using namespace arma;
 
-//' @name ref_window_sum
-//' @title ref_window_sum
-//' @param df dataframe
-//' @param binary logical
-//' @description TBD
-//' @export
+// @name ref_window_sum
+// @title ref_window_sum
+// @param df dataframe
+// @param binary logical
+// @description TBD
 // [[Rcpp::export]]
 DataFrame ref_window_sum(
   DataFrame df,

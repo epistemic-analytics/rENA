@@ -1,27 +1,26 @@
 ##
-#' @title Gets a conversation from an ENA set
+# @title Gets a conversation from an ENA set
 #
-#' @description Gets a conversation from an ENA set from a given ENA data object.
+# @description Gets a conversation from an ENA set from a given ENA data object.
 #
-#' @export
-#' @param data.file data.frame or file path to CSV
-#' @param conversations Vector of conversations
-# @param filter.by
-# @param code.cols Columns of codes
-# @param referants.only Only return rows that are coded for a column in code.cols or are contained in a window
-# @param metadata.cols Vector of additional metadata columns
+# @param data.file data.frame or file path to CSV
+# @param conversations Vector of conversations
+#@param filter.by
+#@param code.cols Columns of codes
+#@param referants.only Only return rows that are coded for a column in code.cols or are contained in a window
+#@param metadata.cols Vector of additional metadata columns
 #
-# @keywords ENA, get, conversation
+#@keywords ENA, get, conversation
 #
-# @seealso \code{\link{ena.make.set}}
+#@seealso \code{\link{ena.make.set}}
 #
-#' @examples
-#' \dontrun{
-#' #Given an ENA set
-#' ena.get.conversation(\code{\link{ENAset}})
-#' }
+# @examples
+# \dontrun{
+# #Given an ENA set
+# ena.get.conversation(\code{\link{ENAset}})
+# }
 #
-#' @return Conversation from desired \code{\link{ENAset}}
+# @return Conversation from desired \code{\link{ENAset}}
 ##
 ena.get.conversation <- function(
   data.file,

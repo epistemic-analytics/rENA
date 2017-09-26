@@ -51,7 +51,7 @@ test_that("Make a simple trajectory set", {
   df.set.lws = ena.make.set(df.accum.traj, node.position.method = lws.positions)
 
   # testthat::expect_equal(
-  #   length(attr(df.set.lws$points.rotated, rENA::opts$UNIT_NAMES)[,UserName]),
+  #   length(attr(df.set.lws$points.rotated, opts$UNIT_NAMES)[,UserName]),
   #   517
   # );
 })

@@ -81,68 +81,26 @@ linderoth_pos <- function(adjMats, t) {
     .Call('_rENA_linderoth_pos', PACKAGE = 'rENA', adjMats, t)
 }
 
-#' @title Multiobjective, Component by Component, with Ellipsoidal Scaling
-#' @description [TBD]
-#' @param adjMats [TBD]
-#' @param t [TBD]
 linderoth_pos_es <- function(adjMats, t) {
     .Call('_rENA_linderoth_pos_es', PACKAGE = 'rENA', adjMats, t)
 }
 
-#' @title Merge data frame columns
-#' @description TBD
-#' @export
-#' @param df Dataframe
-#' @param cols Vector
-#' @param sep Character seperator
 merge_columns_c <- function(df, cols, sep = ".") {
     .Call('_rENA_merge_columns_c', PACKAGE = 'rENA', df, cols, sep)
 }
-
-#' @title ref_window_df2
-#' @name ref_window_df2
-#' @description TBD
-#' @param df A dataframe
-#' @param windowSize Integer for number of rows in the stanza window
-#' @param binary Logical, treat codes as binary or leave as weighted
-#' FIXME Delete this function
-NULL
 
 rows_to_co_occurrences <- function(df, binary = TRUE) {
     .Call('_rENA_rows_to_co_occurrences', PACKAGE = 'rENA', df, binary)
 }
 
-#' @title ref_window_df
-#' @name ref_window_df
-#'
-#' @description TBD
-#' @param df A dataframe
-#' @param windowSize Integer for number of rows in the stanza window
-#' @param windowForward Integer for number of rows in the stanza window forward
-#' @param binary Logical, treat codes as binary or leave as weighted
-#' @param binaryStanzas Logical, treat codes as binary or leave as weighted
-#' @export
 ref_window_df <- function(df, windowSize = 1, windowForward = 0, binary = TRUE, binaryStanzas = FALSE) {
     .Call('_rENA_ref_window_df', PACKAGE = 'rENA', df, windowSize, windowForward, binary, binaryStanzas)
 }
 
-#' @title ref_window_lag
-#' @name ref_window_lag
-#' @description TBD
-#' @param df A dataframe
-#' @param windowSize Integer for number of rows in the stanza window
-#' @param binary Logical, treat codes as binary or leave as weighted
-#' @export
 ref_window_lag <- function(df, windowSize = 0L, binary = TRUE) {
     .Call('_rENA_ref_window_lag', PACKAGE = 'rENA', df, windowSize, binary)
 }
 
-#' @name ref_window_sum
-#' @title ref_window_sum
-#' @param df dataframe
-#' @param binary logical
-#' @description TBD
-#' @export
 ref_window_sum <- function(df, binary = TRUE) {
     .Call('_rENA_ref_window_sum', PACKAGE = 'rENA', df, binary)
 }
@@ -151,3 +109,7 @@ svector_to_ut <- function(v) {
     .Call('_rENA_svector_to_ut', PACKAGE = 'rENA', v)
 }
 
+# Register entry points for exported C++ functions
+methods::setLoadAction(function(ns) {
+    .Call('_rENA_RcppExport_registerCCallable', PACKAGE = 'rENA')
+})

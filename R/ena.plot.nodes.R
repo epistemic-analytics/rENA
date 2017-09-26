@@ -13,7 +13,7 @@ ena.plot.nodes = function(
   node.size = 6
 
 ) {
-  # df = data.frame(enaplot$enaset$line.weights, attr(enaplot$enaset$line.weights, rENA::opts$UNIT_NAMES));
+  # df = data.frame(enaplot$enaset$line.weights, attr(enaplot$enaset$line.weights, opts$UNIT_NAMES));
   # dfDT= data.table::as.data.table(df);
   #
   # dfDT$handle = merge_columns_c(dfDT, units.by, sep="."); #rownames(df);

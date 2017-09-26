@@ -70,16 +70,15 @@ arma::mat rows_to_co_occurrences(DataFrame df, bool binary = true) {
   return df_CoOccurred;
 }
 
-//' @title ref_window_df
-//' @name ref_window_df
-//'
-//' @description TBD
-//' @param df A dataframe
-//' @param windowSize Integer for number of rows in the stanza window
-//' @param windowForward Integer for number of rows in the stanza window forward
-//' @param binary Logical, treat codes as binary or leave as weighted
-//' @param binaryStanzas Logical, treat codes as binary or leave as weighted
-//' @export
+// @title ref_window_df
+// @name ref_window_df
+// @description TBD
+// @param df A dataframe
+// @param windowSize Integer for number of rows in the stanza window
+// @param windowForward Integer for number of rows in the stanza window forward
+// @param binary Logical, treat codes as binary or leave as weighted
+// @param binaryStanzas Logical, treat codes as binary or leave as weighted
+// [[Rcpp::interfaces(r, cpp)]]
 // [[Rcpp::export]]
 DataFrame ref_window_df(
     DataFrame df,
@@ -153,89 +152,15 @@ DataFrame ref_window_df(
 }
 
 
-//' @title ref_window_df2
-//' @name ref_window_df2
-//' @description TBD
-//' @param df A dataframe
-//' @param windowSize Integer for number of rows in the stanza window
-//' @param binary Logical, treat codes as binary or leave as weighted
-//' FIXME Delete this function
-NumericMatrix ref_window_df2(
-    DataFrame df,
-    int windowSize = 1,
-    bool binary = true
-) {
-  int dfRows = df.nrows();
-  int dfCols = df.size();
-  int numCoOccurences = ( (dfCols * (dfCols + 1)) / 2) - dfCols;
-
-  NumericMatrix df_CoOccurred(dfRows, numCoOccurences);
-  NumericMatrix df_asMatrix = toNumericMatrix_(df);
-
-  for(int row = 0; row < dfRows; row++) {
-    /** The rows in the CurrentWindow. CurrentRow + ReferringRows == windowSize */
-    NumericMatrix currRows = df_asMatrix( Range( (row-(windowSize-1)>=0)?(row-(windowSize-1)):0,row ), _ );
-
-    /** Sum of the entire CurrentWindow */
-    NumericVector currRowsSummed1 = Rcpp::colSums(currRows);
-
-    /**
-     * The co-occurrences in the CurrentWindow as vector representing
-     * the upper-triangle.
-     */
-    NumericVector toUT = vector_to_ut2(currRowsSummed1);
-
-    /**
-     * The ReferringRows in the CurrentWindow have to be calculating
-     * separately, so they can then be subtracted from the CurrentWindow.
-     */
-    if(windowSize > 1 && row-1>=0) {
-      /** Select ReferringRows for the CurrentWindow */
-      NumericMatrix currRow_refs = df_asMatrix( Range( (row-(windowSize-1)>=0) ? (row-(windowSize-1)): 0, (row-1>0)?row-1:0 ), _ );
-
-      /** Sum the ReferringRows for the CurrentWindow */
-      NumericVector currRow_refsSummed = Rcpp::colSums(currRow_refs);
-      // Rcpp::Rcout << "Sums " << row << ":" << std::endl << currRow_refsSummed << std::endl << std::endl;
-
-      /**
-      * The co-occurrences for the sum of ReferringRows as a vector representing
-      * the upper-triangle.
-      */
-      NumericVector toUT_refs = vector_to_ut2(currRow_refsSummed);
-
-      /**
-       * Subtraction of ReferringRows from the CurrentWindow represents the
-       * co-occurrences between the CurrentRow and any other Row in the
-       * CurrentWindow
-       */
-      NumericVector toUT_subs = toUT - toUT_refs;
-
-      df_CoOccurred.row(row) = toUT_subs;
-    } else {
-      //Rcpp::Rcout << "toUT1: " << toUT << std::endl;
-      //arma::rowvec rowV(toUT);
-      // Rcpp::Rcout << "toUT2: " << rowV << std::endl;
-      // df_CoOccurred.row(row) = trans(toUT);
-      df_CoOccurred.row(row) = toUT;
-    }
-  }
-
-  if(binary == true) {
-    //df_CoOccurred.elem( find(df_CoOccurred > 0) ).ones();
-  }
-
-  //Rcpp::Rcout << "CoOccur: " << df_CoOccurred << std::endl;
-  return (df_CoOccurred);
-}
-
-
-//' @title ref_window_lag
-//' @name ref_window_lag
-//' @description TBD
-//' @param df A dataframe
-//' @param windowSize Integer for number of rows in the stanza window
-//' @param binary Logical, treat codes as binary or leave as weighted
-//' @export
+//
+// @title ref_window_lag
+// @name ref_window_lag
+// @description TBD
+// @param df A dataframe
+// @param windowSize Integer for number of rows in the stanza window
+// @param binary Logical, treat codes as binary or leave as weighted
+//
+// [[Rcpp::interfaces(r, cpp)]]
 // [[Rcpp::export]]
 DataFrame ref_window_lag(
     DataFrame df,
@@ -261,16 +186,3 @@ DataFrame ref_window_lag(
 
   return wrap(df_LagSummed);
 }
-
-/*** R
- # acc = ena.accumulate.data.file(
- #   df,
- #   units.by = c("UserName","Condition"),
- #   conversations.by = c("ActivityNumber","GroupName"),
- #   codes = codeNames[1:4],
- #   window.size.back = 3,
- #   window.size.forward = Inf,
- #   weight.by = "Binary",
- #   model = "EndPoint"
- # )
-*/

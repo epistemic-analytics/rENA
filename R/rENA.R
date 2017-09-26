@@ -20,17 +20,15 @@
 #' @useDynLib rENA
 NULL
 
-#' @title Default rENA constants
-#' @description Default rENA constants
-#' @export
+# @title Default rENA constants
+# @description Default rENA constants
 opts = list (
   UNIT_NAMES = "ena.unit.names",
   TRAJ_TYPES = c("accumulated","non-accumulated")
 )
 
-#' @title Default colors used for plotting.
-#' @description Default colors for plotting
-#' @export
+# @title Default colors used for plotting.
+# @description Default colors for plotting
 default.colors = c(I("blue"), I("red"))
 
 # UNIT_NAMES = "ena.unit.names"

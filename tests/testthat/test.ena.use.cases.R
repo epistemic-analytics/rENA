@@ -159,7 +159,7 @@ test_that("Case 7: Trajectories", {
   first.game.rows = set$enadata$trajectories$units$Condition == "FirstGame"
   first.game.points = set$points.rotated[first.game.rows, ]
   first.game.steps = set$enadata$trajectories$step$ActivityNumber[first.game.rows]
-  first.game.means = aggregate(first.game.points, by = first.game.steps, FUN = "mean")
+  # first.game.means = aggregate(first.game.points, by = first.game.steps, FUN = "mean")
 
   # plot = ena.plot.trajectory(plot, set$rotated.points[first.game.points,], by = set$enadata$units$UserName[first.game.rows], shape = "circle")
 })

@@ -13,7 +13,7 @@ ena.rotate.by.mean = function(self, ...) {
     groups = list(groups);
   }
   data = self$line.weights;
-  attrData = self$enadata$metadata; # attr(data, rENA::opts$UNIT_NAMES)
+  attrData = self$enadata$metadata; # attr(data, opts$UNIT_NAMES)
 
   data = scale(data, scale=F, center=T);
 
