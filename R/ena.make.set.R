@@ -3,24 +3,24 @@
 #'
 #' @description Generates an ENA set from a given ENA data object.
 #'
-#' @details [TBD]
+#' @details This function generates an ENAset object from an ENAdata object. Using the provided accumulation and additional parameters this function processes the accumulated data to create an ENAset which contains information on the locations of the the points and nodes, as well as line weights for node connections.
 #'
 #' @export
 #'
 #' @param enadata \code{\link{ENAdata}} that will be used to generate an ENA set
-#' @param dimensions Number of dimensions to be in the set
-#' @param norm.by [TBD]
-#' @param rotation.by [TBD]
-#' @param rotation.params [TBD]
-#' @param rotation.set [TBD]
-#' @param endpoints.only [TBD]
-#' @param node.position.method [TBD]
+#' @param dimensions The number of dimensions to be in the set
+#' @param norm.by A function to be used to norm the data, default: sphere_norm_c()
+#' @param rotation.by A function to be used to rotate the data, default: ena.svd()
+#' @param rotation.params A character vector containing the parameters for the rotation function
+#' @param rotation.set An ENARotationSet object to use for rotation
+#' @param endpoints.only A logical variable which determines whether to only show endpoints for trajectory models
+#' @param node.position.method A function to be used to determine node positions, default: lws.position.es()
 #' @param check.unique.positions [TBD]
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords ENA, generate, set
 #'
-#' @seealso \code{\link{ena.accumulate.data}}, \code{\link{ena.split.codes}}
+#' @seealso \code{\link{ena.accumulate.data}}, \code{\link{ENAset}}
 #'
 #' @examples
 #' \dontrun{
@@ -28,7 +28,7 @@
 #' ena.make.set(\code{\link{ENAdata}})
 #' }
 #'
-#' @return \code{\link{ENAset}} class object
+#' @return \code{\link{ENAset}} class object that can be further processed for analysis or plotting
 ##
 ena.make.set <- function(
   enadata,
@@ -56,7 +56,7 @@ ena.make.set <- function(
   #position.method=egr.positions, #-> node.position.method
 
   ### what to do with these 2?
-  check.unique.positions=F,
+  #check.unique.positions=F,
   # set.seed = F,
 
   ### leaving for now so testing can occur w/o errors

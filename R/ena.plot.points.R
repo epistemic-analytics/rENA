@@ -1,4 +1,39 @@
-
+##
+#' @title Plots points using an ENA Plot
+#'
+#' @description Plot all or a subset of the points of an ENAplot using the plotly plotting library
+#'
+#' @details [TBD]
+#'
+#' @export
+#'
+#' @param enaplot \code{\link{ENAplot}} object to use for plotting
+#' @param points A dataframe of matrix where the first two column are X and Y coordinates
+#' @param labels A character vector of point labels, same length as points or number of total points
+#' @param confidence.interval A character determining markings to use, choices: none, box, crosshair, default: none
+#' @param outlier.interval A character determining markings to use, choices: none, box, crosshair, default: none
+#' @param confidence.interval.values A matrix/dataframe where columns are CI x and y values for each point
+#' @param outlier.interval.values A matrix/dataframe where columns are OI x and y values for each point
+#' @param shape A character which determines the shape of markers, choices: square, triangle, diamond, circle, default: circle
+#' @param colors A character vector of the marker colors, if one given it is used for all, otherwise must be same length as points
+#' @param label.offeset numeric vector - x and y value to offset labels from the coordinates of the points
+#' @param label.font.size An integer which determines the font size for graph labels, default: enaplot$font.size
+#' @param label.font.color A character which determines the color of label font, default: enaplot$font.color
+#' @param label.font.family	A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
+#' @param ... additional parameters addressed in inner function
+#'
+#' @keywords ENA, plot, points
+#'
+#' @seealso \code{\link{ena.plot}}, \code{\link{ENAplot}}, \code{\link{ena.plot.group}}
+#'
+#' @examples
+#' \dontrun{
+#' #Given an \code{\link{ENAplot}}
+#' ena.plot.points(\code{\link{ENAplot}})
+#' }
+#'
+#' @return \code{\link{ENAplot}} The ENAplot provided to the function, with its plot updated to include the new points.
+##
 ena.plot.points = function(
   enaplot,
 

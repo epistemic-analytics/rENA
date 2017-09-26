@@ -8,9 +8,14 @@
 #'
 # @param enaset ENAplot Object
 #
-# @param
 #'
 #' @section Public ENAplot methods:
+#'
+#' @section Public ENAplot properties
+#'
+#' @field enaset - The \code{\link{ENAset}} object from which the ENAplot was constructed
+#' @field plot - The plotly object used for data visualization
+#'
 ####
 
 ENAplot = R6::R6Class("ENAplot",
