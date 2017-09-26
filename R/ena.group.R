@@ -29,8 +29,16 @@ ena.group <- function(
 ) {
   run.method = function(pts) {
     points.dt = data.table::data.table(pts);
-    points.dt.means = points.dt[, lapply(.SD,method), by=by];
+    if(is.logical(by)) {
+      points.dt.means = points.dt[by, lapply(.SD,method),]; # by=by];
+    } else {
+      points.dt.means = points.dt[, lapply(.SD,method), by=by];
+    }
     return(as.data.frame(points.dt.means[,colnames(points.dt),with=F]))
+  }
+
+  if(is.character(method)) {
+    method = get(method)
   }
 
   if("ENAset" %in% class(enaset)) {

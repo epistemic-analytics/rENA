@@ -2,7 +2,8 @@ suppressMessages(library(rENA, quietly = T, verbose = F))
 context("Test creating groups");
 
 df <- system.file("extdata", "rs.data.csv", package="rENA")
-codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
+# codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
+codeNames = c('Data','Technical.Constraints','Performance.Parameters','Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
 accum = ena.accumulate.data.file(df, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
 set = ena.make.set(accum, position.method = lws.positions.es)
 
@@ -40,3 +41,4 @@ test_that("Use custom method", {
   #   expected = 48
   # );
 })
+

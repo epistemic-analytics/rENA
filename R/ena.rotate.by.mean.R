@@ -3,7 +3,7 @@
 #' @param self [TBD]
 #' @param ... [TBD]
 #'
-#' @return
+#' @return matrix
 #' @export
 ena.rotate.by.mean = function(self, ...) {
   args = list(...);

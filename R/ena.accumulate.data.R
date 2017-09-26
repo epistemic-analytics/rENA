@@ -75,6 +75,7 @@ ena.accumulate.data <- function(
   df <- cbind(units, conversation);
   df <- cbind(df, codes);
 
+  metadata = data.table::as.data.table(metadata)
   if(!is.null(metadata) && nrow(metadata) == nrow(df)) {
     df <- cbind(df, metadata);
   }
@@ -106,7 +107,7 @@ ena.accumulate.data <- function(
     weight.by = weight.by,
 
     model = model,
-
+    mask = mask,
     ...
   );
 

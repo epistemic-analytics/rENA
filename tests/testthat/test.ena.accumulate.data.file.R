@@ -168,11 +168,10 @@ test_that("Test trajectories", {
 test_that("Test accumulation with data.frame and matrix", {
   df.file <- system.file("extdata", "rs.data.csv", package="rENA")
 
-  codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
+  codeNames = c('Data','Technical.Constraints','Performance.Parameters','Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
   df.csv = read.csv(df.file)
 
   df.accum = ena.accumulate.data.file(df.csv, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
-
   df.accum2 = ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
 
   testthat::expect_is(df.csv, "data.frame")

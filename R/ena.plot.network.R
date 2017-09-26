@@ -1,3 +1,4 @@
+#' @importFrom scales rescale
 ena.plot.network = function(
   enaplot = NULL,
   network = NULL,
@@ -51,11 +52,12 @@ ena.plot.network = function(
     dim(colors.hsv) = c(3,2);
   }
 
-  mat = attr(enaplot$enaset$enadata$adjacency.vectors.raw,"adjacency.matrix");
+  mat = enaplot$enaset$enadata$adjacency.matrix; #attr(enaplot$enaset$enadata$adjacency.vectors.raw,"adjacency.matrix");
   for (i in 1:ncol(mat)) {
-    v0 <- enaplot$enaset$node.positions[ node.rows==mat[1,i],];
-    v1 <- enaplot$enaset$node.positions[ node.rows==mat[2,i],];
-    nodes[node.rows==mat[,i],]$weight = nodes[node.rows==mat[,i],]$weight + network.thickness[i];
+    v0 <- enaplot$enaset$node.positions[node.rows==mat[1,i], ];
+    v1 <- enaplot$enaset$node.positions[node.rows==mat[2,i], ];
+    nodes[node.rows==mat[1,i],]$weight = nodes[node.rows==mat[1,i],]$weight + network.thickness[i];
+    nodes[node.rows==mat[2,i],]$weight = nodes[node.rows==mat[2,i],]$weight + network.thickness[i];
 
     color = NULL
     if(i %in% pos.inds) {

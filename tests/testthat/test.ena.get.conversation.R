@@ -11,7 +11,7 @@ test_that("Getting convserations from data.frame", {
   convs2 = ena.get.conversation(df.file, conversations2)
 
   testthat::expect_equal(length(names(convs)), 18);
-  testthat::expect_equal(names(convs[[" 2"]]), c("PAM","Pneumatic","Series Elastic","Hydraulic","Electric"));
+  testthat::expect_true(all(names(convs[[" 2"]]) %in% c("PAM","Pneumatic","Series Elastic","Hydraulic","Electric")));
 
   testthat::expect_equal(names(convs2$` 2`$`PAM`), c("FirstGame","SecondGame"))
 })
