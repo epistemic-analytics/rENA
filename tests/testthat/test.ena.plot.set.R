@@ -3,7 +3,8 @@ context("Test plotting sets");
 
 
 df.file <- system.file("extdata", "rs.data.csv", package="rENA")
-codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
+# codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
+codeNames = c('Data','Technical.Constraints','Performance.Parameters','Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
 
 df.accum = ena.accumulate.data.file(
   df.file,
@@ -23,7 +24,7 @@ group1.points = df.set.lws$points.rotated[df.set.lws$enadata$units$Condition == 
 
 df.plot <- ena.plot(df.set.lws);
 df.plot = ena.plot.points(df.plot, points = data.frame(group1.points));
-df.plot = ena.plot.group(df.plot, group1.points, color = "blue", label = "First Game Mean", show.confidence.interval = T);
+df.plot = ena.plot.group(df.plot, group1.points, color = "blue", labels = "First Game Mean");
 
 
 #####
@@ -38,43 +39,34 @@ df.accum.traj = ena.accumulate.data.file(
 df.set.traj.lws = ena.make.set(df.accum.traj, position.method = lws.positions.es);
 
 test_that("Plot all units in set", {
-  p <- ena.plot(df.set.lws) %>% ena.plot.points()
+  p <- ena.plot(df.set.lws) %>% ena.plot.points(df.set.lws$points.rotated)
 
   # testthat::expect_is(p, "plotly");
 })
 
 test_that("Plot only some units, sampled from centered data", {
   p.color <- ena.plot(df.set.lws);
-  p.color = ena.plot.points(p.color, points = df.set.lws$get.data("centered")$ENA_UNIT, color = "yellow");
-  p.color = ena.plot.points(p.color, points = df.set.lws$get.data("centered")$ENA_UNIT, color = "green");
+  p.color = ena.plot.points(p.color, points = df.set.lws$points.rotated, color = "yellow");
+  p.color = ena.plot.points(p.color, points = df.set.lws$points.rotated, color = "green");
 
   # testthat::expect_is(p, "plotly");
 })
 
 test_that("Plot a trajectory set", {
-  p.traj <- ena.plot(df.set.traj.lws);
+  akashv.traj.rows = df.set.traj.lws$enadata$units$UserName=="akash v"
 
-  p.traj = ena.plot.points(
-    enaplot = p.traj,
-    points = df.set.traj.lws$get.data("centered")$ENA_UNIT
+  p.traj.user = ena.plot(df.set.traj.lws) %>% ena.plot.trajectory(
+    points = df.set.traj.lws$points.rotated[akashv.traj.rows,],
+    names = c("akash v")
   );
 
-  # testthat::expect_is(p, "plotly");
-})
-
-test_that("Plot a trajectory set", {
-  p.traj <- ena.plot(df.set.traj.lws);
-  p.traj = ena.plot.points(
-    p.traj,
-    points = df.set.traj.lws$get.data("centered")$ENA_UNIT
+  p.traj.all = ena.plot(df.set.traj.lws) %>% ena.plot.trajectory(
+    points = df.set.traj.lws$points.rotated,
+    names = unique(df.set.traj.lws$enadata$units$UserName),
+    by = df.set.traj.lws$enadata$units$UserName,
+    labels = df.set.traj.lws$enadata$unit.names
   );
-  p.traj = ena.plot.points(
-    p.traj,
-    points = df.set.traj.lws$get.data("rotated")$ENA_UNIT
-  );
-
-  # testthat::expect_is(p, "plotly");
-})
+});
 
 # test_that("Plot a network", {
   # p = ena.plot.set(
@@ -98,11 +90,11 @@ test_that("Plot a trajectory set", {
 # })
 
 test_that("Plot a mean trajectory", {
-  message("Testing a mean trajectory: not implemented")
+  # message("Testing a mean trajectory: not implemented")
 })
 
 test_that("Plot a combined plot of units and nodes", {
-  message("Test for units+nodes: not implemented")
+  # message("Test for units+nodes: not implemented")
 })
 
 

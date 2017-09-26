@@ -108,7 +108,9 @@ ena.plot.nodes = function(
     color = label.font.color
   );
 
-  enaplot$plot = plotly::add_data(data.frame(nodes)) %<>% plotly::add_markers(
+  enaplot$plot = plotly::add_data(enaplot$plot, data.frame(nodes))
+  enaplot$plot = plotly::add_markers(
+    enaplot$plot,
     data = data.frame(nodes),
     x = ~X1,
     y = ~X2,

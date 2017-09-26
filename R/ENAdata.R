@@ -75,6 +75,7 @@ ENAdata = R6::R6Class("ENAdata", public = list(
       model = NULL,
       raw = NULL,
       adjacency.vectors = NULL,
+      adjacency.matrix = NULL,
       accumulated.adjacency.vectors = NULL,
       adjacency.vectors.raw = NULL,
       units = NULL,

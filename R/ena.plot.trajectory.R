@@ -2,7 +2,7 @@ ena.plot.trajectory = function(
   enaplot,
   points,    #dataframe of points
   by = NULL,
-  labels = unique(enaplot$enaset$enadata$units),
+  labels = NULL, #unique(enaplot$enaset$enadata$units),
   names = NULL,
   label.offset = NULL,
   label.font.size = enaplot$get("font.size"),
@@ -11,13 +11,11 @@ ena.plot.trajectory = function(
   shape = c("circle", "square", "triangle", "diamond"),
   colors = rep(I("black"), length(unique(by)))
 ) {
-
   if(!is.character(label.font.family)) {
     label.font.size = enaplot$get("font.family");
   }
 
   shape = match.arg(shape);
-
   size = 5;
 
   ### probably doesnt work for subsetting - TEST IT
@@ -42,31 +40,42 @@ ena.plot.trajectory = function(
   network.graph.axis.x = network.graph.axis.y = network.graph.axis;
 
   if(is.null(by)) {
-    by = rep(T, nrow(points));
+    by = list(all = rep(T, nrow(points)));
   }
   if(!is(points, "data.table")) {
     points = data.table::as.data.table(points);
   }
-  tbl = cbind(points, labels)
-  dfDT.trajs = tbl[,{ data.table::data.table(lines = list(.SD))  } ,by=by]
+  if(is.null(labels)) {
+    labels = rownames(points);
+  }
+
+  tbl = data.table::data.table(points, labels = labels);
+  dfDT.trajs = tbl[,{ data.table::data.table(lines = list(.SD))  }, by=by]
 
   for(x in 1:nrow(dfDT.trajs)) {
-    #toPlot = unique(colnames(dfDT.trajs[x]$lines[[1]]))
     enaplot$plot = plotly::add_trace(
       enaplot$plot,
-      data = dfDT.trajs[x]$lines[[1]],
+      data = dfDT.trajs[x,]$lines[[1]],
       x = ~V1, y = ~V2,
       name = as.character(names[x]), #dfDT.trajs[x]$lines[[1]]$labels,
       mode = "lines+markers+text",
-      text = dfDT.trajs[x]$lines[[1]]$labels,
+      text = dfDT.trajs[x,]$lines[[1]]$labels,
       textposition = 'middle right',
-      hoverinfo = "x+y",
-      visible = "legendonly"
-    )
+      hoverinfo = "x+y"
+      #,visible = "legendonly"
+    );
   }
 
-  # enaplot$plot %<>% plotly::hide_legend();
+  max.axis = max(abs(points))*1.2;
+  network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T, range=c(-max.axis,max.axis));
+  network.graph.axis.x = network.graph.axis.y = network.graph.axis;
 
-
+  enaplot$plot = plotly::layout(
+    enaplot$plot,
+    title = enaplot$plot.title,
+    shapes = lines,
+    xaxis = network.graph.axis.x,
+    yaxis = network.graph.axis.y
+  )
   return(enaplot);
 }

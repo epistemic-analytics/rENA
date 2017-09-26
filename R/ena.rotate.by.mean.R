@@ -1,7 +1,10 @@
-# This needs to take the full list for defaltion, not just a single
-# grouping
-
-#ena.rotate.by.mean = function(data, groups) {
+#' ENA Rotate by mean
+#'
+#' @param self [TBD]
+#' @param ... [TBD]
+#'
+#' @return matrix
+#' @export
 ena.rotate.by.mean = function(self, ...) {
   args = list(...);
   groups = args[[1]];

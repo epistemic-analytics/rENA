@@ -104,5 +104,5 @@ ena.make.set <- function(
   #   r6.to.json(set, o.class = output.class, o.fields = output.fields)
   # }
   # else
-  set
+  return(set)
 }

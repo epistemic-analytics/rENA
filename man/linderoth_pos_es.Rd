@@ -6,3 +6,12 @@
 \usage{
 linderoth_pos_es(adjMats, t)
 }
+\arguments{
+\item{adjMats}{[TBD]}
+
+\item{t}{[TBD]}
+}
+\description{
+[TBD]
+}
+

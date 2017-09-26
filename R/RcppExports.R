@@ -2,83 +2,83 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 rowSums_c <- function(x) {
-    .Call('rENA_rowSums_c', PACKAGE = 'rENA', x)
+    .Call('_rENA_rowSums_c', PACKAGE = 'rENA', x)
 }
 
 c_cor <- function(mat) {
-    .Call('rENA_c_cor', PACKAGE = 'rENA', mat)
+    .Call('_rENA_c_cor', PACKAGE = 'rENA', mat)
 }
 
 sphere_norm_c <- function(dfM) {
-    .Call('rENA_sphere_norm_c', PACKAGE = 'rENA', dfM)
+    .Call('_rENA_sphere_norm_c', PACKAGE = 'rENA', dfM)
 }
 
 dont_sphere_norm_c <- function(dfM) {
-    .Call('rENA_dont_sphere_norm_c', PACKAGE = 'rENA', dfM)
+    .Call('_rENA_dont_sphere_norm_c', PACKAGE = 'rENA', dfM)
 }
 
 pca_c <- function(m, dims = 2L) {
-    .Call('rENA_pca_c', PACKAGE = 'rENA', m, dims)
+    .Call('_rENA_pca_c', PACKAGE = 'rENA', m, dims)
 }
 
 center_data_c <- function(values) {
-    .Call('rENA_center_data_c', PACKAGE = 'rENA', values)
+    .Call('_rENA_center_data_c', PACKAGE = 'rENA', values)
 }
 
 triIndices <- function(len, row = 0L) {
-    .Call('rENA_triIndices', PACKAGE = 'rENA', len, row)
+    .Call('_rENA_triIndices', PACKAGE = 'rENA', len, row)
 }
 
 getcor <- function(dists, normed, x, NtriOne, NtriTwo, KtriOne, KtriTwo, dim = 0L) {
-    .Call('rENA_getcor', PACKAGE = 'rENA', dists, normed, x, NtriOne, NtriTwo, KtriOne, KtriTwo, dim)
+    .Call('_rENA_getcor', PACKAGE = 'rENA', dists, normed, x, NtriOne, NtriTwo, KtriOne, KtriTwo, dim)
 }
 
 getN <- function(normed) {
-    .Call('rENA_getN', PACKAGE = 'rENA', normed)
+    .Call('_rENA_getN', PACKAGE = 'rENA', normed)
 }
 
 getK <- function(normed) {
-    .Call('rENA_getK', PACKAGE = 'rENA', normed)
+    .Call('_rENA_getK', PACKAGE = 'rENA', normed)
 }
 
 getRotationDistances_c <- function(rotated) {
-    .Call('rENA_getRotationDistances_c', PACKAGE = 'rENA', rotated)
+    .Call('_rENA_getRotationDistances_c', PACKAGE = 'rENA', rotated)
 }
 
 get_optimized_node_pos_c <- function(normedFiltered, opted, num_dims = 2L, num_samples = 3L, max_iter = 1000L, return_all = TRUE) {
-    .Call('rENA_get_optimized_node_pos_c', PACKAGE = 'rENA', normedFiltered, opted, num_dims, num_samples, max_iter, return_all)
+    .Call('_rENA_get_optimized_node_pos_c', PACKAGE = 'rENA', normedFiltered, opted, num_dims, num_samples, max_iter, return_all)
 }
 
 lm_ <- function(x) {
-    .Call('rENA_lm_', PACKAGE = 'rENA', x)
+    .Call('_rENA_lm_', PACKAGE = 'rENA', x)
 }
 
 full_opt_c <- function(normed, rotated, optim_nodes, dims = 2L, num_samples = 3L, checkUnique = FALSE) {
-    .Call('rENA_full_opt_c', PACKAGE = 'rENA', normed, rotated, optim_nodes, dims, num_samples, checkUnique)
+    .Call('_rENA_full_opt_c', PACKAGE = 'rENA', normed, rotated, optim_nodes, dims, num_samples, checkUnique)
 }
 
 calc_cor <- function(x, set, dim) {
-    .Call('rENA_calc_cor', PACKAGE = 'rENA', x, set, dim)
+    .Call('_rENA_calc_cor', PACKAGE = 'rENA', x, set, dim)
 }
 
 soln_MPS <- function(x) {
-    .Call('rENA_soln_MPS', PACKAGE = 'rENA', x)
+    .Call('_rENA_soln_MPS', PACKAGE = 'rENA', x)
 }
 
 soln_calc_c <- function(coeff, xi, ti, w, dim) {
-    .Call('rENA_soln_calc_c', PACKAGE = 'rENA', coeff, xi, ti, w, dim)
+    .Call('_rENA_soln_calc_c', PACKAGE = 'rENA', coeff, xi, ti, w, dim)
 }
 
 remove_zero_rows_c <- function(toFilter) {
-    .Call('rENA_remove_zero_rows_c', PACKAGE = 'rENA', toFilter)
+    .Call('_rENA_remove_zero_rows_c', PACKAGE = 'rENA', toFilter)
 }
 
 remove_zero_rows_by_c <- function(toFilter, indices) {
-    .Call('rENA_remove_zero_rows_by_c', PACKAGE = 'rENA', toFilter, indices)
+    .Call('_rENA_remove_zero_rows_by_c', PACKAGE = 'rENA', toFilter, indices)
 }
 
 linderoth_pos <- function(adjMats, t) {
-    .Call('rENA_linderoth_pos', PACKAGE = 'rENA', adjMats, t)
+    .Call('_rENA_linderoth_pos', PACKAGE = 'rENA', adjMats, t)
 }
 
 #' @title Multiobjective, Component by Component, with Ellipsoidal Scaling
@@ -86,7 +86,7 @@ linderoth_pos <- function(adjMats, t) {
 #' @param adjMats [TBD]
 #' @param t [TBD]
 linderoth_pos_es <- function(adjMats, t) {
-    .Call('rENA_linderoth_pos_es', PACKAGE = 'rENA', adjMats, t)
+    .Call('_rENA_linderoth_pos_es', PACKAGE = 'rENA', adjMats, t)
 }
 
 #' @title Merge data frame columns
@@ -96,7 +96,7 @@ linderoth_pos_es <- function(adjMats, t) {
 #' @param cols Vector
 #' @param sep Character seperator
 merge_columns_c <- function(df, cols, sep = ".") {
-    .Call('rENA_merge_columns_c', PACKAGE = 'rENA', df, cols, sep)
+    .Call('_rENA_merge_columns_c', PACKAGE = 'rENA', df, cols, sep)
 }
 
 #' @title ref_window_df2
@@ -109,7 +109,7 @@ merge_columns_c <- function(df, cols, sep = ".") {
 NULL
 
 rows_to_co_occurrences <- function(df, binary = TRUE) {
-    .Call('rENA_rows_to_co_occurrences', PACKAGE = 'rENA', df, binary)
+    .Call('_rENA_rows_to_co_occurrences', PACKAGE = 'rENA', df, binary)
 }
 
 #' @title ref_window_df
@@ -123,7 +123,7 @@ rows_to_co_occurrences <- function(df, binary = TRUE) {
 #' @param binaryStanzas Logical, treat codes as binary or leave as weighted
 #' @export
 ref_window_df <- function(df, windowSize = 1, windowForward = 0, binary = TRUE, binaryStanzas = FALSE) {
-    .Call('rENA_ref_window_df', PACKAGE = 'rENA', df, windowSize, windowForward, binary, binaryStanzas)
+    .Call('_rENA_ref_window_df', PACKAGE = 'rENA', df, windowSize, windowForward, binary, binaryStanzas)
 }
 
 #' @title ref_window_lag
@@ -134,7 +134,7 @@ ref_window_df <- function(df, windowSize = 1, windowForward = 0, binary = TRUE, 
 #' @param binary Logical, treat codes as binary or leave as weighted
 #' @export
 ref_window_lag <- function(df, windowSize = 0L, binary = TRUE) {
-    .Call('rENA_ref_window_lag', PACKAGE = 'rENA', df, windowSize, binary)
+    .Call('_rENA_ref_window_lag', PACKAGE = 'rENA', df, windowSize, binary)
 }
 
 #' @name ref_window_sum
@@ -144,10 +144,10 @@ ref_window_lag <- function(df, windowSize = 0L, binary = TRUE) {
 #' @description TBD
 #' @export
 ref_window_sum <- function(df, binary = TRUE) {
-    .Call('rENA_ref_window_sum', PACKAGE = 'rENA', df, binary)
+    .Call('_rENA_ref_window_sum', PACKAGE = 'rENA', df, binary)
 }
 
 svector_to_ut <- function(v) {
-    .Call('rENA_svector_to_ut', PACKAGE = 'rENA', v)
+    .Call('_rENA_svector_to_ut', PACKAGE = 'rENA', v)
 }
 

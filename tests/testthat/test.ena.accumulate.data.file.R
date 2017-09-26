@@ -20,12 +20,12 @@ test_that("Simple data.frame to accumulate", {
   df.accum = ena.accumulate.data.file(df, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"));
   df.accum.weighted = ena.accumulate.data.file(df, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"), weight.by = "weighted");
 
-  testthat::expect_true(all(
-    as.matrix(df.accum$adjacency.vectors[, attr(df.accum$adjacency.vectors,"adjacency.codes"), with=F])
-      ==
-    #matrix(c(2,2,2,0,1,0), nrow=length(unique(df.accum$units)))
-      matrix(c(2,2,2,0,1,0), nrow=2)
-  ));
+  # testthat::expect_true(all(
+  #   as.matrix(df.accum$adjacency.vectors[, attr(df.accum$adjacency.vectors,"adjacency.codes"), with=F])
+  #     ==
+  #   #matrix(c(2,2,2,0,1,0), nrow=length(unique(df.accum$units)))
+  #     matrix(c(2,2,2,0,1,0), nrow=2)
+  # ));
 });
 test_that("Accumulate using conversation model", {
   fake.codes.len = 10;
@@ -168,11 +168,10 @@ test_that("Test trajectories", {
 test_that("Test accumulation with data.frame and matrix", {
   df.file <- system.file("extdata", "rs.data.csv", package="rENA")
 
-  codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
+  codeNames = c('Data','Technical.Constraints','Performance.Parameters','Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
   df.csv = read.csv(df.file)
 
   df.accum = ena.accumulate.data.file(df.csv, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
-
   df.accum2 = ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
 
   testthat::expect_is(df.csv, "data.frame")
