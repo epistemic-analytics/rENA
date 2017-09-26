@@ -7,7 +7,7 @@ codeNames = c('Data','Technical.Constraints','Performance.Parameters','Client.an
 df.accum = ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
 
 test_that("Simple data.frame to accumulate and make set", {
-  df.set = ena.make.set(df.accum, node.position.method = egr.positions)
+  df.set = ena.make.set(df.accum)
 
   testthat::expect_equal(
     label = "Used 10 codes",
