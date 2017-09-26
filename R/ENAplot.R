@@ -7,12 +7,12 @@
 #' @export
 #'
 # @param enaset ENAplot Object
-#
 #'
-#' @section Public ENAplot methods:
+#' @section Methods:
+#' \code{new} - Construct the ENAplot object
 #'
-#' @section Public ENAplot properties
-#'
+#' @section Properties:
+#' The following are properties on the ENAplot object
 #' @field enaset - The \code{\link{ENAset}} object from which the ENAplot was constructed
 #' @field plot - The plotly object used for data visualization
 #'

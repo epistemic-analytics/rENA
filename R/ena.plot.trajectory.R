@@ -3,19 +3,18 @@
 #'
 #' @description Function used to plot trajectories
 #'
-#' @details
-#'
 #' @export
 #'
 #' @param enaplot \code{\link{ENAplot}} object to use for plotting
 #' @param points dataframe of matrix - first two column are X and Y coordinates, each row is a step in some trajectory
 #' @param by vector used to subset points into individual trajectories (subset of trajectories$units)
+#' @param names character vector - labels, same length as the number of trajectories to plot (usually unique values from the by parameter)
 #' @param labels character vector - point labels, same length as points or number of total points
 #' @param confidence.interval A character that determines which confidence interval type to use, choices: none, box, crosshair, default: none
 #' @param outlier.interval A character that determines which outlier interval type to use, choices: none, box, crosshair, default: none
 #' @param confidence.interval.values A matrix/dataframe where columns are CI x and y values for each point
 #' @param outlier.interval.values A matrix/dataframe where columns are OI x and y values for each point
-#' @param color A character, determines marker color, default: enaplot$color
+#' @param colors A character, determines marker color, default: enaplot$color
 #' @param shape A character which determines the shape of markers, choices: square, triangle, diamond, circle, default: circle
 #' @param label.offset A numeric vector of an x and y value to offset labels from the coordinates of the points
 #' @param label.font.size An integer which determines the font size for graph labels, default: enaplot$font.size
@@ -47,7 +46,11 @@ ena.plot.trajectory = function(
   label.font.color = enaplot$get("font.color"),
   label.font.family = c("Arial", "Courier New", "Times New Roman"),
   shape = c("circle", "square", "triangle", "diamond"),
-  colors = rep(I("black"), length(unique(by)))
+  colors = rep(I("black"), length(unique(by))),
+  confidence.interval = NULL,
+  confidence.interval.values = NULL,
+  outlier.interval = NULL,
+  outlier.interval.values = NULL
 ) {
   if(!is.character(label.font.family)) {
     label.font.size = enaplot$get("font.family");

@@ -6,14 +6,14 @@
 #' @import data.table
 #' @export
 #'
-#' @section Public ENAdata methods:
+#' @section Methods:
+#' \code{new} - Construct the ENAplot object
 #'
-#' @section Public ENAdata properties:
-#'
+#' @section Properties:
+#' The following are public properties on the ENAdata object:
 #' @field raw - A data frame constructed from the unit, convo, code, and metadata parameters of ena.accumulate.data
 #' @field adjacency.vectors - A data frame of adjacency vectors by row
 #' @field accumulated.adjacency.vectors - A data frame of adjacency vectors accumulated per unit.
-#' @field adjacency.vectors.raw
 #' @field model - The type of ENA model: EndPoint, Accumulated Trajectory, or Separate Trajectory
 #' @field units - A data frame of columns that were combined to make the unique units. Includes column for trajectory selections. (unique)
 #' @field unit.names - A vector of unique unit values

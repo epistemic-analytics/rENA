@@ -15,7 +15,6 @@
 #' @param rotation.set An ENARotationSet object to use for rotation
 #' @param endpoints.only A logical variable which determines whether to only show endpoints for trajectory models
 #' @param node.position.method A function to be used to determine node positions, default: lws.position.es()
-#' @param check.unique.positions [TBD]
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords ENA, generate, set

@@ -7,18 +7,19 @@
 #' @export
 #'
 #'
-#' @section Public ENAset methods:
+#' @section Methods:
+#' \code{new} - Construct the ENAplot object
 #'
-#' @section Public ENAset properties:
-#'
+#' @section Properties:
+#' The following are public properties on the ENAset object:
 #' @field enadata - An ENAdata object originally used to create the set
 #' @field points.raw - A data frame containing accumulated adjacency vectors per unit
 #' @field points.normed.centered - A data frame of centered normed accumulated adjacency vectors for each unit
 #' @field points.rotated - A data frame of point positions for number of dimensions specified in ena.make.set (i.e., the centered, normed, and rotated data)
-#' @field points.rotated.non.zero
+# @field points.rotated.non.zero
 #' @field line.weights - A data frame of connections strengths per unit (Data frame of normed accumulated adjacency vectors for each unit)
-#' @field line.weights.non.zero
-#' @field line.weights.unrotated
+# @field line.weights.non.zero
+# @field line.weights.unrotated
 #' @field node.positions - A data frame of positions for each code
 #' @field codes - A vector of code names
 #' @field rotation.set - An ENARotationSet object

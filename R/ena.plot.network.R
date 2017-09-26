@@ -17,7 +17,7 @@
 #' @param opacity A vector of numeric min/max values for opacity, default: (0.3,1)
 #' @param saturation A vector of numeric min/max values for saturation, default: (0.25, 1)
 #' @param thickness A vector of numeric min/max values for thickness, default: (0, 1)
-#' @param node.size
+#' @param node.size A lower and upper bouund used for scaling the size of the nodes, default c(0, 20)
 #' @param range  A vector of min/max values. Options are numeric, set.min, set.max, plot.min, plot.max, default: (set.min, set.max)
 #' @param labels A character vector of node labels, default: code names
 #' @param label.offset A numeric vector of an x and y value to offset labels from the coordinates of the points

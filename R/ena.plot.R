@@ -11,7 +11,7 @@
 #' @param title A character used for the title of the plot, default: ENA Plot
 #' @param dimensions A numeric vector determining the number of dimensions to be in the plot, default: c(1,2)
 #' @param dimension.labels A character vector containing labels for the axes, default: c(X, Y)
-#' @param dimension.show.variance
+#' @param dimension.show.variance A logical indicating whether to show variance along the dimensions
 #' @param end.points A logical variable that determines whether to only show endpoints for trajectory models
 #' @param flip.axis.x	A logical - ?, default: false
 #' @param flip.axis.y	A logical - ?, default: false
