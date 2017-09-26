@@ -18,7 +18,7 @@
 #' @field units - A data frame of columns that were combined to make the unique units. Includes column for trajectory selections. (unique)
 #' @field unit.names - A vector of unique unit values
 #' @field metadata - A data frame of unique metadata for each unit
-#' @field trajectories - A list: $units - data frame, for a given row tells which trajectory it’s a part; $step - data frame, where along the trajectory a row sits
+#' @field trajectories - A list: units - data frame, for a given row tells which trajectory it's a part; step - data frame, where along the trajectory a row sits
 #'
 #' @field codes - A vector of code names
 #' @field function.call - The string representation of function called and parameters provided
