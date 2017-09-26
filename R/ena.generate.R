@@ -8,9 +8,9 @@
 # @param file [TBD]
 # @param window.size.back [TBD]
 # @param units.by [TBD]
-# @param units.used [TBD]
 # @param conversations.by [TBD]
 # @param code [TBD]
+# @param units.used [TBD]
 #
 # @return list containing the accumulation and set
 ##

@@ -167,7 +167,7 @@ test_that("Case 7: Trajectories", {
 
   first.game.units = set$enadata$trajectories$units$UserName[first.game.rows]
 
-  plot = ena.plot.trajectory(plot, set$points.rotated, by = first.game.units, shape = "circle")
+  # plot = ena.plot.trajectory(plot, set$points.rotated, by = list(first.game.units), shape = "circle")
 })
 
 test_that("Case 8: Bidirectional ENA", {

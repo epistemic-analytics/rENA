@@ -32,7 +32,6 @@
 #'
 #' @return \code{\link{ENAplot}} can be used for plotting and other data analysis, final product of rENA model creation
 ##
-
 ena.plot <- function(
   enaset,
 

@@ -29,6 +29,7 @@
 #' @keywords ENA, plot, network, nodes, edges
 #'
 #' @seealso \code{\link{ena.plot}}, \code{ena.plot.points}
+#' @importFrom scales rescale
 #'
 #' @examples
 #' \dontrun{
@@ -38,8 +39,6 @@
 #' }
 #' @return The  \code{\link{ENAplot}} provided to the function, with its plot updated to include the nodes and provided connecting lines.
 ##
-
-#' @importFrom scales rescale
 ena.plot.network = function(
   enaplot = NULL,
   network = NULL,

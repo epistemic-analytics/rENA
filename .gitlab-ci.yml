@@ -37,6 +37,7 @@ build:
       - $(ls -1t *.tar.gz | head -n 1)
 test:
   stage: test
+  image: r-package-builder:latest
   tags:
     - R-package
   script:
@@ -49,6 +50,7 @@ test:
       - $(ls -1t *.tar.gz | head -n 1)
 archive:
   stage: archive
+  image: r-package-builder:latest
   tags:
     - R-package
   script:

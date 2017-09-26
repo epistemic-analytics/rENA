@@ -31,17 +31,14 @@
 ##
 ena.make.set <- function(
   enadata,
-
   dimensions = 2,
-
   norm.by = sphere_norm_c,
-
   rotation.by = ena.svd,
   rotation.params = NULL,
   rotation.set = NULL,
-
   endpoints.only = T,
   node.position.method = lws.positions.es,
+  ...
 
   # private properties of ENAset
   #dims=2,    #usein in egr.pos/optimization --- to be determined
@@ -67,7 +64,6 @@ ena.make.set <- function(
   #output = c("class","json"),
   #output.fields = NULL,
 
-  ...
 ) {
   set = ENAset$new(
     enadata = enadata,

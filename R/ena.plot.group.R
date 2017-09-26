@@ -11,10 +11,10 @@
 #' @param points [TBD]
 #' @param method [TBD]
 #' @param labels A character which will be the label for the group's point
-#' @param confidence.interval A character that determines which confidence interval type to use, choices: none, box, crosshair, default: none
-#' @param outlier.interval A character that determines which outlier interval type to use, choices: none, box, crosshair, default: none
 #' @param colors A character, determines marker color, default: enaplot$color
 #' @param shape A character, determines marker shape, choices: square, triangle, diamond, circle, default: square
+#' @param confidence.interval A character that determines which confidence interval type to use, choices: none, box, crosshair, default: none
+#' @param outlier.interval A character that determines which outlier interval type to use, choices: none, box, crosshair, default: none
 #' @param label.offset A numeric vector containing an x and y value to offset labels from the coordinates of the points
 #' @param label.font.size An integer which determines the font size for graph label, default: enaplot\$font.size
 #' @param label.font.color A character which determines the color of label font, default: enaplot\$font.color
