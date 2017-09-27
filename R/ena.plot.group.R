@@ -65,10 +65,19 @@ ena.plot.group <- function(
   }
 
   ### if group more than one row, combine to mean
+  confidence.interval.values = NULL;
+  outlier.interval.values = NULL;
   if(
     (is(points, "data.frame") || is(points, "matrix")) &&
     nrow(points) > 1
   ){
+    if(confidence.interval != "none") {
+      confidence.interval.values = t.test(points, conf.level = .95)$conf.int;
+    }
+    if(outlier.interval != "none") {
+      outlier.interval.values = c(IQR(points[,2]), IQR(points[,2])) * 1.5;
+    }
+
     if(is.null(method) || method == "mean") {
       points = colMeans(points);
     } else {
@@ -82,7 +91,9 @@ ena.plot.group <- function(
     colors = colors,
     shape = shape,
     confidence.interval = confidence.interval,
+    confidence.interval.values = confidence.interval.values,
     outlier.interval = outlier.interval,
+    outlier.interval.values = outlier.interval.values,
     label.offset = label.offset,
     label.font.size = label.font.size,
     label.font.color = label.font.color,

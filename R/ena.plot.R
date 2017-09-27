@@ -65,7 +65,8 @@ ena.plot <- function(
                      flip.axis.y,
                      font.size,
                      font.color,
-                     font.family
+                     font.family,
+                     ...
                      );
 
   return(plot);
