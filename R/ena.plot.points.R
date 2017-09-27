@@ -224,13 +224,13 @@ ena.plot.points = function(
   #   );
   # }
 
-  enaplot$plot = plotly::layout(
-    enaplot$plot,
-    title = enaplot$plot.title,
-    shapes = lines
-    # ,xaxis = network.graph.axis.x,
-    # yaxis = network.graph.axis.y
-  )
+  # enaplot$plot = plotly::layout(
+  #   enaplot$plot,
+  #   title = enaplot$plot.title,
+  #   shapes = lines
+  #   # ,xaxis = network.graph.axis.x,
+  #   # yaxis = network.graph.axis.y
+  # )
 
   return(enaplot);
 }
