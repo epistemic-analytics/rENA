@@ -81,9 +81,9 @@ ena.plot.points = function(
   ##### WHAT IS THIS?
   evs = enaplot$enaset$data$centered$latent[1:enaplot$enaset$get("dimensions")];
   evs = floor(evs/sum(evs)*100);
-  max.axis = max(abs(points))*1.2;
-  network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T, range=c(-max.axis,max.axis));
-  network.graph.axis.x = network.graph.axis.y = network.graph.axis;
+  # max.axis = max(abs(points))*1.2;
+  # network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T, range=c(-max.axis,max.axis));
+  # network.graph.axis.x = network.graph.axis.y = network.graph.axis;
   #####
 
   points.layout = data.table::data.table(points);
@@ -227,9 +227,9 @@ ena.plot.points = function(
   enaplot$plot = plotly::layout(
     enaplot$plot,
     title = enaplot$plot.title,
-    shapes = lines,
-    xaxis = network.graph.axis.x,
-    yaxis = network.graph.axis.y
+    shapes = lines
+    # ,xaxis = network.graph.axis.x,
+    # yaxis = network.graph.axis.y
   )
 
   return(enaplot);

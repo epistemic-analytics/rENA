@@ -77,8 +77,8 @@ ena.plot.trajectory = function(
   #dfDT[,name:=ENA_UNIT] # Create a name column
 
 
-  network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T);
-  network.graph.axis.x = network.graph.axis.y = network.graph.axis;
+  # network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T);
+  # network.graph.axis.x = network.graph.axis.y = network.graph.axis;
 
   if(is.null(by)) {
     by = list(all = rep(T, nrow(points)));
@@ -107,16 +107,16 @@ ena.plot.trajectory = function(
     );
   }
 
-  max.axis = max(abs(points))*1.2;
-  network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T, range=c(-max.axis,max.axis));
-  network.graph.axis.x = network.graph.axis.y = network.graph.axis;
+  # max.axis = max(abs(points))*1.2;
+  # network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T, range=c(-max.axis,max.axis));
+  # network.graph.axis.x = network.graph.axis.y = network.graph.axis;
 
   enaplot$plot = plotly::layout(
     enaplot$plot,
     title = enaplot$plot.title,
-    shapes = lines,
-    xaxis = network.graph.axis.x,
-    yaxis = network.graph.axis.y
+    shapes = lines
+    # ,xaxis = network.graph.axis.x,
+    # yaxis = network.graph.axis.y
   )
   return(enaplot);
 }

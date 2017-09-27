@@ -72,11 +72,19 @@ ENAplot = R6::R6Class("ENAplot",
           mode = "markers",
           type ="scatter"
         );
+
+
+        # browser()
+        # max.axis = max(abs(points))*1.2;
+        max.axis = max(abs(enaset$node.positions),abs(enaset$points.rotated))*1.2;
+        # network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T, range=c(-max.axis,max.axis));
         graph.axis <- list(
           titlefont = private$font,
           showgrid = F,
           zeroline = T,
-          showticklabels = F
+          showticklabels = T,
+          showgrid = T,
+          range=c(-max.axis,max.axis)
         );
         if(!is.null(args$ticks)) {
           graph.axis$showticklabels = T;
