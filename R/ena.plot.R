@@ -47,7 +47,7 @@ ena.plot <- function(
   flip.axis.y = F,
 
   font.size = 10,
-  font.color = "000000",
+  font.color = "#000000",
   font.family = c("Arial", "Courier New", "Times New Roman"),
 
   ...

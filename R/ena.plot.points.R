@@ -45,9 +45,10 @@ ena.plot.points = function(
   labels = rownames(points), #unique(enaplot$enaset$enadata$unit.names),
   label.offset = NULL,
   label.group = "Points",
-  label.font.size = enaplot$get("font.size"),
-  label.font.color = enaplot$get("font.color"),
-  label.font.family = c("Arial", "Courier New", "Times New Roman"),
+
+  label.font.size = NULL, #enaplot$get("font.size"),
+  label.font.color = NULL, #enaplot$get("font.color"),
+  label.font.family = NULL, #enaplot$get("font.family"),
 
   shape = c("circle", "square", "triangle-up", "diamond"),
   colors = default.colors[1], # c("blue"), #rep(I("black"), nrow(points)),
@@ -63,6 +64,12 @@ ena.plot.points = function(
   ###
   # Parameter Checking and Cleaning
   ###
+    env = environment();
+    for(n in c("font.size", "font.color", "font.family")){
+      if(is.null(get(paste0("label.",n))))
+        env[[paste0("label.",n)]] = enaplot$get(n);
+    }
+
     if(is.null(points)) {
       stop("Must provide points to plot.")
     }
@@ -71,7 +78,7 @@ ena.plot.points = function(
       dim(points) = c(1,nrow(points))
     }
     if(!is.character(label.font.family)) {
-      label.font.size = enaplot$get("font.family");
+      label.font.family = enaplot$get("font.family");
     }
 
     confidence.interval = match.arg(confidence.interval);
@@ -87,9 +94,10 @@ ena.plot.points = function(
     points.layout = data.table::data.table(points);
     colnames(points.layout) = paste0("X", rep(1:ncol(points.layout)));
 
-    if(length(colors) == 1) {
+    if(length(colors) == 1)
       colors = rep(colors, nrow(points.layout))
-    }
+    if(is.null(labels))
+      show.legend = F
   ###
   # END: Parameter Checking and Cleaning
   ###
@@ -146,6 +154,11 @@ ena.plot.points = function(
         # legendgroup = ifelse(!is.null(box.label), labels[1], NULL),
         name = labels[m],
         text = labels[m],
+        textfont = list(
+          family = label.font.family,
+          size = label.font.size,
+          color = label.font.color
+        ),
         textposition = "top right",
         hoverinfo = "text+x+y"
       )
@@ -168,6 +181,7 @@ ena.plot.points = function(
           dash = "dash"
         ),
         # "legendgroup" = labels[1],
+        showlegend = show.legend,
         name = box.label
       )
     }
