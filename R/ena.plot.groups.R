@@ -46,7 +46,7 @@ ena.plot.groups <- function(
   label = NULL,
 
   colors = NULL,
-  shape = c("square", "triangle", "diamond", "circle"),
+  shape = c("square", "triangle-up", "diamond", "circle"),
 
   #unit.colors = rep(plot.color, nrow(enaset$points.rotated)),
 

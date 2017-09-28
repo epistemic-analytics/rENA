@@ -19,6 +19,7 @@
 #' @param label.font.size An integer which determines the font size for graph label, default: enaplot\$font.size
 #' @param label.font.color A character which determines the color of label font, default: enaplot\$font.color
 #' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot\$font.family
+#' @param show.legend Logical indicating whether to show the point labels in the in legend
 #' @param ... Additional parameters
 #'
 #' @import magrittr
@@ -40,13 +41,14 @@ ena.plot.group <- function(
   method = "mean",
   labels = unique(enaplot$enaset$enadata$units),
   colors = "black",
-  shape = c("square", "triangle", "diamond", "circle"),
+  shape = c("square", "triangle-up", "diamond", "circle"),
   confidence.interval = c("none", "crosshairs", "box"),
   outlier.interval = c("none", "crosshairs", "box"),
   label.offset = NULL,
   label.font.size = enaplot$font.size,
   label.font.color = enaplot$font.color,
   label.font.family = enaplot$font.family,
+  show.legend = T,
   ...
 ) {
   shape = match.arg(shape);
@@ -98,6 +100,7 @@ ena.plot.group <- function(
     label.font.size = label.font.size,
     label.font.color = label.font.color,
     label.font.family = label.font.family,
+    show.legend = show.legend,
     ...
   )
   return(enaplot)
