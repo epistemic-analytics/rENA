@@ -39,12 +39,13 @@ ENAplot = R6::R6Class("ENAplot",
         flip.axis.x = F,
         flip.axis.y = F,
 
-        font.size = 10,
-        font.color = "000000",
+        font.size = 14,
+        font.color = "#000000",
         font.family = "Arial",
 
         ...
       ) {
+
         args = list(...);
         if(!is.null(args$multiplier)) {
           private$multiplier = args$multiplier
@@ -58,7 +59,6 @@ ENAplot = R6::R6Class("ENAplot",
         private$end.points <- end.points;
         private$flip.axis.x <- flip.axis.x;
         private$flip.axis.y <- flip.axis.y;
-
         private$font.size <- font.size;
         private$font.color <- font.color;
         private$font.family <- font.family;
@@ -67,7 +67,6 @@ ENAplot = R6::R6Class("ENAplot",
           color = private$font.color,
           family = private$font.family
         );
-
         self$plot <- plotly::plot_ly(
           mode = "markers",
           type ="scatter"
@@ -155,8 +154,8 @@ ENAplot = R6::R6Class("ENAplot",
     flip.axis.y = F,
 
     font = list(),
-    font.size = 10,
-    font.color = "000000",
+    font.size = 14,
+    font.color = "#000000",
     font.family = "Arial",
     #plot.color = I("black"),
 
