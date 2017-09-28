@@ -9,6 +9,7 @@
 #'
 #' @param enaplot \code{\link{ENAplot}} object to use for plotting
 #' @param points A dataframe of matrix where the first two column are X and Y coordinates
+#' @param point.size Size of the point nodes
 #' @param labels A character vector of point labels, same length as points or number of total points
 #' @param confidence.interval A character determining markings to use, choices: none, box, crosshair, default: none
 #' @param outlier.interval A character determining markings to use, choices: none, box, crosshair, default: none
@@ -17,9 +18,11 @@
 #' @param shape A character which determines the shape of markers, choices: square, triangle, diamond, circle, default: circle
 #' @param colors A character vector of the marker colors, if one given it is used for all, otherwise must be same length as points
 #' @param label.offset numeric vector - x and y value to offset labels from the coordinates of the points
+#' @param label.group A character vector used to group the labels in the legend
 #' @param label.font.size An integer which determines the font size for graph labels, default: enaplot$font.size
 #' @param label.font.color A character which determines the color of label font, default: enaplot$font.color
 #' @param label.font.family	A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
+#' @param show.legend Logical indicating whether to show the point labels in the in legend
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords ENA, plot, points
@@ -38,199 +41,139 @@ ena.plot.points = function(
   enaplot,
 
   points = NULL,    #vector of unit names or row indices
-
+  point.size = 5,
   labels = rownames(points), #unique(enaplot$enaset$enadata$unit.names),
   label.offset = NULL,
-
+  label.group = "Points",
   label.font.size = enaplot$get("font.size"),
   label.font.color = enaplot$get("font.color"),
   label.font.family = c("Arial", "Courier New", "Times New Roman"),
 
-  shape = c("circle", "square", "triangle", "diamond"),
-  colors = c("black"), #rep(I("black"), nrow(points)),
+  shape = c("circle", "square", "triangle-up", "diamond"),
+  colors = default.colors[1], # c("blue"), #rep(I("black"), nrow(points)),
 
   confidence.interval.values = NULL,
   confidence.interval = c("none", "crosshairs", "box"),
 
   outlier.interval.values = NULL,
-  outlier.interval = c("none", "crosshairs", "box")
-
+  outlier.interval = c("none", "crosshairs", "box"),
+  show.legend = T,
+  ...
 ) {
-  if(is(points, "numeric")){
-    points = matrix(points);
-    dim(points) = c(1,nrow(points))
-  }
-  group.layout = NULL;
-  if(!is.character(label.font.family)) {
-    label.font.size = enaplot$get("font.family");
-  }
+  ###
+  # Parameter Checking and Cleaning
+  ###
+    if(is.null(points)) {
+      stop("Must provide points to plot.")
+    }
+    if(is(points, "numeric")){
+      points = matrix(points);
+      dim(points) = c(1,nrow(points))
+    }
+    if(!is.character(label.font.family)) {
+      label.font.size = enaplot$get("font.family");
+    }
 
-  confidence.interval = match.arg(confidence.interval);
-  outlier.interval = match.arg(outlier.interval);
-  shape = match.arg(shape);
+    confidence.interval = match.arg(confidence.interval);
+    outlier.interval = match.arg(outlier.interval);
+    shape = match.arg(shape);
 
-  if(grepl("^c", confidence.interval) && grepl("^c", outlier.interval)) {
-    print("Confidence Interval and Outlier Interval cannot both be crosshair");
-    print("Plotting Outlier Interval as box");
-    outlier.interval = "box";
-  }
+    if(grepl("^c", confidence.interval) && grepl("^c", outlier.interval)) {
+      print("Confidence Interval and Outlier Interval cannot both be crosshair");
+      print("Plotting Outlier Interval as box");
+      outlier.interval = "box";
+    }
 
-  #### ADDRESS THIS
-  size = 5;
+    points.layout = data.table::data.table(points);
+    colnames(points.layout) = paste0("X", rep(1:ncol(points.layout)));
 
-  ##### WHAT IS THIS?
-  evs = enaplot$enaset$data$centered$latent[1:enaplot$enaset$get("dimensions")];
-  evs = floor(evs/sum(evs)*100);
-  # max.axis = max(abs(points))*1.2;
-  # network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T, range=c(-max.axis,max.axis));
-  # network.graph.axis.x = network.graph.axis.y = network.graph.axis;
-  #####
+    if(length(colors) == 1) {
+      colors = rep(colors, nrow(points.layout))
+    }
+  ###
+  # END: Parameter Checking and Cleaning
+  ###
 
-  points.layout = data.table::data.table(points);
+  ###
+  # Set error value for CI|OI crosshair on plot
+  ###
+    error = list(x = list(visible=F, type="data"), y = list(visible=F, type="data"));
+    int.values = NULL;
+    if(grepl("^c", confidence.interval) && !is.null(confidence.interval.values)) {
+      int.values = confidence.interval.values;
+    } else if(grepl("^c", outlier.interval) && !is.null(outlier.interval.values)) {
+      int.values = outlier.interval.values;
+    }
+    error$x$array = int.values[1];
+    error$y$array = int.values[2];
+  ###
+  # END: Set error value for crosshair on plot
+  ###
 
+  ###
+  # Set box value for CI|OI box on plot
+  ###
+    box.values = NULL;
+    if(grepl("^b", confidence.interval) && !is.null(confidence.interval.values)) {
+      box.values = confidence.interval.values;
+      box.label = "Conf. Int.";
+    }
+    if(grepl("^b", outlier.interval) && !is.null(outlier.interval.values)) {
+      box.values = outlier.interval.values;
+      box.label = "Outlier Int.";
+    }
+  ###
+  # END: Set box value for CI|OI box on plot
+  ###
 
-  if(length(colors) == 1) {
-    colors = rep(colors, nrow(points.layout))
-  }
-
-  color = colors; #label.font.color
-  error = NULL;
-  if(grepl("^c", confidence.interval) && !is.null(confidence.interval.values)) {
-    ci.x = confidence.interval.values[1];
-    ci.y = confidence.interval.values[2];
-    error = list(
-      x = list(type = "data", array = ci.x),
-      y = list(type = "data", array = ci.y)
-    )
-  } else if(grepl("^c", outlier.interval) && !is.null(outlier.interval.values)) {
-    oi.x = outlier.interval.values[1];
-    oi.y = outlier.interval.values[2];
-    error = list(
-      x = list(type = "data", array = oi.x),
-      y = list(type = "data", array = oi.y)
-    )
-  }
-
-  # Control the column names
-  colnames(points.layout) = paste0("X", rep(1:ncol(points.layout)));
-  if(grepl("^b", confidence.interval) && !is.null(confidence.interval.values)) {
-    points.layout[,c("ci.x", "ci.y") := .(confidence.interval.values[1], confidence.interval.values[2])]
-    points.layout[, c("ci.x1", "ci.x2", "ci.y1", "ci.y2") := .(X1 - ci.x, X1 + ci.x, X2 - ci.y, X2 + ci.y)]
-
-    lines.CI = apply(points.layout,1,function(x) {
-      list(
-        "type" = "square",
-        "line" = list(
-          width = 1,
-          color = color,
-          dash="dash"
-        ),
-        "xref" = "x",
-        "yref" = "y",
-        "x0" = x[['ci.x1']],
-        "x1" = x[['ci.x2']],
-        "y0" = x[['ci.y1']],
-        "y1" = x[['ci.y2']]
-      );
-    });
-    lines = lines.CI;
-  }
-  if(grepl("^b", outlier.interval) && !is.null(outlier.interval.values)) {
-    oi.x = outlier.interval.values[1];
-    oi.y = outlier.interval.values[2];
-
-    points.layout[,c("oi.x", "oi.y") := .(oi.x, oi.y)]
-    points.layout[, c("oi.x1", "oi.x2", "oi.y1", "oi.y2") := .(X1 - oi.x, X1 + oi.x, X2 - oi.y, X2 + oi.y)]
-
-    lines.OI = apply(points.layout,1,function(x) {
-      list(
-        "type" = "square",
-        "line" = list(
-          width = 1,
-          color = color,
-          dash="dash"
-        ),
-        "xref" = "x",
-        "yref" = "y",
-        "x0" = x[['oi.x1']],
-        "x1" = x[['oi.x2']],
-        "y0" = x[['oi.y1']],
-        "y1" = x[['oi.y2']]
-      );
-    });
-
-    lines = c(lines, lines.OI);
-  }
-
-  if(!is.null(points.layout)) {
-    if(!is.null(error)) {
-      #plot group w/ crosshair error bars
-      enaplot$plot = plotly::add_trace(
-        enaplot$plot,
-        data = points.layout,
-        # type="scatter",
-        x = ~X1, y = ~X2,
-        mode="markers+text",
-        marker = list(
-          symbol =  shape,
-          color = color,
-          size = size,
-          name = "testing"
-        ),
-        text = labels,
-        textposition = "top right",
-        error_x = error$x,
-        error_y = error$y,
-        showlegend = T
-        # hoverinfo = "text+x+y"
-      )
-    } else {
-      #plot group w/o crosshair error bars
+  ###
+  # Plot
+  ###
+    for(m in 1:nrow(points.layout)) {
       enaplot$plot = plotly::add_trace(
         p = enaplot$plot,
-        data = points.layout,
-        type="scatter",
+        data = points.layout[m,],
+        type ="scatter",
         x = ~X1, y = ~X2,
-        mode="markers",
+        mode = "markers+text",
         marker = list(
           symbol = shape,
-          color = color,
-          size = size
+          color = colors[m],
+          size = point.size
         ),
-        text = labels,
-        showlegend = T,
+        error_x = error$x, error_y = error$y,
+        showlegend = show.legend,
+        # legendgroup = ifelse(!is.null(box.label), labels[1], NULL),
+        name = labels[m],
+        text = labels[m],
+        textposition = "top right",
         hoverinfo = "text+x+y"
       )
     }
-  }
 
-  ### if number of labels provided is equal to number of points, add labels
-  # if(length(labels) == nrow(points.layout)) {
-  #   enaplot$plot = plotly::layout(
-  #       p = enaplot$plot,
-  #       annotations = list(
-  #         x = points.layout$X1,
-  #         y = points.layout$X2,
-  #         text = labels,
-  #         xref = "x",
-  #         yref = "y",
-  #         xanchor = "right",
-  #         yanchor = "bottom",
-  #         clicktoshow = "onoff",
-  #         xshift = label.offset[1],
-  #         yshift = label.offset[2],
-  #         showarrow = F
-  #       )
-  #   );
-  # }
-
-  # enaplot$plot = plotly::layout(
-  #   enaplot$plot,
-  #   title = enaplot$plot.title,
-  #   shapes = lines
-  #   # ,xaxis = network.graph.axis.x,
-  #   # yaxis = network.graph.axis.y
-  # )
+    if(!is.null(box.values)) {
+      box.values = data.frame(
+        X1 = c(points[1]-box.values[1],points[1]+box.values[1],points[1]+box.values[1],points[1]-box.values[1],points[1]-box.values[1]),
+        X2 = c(points[2]-box.values[2],points[2]-box.values[2],points[2]+box.values[2],points[2]+box.values[2],points[2]-box.values[2])
+      )
+      enaplot$plot = plotly::add_trace(
+        p = enaplot$plot,
+        data = box.values,
+        type = "scatter",
+        x = ~X1, y = ~X2,
+        mode = "lines",
+        line = list(
+          width = 1,
+          color = colors[1],
+          dash = "dash"
+        ),
+        # "legendgroup" = labels[1],
+        name = box.label
+      )
+    }
+  ###
+  # END: Plot
+  ###
 
   return(enaplot);
 }
