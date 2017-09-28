@@ -20,7 +20,7 @@
 #' @param label.font.size An integer which determines the font size for graph labels, default: enaplot$font.size
 #' @param label.font.color A character which determines the color of label font, default: enaplot$font.color
 #' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
-#' @param ... Additional parameters
+#' @param default.hidden Logical indicating if the trajectories should start hidden (click on the legend to show them) Default: FALSE
 #'
 #' @keywords ENA, plot, trajectory
 #'
@@ -50,7 +50,8 @@ ena.plot.trajectory = function(
   confidence.interval = NULL,
   confidence.interval.values = NULL,
   outlier.interval = NULL,
-  outlier.interval.values = NULL
+  outlier.interval.values = NULL,
+  default.hidden = F
 ) {
   if(!is.character(label.font.family)) {
     label.font.size = enaplot$get("font.family");
@@ -102,8 +103,8 @@ ena.plot.trajectory = function(
       mode = "lines+markers+text",
       text = dfDT.trajs[x,]$lines[[1]]$labels,
       textposition = 'middle right',
-      hoverinfo = "x+y"
-      #,visible = "legendonly"
+      hoverinfo = "x+y",
+      visible = ifelse(default.hidden, "legendonly", T)
     );
   }
 

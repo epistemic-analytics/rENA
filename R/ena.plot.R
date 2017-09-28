@@ -18,6 +18,7 @@
 #' @param font.size An integer determining the font size for graph labels, default: 10
 #' @param font.color A character, the color of label font, default: black
 #' @param font.family A character, the font type, choices: Arial, Courier New, Times New Roman, default: Arial
+#' @param scale.to Either network or points. Default: "network"
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords ENA, generate, plot
@@ -49,7 +50,7 @@ ena.plot <- function(
   font.size = 10,
   font.color = "#000000",
   font.family = c("Arial", "Courier New", "Times New Roman"),
-
+  scale.to = c("network", "points"),
   ...
 ) {
 
@@ -66,8 +67,9 @@ ena.plot <- function(
                      font.size,
                      font.color,
                      font.family,
+                     scale.to = scale.to,
                      ...
-                     );
+                   );
 
   return(plot);
 }

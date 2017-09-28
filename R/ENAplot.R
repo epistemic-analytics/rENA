@@ -42,9 +42,10 @@ ENAplot = R6::R6Class("ENAplot",
         font.size = 14,
         font.color = "#000000",
         font.family = "Arial",
-
+        scale.to = c("network", "points"),
         ...
       ) {
+        scale.to = match.arg(scale.to);
 
         args = list(...);
         if(!is.null(args$multiplier)) {
@@ -75,7 +76,10 @@ ENAplot = R6::R6Class("ENAplot",
 
         # browser()
         # max.axis = max(abs(points))*1.2;
-        max.axis = max(abs(enaset$node.positions),abs(enaset$points.rotated))*1.2;
+        max.axis = max(abs(enaset$node.positions))*1.2;
+        if(scale.to == "points") {
+          max.axis = max(abs(enaset$points.rotated))*1.2;
+        };
         # network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T, range=c(-max.axis,max.axis));
         graph.axis <- list(
           titlefont = private$font,
