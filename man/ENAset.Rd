@@ -14,7 +14,7 @@ ENAset R6class
 \section{Fields}{
 
 \describe{
-\item{\code{enadata}}{An ENAdata object originally used to create the set}
+\item{\code{enadata}}{An \code{\link{ENAdata}} object originally used to create the set}
 
 \item{\code{points.raw}}{A data frame containing accumulated adjacency (co-occurrence) vectors per unit}
 
@@ -28,7 +28,7 @@ ENAset R6class
 
 \item{\code{codes}}{- A vector of code names}
 
-\item{\code{rotation.set}}{- An ENARotationSet object}
+\item{\code{rotation.set}}{- An \code{\link{ENARotationSet}} object}
 
 \item{\code{correlation}}{- A data frame of spearman and pearson correlations for each dimension specified}
 
@@ -36,59 +36,7 @@ ENAset R6class
 
 \item{\code{function.call}}{- The string representation of function called}
 
-\item{\code{function.params}}{- A list of all parameters sent to function call
-
-\code{update()} - Change any of the allowed properties then reprocess the ENAset.
-\preformatted{  Example:
-    update(
-      x="set",
-      data=self$enadata,
-      dims=private$dimensions,
-      samples=private$samples,
-      ...
-    )}
-\preformatted{  Parameters:
-    x - Update this 'ENAset' or its 'ENAdata' object. Default is 'set'
-    data - ENAdata object
-    dims - Number of dims
-    samples - Number of samples
-    ... - Extra parameters passed to 'ENAdata$update()'}
-\code{process()} - Process the ENAset.
-\preformatted{}
-\code{rotate()} - Rotate the centered data by the provided rotation matrix
-\preformatted{  Example:
-   rotate(rotation = self$data$centered$pca)}
-\preformatted{  Parameters:
-   rotation - Defaults to ENAdata$centered$pca}
-\code{get()} - Return a read-only property
-\preformatted{  Example:
-    get( x = 'file' )}
-\preformatted{  Parameters:
-     x - Property to return. Defaults to 'file', returning the original data}
-\code{plot()} - Plot ENAset node locations.
-\preformatted{  Example:
-    plot(
-      wh = 'nodes',
-      hide = NULL,
-      name.units.by = NULL,
-      name.units.sep = ".",
-      ...
-    )}
-\preformatted{  Parameters:
-     wh - What to plot: "nodes" or "units"
-     hide - Vector of items to hide from plot
-     name.units.by - Vector of string column names to use as labels
-     name.units.sep - Charcter used to join multiple columns as a label
-     ... - Parameters passed on to `plotly`}}
+\item{\code{function.params}}{- A list of all parameters sent to function call}
 }}
-\section{Methods}{
-
-\code{new} - Construct the ENAplot object
-}
-
-\section{Properties}{
-
-The following are public properties on the ENAset object:
-}
 \keyword{datasets}
 

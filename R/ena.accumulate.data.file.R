@@ -1,50 +1,50 @@
 ##
-#' @title Accumulate Data from csv
-#'
-#' @description This function accumulates rows of data.
-#'
-#' @details [TBD]
-#'
-#' @export
-#'
-#' @param file The csv file location or data.frame for the function
-#' @param units.used Delimits columns based on the units (which specific units to use)
-#' @param units.by unit columns to accumulate by
-#' @param conversations.by Columns used in the conversation
-#' @param codes Columns used based on codes
-#' @param window.size.back Number of lines back to include window in stanza
-#' @param window.size.forward Number of lines forward in stanza window
-#' @param binary [TBD]
-#' @param model [TBD]
-#' @param window [TBD]
-#' @param weight.by [TBD]
-#' @param binary.stanzas [TBD]
-#' @param mask [TBD]
-#' @param ... additional parameters addressed in inner function
-#'
-#' @keywords data, accumulate
-#'
-#' @seealso \code{\link{ena.make.set}}
-#'
-#' @examples
-#' \dontrun{
-#' codeNames = c(
-#'   "E.data","S.data","E.design","S.design","S.professional","E.client",
-#'   "V.client","E.consultant","V.consultant","S.collaboration","I.engineer",
-#'   "I.intern","K.actuator","K.rom","K.materials","K.power"
-#' )
-#'
-#' df.file <- system.file("extdata", "rs.data.csv", package="rENA")
-#'
-#' # Given a csv file location
-#' ena.accumulate.data(
-#'   df.file, units.by = c("UserName","Condition"),
-#'   conversations.by = c("ActivityNumber","GroupName"),
-#'   codes = codeNames
-#' )
-#' }
-#' @return \code{\link{ENAdata}} class object with accumulated data
-#'
+# @title Accumulate Data from csv
+#
+# @description This function accumulates rows of data.
+#
+# @details [TBD]
+#
+#@export
+#
+# @param file The csv file location or data.frame for the function
+# @param units.used Delimits columns based on the units (which specific units to use)
+# @param units.by unit columns to accumulate by
+# @param conversations.by Columns used in the conversation
+# @param codes Columns used based on codes
+# @param window.size.back Number of lines back to include window in stanza
+# @param window.size.forward Number of lines forward in stanza window
+# @param binary [TBD]
+# @param model [TBD]
+# @param window [TBD]
+# @param weight.by [TBD]
+# @param binary.stanzas [TBD]
+# @param mask [TBD]
+# @param ... additional parameters addressed in inner function
+#
+# @keywords data, accumulate
+#
+# @seealso \code{\link{ena.make.set}}
+#
+# @examples
+# \dontrun{
+# codeNames = c(
+#   "E.data","S.data","E.design","S.design","S.professional","E.client",
+#   "V.client","E.consultant","V.consultant","S.collaboration","I.engineer",
+#   "I.intern","K.actuator","K.rom","K.materials","K.power"
+# )
+#
+# df.file <- system.file("extdata", "rs.data.csv", package="rENA")
+#
+# # Given a csv file location
+# ena.accumulate.data(
+#   df.file, units.by = c("UserName","Condition"),
+#   conversations.by = c("ActivityNumber","GroupName"),
+#   codes = codeNames
+# )
+# }
+# @return \code{\link{ENAdata}} class object with accumulated data
+#
 ##
 ena.accumulate.data.file <- function(
   file,

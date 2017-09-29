@@ -23,20 +23,65 @@
 #' @param label.font.size An integer which determines the font size for graph labels, default: enaplot$font.size
 #' @param label.font.color A character which determines the color of label font, default: enaplot$font.color
 #' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
+#' @param legend.name A character name to include in the legend. Not included in legend when NULL. Default: NULL
+#' @param legend.include.edges Logical value indicating if the edges should be included in the plot
 #' @param ... Additional parameters
 #'
 #' @keywords ENA, plot, network, nodes, edges
 #'
-#' @seealso \code{\link{ena.plot}}, \code{ena.plot.points}
+#' @seealso \code{\link{ena.plot}}, \code{\link{ena.plot.points}}
 #' @importFrom scales rescale
-#'
+
 #' @examples
 #' \dontrun{
-#' # Given an ENA plot
-#' ena.plot.set(\code{\link{ENAplot}})
+#' file <- RS.data
 #'
+#' codeNames = c('Data','Technical.Constraints','Performance.Parameters',
+#'   'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
+#'
+#' accum = ena.accumulate.data(
+#'   units = file[,c("UserName","Condition")],
+#'   conversation = file[,c("Condition","GroupName")],
+#'   metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
+#'   codes = file[,codeNames],
+#'   window.size.back = 4
+#' )
+#'
+#' set = ena.make.set(
+#'   enadata = accum,
+#'   rotation.by = ena.rotate.by.mean,
+#'   rotation.params = list(
+#'       accum$metadata$Condition=="FirstGame",
+#'       accum$metadata$Condition=="SecondGame"
+#'   )
+#' )
+#'
+#' plot = ena.plot(set)
+#'
+#' ### Subset rotated points and plot Condition 1 Group Mean
+#' first.game = unitNames$Condition == "FirstGame"
+#' first.game.points = set$points.rotated[first.game,]
+#' plot = ena.plot.group(plot, first.game.points, labels = "FirstGame",
+#'     colors = "red", confidence.interval = "box")
+#'
+#' ### Subset rotated points and plot Condition 2 Group Mean
+#' second.game = unitNames$Condition == "SecondGame"
+#' second.game.points = set$points.rotated[second.game,]
+#' plot = ena.plot.group(plot, second.game.points, labels = "SecondGame",
+#'     colors  = "blue", confidence.interval = "box")
+#'
+#' ### get mean network plots
+#' first.game.lineweights = set$line.weights[first.game,]
+#' first.game.mean = colMeans(first.game.lineweights)
+#'
+#' second.game.lineweights = set$line.weights[second.game,]
+#' second.game.mean = colMeans(second.game.lineweights)
+#'
+#' subtracted.network = first.game.mean - second.game.mean
+#' plot = ena.plot.network(plot, network = subtracted.network)
+#' print(plot)
 #' }
-#' @return The  \code{\link{ENAplot}} provided to the function, with its plot updated to include the nodes and provided connecting lines.
+#' @return The \code{\link{ENAplot}} provided to the function, with its plot updated to include the nodes and provided connecting lines.
 ##
 ena.plot.network = function(
   enaplot = NULL,
@@ -55,6 +100,8 @@ ena.plot.network = function(
   label.font.size = enaplot$get("font.size"),
   label.font.color = enaplot$get("font.color"),
   label.font.family = enaplot$get("font.family"),
+  legend.name = NULL,
+  legend.include.edges = F,
   ...
 ) {
   if(choose(nrow(enaplot$enaset$node.positions), 2) != length(network)) {
@@ -154,14 +201,33 @@ ena.plot.network = function(
       name = rownames(nodes)[i]
     ),
     text = rownames(nodes),
+    legendgroup = legend.name,
+    name = legend.name,
     hoverinfo = 'none'
   );
-  enaplot$plot = plotly::layout(
-    enaplot$plot,
-    title =  enaplot$title,
-    shapes = network.edges.shapes,
-    showlegend = F
-  );
+
+  for(n in 1:length(network.edges.shapes)) {
+    e = network.edges.shapes[[n]];
+
+    name = NULL;
+    show.legend = F;
+    if(!is.null(legend.name) && legend.include.edges) {
+      name = paste(e$nodes[1],e$nodes[2], sep=".");
+      show.legend = T;
+    }
+    enaplot$plot = plotly::add_trace(
+      enaplot$plot,
+      type = "scatter",
+      mode = "lines",
+      data = data.frame(X1=c(e$x0,e$x1), X2=c(e$y0,e$y1)),
+      x = ~X1, y = ~X2,
+      line = e$line,
+      opacity = e$opacity,
+      legendgroup = legend.name,
+      showlegend = show.legend,
+      name = name
+    )
+  }
 
   enaplot
 }

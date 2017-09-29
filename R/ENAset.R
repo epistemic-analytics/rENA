@@ -5,14 +5,8 @@
 #' @importFrom R6 R6Class
 #' @import data.table
 #' @export
-#'
-#'
-#' @section Methods:
-#' \code{new} - Construct the ENAplot object
-#'
-#' @section Properties:
-#' The following are public properties on the ENAset object:
-#' @field enadata An ENAdata object originally used to create the set
+
+#' @field enadata An \code{\link{ENAdata}} object originally used to create the set
 #' @field points.raw A data frame containing accumulated adjacency (co-occurrence) vectors per unit
 #' @field points.normed.centered A data frame of centered normed accumulated adjacency (co-occurrence) vectors for each unit
 #' @field points.rotated A data frame of point positions for number of dimensions specified in ena.make.set (i.e., the centered, normed, and rotated data)
@@ -21,7 +15,7 @@
 # @field line.weights.unrotated
 #' @field node.positions - A data frame of positions for each code
 #' @field codes - A vector of code names
-#' @field rotation.set - An ENARotationSet object
+#' @field rotation.set - An \code{\link{ENARotationSet}} object
 #' @field correlation - A data frame of spearman and pearson correlations for each dimension specified
 #' @field variance - A vector of variance accounted for by each dimension specified
 #' @field function.call - The string representation of function called
@@ -157,21 +151,21 @@ ENAset = R6::R6Class("ENAset",
     },
 
     ####
-    #' \code{update()} - Change any of the allowed properties then reprocess the ENAset.
-    #' \preformatted{  Example:
-    #'     update(
-    #'       x="set",
-    #'       data=self$enadata,
-    #'       dims=private$dimensions,
-    #'       samples=private$samples,
-    #'       ...
-    #'     )}
-    #' \preformatted{  Parameters:
-    #'     x - Update this 'ENAset' or its 'ENAdata' object. Default is 'set'
-    #'     data - ENAdata object
-    #'     dims - Number of dims
-    #'     samples - Number of samples
-    #'     ... - Extra parameters passed to 'ENAdata$update()'}
+    # \code{update()} - Change any of the allowed properties then reprocess the ENAset.
+    # \preformatted{  Example:
+    #     update(
+    #       x="set",
+    #       data=self$enadata,
+    #       dims=private$dimensions,
+    #       samples=private$samples,
+    #       ...
+    #     )}
+    # \preformatted{  Parameters:
+    #     x - Update this 'ENAset' or its 'ENAdata' object. Default is 'set'
+    #     data - ENAdata object
+    #     dims - Number of dims
+    #     samples - Number of samples
+    #     ... - Extra parameters passed to 'ENAdata$update()'}
     ####
     update = function(
       x = "set",
@@ -195,8 +189,8 @@ ENAset = R6::R6Class("ENAset",
     },
 
     ####
-    #' \code{process()} - Process the ENAset.
-    #' \preformatted{}
+    # \code{process()} - Process the ENAset.
+    # \preformatted{}
     ####
     process = function() {
       return(private$run())
@@ -231,11 +225,11 @@ ENAset = R6::R6Class("ENAset",
     },
 
     ####
-    #' \code{rotate()} - Rotate the centered data by the provided rotation matrix
-    #' \preformatted{  Example:
-    #'    rotate(rotation = self$data$centered$pca)}
-    #' \preformatted{  Parameters:
-    #'    rotation - Defaults to ENAdata$centered$pca}
+    # \code{rotate()} - Rotate the centered data by the provided rotation matrix
+    # \preformatted{  Example:
+    #    rotate(rotation = self$data$centered$pca)}
+    # \preformatted{  Parameters:
+    #    rotation - Defaults to ENAdata$centered$pca}
     ####
     # rotate = function(rotation = self$data$centered$pca) {
     #   return(private$rotateNodes(rotation))
@@ -243,32 +237,32 @@ ENAset = R6::R6Class("ENAset",
 
 
     ####
-    #' \code{get()} - Return a read-only property
-    #' \preformatted{  Example:
-    #'     get( x = 'file' )}
-    #' \preformatted{  Parameters:
-    #'      x - Property to return. Defaults to 'file', returning the original data}
+    # \code{get()} - Return a read-only property
+    # \preformatted{  Example:
+    #     get( x = 'file' )}
+    # \preformatted{  Parameters:
+    #      x - Property to return. Defaults to 'file', returning the original data}
     ####
     get = function(x = "enadata") {
       return(private[[x]])
     },
 
     ####
-    #' \code{plot()} - Plot ENAset node locations.
-    #' \preformatted{  Example:
-    #'     plot(
-    #'       wh = 'nodes',
-    #'       hide = NULL,
-    #'       name.units.by = NULL,
-    #'       name.units.sep = ".",
-    #'       ...
-    #'     )}
-    #' \preformatted{  Parameters:
-    #'      wh - What to plot: "nodes" or "units"
-    #'      hide - Vector of items to hide from plot
-    #'      name.units.by - Vector of string column names to use as labels
-    #'      name.units.sep - Charcter used to join multiple columns as a label
-    #'      ... - Parameters passed on to `plotly`}
+    # \code{plot()} - Plot ENAset node locations.
+    # \preformatted{  Example:
+    #     plot(
+    #       wh = 'nodes',
+    #       hide = NULL,
+    #       name.units.by = NULL,
+    #       name.units.sep = ".",
+    #       ...
+    #     )}
+    # \preformatted{  Parameters:
+    #      wh - What to plot: "nodes" or "units"
+    #      hide - Vector of items to hide from plot
+    #      name.units.by - Vector of string column names to use as labels
+    #      name.units.sep - Charcter used to join multiple columns as a label
+    #      ... - Parameters passed on to `plotly`}
     ####
     plot = function(
       wh = "nodes",

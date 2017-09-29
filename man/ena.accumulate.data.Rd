@@ -40,18 +40,22 @@ ena.accumulate.data(units = NULL, conversation = NULL, codes = NULL,
 This function initializes an ENAdata object, processing conversations from coded data to generate adjacency (co-occurrence) vectors
 }
 \details{
-ENAData R6 Objects are created using this function. This accumulation receives
+ENAData objects are created using this function. This accumulation receives
 separate data frames for units, codes, conversation, and optionally, metadata. It
 iterates through the data to create an adjacency (co-occurrence) vector corresponding
-to each unit – or in a trajectory model multiple adjacency (co-occurrence) vectors for
-each unit. In the default MovingStanzeWindow model, co-occurrences between codes are
+to each unit - or in a trajectory model multiple adjacency (co-occurrence) vectors for
+each unit.
+
+In the default MovingStanzaWindow model, co-occurrences between codes are
 calculated for each line k in the data between line k and the window.size.back-1 previous
-lines and window.size.forward-1 subsequent lines in the same conversation as line k.  In
-the Conversation model, co-occurrences between codes are calculated across all lines in
+lines and window.size.forward-1 subsequent lines in the same conversation as line k.
+
+In the Conversation model, co-occurrences between codes are calculated across all lines in
 each conversation. Adjacency (co-occurrence) vectors are constructed for each unit u by
-summing the co-occurrences for the lines that correspond to u. Options for how the data is
-accumulated are endpoint, which produces one adjacency (co-occurrence) vector for each
-until summing the co-occurrences for all lines, and two trajectory models:
+summing the co-occurrences for the lines that correspond to u.
+
+Options for how the data is accumulated are endpoint, which produces one adjacency (co-occurrence)
+vector for each until summing the co-occurrences for all lines, and two trajectory models:
 AccumulatedTrajectory and SeparateTrajectory. Trajectory models produce an adjacency
 (co-occurrence) model for each conversation for each unit. In a SeparateTrajectory model,
 each conversation is modeled as a separate network. In an AccumulatedTrajectory model, the
@@ -60,19 +64,17 @@ from all previous conversations in the data.
 }
 \examples{
 \dontrun{
-codeNames = c(
-  "E.data","S.data","E.design","S.design","S.professional","E.client",
-  "V.client","E.consultant","V.consultant","S.collaboration","I.engineer",
-  "I.intern","K.actuator","K.rom","K.materials","K.power"
-)
+file <- read.csv(system.file("extdata", "rs.data.csv", package="rENA"))
 
-df.file <- system.file("extdata", "rs.data.csv", package="rENA")
+codeNames = c('Data','Technical.Constraints','Performance.Parameters',
+  'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
 
-# Given a csv file location
-ena.accumulate.data(
-  df.file, units.by = c("UserName","Condition"),
-  conversations.by = c("ActivityNumber","GroupName"),
-  codes = codeNames
+accum = ena.accumulate.data(
+  units = file[,c("UserName","Condition")],
+  conversation = file[,c("Condition","GroupName")],
+  metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
+  codes = file[,codeNames],
+  window.size.back = 4
 )
 }
 }

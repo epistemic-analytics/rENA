@@ -23,12 +23,32 @@
 #'
 #' @keywords ENA, generate, plot
 #'
-#' @seealso \code{\link{ena.make.set}}, \code{\link{ENAplot}}
+#' @seealso \code{\link{ena.make.set}}, \code{\link{ena.plot.points}}
 #'
 #' @examples
 #' \dontrun{
-#' #Given an \code{\link{ENAset}}
-#' ena.plot(\code{\link{ENAset}})
+#' file <- read.csv(system.file("extdata", "rs.data.csv", package="rENA"))
+#'
+#' codeNames = c('Data','Technical.Constraints','Performance.Parameters',
+#'   'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
+#'
+#' accum = ena.accumulate.data(
+#'   units = file[,c("UserName","Condition")],
+#'   conversation = file[,c("Condition","GroupName")],
+#'   metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
+#'   codes = file[,codeNames],
+#'   window.size.back = 4
+#' )
+#'
+#' set = ena.make.set(
+#'   enadata = accum
+#' )
+#'
+#' plot = ena.plot(set)
+#'
+#' group1.points = set$points.rotated[set$enadata$units$Condition == "FirstGame",]
+#' plot = ena.plot.points(plot, points = group1.points);
+#' print(plot);
 #' }
 #'
 #' @return \code{\link{ENAplot}} used for plotting an ENAset

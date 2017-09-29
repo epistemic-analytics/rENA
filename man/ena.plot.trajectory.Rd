@@ -5,8 +5,8 @@
 \title{Plot of ENA trajectories}
 \usage{
 ena.plot.trajectory(enaplot, points, by = NULL, labels = NULL,
-  names = NULL, label.offset = NULL,
-  label.font.size = enaplot$get("font.size"),
+  labels.show = c("Always", "Hover", "Both"), names = NULL,
+  label.offset = NULL, label.font.size = enaplot$get("font.size"),
   label.font.color = enaplot$get("font.color"),
   label.font.family = c("Arial", "Courier New", "Times New Roman"),
   shape = c("circle", "square", "triangle-up", "diamond"),
@@ -23,19 +23,21 @@ ena.plot.trajectory(enaplot, points, by = NULL, labels = NULL,
 
 \item{labels}{character vector - point labels, length nrow(points)}
 
-\item{names}{character vector – labels for each trajectory of points, length length(unique(by))}
+\item{labels.show}{A character choice: Always, Hover, Both.  Default: Both}
+
+\item{names}{character vector - labels for each trajectory of points, length length(unique(by))}
 
 \item{label.offset}{A numeric vector of an x and y value to offset labels from the coordinates of the points}
 
-\item{label.font.size}{An integer which determines the font size for labels, default: enaplot$font.size}
+\item{label.font.size}{An integer which determines the font size for labels, default: enaplot\$font.size}
 
-\item{label.font.color}{A character which determines the color of label font, default: enaplot$font.color}
+\item{label.font.color}{A character which determines the color of label font, default: enaplot\$font.color}
 
-\item{label.font.family}{A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family}
+\item{label.font.family}{A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot\$font.family}
 
 \item{shape}{A character which determines the shape of markers, choices: square, triangle, diamond, circle, default: circle}
 
-\item{colors}{A character, determines marker color, default: enaplot$color}
+\item{colors}{A character, determines marker color, default: enaplot\$color}
 
 \item{confidence.interval}{A character that determines which confidence interval type to use, choices: none, box, crosshair, default: none}
 
@@ -45,7 +47,7 @@ ena.plot.trajectory(enaplot, points, by = NULL, labels = NULL,
 
 \item{outlier.interval.values}{A matrix/dataframe where columns are OI x and y values for each point}
 
-\item{default.hidden}{Logical indicating if the trajectories should start hidden (click on the legend to show them) Default: FALSE}
+\item{default.hidden}{A logical indicating if the trajectories should start hidden (click on the legend to show them) Default: FALSE}
 }
 \value{
 The \code{\link{ENAplot}} provided to the function, with its plot updated to include the trajectories
@@ -55,9 +57,53 @@ Function used to plot trajectories
 }
 \examples{
 \dontrun{
-# Given an ENA plot
-ena.plot.trajectory(\\code{\\link{ENAplot}})
+file <- read.csv(system.file("extdata", "rs.data.csv", package="rENA"))
 
+accum = ena.accumulate.data(
+  units = file[,c("UserName","Condition")],
+  conversation = file[,c("GroupName","ActivityNumber")],
+  metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
+  codes = file[,codeNames],
+  window.size.back = 4,
+  model = "A"
+);
+
+set = ena.make.set(accum);
+
+unitNames = set$enadata$units
+
+### Subset rotated points and plot Condition 1 Group Mean
+first.game = unitNames$Condition == "FirstGame"
+first.game.points = set$points.rotated[first.game,]
+
+### Subset rotated points and plot Condition 2 Group Mean
+second.game = unitNames$Condition == "SecondGame"
+second.game.points = set$points.rotated[second.game,]
+
+### get mean network plots
+first.game.lineweights = set$line.weights[first.game,]
+first.game.mean = colMeans(first.game.lineweights)
+
+second.game.lineweights = set$line.weights[second.game,]
+second.game.mean = colMeans(second.game.lineweights)
+
+subtracted.network = first.game.mean - second.game.mean
+
+# Plot dimension 1 against ActivityNumber metadata
+dim.by.activity = cbind(
+    set$points.rotated[,1],
+    set$enadata$trajectories$step$ActivityNumber*.8/14-.4  #scale down to dimension 1
+)
+
+plot = ena.plot(df.set.traj.lws)
+plot = ena.plot.network(plot, network = subtracted.network, legend.name="Network")
+plot = ena.plot.trajectory(
+  plot,
+  points = dim.by.activity,
+  names = unique(set$enadata$units$UserName),
+  by = set$enadata$units$UserName
+);
+print(plot)
 }
 }
 \seealso{

@@ -34,48 +34,7 @@ ENAdata R6class
 
 \item{\code{function.call}}{The string representation of function called and parameters provided}
 
-\item{\code{function.params}}{A list of all parameters sent to function call
-
-\code{get()} - Return a read-only property
-\preformatted{  Example:
-    get( x = 'file' )}
-\preformatted{  Parameters:
-     x - Property to return. Defaults to 'file', returning the original data}
-\code{read()} - Return the accumulated data
-\preformatted{  Example:
-    get( colnames = T, sep = " & " )}
-\preformatted{  Parameters:
-     colnames - Logical, whether to replace colnames with their names values from the adjacency (co-occurrence)
-     sep - String to use as a seperator in the updated column names. Ignored if colnames == F}
-\code{update()} - Change any of the allowed properties then reprocess the ENAdata.
-\preformatted{  Example:
-    update(
-      file = private$file,
-      codes = self$codes,
-      conversations.by = private$conversations.by,
-      units = self$units,
-      unitsSelected = private$unitsSelected,
-      windowSize = private$windowSize,
-      reload = FALSE
-      ...
-    )}
-
-\preformatted{  Parameters:
-    file - The original data to accumulate, as a data.frame or data.table
-    codes - String vector of column names to use as codes
-    conversations.by - String vector of column names to create the conversations
-    units - String vector of which units to include in the ENAset
-     windowSize - Integer used to select the size of each stanza window within a conversation
-    reload - Logical, force reloading of the ENAdata object}}
+\item{\code{function.params}}{A list of all parameters sent to function call}
 }}
-\section{Methods}{
-
-\code{new} - Construct the ENAplot object
-}
-
-\section{Properties}{
-
-The following are public properties on the ENAdata object:
-}
 \keyword{datasets}
 

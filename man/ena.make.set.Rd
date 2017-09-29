@@ -41,6 +41,36 @@ space. Returns location of the units in the projected space, as well as
 locations for node positions, and normalized adjacency (co-occurrence) vectors
 to construct network graphs
 }
+\examples{
+\dontrun{
+file <- read.csv(system.file("extdata", "rs.data.csv", package="rENA"))
+
+codeNames = c('Data','Technical.Constraints','Performance.Parameters',
+  'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
+
+accum = ena.accumulate.data(
+  units = file[,c("UserName","Condition")],
+  conversation = file[,c("Condition","GroupName")],
+  metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
+  codes = file[,codeNames],
+  window.size.back = 4
+)
+
+set = ena.make.set(
+  enadata = accum
+)
+
+set.means.rotated = ena.make.set(
+  enadata = accum,
+  rotation.by = ena.rotate.by.mean,
+  rotation.params = list(
+      accum$metadata$Condition=="FirstGame",
+      accum$metadata$Condition=="SecondGame"
+  )
+)
+}
+
+}
 \seealso{
 \code{\link{ena.accumulate.data}}, \code{\link{ENAset}}
 }

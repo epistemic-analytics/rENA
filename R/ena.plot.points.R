@@ -3,8 +3,6 @@
 #'
 #' @description Plot all or a subset of the points of an ENAplot using the plotly plotting library
 #'
-#' @details [TBD]
-#'
 #' @export
 #'
 #' @param enaplot \code{\link{ENAplot}} object to use for plotting
@@ -31,8 +29,35 @@
 #'
 #' @examples
 #' \dontrun{
-#' #Given an \code{\link{ENAplot}}
-#' ena.plot.points(\code{\link{ENAplot}})
+#' file <- read.csv(system.file("extdata", "rs.data.csv", package="rENA"))
+#'
+#' codeNames = c('Data','Technical.Constraints','Performance.Parameters',
+#'   'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
+#'
+#' accum = ena.accumulate.data(
+#'   units = file[,c("UserName","Condition")],
+#'   conversation = file[,c("Condition","GroupName")],
+#'   metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
+#'   codes = file[,codeNames],
+#'   window.size.back = 4
+#' )
+#'
+#' set = ena.make.set(
+#'   enadata = accum,
+#'   rotation.by = ena.rotate.by.mean,
+#'   rotation.params = list(
+#'       accum$metadata$Condition=="FirstGame",
+#'       accum$metadata$Condition=="SecondGame"
+#'   )
+#' )
+#'
+#' plot = ena.plot(set)
+#'
+#' group1.points = set$points.rotated[set$enadata$units$Condition == "FirstGame",]
+#' group2.points = set$points.rotated[set$enadata$units$Condition == "SecondGame",]
+#' plot = ena.plot.points(plot, points = group1.points);
+#' plot = ena.plot.points(plot, points = group2.points);
+#' print(plot);
 #' }
 #'
 #' @return \code{\link{ENAplot}} The ENAplot provided to the function, with its plot updated to include the new points.

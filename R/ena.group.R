@@ -3,8 +3,6 @@
 #'
 #' @description Computes summary statistics for groupings (given as vector) of units in ena data using given method (typically, mean); computes summary statistic for point locations and edge weights for each grouping
 #'
-#' @details [TBD]
-#'
 #' @export
 #'
 #' @param enaset An \code{\link{ENAset}} (optional)
@@ -12,6 +10,28 @@
 #' @param method A function that is used on grouped points. Default: mean()
 #'
 #' @keywords ENA, set, group
+#'
+#' @examples
+#' \dontrun{
+#' file <- read.csv(system.file("extdata", "rs.data.csv", package="rENA"))
+#'
+#' codeNames = c('Data','Technical.Constraints','Performance.Parameters',
+#'   'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
+#'
+#' accum = ena.accumulate.data(
+#'   units = file[,c("UserName","Condition")],
+#'   conversation = file[,c("Condition","GroupName")],
+#'   metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
+#'   codes = file[,codeNames],
+#'   window.size.back = 4
+#' )
+#'
+#' set = ena.make.set(
+#'   enadata = accum
+#' )
+#'
+#' means = ena.group(set, by=accum$metadata$Condition)
+#' }
 #'
 #' @return A list containing names, points, and edge weights for each of the unique groups formed by the function
 ##

@@ -1,16 +1,14 @@
 Package: rENA
-Type: Package
-Name: rENA
 Title: Epistemic Network Analysis
-Description: Create an visualize network models of discourse and other phenomena from coded data using Epistemic Network Analysis (ENA).
-Version: 0.1.0
-Author: Cody L Marquart [aut, cre]
-Authors@R: c(person("Cody L Marquart", role = c("aut", "cre"), email="cody.marquart@wisc.edu"),person("Roman Woodward", role = c("aut"), email="rwoodward3@wisc.edu"),person("Zachari Swiecki", role = c("aut"), email="swiecki@wisc.edu"),person("Wesley Collier", role = c("aut"), email="wcollier@wisc.edu"),person("David", "Williamson Shaffer", email = "dws@education.wisc.edu", role = c("aut")))
+Type: Package
+Authors@R: c(person("Cody L","Marquart", role = c("aut", "cre"), email="cody.marquart@wisc.edu"),person("Zachari","Swiecki", role = c("aut"), email="swiecki@wisc.edu"),person("Wesley","Collier", role = c("aut"), email="wcollier@wisc.edu"),person("Brendan","Eagan", role = c("aut"), email="beagan@wisc.edu"),person("Roman", "Woodward", role = c("aut"), email="rwoodward3@wisc.edu"),person("David", "Williamson Shaffer", role = c("aut"), email = "dws@education.wisc.edu"))
 Maintainer: Cody L Marquart <cody.marquart@wisc.edu>
-License: GPL (>= 2)
+Version: 0.1.0
+Description: Create an visualize network models of discourse and other phenomena from coded data using Epistemic Network Analysis (ENA).
 LazyData: TRUE
 Depends:
-    R (>= 2.10)
+    R (>= 3.0.0)
+License: GPL-3
 LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppEigen
 Imports:
     data.table,

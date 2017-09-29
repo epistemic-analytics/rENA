@@ -166,31 +166,31 @@ test_that("Test trajectories", {
   testthat::expect_true(all(df.non.accum$adjacency.vectors[df.non.accum$units$Name == "J" & df.non.accum$units$ActivityNumber==3,] == c(0,0,0)));
 })
 test_that("Test accumulation with data.frame and matrix", {
-  df.file <- system.file("extdata", "rs.data.csv", package="rENA")
-
-  codeNames = c('Data','Technical.Constraints','Performance.Parameters','Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
-  df.csv = read.csv(df.file)
-
-  df.accum = ena.accumulate.data.file(df.csv, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
-  df.accum2 = ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
-
-  testthat::expect_is(df.csv, "data.frame")
-  testthat::expect_is(df.accum, "ENAdata")
-  testthat::expect_is(df.accum2, "ENAdata")
-
-  ## Test with file reported in #5
-  pn.file <- system.file("extdata", "sample-data", "PinterestMock2.csv", package="rENA")
-  pn.csv = read.csv(pn.file)
-  pn.accum = ena.accumulate.data.file(pn.csv, units.by =  c("Teacher"), conversations.by = c("Board"), codes = c("Kinesthetic", "Algorithmic"))
-
-  testthat::expect_is(pn.accum, "ENAdata")
+  # #df.file <- system.file("extdata", "rs.data.csv", package="rENA")
+  #
+  # codeNames = c('Data','Technical.Constraints','Performance.Parameters','Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
+  # df.csv = RS.data; # read.csv(df.file)
+  #
+  # df.accum = ena.accumulate.data.file(df.csv, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
+  # df.accum2 = ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
+  #
+  # testthat::expect_is(df.csv, "data.frame")
+  # testthat::expect_is(df.accum, "ENAdata")
+  # testthat::expect_is(df.accum2, "ENAdata")
+  #
+  # ## Test with file reported in #5
+  # pn.file <- system.file("extdata", "sample-data", "PinterestMock2.csv", package="rENA")
+  # pn.csv = read.csv(pn.file)
+  # pn.accum = ena.accumulate.data.file(pn.csv, units.by =  c("Teacher"), conversations.by = c("Board"), codes = c("Kinesthetic", "Algorithmic"))
+  #
+  # testthat::expect_is(pn.accum, "ENAdata")
 })
 test_that("Test accumulation with dplyr::tbl_df", {
-  pn.file = system.file("extdata", "sample-data", "PinterestMock2.csv", package="rENA")
-  PinterestMock2 <- readr::read_csv(pn.file)
-  pn.accum = ena.accumulate.data.file(PinterestMock2, units.by =  c("Teacher"), conversations.by = c("Board"), codes = c("Kinesthetic", "Algorithmic"))
-
-  testthat::expect_is(pn.accum, "ENAdata")
+  # pn.file = system.file("extdata", "sample-data", "PinterestMock2.csv", package="rENA")
+  # PinterestMock2 <- readr::read_csv(pn.file)
+  # pn.accum = ena.accumulate.data.file(PinterestMock2, units.by =  c("Teacher"), conversations.by = c("Board"), codes = c("Kinesthetic", "Algorithmic"))
+  #
+  # testthat::expect_is(pn.accum, "ENAdata")
 })
 
 # test_that("Test accumulation output JSON", {

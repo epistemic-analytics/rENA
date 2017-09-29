@@ -6,11 +6,6 @@
 #' @import data.table
 #' @export
 #'
-#' @section Methods:
-#' \code{new} - Construct the ENAplot object
-#'
-#' @section Properties:
-#' The following are public properties on the ENAdata object:
 #' @field raw A data frame constructed from the unit, convo, code, and metadata parameters of ena.accumulate.data
 #' @field adjacency.vectors A data frame of adjacency (co-occurrence) vectors by row
 #' @field accumulated.adjacency.vectors A data frame of adjacency (co-occurrence) vectors accumulated per unit
@@ -23,7 +18,6 @@
 #' @field codes A vector of code names
 #' @field function.call The string representation of function called and parameters provided
 #' @field function.params A list of all parameters sent to function call
-#'
 ####
 ENAdata = R6::R6Class("ENAdata", public = list(
 
@@ -99,23 +93,23 @@ ENAdata = R6::R6Class("ENAdata", public = list(
     ####
 
       ####
-      #' \code{get()} - Return a read-only property
-      #' \preformatted{  Example:
-      #'     get( x = 'file' )}
-      #' \preformatted{  Parameters:
-      #'      x - Property to return. Defaults to 'file', returning the original data}
+      # \code{get()} - Return a read-only property
+      # \preformatted{  Example:
+      #     get( x = 'file' )}
+      # \preformatted{  Parameters:
+      #      x - Property to return. Defaults to 'file', returning the original data}
       ####
       get = function(x = "data") {
         return(private[[x]])
       },
 
       ####
-      #' \code{read()} - Return the accumulated data
-      #' \preformatted{  Example:
-      #'     get( colnames = T, sep = " & " )}
-      #' \preformatted{  Parameters:
-      #'      colnames - Logical, whether to replace colnames with their names values from the adjacency (co-occurrence)
-      #'      sep - String to use as a seperator in the updated column names. Ignored if colnames == F}
+      # \code{read()} - Return the accumulated data
+      # \preformatted{  Example:
+      #     get( colnames = T, sep = " & " )}
+      # \preformatted{  Parameters:
+      #      colnames - Logical, whether to replace colnames with their names values from the adjacency (co-occurrence)
+      #      sep - String to use as a seperator in the updated column names. Ignored if colnames == F}
       ####
       read = function(colnames = T, sep = " & ") {
         namedData = data.table::copy(self$adjacency.vectors);
@@ -127,26 +121,26 @@ ENAdata = R6::R6Class("ENAdata", public = list(
       },
 
       ####
-      #' \code{update()} - Change any of the allowed properties then reprocess the ENAdata.
-      #' \preformatted{  Example:
-      #'     update(
-      #'       file = private$file,
-      #'       codes = self$codes,
-      #'       conversations.by = private$conversations.by,
-      #'       units = self$units,
-      #'       unitsSelected = private$unitsSelected,
-      #'       windowSize = private$windowSize,
-      #'       reload = FALSE
-      #'       ...
-      #'     )}
-      #'
-      #' \preformatted{  Parameters:
-      #'     file - The original data to accumulate, as a data.frame or data.table
-      #'     codes - String vector of column names to use as codes
-      #'     conversations.by - String vector of column names to create the conversations
-      #'     units - String vector of which units to include in the ENAset
-      #'      windowSize - Integer used to select the size of each stanza window within a conversation
-      #'     reload - Logical, force reloading of the ENAdata object}
+      # \code{update()} - Change any of the allowed properties then reprocess the ENAdata.
+      # \preformatted{  Example:
+      #     update(
+      #       file = private$file,
+      #       codes = self$codes,
+      #       conversations.by = private$conversations.by,
+      #       units = self$units,
+      #       unitsSelected = private$unitsSelected,
+      #       windowSize = private$windowSize,
+      #       reload = FALSE
+      #       ...
+      #     )}
+      #
+      # \preformatted{  Parameters:
+      #     file - The original data to accumulate, as a data.frame or data.table
+      #     codes - String vector of column names to use as codes
+      #     conversations.by - String vector of column names to create the conversations
+      #     units - String vector of which units to include in the ENAset
+      #      windowSize - Integer used to select the size of each stanza window within a conversation
+      #     reload - Logical, force reloading of the ENAdata object}
       ####
       update = function(
         file = private$file,

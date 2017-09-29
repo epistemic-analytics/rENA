@@ -24,6 +24,35 @@
 #'
 #' @keywords ENA, generate, set
 #'
+#' @examples
+#' \dontrun{
+#' file <- read.csv(system.file("extdata", "rs.data.csv", package="rENA"))
+#'
+#' codeNames = c('Data','Technical.Constraints','Performance.Parameters',
+#'   'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
+#'
+#' accum = ena.accumulate.data(
+#'   units = file[,c("UserName","Condition")],
+#'   conversation = file[,c("Condition","GroupName")],
+#'   metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
+#'   codes = file[,codeNames],
+#'   window.size.back = 4
+#' )
+#'
+#' set = ena.make.set(
+#'   enadata = accum
+#' )
+#'
+#' set.means.rotated = ena.make.set(
+#'   enadata = accum,
+#'   rotation.by = ena.rotate.by.mean,
+#'   rotation.params = list(
+#'       accum$metadata$Condition=="FirstGame",
+#'       accum$metadata$Condition=="SecondGame"
+#'   )
+#' )
+#' }
+#'
 #' @seealso \code{\link{ena.accumulate.data}}, \code{\link{ENAset}}
 #'
 #' @return \code{\link{ENAset}} class object that can be further processed for analysis or plotting
