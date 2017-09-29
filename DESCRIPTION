@@ -1,8 +1,8 @@
 Package: rENA
 Type: Package
-Name: ENA
+Name: rENA
 Title: Epistemic Network Analysis
-Description: Create sets for Epistemic Network Analysis (ENA).
+Description: Create an visualize network models of discourse and other phenomena from coded data using Epistemic Network Analysis (ENA).
 Version: 0.1.0
 Author: Cody L Marquart [aut, cre]
 Authors@R: c(person("Cody L Marquart", role = c("aut", "cre"), email="cody.marquart@wisc.edu"),person("Roman Woodward", role = c("aut"), email="rwoodward3@wisc.edu"),person("Zachari Swiecki", role = c("aut"), email="swiecki@wisc.edu"),person("Wesley Collier", role = c("aut"), email="wcollier@wisc.edu"),person("David", "Williamson Shaffer", email = "dws@education.wisc.edu", role = c("aut")))

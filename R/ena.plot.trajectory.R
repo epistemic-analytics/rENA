@@ -6,10 +6,10 @@
 #' @export
 #'
 #' @param enaplot \code{\link{ENAplot}} object to use for plotting
-#' @param points dataframe of matrix - first two column are X and Y coordinates, each row is a step in some trajectory
-#' @param by vector used to subset points into individual trajectories (subset of trajectories$units)
-#' @param names character vector - labels, same length as the number of trajectories to plot (usually unique values from the by parameter)
-#' @param labels character vector - point labels, same length as points or number of total points
+#' @param points dataframe of matrix - first two column are X and Y coordinates, each row is a point in a trajectory
+#' @param by vector used to subset points into individual trajectories, length nrow(points)
+#' @param names character vector – labels for each trajectory of points, length length(unique(by))
+#' @param labels character vector - point labels, length nrow(points)
 #' @param confidence.interval A character that determines which confidence interval type to use, choices: none, box, crosshair, default: none
 #' @param outlier.interval A character that determines which outlier interval type to use, choices: none, box, crosshair, default: none
 #' @param confidence.interval.values A matrix/dataframe where columns are CI x and y values for each point
@@ -17,7 +17,7 @@
 #' @param colors A character, determines marker color, default: enaplot$color
 #' @param shape A character which determines the shape of markers, choices: square, triangle, diamond, circle, default: circle
 #' @param label.offset A numeric vector of an x and y value to offset labels from the coordinates of the points
-#' @param label.font.size An integer which determines the font size for graph labels, default: enaplot$font.size
+#' @param label.font.size An integer which determines the font size for labels, default: enaplot$font.size
 #' @param label.font.color A character which determines the color of label font, default: enaplot$font.color
 #' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
 #' @param default.hidden Logical indicating if the trajectories should start hidden (click on the legend to show them) Default: FALSE
@@ -32,7 +32,7 @@
 #' ena.plot.trajectory(\code{\link{ENAplot}})
 #'
 #' }
-#' @return The  \code{\link{ENAplot}} provided to the function, with its plot updated to include the trajectories subsetted using the by parameter
+#' @return The \code{\link{ENAplot}} provided to the function, with its plot updated to include the trajectories
 ##
 
 ena.plot.trajectory = function(

@@ -1,5 +1,5 @@
 #' @title rENA creates ENA sets
-#' @description rENA is used to generate ENA sets
+#' @description rENA is used to create and visualize network models of discourse and other phenomena from coded data using Epistemic Network Analysis (ENA). A more complete description of the methods will be provided with the next release. See also XXXXX
 #' @name rENA
 #' @importFrom Rcpp sourceCpp
 #' @importFrom grDevices col2rgb

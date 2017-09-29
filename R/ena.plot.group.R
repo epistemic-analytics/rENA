@@ -1,23 +1,23 @@
 ##
 #' @title Plot of ENA set groups
 #'
-#' @description Plot a group point for inputted points
+#' @description Plot a point based on a summary statistic computed from a given method (typically, mean) for a set of points in a projected ENA space
 #'
-#' @details Plots a group mean point for the inputted points as well as confidence and outlier intervals if specified.
+#' @details Plots a point based on a summary statistic for a group (typically, mean)
 #'
 #' @export
 #'
 #' @param enaplot \code{\link{ENAplot}} object to use for plotting
-#' @param points [TBD]
-#' @param method [TBD]
+#' @param points A matrix or data.frame where columns contain coordinates of points in a projected ENA space
+#' @param method A function for computing a summary statistic for each column of points
 #' @param labels A character which will be the label for the group's point
-#' @param colors A character, determines marker color, default: enaplot$color
-#' @param shape A character, determines marker shape, choices: square, triangle, diamond, circle, default: square
-#' @param confidence.interval A character that determines which confidence interval type to use, choices: none, box, crosshair, default: none
-#' @param outlier.interval A character that determines which outlier interval type to use, choices: none, box, crosshair, default: none
-#' @param label.offset A numeric vector containing an x and y value to offset labels from the coordinates of the points
-#' @param label.font.size An integer which determines the font size for graph label, default: enaplot\$font.size
-#' @param label.font.color A character which determines the color of label font, default: enaplot\$font.color
+#' @param colors A character, determines color of the group’s point, default: enaplot$color
+#' @param shape A character, determines shape of the group’s point, choices:  square, triangle, diamond, circle, default: square
+#' @param confidence.interval A character that determines how the confidence interval is displayed, choices: none, box, crosshair, default: none
+#' @param outlier.interval A character that determines how outlier interval is displayed, choices: none, box, crosshair, default: none
+#' @param label.offset A numeric vector containing an x and y value to offset label for the group’s point from the coordinates of the point
+#' @param label.font.size An integer which determines the font size for label, default: enaplot\$font.size
+#' @param label.font.color A character which determines the color of label, default: enaplot\$font.color
 #' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot\$font.family
 #' @param show.legend Logical indicating whether to show the point labels in the in legend
 #' @param ... Additional parameters

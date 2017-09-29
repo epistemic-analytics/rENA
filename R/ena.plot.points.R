@@ -1,5 +1,5 @@
 ##
-#' @title Plots points using an ENA Plot
+#' @title Plot points on an ENAplot
 #'
 #' @description Plot all or a subset of the points of an ENAplot using the plotly plotting library
 #'
@@ -9,19 +9,19 @@
 #'
 #' @param enaplot \code{\link{ENAplot}} object to use for plotting
 #' @param points A dataframe of matrix where the first two column are X and Y coordinates
-#' @param point.size Size of the point nodes
-#' @param labels A character vector of point labels, same length as points or number of total points
-#' @param confidence.interval A character determining markings to use, choices: none, box, crosshair, default: none
-#' @param outlier.interval A character determining markings to use, choices: none, box, crosshair, default: none
+#' @param point.size A data.frame or matrix where the first two column are X and Y coordinates of points to plot in a projected ENA space defined in ENAplot
+#' @param labels A character vector of point labels, length nrow(points); default: NULL
+#' @param confidence.interval A character determining markings to use for confidence intervals, choices: none, box, crosshair, default: none
+#' @param outlier.interval A character determining markings to use for outlier interval, choices: none, box, crosshair, default: none
 #' @param confidence.interval.values A matrix/dataframe where columns are CI x and y values for each point
 #' @param outlier.interval.values A matrix/dataframe where columns are OI x and y values for each point
-#' @param shape A character which determines the shape of markers, choices: square, triangle, diamond, circle, default: circle
-#' @param colors A character vector of the marker colors, if one given it is used for all, otherwise must be same length as points
+#' @param shape A character which determines the shape of point markers, choices:   square, triangle, diamond, circle, default: circle
+#' @param colors A character vector of the point marker colors; if one given it is used for all, otherwise must be same length as points; default: black
 #' @param label.offset numeric vector - x and y value to offset labels from the coordinates of the points
 #' @param label.group A character vector used to group the labels in the legend
-#' @param label.font.size An integer which determines the font size for graph labels, default: enaplot$font.size
+#' @param label.font.size An integer which determines the font size for point labels, default: enaplot$font.size
 #' @param label.font.color A character which determines the color of label font, default: enaplot$font.color
-#' @param label.font.family	A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
+#' @param label.font.family	A character which determines label font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
 #' @param show.legend Logical indicating whether to show the point labels in the in legend
 #' @param ... additional parameters addressed in inner function
 #'
@@ -42,7 +42,7 @@ ena.plot.points = function(
 
   points = NULL,    #vector of unit names or row indices
   point.size = 5,
-  labels = rownames(points), #unique(enaplot$enaset$enadata$unit.names),
+  labels = NULL, #unique(enaplot$enaset$enadata$unit.names),
   label.offset = NULL,
   label.group = "Points",
 
