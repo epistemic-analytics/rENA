@@ -9,25 +9,25 @@ ena.plot.trajectory(enaplot, points, by = NULL, labels = NULL,
   label.font.size = enaplot$get("font.size"),
   label.font.color = enaplot$get("font.color"),
   label.font.family = c("Arial", "Courier New", "Times New Roman"),
-  shape = c("circle", "square", "triangle", "diamond"),
+  shape = c("circle", "square", "triangle-up", "diamond"),
   colors = rep(I("black"), length(unique(by))), confidence.interval = NULL,
   confidence.interval.values = NULL, outlier.interval = NULL,
-  outlier.interval.values = NULL)
+  outlier.interval.values = NULL, default.hidden = F)
 }
 \arguments{
 \item{enaplot}{\code{\link{ENAplot}} object to use for plotting}
 
-\item{points}{dataframe of matrix - first two column are X and Y coordinates, each row is a step in some trajectory}
+\item{points}{dataframe of matrix - first two column are X and Y coordinates, each row is a point in a trajectory}
 
-\item{by}{vector used to subset points into individual trajectories (subset of trajectories$units)}
+\item{by}{vector used to subset points into individual trajectories, length nrow(points)}
 
-\item{labels}{character vector - point labels, same length as points or number of total points}
+\item{labels}{character vector - point labels, length nrow(points)}
 
-\item{names}{character vector - labels, same length as the number of trajectories to plot (usually unique values from the by parameter)}
+\item{names}{character vector – labels for each trajectory of points, length length(unique(by))}
 
 \item{label.offset}{A numeric vector of an x and y value to offset labels from the coordinates of the points}
 
-\item{label.font.size}{An integer which determines the font size for graph labels, default: enaplot$font.size}
+\item{label.font.size}{An integer which determines the font size for labels, default: enaplot$font.size}
 
 \item{label.font.color}{A character which determines the color of label font, default: enaplot$font.color}
 
@@ -45,10 +45,10 @@ ena.plot.trajectory(enaplot, points, by = NULL, labels = NULL,
 
 \item{outlier.interval.values}{A matrix/dataframe where columns are OI x and y values for each point}
 
-\item{...}{Additional parameters}
+\item{default.hidden}{Logical indicating if the trajectories should start hidden (click on the legend to show them) Default: FALSE}
 }
 \value{
-The  \code{\link{ENAplot}} provided to the function, with its plot updated to include the trajectories subsetted using the by parameter
+The \code{\link{ENAplot}} provided to the function, with its plot updated to include the trajectories
 }
 \description{
 Function used to plot trajectories

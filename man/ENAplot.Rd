@@ -11,13 +11,27 @@ ENAplot
 \description{
 ENAset R6class
 }
-\section{Public ENAplot methods}{
+\section{Fields}{
+
+\describe{
+\item{\code{enaset}}{- The \code{\link{ENAset}} object from which the ENAplot was constructed}
+
+\item{\code{plot}}{- The plotly object used for data visualization
 
 \code{get()} - Return a read-only property
 \preformatted{  Example:
     get( x = 'title' )}
 \preformatted{  Parameters:
-     x - Property to return. Defaults to 'title', returning the title}
+     x - Property to return. Defaults to 'title', returning the title}}
+}}
+\section{Methods}{
+
+\code{new} - Construct the ENAplot object
+}
+
+\section{Properties}{
+
+The following are properties on the ENAplot object
 }
 \keyword{datasets}
 

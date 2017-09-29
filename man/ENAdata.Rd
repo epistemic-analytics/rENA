@@ -11,7 +11,30 @@ ENAdata
 \description{
 ENAdata R6class
 }
-\section{Public ENAdata methods}{
+\section{Fields}{
+
+\describe{
+\item{\code{raw}}{A data frame constructed from the unit, convo, code, and metadata parameters of ena.accumulate.data}
+
+\item{\code{adjacency.vectors}}{A data frame of adjacency (co-occurrence) vectors by row}
+
+\item{\code{accumulated.adjacency.vectors}}{A data frame of adjacency (co-occurrence) vectors accumulated per unit}
+
+\item{\code{model}}{The type of ENA model: EndPoint, Accumulated Trajectory, or Separate Trajectory}
+
+\item{\code{units}}{A data frame of columns that were combined to make the unique units. Includes column for trajectory selections. (unique)}
+
+\item{\code{unit.names}}{A vector of unique unit values}
+
+\item{\code{metadata}}{A data frame of unique metadata for each unit}
+
+\item{\code{trajectories}}{A list: units - data frame, for a given row tells which trajectory it's a part; step - data frame, where along the trajectory a row sits}
+
+\item{\code{codes}}{A vector of code names}
+
+\item{\code{function.call}}{The string representation of function called and parameters provided}
+
+\item{\code{function.params}}{A list of all parameters sent to function call
 
 \code{get()} - Return a read-only property
 \preformatted{  Example:
@@ -22,7 +45,7 @@ ENAdata R6class
 \preformatted{  Example:
     get( colnames = T, sep = " & " )}
 \preformatted{  Parameters:
-     colnames - Logical, whether to replace colnames with their names values from the adjacency matrix
+     colnames - Logical, whether to replace colnames with their names values from the adjacency (co-occurrence)
      sep - String to use as a seperator in the updated column names. Ignored if colnames == F}
 \code{update()} - Change any of the allowed properties then reprocess the ENAdata.
 \preformatted{  Example:
@@ -43,7 +66,16 @@ ENAdata R6class
     conversations.by - String vector of column names to create the conversations
     units - String vector of which units to include in the ENAset
      windowSize - Integer used to select the size of each stanza window within a conversation
-    reload - Logical, force reloading of the ENAdata object}
+    reload - Logical, force reloading of the ENAdata object}}
+}}
+\section{Methods}{
+
+\code{new} - Construct the ENAplot object
+}
+
+\section{Properties}{
+
+The following are public properties on the ENAdata object:
 }
 \keyword{datasets}
 

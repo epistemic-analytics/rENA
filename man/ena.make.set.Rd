@@ -6,48 +6,43 @@
 \usage{
 ena.make.set(enadata, dimensions = 2, norm.by = sphere_norm_c,
   rotation.by = ena.svd, rotation.params = NULL, rotation.set = NULL,
-  endpoints.only = T, node.position.method = lws.positions.es,
-  check.unique.positions = F, ...)
+  endpoints.only = T, node.position.method = lws.positions.es, ...)
 }
 \arguments{
-\item{enadata}{\code{\link{ENAdata}} that will be used to generate an ENA set}
+\item{enadata}{\code{\link{ENAdata}} that will be used to generate an ENA model}
 
-\item{dimensions}{Number of dimensions to be in the set}
+\item{dimensions}{The number of dimensions to include in the dimensional reduction}
 
-\item{norm.by}{[TBD]}
+\item{norm.by}{A function to be used to normalize adjacency (co-occurrence) vectors before computing the dimensional reduction, default: sphere_norm_c()}
 
-\item{rotation.by}{[TBD]}
+\item{rotation.by}{A function to be used to compute the dimensional reduction, default: ena.svd()}
 
-\item{rotation.params}{[TBD]}
+\item{rotation.params}{(optional) A character vector containing additional parameters for the function in rotation.by, if needed}
 
-\item{rotation.set}{[TBD]}
+\item{rotation.set}{A previously-constructed  ENARotationSet object to use for the dimensional reduction}
 
-\item{endpoints.only}{[TBD]}
+\item{endpoints.only}{A logical variable which determines whether to only show endpoints for trajectory models}
 
-\item{node.position.method}{[TBD]}
-
-\item{check.unique.positions}{[TBD]}
+\item{node.position.method}{A function to be used to determine node positions based on the dimensional reduction, default: lws.position.es()}
 
 \item{...}{additional parameters addressed in inner function}
 }
 \value{
-\code{\link{ENAset}} class object
+\code{\link{ENAset}} class object that can be further processed for analysis or plotting
 }
 \description{
-Generates an ENA set from a given ENA data object.
+Generates an ENA model by constructing a dimensional reduction of adjacency (co-occurrence) vectors in an ENA data object
 }
 \details{
-[TBD]
-}
-\examples{
-\dontrun{
-#Given an \\code{\\link{ENAdata}}
-ena.make.set(\\code{\\link{ENAdata}})
-}
-
+This function generates an ENAset object from an ENAdata object. Takes
+the adjacency (co-occurrence) vectors from enadata, computes a dimensional
+reduction (projection), and calculates node positions in the projected ENA
+space. Returns location of the units in the projected space, as well as
+locations for node positions, and normalized adjacency (co-occurrence) vectors
+to construct network graphs
 }
 \seealso{
-\code{\link{ena.accumulate.data}}, \code{\link{ena.split.codes}}
+\code{\link{ena.accumulate.data}}, \code{\link{ENAset}}
 }
 \keyword{ENA,}
 \keyword{generate,}

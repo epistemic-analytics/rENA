@@ -4,47 +4,50 @@
 \alias{ena.plot.group}
 \title{Plot of ENA set groups}
 \usage{
-ena.plot.group(enaplot, points = NULL, label = NULL, color = "black",
-  shape = c("square", "triangle", "diamond", "circle"),
-  confidence.interval = c("none", "crosshairs", "box"),
-  outlier.interval = c("none", "crosshairs", "box"), label.offset = NULL,
-  label.font.size = enaplot$font.size,
-  label.font.color = enaplot$font.color,
-  label.font.family = enaplot$font.family, ...)
+ena.plot.group(enaplot, points = NULL, method = "mean",
+  labels = rownames(points), colors = "black", shape = c("square",
+  "triangle-up", "diamond", "circle"), confidence.interval = c("none",
+  "crosshairs", "box"), outlier.interval = c("none", "crosshairs", "box"),
+  label.offset = NULL, label.font.size = NULL, label.font.color = NULL,
+  label.font.family = NULL, show.legend = T, ...)
 }
 \arguments{
-\item{enaplot}{\code{\link{ENAplot}} used to generate the plot}
+\item{enaplot}{\code{\link{ENAplot}} object to use for plotting}
 
-\item{points}{[TBD]}
+\item{points}{A matrix or data.frame where columns contain coordinates of points in a projected ENA space}
 
-\item{label}{[TBD]}
+\item{method}{A function for computing a summary statistic for each column of points}
 
-\item{color}{[TBD]}
+\item{labels}{A character which will be the label for the group's point}
 
-\item{shape}{[TBD]}
+\item{colors}{A character, determines color of the group’s point, default: enaplot$color}
 
-\item{confidence.interval}{Show confidence intervals of a unit}
+\item{shape}{A character, determines shape of the group’s point, choices:  square, triangle, diamond, circle, default: square}
 
-\item{outlier.interval}{[TBD]}
+\item{confidence.interval}{A character that determines how the confidence interval is displayed, choices: none, box, crosshair, default: none}
 
-\item{label.offset}{[TBD]}
+\item{outlier.interval}{A character that determines how outlier interval is displayed, choices: none, box, crosshair, default: none}
 
-\item{label.font.size}{[TBD]}
+\item{label.offset}{A numeric vector containing an x and y value to offset label for the group’s point from the coordinates of the point}
 
-\item{label.font.color}{[TBD]}
+\item{label.font.size}{An integer which determines the font size for label, default: enaplot\$font.size}
 
-\item{label.font.family}{[TBD]}
+\item{label.font.color}{A character which determines the color of label, default: enaplot\$font.color}
 
-\item{...}{Additional parameters addressed in inner function}
+\item{label.font.family}{A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot\$font.family}
+
+\item{show.legend}{Logical indicating whether to show the point labels in the in legend}
+
+\item{...}{Additional parameters}
 }
 \value{
-Plot of groups of \code{\link{ENAplot}}
+The  \code{\link{ENAplot}} provided to the function, with its plot updated to include the new group point.
 }
 \description{
-Generate a plot of a given groups for an ENA plot.
+Plot a point based on a summary statistic computed from a given method (typically, mean) for a set of points in a projected ENA space
 }
 \details{
-[TBD]
+Plots a point based on a summary statistic for a group (typically, mean)
 }
 \examples{
 \dontrun{
@@ -54,9 +57,9 @@ ena.plot.set(\\code{\\link{ENAplot}})
 }
 }
 \seealso{
-\code{\link{ena.make.set}}, \code{ena.update.set}
+\code{\link{ena.plot}}, \code{ena.plot.points}
 }
 \keyword{ENA,}
+\keyword{group}
 \keyword{plot,}
-\keyword{set}
 

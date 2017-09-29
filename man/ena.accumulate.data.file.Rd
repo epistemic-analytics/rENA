@@ -67,7 +67,7 @@ ena.accumulate.data(
 }
 }
 \seealso{
-\code{\link{ena.split.codes}}, \code{\link{ena.make.set}}
+\code{\link{ena.make.set}}
 }
 \keyword{accumulate}
 \keyword{data,}

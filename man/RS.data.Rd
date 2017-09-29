@@ -4,7 +4,7 @@
 \name{RS.data}
 \alias{RS.data}
 \title{Coded Rescushell Chat Data}
-\format{An object of class \code{data.frame} with 3824 rows and 39 columns.}
+\format{An object of class \code{data.frame} with 3824 rows and 20 columns.}
 \usage{
 RS.data
 }
