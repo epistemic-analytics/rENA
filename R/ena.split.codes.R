@@ -1,29 +1,27 @@
 ###
-#' @title Split code columns
-#'
-#' @description This function will split single code columns into binary columns.
-#'
-#' @export
-#'
-#' @param data.file The csv file location or data frame which has the columns to be split
-#' @param split.columns The specific column in the The csv file or data frame that will be split
-#' @param split.columns.by Delimits columns in The csv file or data frame that will be split
-#' @param code.names The name for the codes resulting from the split columns in the The csv file or data.frame
-#'
-#' @keywords columns, split
-#'
-#' @seealso \code{\link{ena.accumulate.data}}, \code{\link{ena.make.set}}
-#'
-#' @examples
-#' \dontrun{
-#' #Given a csv file location
-#' ena.split.codes(data = .csv)
-#'
-#' #Given a data frame
-#' ena.split.codes(data = data.frame)
-#' }
-#' @return Data frame containing the split code columns
-#'
+# @title Split code columns
+#
+# @description This function will split single code columns into binary columns.
+#
+# @param data.file The csv file location or data frame which has the columns to be split
+# @param split.columns The specific column in the The csv file or data frame that will be split
+# @param split.columns.by Delimits columns in The csv file or data frame that will be split
+# @param code.names The name for the codes resulting from the split columns in the The csv file or data.frame
+#
+# @keywords columns, split
+#
+# @seealso \code{\link{ena.accumulate.data}}, \code{\link{ena.make.set}}
+#
+# @examples
+# \dontrun{
+# #Given a csv file location
+# ena.split.codes(data = .csv)
+#
+# #Given a data frame
+# ena.split.codes(data = data.frame)
+# }
+# @return Data frame containing the split code columns
+#
 ###
 
 ena.split.codes <- function(

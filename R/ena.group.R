@@ -1,7 +1,7 @@
 ##
-#' @title Aggregate groups of points by arbitrary method
+#' @title Compute summary statistic for groupings of units using given  method (typically, mean)
 #'
-#' @description Aggregates ena data to groups, including point locations and edge weights, by a provided vector, using the specified function
+#' @description Computes summary statistics for groupings (given as vector) of units in ena data using given method (typically, mean); computes summary statistic for point locations and edge weights for each grouping
 #'
 #' @details [TBD]
 #'
@@ -12,12 +12,6 @@
 #' @param method A function that is used on grouped points. Default: mean()
 #'
 #' @keywords ENA, set, group
-#'#'
-#' @examples
-#' \dontrun{
-#' #Given an \code{\link{ENAset}}
-#' ena.group(\code{\link{ENAset}})
-#' }
 #'
 #' @return A list containing names, points, and edge weights for each of the unique groups formed by the function
 ##

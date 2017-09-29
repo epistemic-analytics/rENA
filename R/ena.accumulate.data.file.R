@@ -24,7 +24,7 @@
 #'
 #' @keywords data, accumulate
 #'
-#' @seealso \code{\link{ena.split.codes}}, \code{\link{ena.make.set}}
+#' @seealso \code{\link{ena.make.set}}
 #'
 #' @examples
 #' \dontrun{

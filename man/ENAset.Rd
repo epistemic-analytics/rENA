@@ -11,7 +11,32 @@ ENAset
 \description{
 ENAset R6class
 }
-\section{Public ENAset methods}{
+\section{Fields}{
+
+\describe{
+\item{\code{enadata}}{An ENAdata object originally used to create the set}
+
+\item{\code{points.raw}}{A data frame containing accumulated adjacency (co-occurrence) vectors per unit}
+
+\item{\code{points.normed.centered}}{A data frame of centered normed accumulated adjacency (co-occurrence) vectors for each unit}
+
+\item{\code{points.rotated}}{A data frame of point positions for number of dimensions specified in ena.make.set (i.e., the centered, normed, and rotated data)}
+
+\item{\code{line.weights}}{A data frame of connections strengths per unit (Data frame of normed accumu- lated adjacency (co-occurrence) vectors for each unit)}
+
+\item{\code{node.positions}}{- A data frame of positions for each code}
+
+\item{\code{codes}}{- A vector of code names}
+
+\item{\code{rotation.set}}{- An ENARotationSet object}
+
+\item{\code{correlation}}{- A data frame of spearman and pearson correlations for each dimension specified}
+
+\item{\code{variance}}{- A vector of variance accounted for by each dimension specified}
+
+\item{\code{function.call}}{- The string representation of function called}
+
+\item{\code{function.params}}{- A list of all parameters sent to function call
 
 \code{update()} - Change any of the allowed properties then reprocess the ENAset.
 \preformatted{  Example:
@@ -54,7 +79,16 @@ ENAset R6class
      hide - Vector of items to hide from plot
      name.units.by - Vector of string column names to use as labels
      name.units.sep - Charcter used to join multiple columns as a label
-     ... - Parameters passed on to `plotly`}
+     ... - Parameters passed on to `plotly`}}
+}}
+\section{Methods}{
+
+\code{new} - Construct the ENAplot object
+}
+
+\section{Properties}{
+
+The following are public properties on the ENAset object:
 }
 \keyword{datasets}
 

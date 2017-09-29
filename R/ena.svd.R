@@ -11,7 +11,7 @@ ena.svd <- function(self, ...) {
     merge_columns_c(
       attr(
         self$points.normed.centered,
-        rENA::opts$UNIT_NAMES
+        opts$UNIT_NAMES
       ),
       self$enadata$get("units.by")
     )

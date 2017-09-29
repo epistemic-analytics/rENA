@@ -6,10 +6,10 @@
 #' @export
 #'
 #' @param enaplot \code{\link{ENAplot}} object to use for plotting
-#' @param points dataframe of matrix - first two column are X and Y coordinates, each row is a step in some trajectory
-#' @param by vector used to subset points into individual trajectories (subset of trajectories$units)
-#' @param names character vector - labels, same length as the number of trajectories to plot (usually unique values from the by parameter)
-#' @param labels character vector - point labels, same length as points or number of total points
+#' @param points dataframe of matrix - first two column are X and Y coordinates, each row is a point in a trajectory
+#' @param by vector used to subset points into individual trajectories, length nrow(points)
+#' @param names character vector – labels for each trajectory of points, length length(unique(by))
+#' @param labels character vector - point labels, length nrow(points)
 #' @param confidence.interval A character that determines which confidence interval type to use, choices: none, box, crosshair, default: none
 #' @param outlier.interval A character that determines which outlier interval type to use, choices: none, box, crosshair, default: none
 #' @param confidence.interval.values A matrix/dataframe where columns are CI x and y values for each point
@@ -17,10 +17,10 @@
 #' @param colors A character, determines marker color, default: enaplot$color
 #' @param shape A character which determines the shape of markers, choices: square, triangle, diamond, circle, default: circle
 #' @param label.offset A numeric vector of an x and y value to offset labels from the coordinates of the points
-#' @param label.font.size An integer which determines the font size for graph labels, default: enaplot$font.size
+#' @param label.font.size An integer which determines the font size for labels, default: enaplot$font.size
 #' @param label.font.color A character which determines the color of label font, default: enaplot$font.color
 #' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
-#' @param ... Additional parameters
+#' @param default.hidden Logical indicating if the trajectories should start hidden (click on the legend to show them) Default: FALSE
 #'
 #' @keywords ENA, plot, trajectory
 #'
@@ -32,7 +32,7 @@
 #' ena.plot.trajectory(\code{\link{ENAplot}})
 #'
 #' }
-#' @return The  \code{\link{ENAplot}} provided to the function, with its plot updated to include the trajectories subsetted using the by parameter
+#' @return The \code{\link{ENAplot}} provided to the function, with its plot updated to include the trajectories
 ##
 
 ena.plot.trajectory = function(
@@ -45,12 +45,13 @@ ena.plot.trajectory = function(
   label.font.size = enaplot$get("font.size"),
   label.font.color = enaplot$get("font.color"),
   label.font.family = c("Arial", "Courier New", "Times New Roman"),
-  shape = c("circle", "square", "triangle", "diamond"),
+  shape = c("circle", "square", "triangle-up", "diamond"),
   colors = rep(I("black"), length(unique(by))),
   confidence.interval = NULL,
   confidence.interval.values = NULL,
   outlier.interval = NULL,
-  outlier.interval.values = NULL
+  outlier.interval.values = NULL,
+  default.hidden = F
 ) {
   if(!is.character(label.font.family)) {
     label.font.size = enaplot$get("font.family");
@@ -77,8 +78,8 @@ ena.plot.trajectory = function(
   #dfDT[,name:=ENA_UNIT] # Create a name column
 
 
-  network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T);
-  network.graph.axis.x = network.graph.axis.y = network.graph.axis;
+  # network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T);
+  # network.graph.axis.x = network.graph.axis.y = network.graph.axis;
 
   if(is.null(by)) {
     by = list(all = rep(T, nrow(points)));
@@ -102,21 +103,21 @@ ena.plot.trajectory = function(
       mode = "lines+markers+text",
       text = dfDT.trajs[x,]$lines[[1]]$labels,
       textposition = 'middle right',
-      hoverinfo = "x+y"
-      #,visible = "legendonly"
+      hoverinfo = "x+y",
+      visible = ifelse(default.hidden, "legendonly", T)
     );
   }
 
-  max.axis = max(abs(points))*1.2;
-  network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T, range=c(-max.axis,max.axis));
-  network.graph.axis.x = network.graph.axis.y = network.graph.axis;
+  # max.axis = max(abs(points))*1.2;
+  # network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T, range=c(-max.axis,max.axis));
+  # network.graph.axis.x = network.graph.axis.y = network.graph.axis;
 
   enaplot$plot = plotly::layout(
     enaplot$plot,
     title = enaplot$plot.title,
-    shapes = lines,
-    xaxis = network.graph.axis.x,
-    yaxis = network.graph.axis.y
+    shapes = lines
+    # ,xaxis = network.graph.axis.x,
+    # yaxis = network.graph.axis.y
   )
   return(enaplot);
 }

@@ -23,39 +23,42 @@ build:
     - R-package
   script:
     - echo "Running build checks..."
-    #- Rscript -e "devtools::test()"
-
-    #- Rscript -e "install.packages(c('xml2','devtools','roxygen2','data.table','Rcpp','RcppArmadillo','RcppParallel','R6','RcppEigen','RcppRoll','microbenchmark','testthat'), repos='http://cran.us.r-project.org')"
-    #- Rscript -e "install.packages(c('git2r','curl','openssl','httr'), repos='http://cran.us.r-project.org')"
-    #- Rscript -e "install.packages(c('plotly','igraph','foreach','doParallel'), repos='http://cran.us.r-project.org')"
-    #- Rscript -e "install.packages(c('readr'), repos='http://cran.us.r-project.org')"
-    #- Rscript -e "install.packages(c('data.table'), repos='http://cran.us.r-project.org')"
+      #    - Rscript -e "install.packages(c('xml2','devtools','roxygen2','data.table','Rcpp','RcppArmadillo','RcppParallel','R6','RcppEigen','RcppRoll','microbenchmark','testthat'), repos='http://cran.us.r-project.org')"
+      #    - Rscript -e "install.packages(c('git2r','curl','openssl','httr'), repos='http://cran.us.r-project.org')"
+      #    - Rscript -e "install.packages(c('plotly','igraph','foreach','doParallel'), repos='http://cran.us.r-project.org')"
+      #    - Rscript -e "install.packages(c('readr'), repos='http://cran.us.r-project.org')"
+    - Rscript -e "install.packages(c('data.table','data.tree'), repos='http://cran.us.r-project.org')"
     - Rscript -e "Rcpp::compileAttributes()"
     - R CMD build . --no-build-vignettes --no-manual
-  artifacts:
-    paths:
-      - $(ls -1t *.tar.gz | head -n 1)
-test:
-  stage: test
-  tags:
-    - R-package
-  script:
     - PKG_FILE_NAME=$(ls -1t *.tar.gz | head -n 1)
     - R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual --as-cran
-  dependencies:
-    - build
-  artifacts:
-    paths:
-      - $(ls -1t *.tar.gz | head -n 1)
-archive:
-  stage: archive
-  tags:
-    - R-package
-  script:
-    - echo "Archiving package..."
-  dependencies:
-    - test
   artifacts:
     expire_in: 10 years
     paths:
       - $(ls -1t *.tar.gz | head -n 1)
+        #test:
+        #  stage: test
+        #  image: r-package-builder:latest
+        #  tags:
+        #    - R-package
+        #  script:
+        #    - PKG_FILE_NAME=$(ls -1t *.tar.gz | head -n 1)
+        #    - R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual --as-cran
+        #  dependencies:
+        #    - build
+        #  artifacts:
+        #    paths:
+        #      - $(ls -1t *.tar.gz | head -n 1)
+        #archive:
+        #  stage: archive
+        #  image: r-package-builder:latest
+        #  tags:
+        #    - R-package
+        #  script:
+        #    - echo "Archiving package..."
+        #  dependencies:
+        #    - test
+        #  artifacts:
+        #    expire_in: 10 years
+        #    paths:
+        #      - $(ls -1t *.tar.gz | head -n 1)

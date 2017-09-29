@@ -39,12 +39,14 @@ ENAplot = R6::R6Class("ENAplot",
         flip.axis.x = F,
         flip.axis.y = F,
 
-        font.size = 10,
-        font.color = "000000",
+        font.size = 14,
+        font.color = "#000000",
         font.family = "Arial",
-
+        scale.to = c("network", "points"),
         ...
       ) {
+        scale.to = match.arg(scale.to);
+
         args = list(...);
         if(!is.null(args$multiplier)) {
           private$multiplier = args$multiplier
@@ -58,7 +60,6 @@ ENAplot = R6::R6Class("ENAplot",
         private$end.points <- end.points;
         private$flip.axis.x <- flip.axis.x;
         private$flip.axis.y <- flip.axis.y;
-
         private$font.size <- font.size;
         private$font.color <- font.color;
         private$font.family <- font.family;
@@ -67,16 +68,26 @@ ENAplot = R6::R6Class("ENAplot",
           color = private$font.color,
           family = private$font.family
         );
-
         self$plot <- plotly::plot_ly(
           mode = "markers",
           type ="scatter"
         );
+
+
+        # browser()
+        # max.axis = max(abs(points))*1.2;
+        max.axis = max(abs(enaset$node.positions))*1.2;
+        if(scale.to == "points") {
+          max.axis = max(abs(enaset$points.rotated))*1.2;
+        };
+        # network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T, range=c(-max.axis,max.axis));
         graph.axis <- list(
           titlefont = private$font,
           showgrid = F,
           zeroline = T,
-          showticklabels = F
+          showticklabels = T,
+          showgrid = T,
+          range=c(-max.axis,max.axis)
         );
         if(!is.null(args$ticks)) {
           graph.axis$showticklabels = T;
@@ -147,8 +158,8 @@ ENAplot = R6::R6Class("ENAplot",
     flip.axis.y = F,
 
     font = list(),
-    font.size = 10,
-    font.color = "000000",
+    font.size = 14,
+    font.color = "#000000",
     font.family = "Arial",
     #plot.color = I("black"),
 

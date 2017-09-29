@@ -1,41 +1,40 @@
 ##
-#' @title Plot of ENA set groups
-#'
-#' @description Generate a plot of a given groups for an ENA plot.
-#'
-#' @details [TBD]
-#'
-#' @export
-#'
-#' @param enaplot \code{\link{ENAplot}} used to generate the plot
-#' @param multiplier Size multiplier for the plot
-#' @param show.outlier.interval [TBD]
-#' @param show.confidence.interval Show confidence intervals of a unit
-#' @param group [TBD]
-#' @param method [TBD]
-#' @param group.labels [TBD]
-#' @param group.size [TBD]
-#' @param points [TBD]
-#' @param label [TBD]
-#' @param colors [TBD]
-#' @param shape [TBD]
-#' @param label.font.size [TBD]
-#' @param label.font.color [TBD]
-#' @param label.font.family [TBD]
-#' @param group.values [TBD]
-#' @param ... Additional parameters addressed in inner function
-#'
-#' @keywords ENA, plot, set
-#'
-#' @seealso \code{\link{ena.make.set}}, \code{ena.update.set}
-#'
-#' @examples
-#' \dontrun{
-#' # Given an ENA plot
-#' ena.plot.set(\code{\link{ENAplot}})
-#'
-#' }
-#' @return Plot of groups of \code{\link{ENAplot}}
+# @title Plot of ENA set groups
+#
+# @description Generate a plot of a given groups for an ENA plot.
+#
+# @details [TBD]
+#
+#
+# @param enaplot \code{\link{ENAplot}} used to generate the plot
+# @param multiplier Size multiplier for the plot
+# @param show.outlier.interval [TBD]
+# @param show.confidence.interval Show confidence intervals of a unit
+# @param group [TBD]
+# @param method [TBD]
+# @param group.labels [TBD]
+# @param group.size [TBD]
+# @param points [TBD]
+# @param label [TBD]
+# @param colors [TBD]
+# @param shape [TBD]
+# @param label.font.size [TBD]
+# @param label.font.color [TBD]
+# @param label.font.family [TBD]
+# @param group.values [TBD]
+# @param ... Additional parameters addressed in inner function
+#
+# @keywords ENA, plot, set
+#
+# @seealso \code{\link{ena.make.set}}, \code{ena.update.set}
+#
+# @examples
+# \dontrun{
+# # Given an ENA plot
+# ena.plot.set(\code{\link{ENAplot}})
+#
+# }
+# @return Plot of groups of \code{\link{ENAplot}}
 ##
 ena.plot.groups <- function(
   enaplot,
@@ -47,7 +46,7 @@ ena.plot.groups <- function(
   label = NULL,
 
   colors = NULL,
-  shape = c("square", "triangle", "diamond", "circle"),
+  shape = c("square", "triangle-up", "diamond", "circle"),
 
   #unit.colors = rep(plot.color, nrow(enaset$points.rotated)),
 

@@ -2,35 +2,26 @@
 % Please edit documentation in R/ena.group.R
 \name{ena.group}
 \alias{ena.group}
-\title{Aggregate groups of points by arbitrary method}
+\title{Compute summary statistic for groupings of units using given  method (typically, mean)}
 \usage{
 ena.group(enaset = NULL, by = NULL, method = mean)
 }
 \arguments{
-\item{enaset}{ENAset (optional)}
+\item{enaset}{An \code{\link{ENAset}} (optional)}
 
-\item{by}{vector to segment data using}
+\item{by}{A vector of values the same length as units. Uses rotated points for group positions and normed data to get the group edge weights}
 
-\item{method}{Function referance}
+\item{method}{A function that is used on grouped points. Default: mean()}
 }
 \value{
-\code{\link{data.frame}}
+A list containing names, points, and edge weights for each of the unique groups formed by the function
 }
 \description{
-Uses rotated points for group positions and normed data to get
-the group edge weights
+Computes summary statistics for groupings (given as vector) of units in ena data using given method (typically, mean); computes summary statistic for point locations and edge weights for each grouping
 }
 \details{
 [TBD]
 }
-\examples{
-\dontrun{
-#Given an \\code{\\link{ENAset}}
-ena.group(\\code{\\link{ENAset}})
-}
-
-}
-\keyword{#'}
 \keyword{ENA,}
 \keyword{group}
 \keyword{set,}

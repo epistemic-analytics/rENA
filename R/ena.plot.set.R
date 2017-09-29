@@ -1,58 +1,57 @@
 ##
-#' @title Generate Plot of ENA set
-#'
-#' @description Generate a plot of a given ENA set.
-#'
-#' @details [TBD]
-#'
-#' @export
-#'
-#' @param enaset \code{\link{ENAset}} used to generate the plot
-#' @param plot.title Title of the plot
-#' @param plot.mode [TBD]
-#' @param plot.color Color of the plot
-#' @param dimensions Number of dimensions in the plot
-#' @param dimension.labels Labels for the dimensions of the plot
-#' @param dimension.show.variance TBD
-#' @param multiplier Size multiplier for the plot
-#' @param units Vector of units to plot
-#' @param unit.colors Color of units
-#' @param unit.labels Names of units
-#' @param unit.labels.positions Location of names of units
-#' @param unit.size change size of unit label
-#' @param unit.size.multiplier Change size multiplier of unit labels
-#' @param unit.show.confidence.intervals Show confidence intervals of a unit
-#' @param unit.group [TBD]
-#' @param unit.group_by [TBD]
-#' @param unit.group.labels [TBD]
-#' @param unit.group.labels.positions [TBD]
-#' @param unit.group.labels.colors [TBD]
-#' @param unit.group.size [TBD]
-#' @param unit.group.size.multiplier [TBD]
-#' @param unit.trajectory.by [TBD]
-#' @param network.one [TBD]
-#' @param network.two [TBD]
-#' @param network.colors [TBD]
-#' @param network.show.all.codes [TBD]
-#' @param network.code.labels [TBD]
-#' @param network.code.labels.positions [TBD]
-#' @param network.edge.threshold [TBD]
-#' @param axis.flip.x Flip plot on x-axis
-#' @param axis.flip.y Flip plot on y-axis
-#' @param estimate.network.over Adjusts weights using what is being plotted or what is in the entire set
-#' @param ... Additional parameters addressed in inner function
-#'
-#' @keywords ENA, plot, set
-#'
-#' @seealso \code{\link{ena.make.set}}, \code{ena.update.set}
-#'
-#' @examples
-#' \dontrun{
-#' # Given an ENA set
-#' ena.plot.set(\code{\link{ENAset}})
-#'
-#' }
-#' @return Plot of \code{\link{ENAset}}
+# @title Generate Plot of ENA set
+#
+# @description Generate a plot of a given ENA set.
+#
+# @details [TBD]
+#
+#
+# @param enaset \code{\link{ENAset}} used to generate the plot
+# @param plot.title Title of the plot
+# @param plot.mode [TBD]
+# @param plot.color Color of the plot
+# @param dimensions Number of dimensions in the plot
+# @param dimension.labels Labels for the dimensions of the plot
+# @param dimension.show.variance TBD
+# @param multiplier Size multiplier for the plot
+# @param units Vector of units to plot
+# @param unit.colors Color of units
+# @param unit.labels Names of units
+# @param unit.labels.positions Location of names of units
+# @param unit.size change size of unit label
+# @param unit.size.multiplier Change size multiplier of unit labels
+# @param unit.show.confidence.intervals Show confidence intervals of a unit
+# @param unit.group [TBD]
+# @param unit.group_by [TBD]
+# @param unit.group.labels [TBD]
+# @param unit.group.labels.positions [TBD]
+# @param unit.group.labels.colors [TBD]
+# @param unit.group.size [TBD]
+# @param unit.group.size.multiplier [TBD]
+# @param unit.trajectory.by [TBD]
+# @param network.one [TBD]
+# @param network.two [TBD]
+# @param network.colors [TBD]
+# @param network.show.all.codes [TBD]
+# @param network.code.labels [TBD]
+# @param network.code.labels.positions [TBD]
+# @param network.edge.threshold [TBD]
+# @param axis.flip.x Flip plot on x-axis
+# @param axis.flip.y Flip plot on y-axis
+# @param estimate.network.over Adjusts weights using what is being plotted or what is in the entire set
+# @param ... Additional parameters addressed in inner function
+#
+# @keywords ENA, plot, set
+#
+# @seealso \code{\link{ena.make.set}}, \code{ena.update.set}
+#
+# @examples
+# \dontrun{
+# # Given an ENA set
+# ena.plot.set(\code{\link{ENAset}})
+#
+# }
+# @return Plot of \code{\link{ENAset}}
 ##
 ena.plot.set <- function(
   enaset,

@@ -21,7 +21,6 @@ public:
   Offset( int nrows_, int ncols_ ) : //, int nmats_) :
     nrows(nrows_),
     ncols(ncols_)
-    // ,nmats(nmats_)
   {
   }
 
@@ -31,23 +30,6 @@ public:
 
 } ;
 
-//def compute_difference_correlation(c,t):
-//  K=c.shape[0]
-//  M=c.shape[1]
-//
-//  for i in range(M):
-//    dlen = 0
-//    clen = 0
-//    numerator = 0
-//    for a in range(K):
-//      for b in range(K):
-//        dabi=t[a,i] - t[b,i]
-//        cabi=c[a,i] - c[b,i]
-//        numerator += dabi*cabi
-//        dlen += (dabi*dabi)
-//        clen += (cabi*cabi)
-//    corr=numerator/(math.sqrt(dlen)*math.sqrt(clen))
-//    print("i: " + str(i) + " corr: " + str(corr))
 VectorXd compute_difference_correlations(MatrixXd c, MatrixXd t) {
   int K = c.rows();
   int M = c.cols();
@@ -86,10 +68,10 @@ double component_norm(MatrixXd w, VectorXd t, VectorXd x) {
   return(sqrt(norm));
 }
 
-//' @title Multiobjective, Component by Component, with Ellipsoidal Scaling
-//' @description [TBD]
-//' @param adjMats [TBD]
-//' @param t [TBD]
+// @title Multiobjective, Component by Component, with Ellipsoidal Scaling
+// @description [TBD]
+// @param adjMats [TBD]
+// @param t [TBD]
 // [[Rcpp::export]]
 Rcpp::List linderoth_pos_es(Eigen::MatrixXd adjMats, Eigen::MatrixXd t) { // = R_NilValue ) {
   int upperTriSize = adjMats.cols();

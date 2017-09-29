@@ -1,47 +1,43 @@
 ##
 #' @title Generate ENA Set
 #'
-#' @description Generates an ENA set from a given ENA data object.
+#' @description Generates an ENA model by constructing a dimensional reduction of adjacency (co-occurrence) vectors in an ENA data object
 #'
-#' @details This function generates an ENAset object from an ENAdata object. Using the provided accumulation and additional parameters this function processes the accumulated data to create an ENAset which contains information on the locations of the the points and nodes, as well as line weights for node connections.
+#' @details This function generates an ENAset object from an ENAdata object. Takes
+#' the adjacency (co-occurrence) vectors from enadata, computes a dimensional
+#' reduction (projection), and calculates node positions in the projected ENA
+#' space. Returns location of the units in the projected space, as well as
+#' locations for node positions, and normalized adjacency (co-occurrence) vectors
+#' to construct network graphs
 #'
 #' @export
 #'
-#' @param enadata \code{\link{ENAdata}} that will be used to generate an ENA set
-#' @param dimensions The number of dimensions to be in the set
-#' @param norm.by A function to be used to norm the data, default: sphere_norm_c()
-#' @param rotation.by A function to be used to rotate the data, default: ena.svd()
-#' @param rotation.params A character vector containing the parameters for the rotation function
-#' @param rotation.set An ENARotationSet object to use for rotation
+#' @param enadata \code{\link{ENAdata}} that will be used to generate an ENA model
+#' @param dimensions The number of dimensions to include in the dimensional reduction
+#' @param norm.by A function to be used to normalize adjacency (co-occurrence) vectors before computing the dimensional reduction, default: sphere_norm_c()
+#' @param rotation.by	A function to be used to compute the dimensional reduction, default: ena.svd()
+#' @param rotation.params (optional) A character vector containing additional parameters for the function in rotation.by, if needed
+#' @param rotation.set A previously-constructed  ENARotationSet object to use for the dimensional reduction
 #' @param endpoints.only A logical variable which determines whether to only show endpoints for trajectory models
-#' @param node.position.method A function to be used to determine node positions, default: lws.position.es()
+#' @param node.position.method A function to be used to determine node positions based on the dimensional reduction, default: lws.position.es()
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords ENA, generate, set
 #'
 #' @seealso \code{\link{ena.accumulate.data}}, \code{\link{ENAset}}
 #'
-#' @examples
-#' \dontrun{
-#' #Given an \code{\link{ENAdata}}
-#' ena.make.set(\code{\link{ENAdata}})
-#' }
-#'
 #' @return \code{\link{ENAset}} class object that can be further processed for analysis or plotting
 ##
 ena.make.set <- function(
   enadata,
-
   dimensions = 2,
-
   norm.by = sphere_norm_c,
-
   rotation.by = ena.svd,
   rotation.params = NULL,
   rotation.set = NULL,
-
   endpoints.only = T,
   node.position.method = lws.positions.es,
+  ...
 
   # private properties of ENAset
   #dims=2,    #usein in egr.pos/optimization --- to be determined
@@ -67,7 +63,6 @@ ena.make.set <- function(
   #output = c("class","json"),
   #output.fields = NULL,
 
-  ...
 ) {
   set = ENAset$new(
     enadata = enadata,

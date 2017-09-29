@@ -7,7 +7,7 @@ codeNames = c('Data','Technical.Constraints','Performance.Parameters','Client.an
 df.accum = ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
 
 test_that("Simple data.frame to accumulate and make set", {
-  df.set = ena.make.set(df.accum, node.position.method = egr.positions)
+  df.set = ena.make.set(df.accum)
 
   testthat::expect_equal(
     label = "Used 10 codes",
@@ -51,7 +51,7 @@ test_that("Make a simple trajectory set", {
   df.set.lws = ena.make.set(df.accum.traj, node.position.method = lws.positions)
 
   # testthat::expect_equal(
-  #   length(attr(df.set.lws$points.rotated, rENA::opts$UNIT_NAMES)[,UserName]),
+  #   length(attr(df.set.lws$points.rotated, opts$UNIT_NAMES)[,UserName]),
   #   517
   # );
 })

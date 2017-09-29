@@ -12,12 +12,11 @@
 #'
 #' @section Properties:
 #' The following are public properties on the ENAset object:
-#' @field enadata - An ENAdata object originally used to create the set
-#' @field points.raw - A data frame containing accumulated adjacency vectors per unit
-#' @field points.normed.centered - A data frame of centered normed accumulated adjacency vectors for each unit
-#' @field points.rotated - A data frame of point positions for number of dimensions specified in ena.make.set (i.e., the centered, normed, and rotated data)
-# @field points.rotated.non.zero
-#' @field line.weights - A data frame of connections strengths per unit (Data frame of normed accumulated adjacency vectors for each unit)
+#' @field enadata An ENAdata object originally used to create the set
+#' @field points.raw A data frame containing accumulated adjacency (co-occurrence) vectors per unit
+#' @field points.normed.centered A data frame of centered normed accumulated adjacency (co-occurrence) vectors for each unit
+#' @field points.rotated A data frame of point positions for number of dimensions specified in ena.make.set (i.e., the centered, normed, and rotated data)
+#' @field line.weights A data frame of connections strengths per unit (Data frame of normed accumu- lated adjacency (co-occurrence) vectors for each unit)
 # @field line.weights.non.zero
 # @field line.weights.unrotated
 #' @field node.positions - A data frame of positions for each code
@@ -216,7 +215,7 @@ ENAset = R6::R6Class("ENAset",
       }
       df.to.return = NULL;
       if(with.meta == T) {
-        data.units = attr(data, rENA::opts$UNIT_NAMES);
+        data.units = attr(data, opts$UNIT_NAMES);
         df.to.return = merge(
           data.table::data.table(
             data, data.units,
@@ -293,7 +292,7 @@ ENAset = R6::R6Class("ENAset",
           rotDF = as.data.frame(data.table::copy(self$points.rotated));
 
           if(!is.null(name.units.by)) {
-            rotDF$unit = attr(self$points.rotated, rENA::opts$UNIT_NAMES)[,{apply(.SD,1,function(x){paste(trimws(x),collapse=name.units.sep)})},with=T,.SDcols=name.units.by];
+            rotDF$unit = attr(self$points.rotated, opts$UNIT_NAMES)[,{apply(.SD,1,function(x){paste(trimws(x),collapse=name.units.sep)})},with=T,.SDcols=name.units.by];
           } else {
             rotDF$unit = rownames(rotDF);
           }
@@ -396,7 +395,7 @@ ENAset = R6::R6Class("ENAset",
       colnames(self$line.weights) = codeNames_tri;
       # set the rownames to that of the original ENAdata file object
       rownames(self$line.weights) = rownames(df);
-      attr(self$line.weights, rENA::opts$UNIT_NAMES) = attr(df, rENA::opts$UNIT_NAMES) #df[, .SD, with=T, .SDcols=self$enadata$get("unitsBy")];
+      attr(self$line.weights, opts$UNIT_NAMES) = attr(df, opts$UNIT_NAMES) #df[, .SD, with=T, .SDcols=self$enadata$get("unitsBy")];
       ###
 
       ###
@@ -430,8 +429,8 @@ ENAset = R6::R6Class("ENAset",
 
       colnames(self$points.normed.centered) = codeNames_tri;
       rownames(self$points.normed.centered) = rownames(df);
-      #attr(self$points.normed.centered, rENA::opts$UNIT_NAMES) = attr(self$line.weights, rENA::opts$UNIT_NAMES)
-      attr(self$points.normed.centered, rENA::opts$UNIT_NAMES) = attr(self$enadata$adjacency.vectors.raw, rENA::opts$UNIT_NAMES)
+      #attr(self$points.normed.centered, opts$UNIT_NAMES) = attr(self$line.weights, opts$UNIT_NAMES)
+      attr(self$points.normed.centered, opts$UNIT_NAMES) = attr(self$enadata$adjacency.vectors.raw, opts$UNIT_NAMES)
       ###
 
       ###
@@ -481,7 +480,7 @@ ENAset = R6::R6Class("ENAset",
       #     merge_columns_c(
       #       attr(
       #         self$points.normed.centered,
-      #         rENA::opts$UNIT_NAMES
+      #         opts$UNIT_NAMES
       #       ),
       #       self$enadata$get("units.by")
       #     )
@@ -499,7 +498,7 @@ ENAset = R6::R6Class("ENAset",
       # Generated the rotated points
       ###
       self$points.rotated = self$points.normed.centered %*% self$rotation.set$rotation;
-      attr(self$points.rotated, rENA::opts$UNIT_NAMES) = attr(self$points.normed.centered, rENA::opts$UNIT_NAMES);
+      attr(self$points.rotated, opts$UNIT_NAMES) = attr(self$points.normed.centered, opts$UNIT_NAMES);
       ###
 
       ###
