@@ -56,14 +56,16 @@ The \code{\link{ENAplot}} provided to the function, with its plot updated to inc
 Function used to plot trajectories
 }
 \examples{
-\dontrun{
-file <- read.csv(system.file("extdata", "rs.data.csv", package="rENA"))
+data(RS.data)
+
+codeNames = c('Data','Technical.Constraints','Performance.Parameters',
+  'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
 
 accum = ena.accumulate.data(
-  units = file[,c("UserName","Condition")],
-  conversation = file[,c("GroupName","ActivityNumber")],
-  metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
-  codes = file[,codeNames],
+  units = RS.data[,c("UserName","Condition")],
+  conversation = RS.data[,c("GroupName","ActivityNumber")],
+  metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
+  codes = RS.data[,codeNames],
   window.size.back = 4,
   model = "A"
 );
@@ -95,7 +97,7 @@ dim.by.activity = cbind(
     set$enadata$trajectories$step$ActivityNumber*.8/14-.4  #scale down to dimension 1
 )
 
-plot = ena.plot(df.set.traj.lws)
+plot = ena.plot(set)
 plot = ena.plot.network(plot, network = subtracted.network, legend.name="Network")
 plot = ena.plot.trajectory(
   plot,
@@ -104,7 +106,7 @@ plot = ena.plot.trajectory(
   by = set$enadata$units$UserName
 );
 print(plot)
-}
+
 }
 \seealso{
 \code{\link{ena.plot}}

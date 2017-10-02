@@ -26,17 +26,16 @@
 #' @seealso \code{\link{ena.make.set}}, \code{\link{ena.plot.points}}
 #'
 #' @examples
-#' \dontrun{
-#' file <- read.csv(system.file("extdata", "rs.data.csv", package="rENA"))
+#' data(RS.data)
 #'
 #' codeNames = c('Data','Technical.Constraints','Performance.Parameters',
 #'   'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
 #'
 #' accum = ena.accumulate.data(
-#'   units = file[,c("UserName","Condition")],
-#'   conversation = file[,c("Condition","GroupName")],
-#'   metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
-#'   codes = file[,codeNames],
+#'   units = RS.data[,c("UserName","Condition")],
+#'   conversation = RS.data[,c("Condition","GroupName")],
+#'   metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
+#'   codes = RS.data[,codeNames],
 #'   window.size.back = 4
 #' )
 #'
@@ -49,7 +48,6 @@
 #' group1.points = set$points.rotated[set$enadata$units$Condition == "FirstGame",]
 #' plot = ena.plot.points(plot, points = group1.points);
 #' print(plot);
-#' }
 #'
 #' @return \code{\link{ENAplot}} used for plotting an ENAset
 

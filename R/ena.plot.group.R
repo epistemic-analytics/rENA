@@ -28,17 +28,16 @@
 #' @seealso \code{\link{ena.plot}}, \code{ena.plot.points}
 #'
 #' @examples
-#' \dontrun{
-#' file <- RS.data
+#' data(RS.data)
 #'
 #' codeNames = c('Data','Technical.Constraints','Performance.Parameters',
 #'   'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
 #'
 #' accum = ena.accumulate.data(
-#'   units = file[,c("UserName","Condition")],
-#'   conversation = file[,c("Condition","GroupName")],
-#'   metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
-#'   codes = file[,codeNames],
+#'   units = RS.data[,c("UserName","Condition")],
+#'   conversation = RS.data[,c("Condition","GroupName")],
+#'   metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
+#'   codes = RS.data[,codeNames],
 #'   window.size.back = 4
 #' )
 #'
@@ -53,6 +52,8 @@
 #'
 #' plot = ena.plot(set)
 #'
+#' unitNames = set$enadata$units
+#'
 #' ### Subset rotated points and plot Condition 1 Group Mean
 #' first.game = unitNames$Condition == "FirstGame"
 #' first.game.points = set$points.rotated[first.game,]
@@ -66,7 +67,7 @@
 #'     colors  = "blue", confidence.interval = "box")
 #'
 #' print(plot);
-#' }
+#'
 #' @return The  \code{\link{ENAplot}} provided to the function, with its plot updated to include the new group point.
 ##
 ena.plot.group <- function(

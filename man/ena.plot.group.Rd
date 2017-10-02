@@ -50,17 +50,16 @@ Plot a point based on a summary statistic computed from a given method (typicall
 Plots a point based on a summary statistic for a group (typically, mean)
 }
 \examples{
-\dontrun{
-file <- RS.data
+data(RS.data)
 
 codeNames = c('Data','Technical.Constraints','Performance.Parameters',
   'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
 
 accum = ena.accumulate.data(
-  units = file[,c("UserName","Condition")],
-  conversation = file[,c("Condition","GroupName")],
-  metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
-  codes = file[,codeNames],
+  units = RS.data[,c("UserName","Condition")],
+  conversation = RS.data[,c("Condition","GroupName")],
+  metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
+  codes = RS.data[,codeNames],
   window.size.back = 4
 )
 
@@ -75,6 +74,8 @@ set = ena.make.set(
 
 plot = ena.plot(set)
 
+unitNames = set$enadata$units
+
 ### Subset rotated points and plot Condition 1 Group Mean
 first.game = unitNames$Condition == "FirstGame"
 first.game.points = set$points.rotated[first.game,]
@@ -88,7 +89,7 @@ plot = ena.plot.group(plot, second.game.points, labels = "SecondGame",
     colors  = "blue", confidence.interval = "box")
 
 print(plot);
-}
+
 }
 \seealso{
 \code{\link{ena.plot}}, \code{ena.plot.points}

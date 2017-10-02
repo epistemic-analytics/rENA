@@ -8,3 +8,4 @@
 ^.*.\.tar\.gz$
 ^\.git/.*
 /\.DS_Store$
+^src/optimTests/

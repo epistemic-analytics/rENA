@@ -33,17 +33,16 @@
 #' @importFrom scales rescale
 
 #' @examples
-#' \dontrun{
-#' file <- RS.data
+#' data(RS.data)
 #'
 #' codeNames = c('Data','Technical.Constraints','Performance.Parameters',
 #'   'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
 #'
 #' accum = ena.accumulate.data(
-#'   units = file[,c("UserName","Condition")],
-#'   conversation = file[,c("Condition","GroupName")],
-#'   metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
-#'   codes = file[,codeNames],
+#'   units = RS.data[,c("UserName","Condition")],
+#'   conversation = RS.data[,c("Condition","GroupName")],
+#'   metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
+#'   codes = RS.data[,codeNames],
 #'   window.size.back = 4
 #' )
 #'
@@ -57,6 +56,8 @@
 #' )
 #'
 #' plot = ena.plot(set)
+#'
+#' unitNames = set$enadata$units
 #'
 #' ### Subset rotated points and plot Condition 1 Group Mean
 #' first.game = unitNames$Condition == "FirstGame"
@@ -80,7 +81,7 @@
 #' subtracted.network = first.game.mean - second.game.mean
 #' plot = ena.plot.network(plot, network = subtracted.network)
 #' print(plot)
-#' }
+#'
 #' @return The \code{\link{ENAplot}} provided to the function, with its plot updated to include the nodes and provided connecting lines.
 ##
 ena.plot.network = function(
