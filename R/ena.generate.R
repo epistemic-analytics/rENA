@@ -11,7 +11,7 @@
 # @param conversations.by [TBD]
 # @param code [TBD]
 # @param units.used [TBD]
-#
+#' @export
 # @return list containing the accumulation and set
 ##
 ena.generate <- function(
