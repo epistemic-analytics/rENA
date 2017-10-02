@@ -4,14 +4,14 @@
 \alias{ena.svd}
 \title{ENA SVD}
 \usage{
-ena.svd(self, ...)
+ena.svd(enaset, ...)
 }
 \arguments{
-\item{self}{[TBD]}
+\item{enaset}{An \code{\link{ENAset}}}
 
-\item{...}{[TBD]}
+\item{...}{Unused, necessary for ena.make.set}
 }
 \description{
-ENA method for rotation using SVD
+ENA method computing a dimensional reduction of points in an ENA set using SVD
 }
 

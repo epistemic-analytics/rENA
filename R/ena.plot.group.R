@@ -11,11 +11,11 @@
 #' @param points A matrix or data.frame where columns contain coordinates of points in a projected ENA space
 #' @param method A function for computing a summary statistic for each column of points
 #' @param labels A character which will be the label for the group's point
-#' @param colors A character, determines color of the group’s point, default: enaplot$color
-#' @param shape A character, determines shape of the group’s point, choices:  square, triangle, diamond, circle, default: square
+#' @param colors A character, determines color of the group's point, default: enaplot$color
+#' @param shape A character, determines shape of the group's point, choices:  square, triangle, diamond, circle, default: square
 #' @param confidence.interval A character that determines how the confidence interval is displayed, choices: none, box, crosshair, default: none
 #' @param outlier.interval A character that determines how outlier interval is displayed, choices: none, box, crosshair, default: none
-#' @param label.offset A numeric vector containing an x and y value to offset label for the group’s point from the coordinates of the point
+#' @param label.offset A numeric vector containing an x and y value to offset label for the group's point from the coordinates of the point
 #' @param label.font.size An integer which determines the font size for label, default: enaplot\$font.size
 #' @param label.font.color A character which determines the color of label, default: enaplot\$font.color
 #' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot\$font.family
@@ -28,18 +28,53 @@
 #' @seealso \code{\link{ena.plot}}, \code{ena.plot.points}
 #'
 #' @examples
-#' \dontrun{
-#' # Given an ENA plot
-#' ena.plot.set(\code{\link{ENAplot}})
+#' data(RS.data)
 #'
-#' }
+#' codeNames = c('Data','Technical.Constraints','Performance.Parameters',
+#'   'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
+#'
+#' accum = ena.accumulate.data(
+#'   units = RS.data[,c("UserName","Condition")],
+#'   conversation = RS.data[,c("Condition","GroupName")],
+#'   metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
+#'   codes = RS.data[,codeNames],
+#'   window.size.back = 4
+#' )
+#'
+#' set = ena.make.set(
+#'   enadata = accum,
+#'   rotation.by = ena.rotate.by.mean,
+#'   rotation.params = list(
+#'       accum$metadata$Condition=="FirstGame",
+#'       accum$metadata$Condition=="SecondGame"
+#'   )
+#' )
+#'
+#' plot = ena.plot(set)
+#'
+#' unitNames = set$enadata$units
+#'
+#' ### Subset rotated points and plot Condition 1 Group Mean
+#' first.game = unitNames$Condition == "FirstGame"
+#' first.game.points = set$points.rotated[first.game,]
+#' plot = ena.plot.group(plot, first.game.points, labels = "FirstGame",
+#'     colors = "red", confidence.interval = "box")
+#'
+#' ### Subset rotated points and plot Condition 2 Group Mean
+#' second.game = unitNames$Condition == "SecondGame"
+#' second.game.points = set$points.rotated[second.game,]
+#' plot = ena.plot.group(plot, second.game.points, labels = "SecondGame",
+#'     colors  = "blue", confidence.interval = "box")
+#'
+#' print(plot);
+#'
 #' @return The  \code{\link{ENAplot}} provided to the function, with its plot updated to include the new group point.
 ##
 ena.plot.group <- function(
   enaplot,
   points = NULL,
   method = "mean",
-  labels = rownames(points),
+  labels = NULL,
   colors = "black",
   shape = c("square", "triangle-up", "diamond", "circle"),
   confidence.interval = c("none", "crosshairs", "box"),

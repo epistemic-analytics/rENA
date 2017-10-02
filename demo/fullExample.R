@@ -2,7 +2,6 @@ file <- read.csv(system.file("extdata", "rs.data.csv", package="rENA"))
 
 codeNames = c('Data','Technical.Constraints','Performance.Parameters','Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
 
-#DWS code to make combined plot
 accum = ena.accumulate.data(
   units = file[,c("UserName","Condition")],
   conversation = file[,c("Condition","GroupName")],
@@ -12,7 +11,7 @@ accum = ena.accumulate.data(
 );
 set = ena.make.set(
   enadata = accum,
-  rotation.by = ena.rotate.by.mean,
+  rotation.by = rENA:::ena.rotate.by.mean,
   rotation.params = list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
 )
 
@@ -42,14 +41,46 @@ second.game.mean = colMeans(second.game.lineweights)
 subtracted.network = first.game.mean - second.game.mean
 
 #Plot subtracted network only
-ena.plot(set) %>% ena.plot.network(network = subtracted.network)
+plot1 = ena.plot(set)
+plot1 = ena.plot.network(plot1, network = subtracted.network)
 
 #plot means only
-ena.plot(set) %>%
-  ena.plot.group(second.game.points, labels = "SecondGame", colors  = "blue", confidence.interval = "box")  %>%
-  ena.plot.group(first.game.points, labels = "FirstGame", colors = "red", confidence.interval = "box")
+plot2 = ena.plot(set)
+plot2 = ena.plot.group(plot2, second.game.points, labels = "SecondGame", colors  = "blue", confidence.interval = "box")
+plot2 = ena.plot.group(plot2, first.game.points, labels = "FirstGame", colors = "red", confidence.interval = "box")
 
 #plot both
-ena.plot(set) %>% ena.plot.network(network = subtracted.network) %>%
-  ena.plot.group(first.game.points, labels = "FirstGame", colors = "red", confidence.interval = "box") %>%
-  ena.plot.group(second.game.points, labels = "SecondGame", colors  = "blue", confidence.interval = "box")
+plot3 = ena.plot(set)
+plot3 = ena.plot.network(plot3, network = subtracted.network)
+plot3 = ena.plot.group(plot3, first.game.points, labels = "FirstGame", colors = "red", confidence.interval = "box")
+plot3 = ena.plot.group(plot3, second.game.points, labels = "SecondGame", colors  = "blue", confidence.interval = "box")
+
+dim.by.activity = cbind(
+ set$points.rotated[,1],
+ set$enadata$trajectories$step$ActivityNumber*.8/14-.4  #scale down to dimension 1
+)
+
+accum = ena.accumulate.data(
+  units = file[,c("UserName","Condition")],
+  conversation = file[,c("GroupName","ActivityNumber")],
+  metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
+  codes = file[,codeNames],
+  window.size.back = 4,
+  model = "A"
+);
+
+set = ena.make.set(accum);
+plot = ena.plot(set)
+plot = ena.plot.network(plot, network = subtracted.network, legend.name="Network", legend.include.edges = T)
+
+dim.by.activity = cbind(
+ set$points.rotated[,1],
+ set$enadata$trajectories$step$ActivityNumber*.8/14-.4  #scale down to dimension 1
+)
+plot = ena.plot.trajectory(
+ plot,
+ points = dim.by.activity,
+ names = unique(set$enadata$units$UserName),
+ by = set$enadata$units$UserName
+);
+print(plot)

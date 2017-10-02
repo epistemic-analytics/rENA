@@ -8,11 +8,6 @@
 #'
 # @param enaset ENAplot Object
 #'
-#' @section Methods:
-#' \code{new} - Construct the ENAplot object
-#'
-#' @section Properties:
-#' The following are properties on the ENAplot object
 #' @field enaset - The \code{\link{ENAset}} object from which the ENAplot was constructed
 #' @field plot - The plotly object used for data visualization
 #'
@@ -128,11 +123,11 @@ ENAplot = R6::R6Class("ENAplot",
       },
 
       ####
-      #' \code{get()} - Return a read-only property
-      #' \preformatted{  Example:
-      #'     get( x = 'title' )}
-      #' \preformatted{  Parameters:
-      #'      x - Property to return. Defaults to 'title', returning the title}
+      # \code{get()} - Return a read-only property
+      # \preformatted{  Example:
+      #     get( x = 'title' )}
+      # \preformatted{  Parameters:
+      #      x - Property to return. Defaults to 'title', returning the title}
       ####
       get = function(x) {
         return(private[[x]])

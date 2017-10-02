@@ -4,11 +4,11 @@
 \alias{ena.plot.group}
 \title{Plot of ENA set groups}
 \usage{
-ena.plot.group(enaplot, points = NULL, method = "mean",
-  labels = rownames(points), colors = "black", shape = c("square",
-  "triangle-up", "diamond", "circle"), confidence.interval = c("none",
-  "crosshairs", "box"), outlier.interval = c("none", "crosshairs", "box"),
-  label.offset = NULL, label.font.size = NULL, label.font.color = NULL,
+ena.plot.group(enaplot, points = NULL, method = "mean", labels = NULL,
+  colors = "black", shape = c("square", "triangle-up", "diamond", "circle"),
+  confidence.interval = c("none", "crosshairs", "box"),
+  outlier.interval = c("none", "crosshairs", "box"), label.offset = NULL,
+  label.font.size = NULL, label.font.color = NULL,
   label.font.family = NULL, show.legend = T, ...)
 }
 \arguments{
@@ -20,15 +20,15 @@ ena.plot.group(enaplot, points = NULL, method = "mean",
 
 \item{labels}{A character which will be the label for the group's point}
 
-\item{colors}{A character, determines color of the group’s point, default: enaplot$color}
+\item{colors}{A character, determines color of the group's point, default: enaplot$color}
 
-\item{shape}{A character, determines shape of the group’s point, choices:  square, triangle, diamond, circle, default: square}
+\item{shape}{A character, determines shape of the group's point, choices:  square, triangle, diamond, circle, default: square}
 
 \item{confidence.interval}{A character that determines how the confidence interval is displayed, choices: none, box, crosshair, default: none}
 
 \item{outlier.interval}{A character that determines how outlier interval is displayed, choices: none, box, crosshair, default: none}
 
-\item{label.offset}{A numeric vector containing an x and y value to offset label for the group’s point from the coordinates of the point}
+\item{label.offset}{A numeric vector containing an x and y value to offset label for the group's point from the coordinates of the point}
 
 \item{label.font.size}{An integer which determines the font size for label, default: enaplot\$font.size}
 
@@ -50,11 +50,46 @@ Plot a point based on a summary statistic computed from a given method (typicall
 Plots a point based on a summary statistic for a group (typically, mean)
 }
 \examples{
-\dontrun{
-# Given an ENA plot
-ena.plot.set(\\code{\\link{ENAplot}})
+data(RS.data)
 
-}
+codeNames = c('Data','Technical.Constraints','Performance.Parameters',
+  'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
+
+accum = ena.accumulate.data(
+  units = RS.data[,c("UserName","Condition")],
+  conversation = RS.data[,c("Condition","GroupName")],
+  metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
+  codes = RS.data[,codeNames],
+  window.size.back = 4
+)
+
+set = ena.make.set(
+  enadata = accum,
+  rotation.by = ena.rotate.by.mean,
+  rotation.params = list(
+      accum$metadata$Condition=="FirstGame",
+      accum$metadata$Condition=="SecondGame"
+  )
+)
+
+plot = ena.plot(set)
+
+unitNames = set$enadata$units
+
+### Subset rotated points and plot Condition 1 Group Mean
+first.game = unitNames$Condition == "FirstGame"
+first.game.points = set$points.rotated[first.game,]
+plot = ena.plot.group(plot, first.game.points, labels = "FirstGame",
+    colors = "red", confidence.interval = "box")
+
+### Subset rotated points and plot Condition 2 Group Mean
+second.game = unitNames$Condition == "SecondGame"
+second.game.points = set$points.rotated[second.game,]
+plot = ena.plot.group(plot, second.game.points, labels = "SecondGame",
+    colors  = "blue", confidence.interval = "box")
+
+print(plot);
+
 }
 \seealso{
 \code{\link{ena.plot}}, \code{ena.plot.points}
