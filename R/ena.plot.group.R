@@ -95,7 +95,7 @@ ena.plot.group <- function(
   }
 
   ### problem if outlier and confidence intervals selected for crosshair
-  if(confidence.interval == "crosshair" && outlier.interval == "crosshair") {
+  if(confidence.interval == "crosshairs" && outlier.interval == "crosshairs") {
     print("Confidence Interval and Outlier Interval cannot both be crosshair");
     print("Plotting Outlier Interval as box");
     outlier.interval = "box";

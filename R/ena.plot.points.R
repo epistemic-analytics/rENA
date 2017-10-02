@@ -66,7 +66,7 @@ ena.plot.points = function(
   points = NULL,    #vector of unit names or row indices
   point.size = 5,
   labels = NULL, #unique(enaplot$enaset$enadata$unit.names),
-  label.offset = NULL,
+  label.offset = "top right",
   label.group = "Points",
 
   label.font.size = NULL, #enaplot$get("font.size"),
@@ -128,7 +128,7 @@ ena.plot.points = function(
   ###
   # Set error value for CI|OI crosshair on plot
   ###
-    error = list(x = list(visible=F, type="data"), y = list(visible=F, type="data"));
+    error = list(x = list(visible=T, type="data"), y = list(visible=T, type="data"));
     int.values = NULL;
     if(grepl("^c", confidence.interval) && !is.null(confidence.interval.values)) {
       int.values = confidence.interval.values;
@@ -182,7 +182,7 @@ ena.plot.points = function(
           size = label.font.size,
           color = label.font.color
         ),
-        textposition = "top right",
+        textposition = label.offset[m], #"top right",
         hoverinfo = "text+x+y"
       )
     }
