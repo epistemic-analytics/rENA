@@ -133,6 +133,8 @@ ena.plot.points = function(
 
     if(length(colors) == 1)
       colors = rep(colors, nrow(points.layout))
+    if(length(point.size) == 1)
+      point.size = rep(point.size, nrow(point.size))
     if(is.null(labels))
       show.legend = F
   ###
@@ -184,7 +186,7 @@ ena.plot.points = function(
         marker = list(
           symbol = shape[m],
           color = colors[m],
-          size = point.size
+          size = point.size[m]
         ),
         error_x = error$x, error_y = error$y,
         showlegend = show.legend,
