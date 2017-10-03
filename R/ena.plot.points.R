@@ -73,7 +73,7 @@ ena.plot.points = function(
   label.font.color = NULL, #enaplot$get("font.color"),
   label.font.family = NULL, #enaplot$get("font.family"),
 
-  shape = c("circle", "square", "triangle-up", "diamond"),
+  shape = "circle",
   colors = default.colors[1], # c("blue"), #rep(I("black"), nrow(points)),
 
   confidence.interval.values = NULL,
@@ -101,13 +101,21 @@ ena.plot.points = function(
       dim(points) = c(1,nrow(points))
     }
     points.layout = data.table::data.table(points);
+
     if(!is.character(label.font.family)) {
       label.font.family = enaplot$get("font.family");
     }
 
     confidence.interval = match.arg(confidence.interval);
     outlier.interval = match.arg(outlier.interval);
-    shape = match.arg(shape);
+
+    # shape = match.arg(shape);
+    valid.shapes = c("circle", "square", "triangle-up", "diamond");
+    if(!all(shape %in% valid.shapes))
+      stop(sprintf( "Unrecognized shapes: %s", paste(unique(label.offset[!(label.offset %in% valid.shapes)]), collapse = ", ") ))
+    if(length(shape) == 1)
+      shape = rep(shape, nrow(points.layout))
+
     valid.label.offsets = c("top left","top center","top right","middle left","middle center","middle right","bottom left","bottom center","bottom right");
     if(!all(label.offset %in% valid.label.offsets)) {
       stop(sprintf( "Unrecognized label.offsets: %s", paste(unique(label.offset[!(label.offset %in% valid.label.offsets)]), collapse = ", ") ))
@@ -174,7 +182,7 @@ ena.plot.points = function(
         x = ~X1, y = ~X2,
         mode = "markers+text",
         marker = list(
-          symbol = shape,
+          symbol = shape[m],
           color = colors[m],
           size = point.size
         ),
