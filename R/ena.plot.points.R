@@ -112,7 +112,7 @@ ena.plot.points = function(
     # shape = match.arg(shape);
     valid.shapes = c("circle", "square", "triangle-up", "diamond");
     if(!all(shape %in% valid.shapes))
-      stop(sprintf( "Unrecognized shapes: %s", paste(unique(label.offset[!(label.offset %in% valid.shapes)]), collapse = ", ") ))
+      stop(sprintf( "Unrecognized shapes: %s", paste(unique(shape[!(shape %in% valid.shapes)]), collapse = ", ") ))
     if(length(shape) == 1)
       shape = rep(shape, nrow(points.layout))
 
