@@ -117,9 +117,8 @@ ena.plot.points = function(
       shape = rep(shape, nrow(points.layout))
 
     valid.label.offsets = c("top left","top center","top right","middle left","middle center","middle right","bottom left","bottom center","bottom right");
-    if(!all(label.offset %in% valid.label.offsets)) {
+    if(!all(label.offset %in% valid.label.offsets))
       stop(sprintf( "Unrecognized label.offsets: %s", paste(unique(label.offset[!(label.offset %in% valid.label.offsets)]), collapse = ", ") ))
-    }
     if(length(label.offset) == 1)
       label.offset = rep(label.offset, nrow(points.layout))
 
@@ -134,7 +133,7 @@ ena.plot.points = function(
     if(length(colors) == 1)
       colors = rep(colors, nrow(points.layout))
     if(length(point.size) == 1)
-      point.size = rep(point.size, nrow(point.size))
+      point.size = rep(point.size, nrow(points.layout))
     if(is.null(labels))
       show.legend = F
   ###
