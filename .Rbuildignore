@@ -1,2 +1,11 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+/\.Rproj\.user/
+^\.gitlab-ci\.yml
+^inst/extdata/.*
+^inst/docker/.*
+^demo/backup/
+^.*.\.tar\.gz$
+^\.git/.*
+/\.DS_Store$
+^src/optimTests/

@@ -7,8 +7,8 @@ using namespace Rcpp;
 //' necesseary indices of the vector.
 //'
 //' @param v - A vector of integers
-//' @export
-// [[Rcpp::export]]
+
+
 std::vector<int> vector_to_ut_full(std::vector<int> v) {
   int vL = v.size();
   int vS = (vL * (vL + 1)) / 2;

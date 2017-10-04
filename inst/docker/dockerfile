@@ -1,0 +1,42 @@
+FROM docker.io/ubuntu:16.04
+
+MAINTAINER Jan Gorecki j.gorecki@wit.edu.pl
+
+RUN apt-get clean && apt-get update -qq && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+  apt-transport-https \
+  software-properties-common \
+  curl \
+  locales \
+  wget \
+  git \
+  libssl-dev \
+  libcurl4-gnutls-dev \
+  vim \
+  libxml2-dev
+
+RUN rm -rf /var/lib/apt/lists/*
+
+#RUN apt-get clean && apt-get update && apt-get install -y locales
+#RUN locale-gen en_US.UTF-8
+RUN apt-get clean && apt-get -y update && apt-get install -y locales && locale-gen en_US.UTF-8
+
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+
+RUN add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)/" \
+  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
+
+RUN apt-get update -qq \
+  && apt-get install -y --no-install-recommends \
+    r-base-dev \
+    r-recommended \
+  && echo 'options(repos = c(CRAN = "https://cloud.r-project.org"), download.file.method = "libcurl")' >> /etc/R/Rprofile.site \
+  && rm -rf /var/lib/apt/lists/*
+
+# install R packages
+RUN Rscript -e "install.packages(c('xml2'))"
+RUN Rscript -e "install.packages(c('devtools','roxygen2','data.table','Rcpp','RcppArmadillo','RcppParallel','R6','RcppEigen','RcppRoll','microbenchmark','testthat'))"
+RUN Rscript -e "install.packages(c('plotly','igraph','foreach','doParallel','data.tree'))"
+
+CMD ["R","--no-save"]

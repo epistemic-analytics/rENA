@@ -2,5 +2,15 @@
 .Rhistory
 .RData
 .Ruserdata
-R/RcppExports.R
-src/RcppExports.cpp
+RcppExports.R
+RcppExports.cpp
+*.out
+data/bigdata
+.DS_Store
+..Rcheck/
+*.Rcheck/
+rENA.Rcheck/
+*.tar.gz
+man/*.Rd
+
+src/symbols\.rds

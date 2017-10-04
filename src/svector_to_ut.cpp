@@ -1,13 +1,6 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-//' Calculates the upper triangle of a vector of integers  if it
-//' were converted to a matrix. This actually skips creating the
-//' matrix, by only multiplying the necesseary indices of the
-//' vector.
-//'
-//' @param v - A vector of integers
-//' @export
 // [[Rcpp::export]]
 std::vector<std::string> svector_to_ut(std::vector<std::string> v) {
   int vL = v.size();

@@ -1,4 +1,3 @@
-//'
 // [[Rcpp::depends(RcppArmadillo)]]
 
 #include <RcppArmadillo.h>
@@ -6,25 +5,11 @@
 using namespace Rcpp;
 using namespace arma;
 
-arma::ivec vector_to_ut(arma::imat v) {
-  int vL = v.size();
-  int vS = ( (vL * (vL + 1)) / 2) - vL ;
-  arma::ivec vR( vS, fill::zeros );
-  int s = 0;
-  for( int i = 2; i <= vL; i++ ) {
-    for (int j = 0; j < i-1; j++ ) {
-      vR[s] = v[j] * v[i-1];
-      s++;
-    }
-  }
-  return vR;
-}
-
-//' @name ref_window_sum
-//' @title ref_window_sum
-//' @param v - A dataframe
-//' @param nms - A vector of characters used for colnames of returned DataFrame
-//' @export
+// @name ref_window_sum
+// @title ref_window_sum
+// @param df dataframe
+// @param binary logical
+// @description TBD
 // [[Rcpp::export]]
 DataFrame ref_window_sum(
   DataFrame df,
@@ -33,12 +18,11 @@ DataFrame ref_window_sum(
   int dfCols = df.size();
   int dfRows = df.nrows();
 
-  arma::imat df_CoOccurred(dfRows, dfCols, fill::zeros);
-  arma::imat df_AsMatrix2(dfRows, dfCols, fill::zeros);
+  arma::mat df_CoOccurred(dfRows, dfCols, fill::zeros);
+  arma::mat df_AsMatrix2(dfRows, dfCols, fill::zeros);
 
   for (int i=0; i<dfCols;i++) {
-    df_AsMatrix2.col(i) = Rcpp::as<arma::ivec>(df[i]);
+    df_AsMatrix2.col(i) = Rcpp::as<arma::vec>(df[i]);
   }
-
   return(sum(df_AsMatrix2));
 }
