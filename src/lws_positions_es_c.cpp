@@ -48,7 +48,7 @@ VectorXd compute_difference_correlations(MatrixXd c, MatrixXd t) {
       }
     }
 
-    corr = numerator / (sqrt(dlen)*sqrt(clen));
+    corr = numerator / (std::sqrt(dlen) * std::sqrt(clen));
     corrs[i] = corr;
   }
 
