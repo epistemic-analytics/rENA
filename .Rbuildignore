@@ -2,8 +2,8 @@
 ^\.Rproj\.user$
 /\.Rproj\.user/
 ^\.gitlab-ci\.yml
-^inst/extdata/.*
-^inst/docker/.*
+^inst/extdata/
+^inst/docker/
 ^demo/backup/
 ^.*.\.tar\.gz$
 ^\.git/.*
