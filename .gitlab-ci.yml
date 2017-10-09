@@ -11,6 +11,8 @@ before_script:
 r-base:
   stage: test
   image: r-base:latest
+  only:
+   - develop
   script:
     - Rscript -e 'install.packages(c("devtools", "roxygen2"))' #, covr))'
     - Rscript -e 'devtools::install_dev_deps()'
@@ -22,6 +24,8 @@ r-base:
 r-devel:
   stage: test
   image: rocker/drd:latest
+  only:
+   - develop
   script:
     - RDscript -e 'install.packages(c("devtools", "roxygen2"))'
     - RDscript -e 'devtools::install_dev_deps()'
@@ -32,6 +36,8 @@ r-devel:
 r-oldrel:
   stage: test
   image: r-base:3.2.5
+  only:
+   - develop
   script:
     - Rscript -e 'install.packages(c("devtools", "roxygen2"))'
     - Rscript -e 'devtools::install_dev_deps()'

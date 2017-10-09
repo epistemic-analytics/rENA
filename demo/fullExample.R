@@ -1,12 +1,13 @@
-file <- read.csv(system.file("extdata", "rs.data.csv", package="rENA"))
+data(RS.data)
+# file <- read.csv(system.file("extdata", "rs.data.csv", package="rENA"))
 
 codeNames = c('Data','Technical.Constraints','Performance.Parameters','Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
 
 accum = ena.accumulate.data(
-  units = file[,c("UserName","Condition")],
-  conversation = file[,c("Condition","GroupName")],
-  metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
-  codes = file[,codeNames],
+  units = RS.data[,c("UserName","Condition")],
+  conversation = RS.data[,c("Condition","GroupName")],
+  metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
+  codes = RS.data[,codeNames],
   window.size.back = 4
 );
 set = ena.make.set(
@@ -61,10 +62,10 @@ dim.by.activity = cbind(
 )
 
 accum = ena.accumulate.data(
-  units = file[,c("UserName","Condition")],
-  conversation = file[,c("GroupName","ActivityNumber")],
-  metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
-  codes = file[,codeNames],
+  units = RS.data[,c("UserName","Condition")],
+  conversation = RS.data[,c("GroupName","ActivityNumber")],
+  metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
+  codes = RS.data[,codeNames],
   window.size.back = 4,
   model = "A"
 );
