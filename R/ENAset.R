@@ -79,6 +79,7 @@ ENAset = R6::R6Class("ENAset",
       self$function.params$rotation.params <- rotation.params;
       self$function.params$endpoints.only <- endpoints.only;
 
+      private$args <- list(...);
     },
 
     ####
@@ -313,11 +314,19 @@ ENAset = R6::R6Class("ENAset",
       args = list(...);
       fields = NULL;
       to.print = list();
-      if(is.null(args$fields)) {
-        fields = Filter(function(f) { (class(self[[f]]) != "function") }, names(get(class(self))$public_fields))
-      } else {
+
+      if (!is.null(args$fields)) {
         fields = args$fields
+      } else if(!is.null(private$args$fields)) {
+        fields = private$args$fields
+      } else {
+        #fields = Filter(function(f) { (class(self[[f]]) != "function") }, names(get(class(self))$public_fields))
+        fields = Filter(function(f) {
+          cls = class(self[[f]]);
+          !is(self[[f]], "function") && !is.null(self[[f]])
+        }, names(get(class(self))$public_fields))
       }
+
       for(field in fields) {
         if(grepl("\\$", field)) {
           parts = Filter(function(f) { f!="" }, strsplit(field,"\\$")[[1]])
@@ -336,6 +345,7 @@ ENAset = R6::R6Class("ENAset",
     ####
 
     #new
+    args = NULL,
     data.original = NULL,
     optim = NULL,
 

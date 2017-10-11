@@ -14,7 +14,7 @@ set = ena.make.set(
   enadata = accum,
   rotation.by = rENA:::ena.rotate.by.mean,
   rotation.params = list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
-)
+);
 
 unitNames = set$enadata$units
 

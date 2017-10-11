@@ -20,19 +20,25 @@ ena.generate <- function(
   units.by,
   conversations.by,
   code,
-  units.used = NULL
+  units.used = NULL,
+  ...
 ) {
+  args = list(...);
   accum = ena.accumulate.data.file(
     file = file,
     window.size.back = window.size.back,
     units.by = units.by,
     units.used = units.used,
     conversations.by = conversations.by,
-    codes = code
+    codes = code,
+    ...
   )
   set = ena.make.set(
-    enadata = accum
+    enadata = accum,
+    ...
   )
+  groups = ena.group(set, set$enadata$units[[units.by[[1]]]])
 
-  return( set );
+  # browser()
+  return( list(set = set, groups = groups));
 }
