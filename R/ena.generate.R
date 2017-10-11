@@ -38,7 +38,18 @@ ena.generate <- function(
     ...
   )
   groups = ena.group(set, set$enadata$units[[units.by[[1]]]])
-
-  # browser()
+  cis = lapply(as.character(unique(set$enadata$units[[units.by[[1]]]])), function(x) {
+    pnts = set$points.rotated[set$enadata$units[[units.by[[1]]]] == x,]
+    ci = as.numeric(t.test(pnts, conf.level = 0.95)$conf.int)
+    oi = c(IQR(pnts[,1]), IQR(pnts[,2])) * 1.5
+    list(ci = ci, oi = oi)
+  });
+  group.cnt = length(groups$names);
+  groups$conf.ints = matrix(0, nrow=(group.cnt), ncol=(2));
+  groups$outlier.ints = matrix(0, nrow=(group.cnt), ncol=(2));
+  for(n in 1:length(groups$names)) {
+    groups$conf.ints[n, ] = cis[[n]]$ci
+    groups$outlier.ints[n, ] = cis[[n]]$oi
+  }
   return( list(set = set, groups = groups));
 }
