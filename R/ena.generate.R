@@ -20,6 +20,7 @@ ena.generate <- function(
   units.by,
   conversations.by,
   code,
+  scale.nodes = T,
   units.used = NULL,
   ...
 ) {
@@ -48,8 +49,12 @@ ena.generate <- function(
   groups$conf.ints = matrix(0, nrow=(group.cnt), ncol=(2));
   groups$outlier.ints = matrix(0, nrow=(group.cnt), ncol=(2));
   for(n in 1:length(groups$names)) {
-    groups$conf.ints[n, ] = cis[[n]]$ci
-    groups$outlier.ints[n, ] = cis[[n]]$oi
+
+      }
+  if(scale.nodes == T) {
+    minextreme = min(set$node.positions)
+    extreme = max(set$node.positions)
+    set$points.rotated = scales::rescale(set$points.rotated, c(minextreme, extreme))
   }
-  return( list(set = set, groups = groups));
+  return( list(set = set, groups = groups, scaled = scale.nodes));
 }
