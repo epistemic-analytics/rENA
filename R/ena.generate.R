@@ -28,10 +28,10 @@ ena.generate <- function(
   accum = ena.accumulate.data.file(
     file = file,
     window.size.back = window.size.back,
-    units.by = units.by,
+    units.by = make.names(units.by),
     units.used = units.used,
-    conversations.by = conversations.by,
-    codes = code,
+    conversations.by = make.names(conversations.by),
+    codes = make.names(code),
     ...
   )
   set = ena.make.set(
@@ -69,7 +69,8 @@ ena.generate <- function(
   }
 
   groups = ena.group(set, set$enadata$units[[units.by[[1]]]])
-  print("Groups should be line.weights as an array of values")
+  groups$line.weights = as.matrix(groups$line.weights)
+  colnames(groups$line.weights) = NULL
   groups$conf.ints = conf.ints;
   groups$outlier.ints = outlier.ints;
   return( list(set = set, groups = groups, scaled = scale.nodes));
