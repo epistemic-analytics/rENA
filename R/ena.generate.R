@@ -73,5 +73,23 @@ ena.generate <- function(
   colnames(groups$line.weights) = NULL
   groups$conf.ints = conf.ints;
   groups$outlier.ints = outlier.ints;
-  return( list(set = set, groups = groups, scaled = scale.nodes));
+
+  if(
+    !is.null(args$output) && args$output == "save" &&
+    !is.null(args$output.to)
+  ) {
+    setName = tools::file_path_sans_ext(basename(args$output.to))
+    env = environment()
+    assign(x = setName, value = set, envir = env);
+    env[[setName]] = get(x = setName, envir = env)
+
+    tmp <- tempfile(fileext = ".rdata")
+    on.exit(unlink(tmp))
+    save(list = c(setName), file = tmp, envir = env)
+    bucket <- aws.s3::get_bucketname(args$output.to)
+    object <- aws.s3:::get_objectkey.character(args$output.to)
+    return(aws.s3::put_object(file = tmp, bucket = bucket, object = object));
+  } else {
+    return( list(set = set, groups = groups, scaled = scale.nodes));
+  }
 }
