@@ -58,7 +58,9 @@ ena.generate <- function(
   }
 
   cis = lapply(as.character(unique(set$enadata$units[[units.by[[1]]]])), function(x) {
-    pnts = set$points.rotated[set$enadata$units[[units.by[[1]]]] == x,]
+    pntRows = as.data.frame(set$enadata$units[[units.by[[1]]]]) == x;
+    pnts = as.matrix(set$points.rotated[pntRows,])
+    dim(pnts) = c(length(which(pntRows)),2)
     ci = as.numeric(t.test(pnts, conf.level = 0.95)$conf.int)
     oi = c(IQR(pnts[,1]), IQR(pnts[,2])) * 1.5
     list(ci = ci, oi = oi)
