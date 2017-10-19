@@ -30,6 +30,7 @@ ena.generate <- function(
     window.size.back = window.size.back,
     units.by = make.names(units.by),
     units.used = units.used,
+    model = "EndPoint",
     conversations.by = make.names(conversations.by),
     codes = make.names(code),
     ...
@@ -38,6 +39,7 @@ ena.generate <- function(
     enadata = accum,
     ...
   )
+
 
   group.names = unique(set$enadata$units[[units.by[[1]]]])
   group.cnt = length(group.names);
@@ -69,7 +71,6 @@ ena.generate <- function(
     conf.ints[n, ] = cis[[n]]$ci
     outlier.ints[n, ] = cis[[n]]$oi
   }
-
   groups = ena.group(set, set$enadata$units[[units.by[[1]]]])
   groups$line.weights = as.matrix(groups$line.weights)
   colnames(groups$line.weights) = NULL
@@ -92,6 +93,32 @@ ena.generate <- function(
     object <- aws.s3:::get_objectkey.character(args$output.to)
     return(aws.s3::put_object(file = tmp, bucket = bucket, object = object));
   } else {
-    return( list(set = set, groups = groups, scaled = scale.nodes));
+    nodes = data.frame(set$node.positions);
+    nodes$weight = rep(0, nrow(nodes))
+    node.rows = rownames(set$node.positions);
+
+    weights = matrix(0, ncol=nrow(set$node.positions), nrow=nrow(set$line.weights));
+    colnames(weights) = node.rows
+    network.scaled = set$line.weights;
+    # if(!is.null(scale.weights) && scale.weights == T) {
+    #   network.scaled = network.scaled * (1 / max(abs(network.scaled)));
+    # }
+
+    mat = set$enadata$adjacency.matrix;
+    for (x in 1:nrow(network.scaled)) {
+      network.thickness = network.scaled[x,] #scales::rescale(abs(network.scaled[x,]), thickness);
+      for (i in 1:ncol(mat)) {
+        weights[x,node.rows==mat[1,i]] = weights[x,node.rows==mat[1,i]] + network.thickness[i];
+        weights[x,node.rows==mat[2,i]] = weights[x,node.rows==mat[2,i]] + network.thickness[i];
+      }
+    }
+
+    weights = t(apply(weights, 1, scales::rescale, c(1,ncol(weights))));
+
+
+    return( list(
+      set = set, groups = groups, scaled = scale.nodes,
+      node.sizes = weights
+    ));
   }
 }
