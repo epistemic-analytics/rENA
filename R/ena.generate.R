@@ -97,9 +97,12 @@ ena.generate <- function(
     nodes$weight = rep(0, nrow(nodes))
     node.rows = rownames(set$node.positions);
 
-    weights = matrix(0, ncol=nrow(set$node.positions), nrow=nrow(set$line.weights));
+    # browser()
+    estimate.over.units = (!(set$enadata$unit.names %in% args$units.exclude))
+    weights = matrix(0, ncol=nrow(set$node.positions), nrow=length(which(estimate.over.units)));
+
     colnames(weights) = node.rows
-    network.scaled = set$line.weights;
+    network.scaled = set$line.weights[estimate.over.units,];
     # if(!is.null(scale.weights) && scale.weights == T) {
     #   network.scaled = network.scaled * (1 / max(abs(network.scaled)));
     # }
@@ -113,12 +116,15 @@ ena.generate <- function(
       }
     }
 
-    weights = t(apply(weights, 1, scales::rescale, c(1,ncol(weights))));
-
-
-    return( list(
+    #weights = t(apply(weights, 1, scales::rescale, c(1,ncol(weights))));
+    weights = scales::rescale(weights, c(1,ncol(weights)));
+    set$line.weights = set$line.weights[estimate.over.units,];
+    return(list(
       set = set, groups = groups, scaled = scale.nodes,
-      node.sizes = weights
+      node.sizes = weights,
+      esitmated.over = args$units.exclude,
+      edge.saturation = scales::rescale(set$line.weights, c(0.25,1)),
+      edge.opacity = scales::rescale(set$line.weights, c(0.3,1))
     ));
   }
 }
