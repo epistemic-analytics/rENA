@@ -54,13 +54,11 @@ ena.generate <- function(
     ...
   )
 
-
   group.names = unique(set$enadata$units[[units.by[[1]]]])
   group.cnt = length(group.names);
   conf.ints = matrix(0, nrow=(group.cnt), ncol=(2));
   outlier.ints = matrix(0, nrow=(group.cnt), ncol=(2));
 
-  browser()
   if(scale.nodes == T) {
     np.min.x = min(set$node.positions[,1])
     np.min.y = min(set$node.positions[,2])
@@ -75,18 +73,6 @@ ena.generate <- function(
     maxMax = abs(max(np.max.x / rp.max.x, np.max.y / rp.max.y))
     scaleFactor = min(maxMin, maxMax)
     set$points.rotated = set$points.rotated * scaleFactor;
-
-    # set$points.rotated = sapply(1:ncol(set$points.rotated), function(x) {
-    #   minex.x = min(set$node.positions[,x])
-    #   maxex.x = max(set$node.positions[,x])
-    #   points = set$points.rotated[,x]
-    #   posInds = points > 0
-    #   points[posInds] = scales::rescale(points[posInds], c(0, maxex))
-    #   negInds = points < 0
-    #   points[negInds] = scales::rescale(points[negInds], c(minex, 0))
-    #
-    #   points
-    # });
   }
 
   cis = lapply(as.character(unique(set$enadata$units[[units.by[[1]]]])), function(x) {
@@ -103,6 +89,9 @@ ena.generate <- function(
   }
   groups = ena.group(set, set$enadata$units[[units.by[[1]]]])
   groups$line.weights = as.matrix(groups$line.weights)
+  groups$edge.saturation = scales::rescale(groups$line.weights, c(0.25,1));
+  groups$edge.opacity = scales::rescale(groups$line.weights, c(0.3,1));
+
   colnames(groups$line.weights) = NULL
   groups$conf.ints = conf.ints;
   groups$outlier.ints = outlier.ints;
