@@ -18,6 +18,7 @@
 #' @field rotation.set - An \code{\link{ENARotationSet}} object
 #' @field correlation - A data frame of spearman and pearson correlations for each dimension specified
 #' @field variance - A vector of variance accounted for by each dimension specified
+#' @field centroids - A matrix of the calculated centroid positions
 #' @field function.call - The string representation of function called
 #' @field function.params - A list of all parameters sent to function call
 #'
@@ -132,8 +133,9 @@ ENAset = R6::R6Class("ENAset",
 
     rotation.set = NULL,   ## new - ENARotation object
 
-    correlation = NULL,   #not formerly listed, comes from optimized node positions in egr.positions
+    correlations = NULL,   #not formerly listed, comes from optimized node positions in egr.positions
     variance = NULL,     #was self$data$centered$latent
+    centroids = NULL,
 
     function.call = NULL,     #new - string reping function call
     function.params = list(   #list containing parameters function was called with
@@ -464,6 +466,9 @@ ENAset = R6::R6Class("ENAset",
       if(!is.null(self$function.params$rotation.by)) {
         self$rotation.set = do.call(self$function.params$rotation.by, list(self, self$function.params$rotation.params))
       }
+      if(!is.null(self$rotation.set$eigenvalues)) {
+        self$variance = (self$rotation.set$eigenvalues/sum(self$rotation.set$eigenvalues))[1:private$dimensions,]
+      }
 
 
       ###OLD ROTATION
@@ -512,6 +517,23 @@ ENAset = R6::R6Class("ENAset",
       ###
 
       self = self$function.params$node.position.method(self);
+
+      ###
+      # Calculate the correlations
+      ###
+      pComb = combn(nrow(self$points.rotated),2)
+      point1 = pComb[1,]
+      point2 = pComb[2,]
+
+      svdDiff = self$points.rotated[point1,] - self$points.rotated[point2,]
+      optDiff = self$centroids[point1,] - self$centroids[point2,]
+
+      self$correlations = as.data.frame(mapply(function(method) {
+        lapply(1:private$dimensions, function(dim) {
+          cor(as.numeric(svdDiff[,dim]), as.numeric(optDiff[,dim]), method=method)
+        });
+      }, c("pearson","spearman")))
+
 
       return(self);
     }
