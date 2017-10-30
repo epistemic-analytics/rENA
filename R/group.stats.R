@@ -12,6 +12,9 @@
 # @return list containing all of the statistics
 ##
 group.stats <- function(groupOne, groupTwo) {
+  nonparam.effect <- function(U, n1, n2) {
+    return(1 - ((2*U)/(n1*n2)))
+  }
   if(is.character(groupOne) && is.character(groupTwo)) {
     pnts.one = as.data.frame(set$enadata$units[[units.by[[1]]]]) == as.vector(group.names[1])
     pnts.two = as.data.frame(set$enadata$units[[units.by[[1]]]]) == as.vector(group.names[2])
@@ -32,25 +35,26 @@ group.stats <- function(groupOne, groupTwo) {
       eff = cohens.d(groupOne[,x], groupTwo[,x])
       std.dev = c(sd(groupOne[,x]), sd(groupTwo[,x]))
 
-      return(list(ci = ci, effect = eff, std.dev = std.dev, mw = mw, median = med))
+      return(list(ci = ci, effect.d = eff, std.dev = std.dev, mw = mw, median = med))
     } else {
       return(NA)
     }
   })
-
   toret = list(
     # names = xx,
     N = c(nrow(groupOne), nrow(groupTwo)),
-    effect = c(NA,NA),
     parametric = list(
       t = c(NA,NA),
+      statistic = c(NA,NA),
       pvalue = c(NA,NA),
       mean = matrix(0, nrow=2, ncol=2),
+      effect = c(NA,NA),
       std.dev = matrix(0, nrow=2, ncol=2)
     ),
     nonparametric = list(
       U = c(NA,NA),
       pvalue = c(NA,NA),
+      effect = c(NA,NA),
       median = matrix(0, nrow=2, ncol=2)
     )
   )
@@ -59,20 +63,22 @@ group.stats <- function(groupOne, groupTwo) {
     for(i in 1:2) {
     # lapply(1:2, function(i) {
       if(is(cis[[i]]$ci, "htest")) {
+        toret[["parametric"]][["parameter"]][i] = cis[[i]]$ci$parameter
         toret[["parametric"]][["t"]][i] = cis[[i]]$ci$statistic
         toret[["parametric"]][["pvalue"]][i] = cis[[i]]$ci$p.value
         toret[["parametric"]][["mean"]][i,] = cis[[i]]$ci$estimate
       }
+      toret$parametric[["effect"]][i] = cis[[i]]$effect.d
       toret$parametric[["std.dev"]][i,] = cis[[i]]$std.dev
 
       if(is(cis[[i]]$mw, "htest")) {
         toret[["nonparametric"]][["U"]][i] = cis[[i]]$mw$statistic
         toret[["nonparametric"]][["pvalue"]][i] = cis[[i]]$mw$p.value
+        toret$nonparametric[["effect"]][i] = nonparam.effect(cis[[i]]$mw$statistic, nrow(groupOne), nrow(groupTwo))
       }
-      toret[["nonparametric"]][["median"]][i,] = cis[[i]]$median
+      toret$nonparametric[["median"]][i,] = cis[[i]]$median
       # browser()
     }#)
-    toret[["effect"]] = c(cis[[1]]$effect, cis[[2]]$effect)
   }
 
   return(toret)
