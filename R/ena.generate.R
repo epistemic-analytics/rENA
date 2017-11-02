@@ -25,6 +25,10 @@ ena.generate <- function(
   ...
 ) {
   args = list(...);
+  conversations.used = NULL;
+  if(!is.null(args$conversations.used)) {
+    conversations.used = args$conversations.used
+  }
   accum = ena.accumulate.data.file(
     file = file,
     window.size.back = window.size.back,
@@ -45,7 +49,6 @@ ena.generate <- function(
       rotate.col == args$rotate.by[[1]][2]
     )
   }
-  # browser()
   set = ena.make.set(
     enadata = accum,
     norm.by = ifelse((is.null(args$sphere.norm) || args$sphere.norm==T),sphere_norm_c,dont_sphere_norm_c),
@@ -54,7 +57,12 @@ ena.generate <- function(
     ...
   )
 
-  group.names = unique(set$enadata$units[[units.by[[1]]]])
+  group.names = NULL;
+  if(length(units.by)>1) {
+    group.names = unique(set$enadata$units[[units.by[[1]]]])
+  } else {
+    group.names = units.by
+  }
   group.cnt = length(group.names);
   conf.ints = matrix(0, nrow=(group.cnt), ncol=(2));
   outlier.ints = matrix(0, nrow=(group.cnt), ncol=(2));
@@ -87,7 +95,13 @@ ena.generate <- function(
     conf.ints[n, ] = cis[[n]]$ci
     outlier.ints[n, ] = cis[[n]]$oi
   }
-  groups = ena.group(set, set$enadata$units[[units.by[[1]]]])
+  groups = NULL
+  if(length(units.by)>1) {
+    groups = ena.group(set, set$enadata$units[[units.by[[1]]]])
+  } else {
+    groups = ena.group(set, rep(T, length(units.by)));
+    groups$names = units.by;
+  }
   groups$line.weights = as.matrix(groups$line.weights)
   groups$edge.saturation = scales::rescale(groups$line.weights, c(0.25,1));
   groups$edge.opacity = scales::rescale(groups$line.weights, c(0.3,1));
@@ -111,7 +125,8 @@ ena.generate <- function(
     bucket <- aws.s3::get_bucketname(args$output.to)
     object <- aws.s3:::get_objectkey.character(args$output.to)
     return(aws.s3::put_object(file = tmp, bucket = bucket, object = object));
-  } else {
+  }
+  else {
     nodes = data.frame(set$node.positions);
     nodes$weight = rep(0, nrow(nodes))
     node.rows = rownames(set$node.positions);
@@ -139,7 +154,9 @@ ena.generate <- function(
     weights = scales::rescale(weights, c(1,ncol(weights)));
     set$line.weights = set$line.weights[estimate.over.units,];
     return(list(
-      set = set, groups = groups, scaled = scale.nodes,
+      set = set,
+      groups = groups,
+      scaled = scale.nodes,
       node.sizes = weights,
       esitmated.over = args$units.exclude,
       edge.saturation = scales::rescale(set$line.weights, c(0.25,1)),

@@ -525,8 +525,8 @@ ENAset = R6::R6Class("ENAset",
       point1 = pComb[1,]
       point2 = pComb[2,]
 
-      svdDiff = self$points.rotated[point1,] - self$points.rotated[point2,]
-      optDiff = self$centroids[point1,] - self$centroids[point2,]
+      svdDiff = matrix(self$points.rotated[point1,] - self$points.rotated[point2,], ncol=private$dimensions)
+      optDiff = matrix(self$centroids[point1,] - self$centroids[point2,], ncol=private$dimensions)
 
       self$correlations = as.data.frame(mapply(function(method) {
         lapply(1:private$dimensions, function(dim) {
