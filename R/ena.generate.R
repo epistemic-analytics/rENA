@@ -83,8 +83,19 @@ ena.generate <- function(
     set$points.rotated = set$points.rotated * scaleFactor;
   }
 
+  groups = NULL
+  if(length(units.by)>1) {
+    groups = ena.group(set, set$enadata$units[[units.by[[1]]]])
+  } else {
+    groups = ena.group(set, rep(T, length(units.by)));
+    groups$names = units.by;
+  }
+
   cis = lapply(as.character(unique(set$enadata$units[[units.by[[1]]]])), function(x) {
-    pntRows = as.data.frame(set$enadata$units[[units.by[[1]]]]) == x;
+    pntRows = as.matrix(rep(T, nrow(set$points.rotated)))
+    if(length(units.by)>1) {
+      pntRows = as.data.frame(set$enadata$units[[units.by[[1]]]]) == x;
+    }
     pnts = as.matrix(set$points.rotated[pntRows,])
     dim(pnts) = c(length(which(pntRows)),2)
     ci = t(matrix(c(as.numeric(t.test(pnts[,1], conf.level = 0.95)$conf.int), as.numeric(t.test(pnts[,2], conf.level = 0.95)$conf.int)), nrow=2))
@@ -95,13 +106,7 @@ ena.generate <- function(
     conf.ints[[n]] = cis[[n]]$ci
     outlier.ints[n, ] = cis[[n]]$oi
   }
-  groups = NULL
-  if(length(units.by)>1) {
-    groups = ena.group(set, set$enadata$units[[units.by[[1]]]])
-  } else {
-    groups = ena.group(set, rep(T, length(units.by)));
-    groups$names = units.by;
-  }
+
   groups$line.weights = as.matrix(groups$line.weights)
   groups$edge.saturation = scales::rescale(groups$line.weights, c(0.25,1));
   groups$edge.opacity = scales::rescale(groups$line.weights, c(0.3,1));
