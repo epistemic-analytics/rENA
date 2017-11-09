@@ -43,8 +43,10 @@ ena.group <- function(
     points.dt = data.table::data.table(pts);
     if(is.logical(by)) {
       points.dt.means = points.dt[by, lapply(.SD,method),]; # by=by];
-    } else {
+    } else if(all(by %in% colnames(pts))) {
       points.dt.means = points.dt[, lapply(.SD,method), by=by];
+    } else {
+      points.dt.means = as.data.table(aggregate(points.dt, by = list(by), FUN = "mean"))
     }
     return(as.data.frame(points.dt.means[,colnames(points.dt),with=F]))
   }
