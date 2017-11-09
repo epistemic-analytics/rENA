@@ -23,5 +23,8 @@ lws.positions.es <- function(enaset) {
 
   enaset$node.positions = positions$nodes;
   rownames(enaset$node.positions) = enaset$enadata$codes;
+
+  enaset$centroids = positions$centroids;
+
   return(enaset);
 }

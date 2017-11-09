@@ -185,7 +185,7 @@ Rcpp::List linderoth_pos_es(Eigen::MatrixXd adjMats, Eigen::MatrixXd t) { // = R
 
   return Rcpp::List::create(
     _("nodes") = X.transpose(),
-    _("correlations") = compute_difference_correlations(centroids, t),
+    //_("correlations") = compute_difference_correlations(centroids, t),
     _("centroids") = centroids,
     _("weights") = weights,
     _("points") = t
