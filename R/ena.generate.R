@@ -157,7 +157,9 @@ ena.generate <- function(
 
     #weights = t(apply(weights, 1, scales::rescale, c(1,ncol(weights))));
     weights = scales::rescale(weights, c(1,ncol(weights)));
-    set$line.weights = set$line.weights[estimate.over.units,];
+    set$line.weights[estimate.over.units,] = set$line.weights[estimate.over.units,];
+    set$line.weights[!estimate.over.units,] = 0
+    set$line.weights = scales::rescale(set$line.weights, to=c(0,1), from=range(set$line.weights, na.rm = T, finite = T))
     return(list(
       set = set,
       groups = groups,
