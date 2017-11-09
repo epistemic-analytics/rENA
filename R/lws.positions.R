@@ -19,7 +19,7 @@
 # Ellipsoidal scaling version
 lws.positions.es <- function(enaset) {
   # message("Running positions using the LWS method and ellipsoidal scaling.");
-  positions = linderoth_pos_es(enaset$line.weights.non.zero, enaset$points.rotated);
+  positions = linderoth_pos_es(enaset$line.weights, enaset$points.rotated);
 
   enaset$node.positions = positions$nodes;
   rownames(enaset$node.positions) = enaset$enadata$codes;
