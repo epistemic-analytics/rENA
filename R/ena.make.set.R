@@ -112,6 +112,8 @@ ena.make.set <- function(
     ...
 
   )$process();
+  browser()
+  set$function.call = sys.call();
 
   #output = match.arg(output);
 

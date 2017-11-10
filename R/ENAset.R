@@ -71,7 +71,8 @@ ENAset = R6::R6Class("ENAset",
 
       self$rotation.set <- rotation.set;
 
-      self$function.call <- sys.call();
+      # self$function.call <- sys.call();
+      self$function.call <- sys.call(-1);
 
       self$function.params$norm.by <- norm.by;    #was sphere_norm
       #self$function.params$center.data <- center.data;

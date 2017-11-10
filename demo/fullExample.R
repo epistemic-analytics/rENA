@@ -22,7 +22,7 @@ accum2 = rENA:::ena.accumulate.data.file(
   codes = make.names(codeNames)
 )
 set2 = rENA::ena.make.set(
-  enadata = accum2
+  enadata = accum
   #,rotation.by = rENA:::ena.rotate.by.mean,
   #rotation.params = list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
 );
