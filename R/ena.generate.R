@@ -26,9 +26,14 @@ ena.generate <- function(
 ) {
   args = list(...);
   conversations.used = NULL;
+  weight.by = "binary";
   if(!is.null(args$conversations.used)) {
     conversations.used = args$conversations.used
   }
+  if(!is.null(args$weight.by)) {
+    weight.by = args$weight.by
+  }
+
   accum = ena.accumulate.data.file(
     file = file,
     window.size.back = window.size.back,
@@ -37,7 +42,7 @@ ena.generate <- function(
     model = "EndPoint",
     conversations.by = make.names(conversations.by),
     codes = make.names(code),
-    ...
+    ,...
   )
 
   rotate.groups = NULL
@@ -84,11 +89,25 @@ ena.generate <- function(
   }
 
   groups = NULL
+  group.method = "mean"
+  if(!is.null(args$weight.network.by) && (args$weight.network.by %in% c("mean","sum"))) {
+    group.method = args$weight.network.by;
+  }
+  group.by = NULL;
   if(length(units.by)>1) {
-    groups = ena.group(set, set$enadata$units[[units.by[[1]]]])
+    group.by = set$enadata$units[[units.by[[1]]]];
+    groups = ena.group(set, group.by, method = "mean") #group.method)
   } else {
-    groups = ena.group(set, rep(T, length(units.by)));
+    group.by = rep(T, length(units.by));
+    groups = ena.group(set, group.by, method = "mean"); #group.method);
     groups$names = units.by;
+  }
+  rle = rle(as.vector(group.by));
+  groups$rle = list( lengths = rle$lengths, values = rle$values );
+  groups$line.weights = as.matrix(groups$line.weights)
+  if(group.method == "sum") {
+    groups$line.weights = groups$line.weights * rle$lengths;
+    groups$line.weights = scales::rescale(groups$line.weights, c(0,1));
   }
 
   cis = lapply(as.character(unique(set$enadata$units[[units.by[[1]]]])), function(x) {
@@ -108,6 +127,7 @@ ena.generate <- function(
   }
 
   groups$line.weights = as.matrix(groups$line.weights)
+
   groups$edge.saturation = scales::rescale(groups$line.weights, c(0.25,1));
   groups$edge.opacity = scales::rescale(groups$line.weights, c(0.3,1));
 
@@ -157,9 +177,12 @@ ena.generate <- function(
 
     #weights = t(apply(weights, 1, scales::rescale, c(1,ncol(weights))));
     weights = scales::rescale(weights, c(1,ncol(weights)));
+
     set$line.weights[estimate.over.units,] = set$line.weights[estimate.over.units,];
     set$line.weights[!estimate.over.units,] = 0
-    set$line.weights = scales::rescale(set$line.weights, to=c(0,1), from=range(set$line.weights, na.rm = T, finite = T))
+    scaleRange = c(min(set$line.weights[estimate.over.units,]) ,1);
+    set$line.weights = scales::rescale(set$line.weights, to=scaleRange, from=range(set$line.weights, na.rm = T, finite = T))
+
     return(list(
       set = set,
       groups = groups,
