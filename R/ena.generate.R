@@ -29,6 +29,8 @@ ena.generate <- function(
   weight.by = "binary";
   if(!is.null(args$conversations.used)) {
     conversations.used = args$conversations.used
+    file$KEYCOL = rENA:::merge_columns_c(file,conversations.by)
+    file = file[file$KEYCOL %in% conversations.used,]
   }
   if(!is.null(args$weight.by)) {
     weight.by = args$weight.by
@@ -42,7 +44,7 @@ ena.generate <- function(
     model = "EndPoint",
     conversations.by = make.names(conversations.by),
     codes = make.names(code),
-    ,...
+    ...
   )
 
   rotate.groups = NULL
