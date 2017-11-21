@@ -119,7 +119,12 @@ ena.generate <- function(
     }
     pnts = as.matrix(set$points.rotated[pntRows,])
     dim(pnts) = c(length(which(pntRows)),2)
-    ci = t(matrix(c(as.numeric(t.test(pnts[,1], conf.level = 0.95)$conf.int), as.numeric(t.test(pnts[,2], conf.level = 0.95)$conf.int)), nrow=2))
+    ci = t(matrix(c(
+        tryCatch(t.test(pnts[, 1], conf.level = 0.95), error = function(e) list(conf.int = c(NA,NA)))$conf.int,
+        tryCatch(t.test(pnts[, 2], conf.level = 0.95), error = function(e) list(conf.int = c(NA,NA)))$conf.int
+        # as.numeric(t.test(pnts[,1], conf.level = 0.95)$conf.int),
+        # as.numeric(t.test(pnts[,2], conf.level = 0.95)$conf.int)
+      ), nrow=2));
     oi = c(IQR(pnts[,1]), IQR(pnts[,2])) * 1.5
     list(ci = ci, oi = oi)
   });
@@ -185,7 +190,11 @@ ena.generate <- function(
     scaleRange = c(min(set$line.weights[estimate.over.units,]) ,1);
     set$line.weights = scales::rescale(set$line.weights, to=scaleRange, from=range(set$line.weights, na.rm = T, finite = T))
 
+    codedRow1 = code[triIndices(length(code), 0)[,1]+1];
+    codedRow2 = code[triIndices(length(code), 1)[,1]+1];
     return(list(
+      codes = code,
+      adjacency.matrix = rbind(codedRow1, codedRow2),
       set = set,
       groups = groups,
       scaled = scale.nodes,
