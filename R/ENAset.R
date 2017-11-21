@@ -466,12 +466,17 @@ ENAset = R6::R6Class("ENAset",
       if(!is.null(self$function.params$rotation.by)) {
         self$rotation.set = do.call(self$function.params$rotation.by, list(self, self$function.params$rotation.params))
       }
-      if(!is.null(self$rotation.set$eigenvalues)) {
-        self$variance = (self$rotation.set$eigenvalues/sum(self$rotation.set$eigenvalues))[1:private$dimensions,]
-      }
+      # browser()
+      # if(!is.null(self$rotation.set$eigenvalues)) {
+      #   self$variance = (self$rotation.set$eigenvalues/sum(self$rotation.set$eigenvalues))[1:private$dimensions,]
+      # }
+      # y = prcomp(self$points.normed.centered)
+
+      # variance.of.original.data = var(self$points.normed.centered)
+      # diagonal.of.variance.of.original.data = as.vector(diag(variance.of.original.data))
 
 
-      ###OLD ROTATION
+      ##OLD ROTATION
       # if(private$rotate.means == T) {
       #   #for(group in names(private$rotate.means.by)) {
       #   self$line.weights.unrotated = self$line.weights;
@@ -506,17 +511,28 @@ ENAset = R6::R6Class("ENAset",
       ###
       # Generated the rotated points
       ###
-      self$points.rotated = self$points.normed.centered %*% self$rotation.set$rotation;
-      attr(self$points.rotated, opts$UNIT_NAMES) = attr(self$points.normed.centered, opts$UNIT_NAMES);
+        self$points.rotated = self$points.normed.centered %*% self$rotation.set$rotation;
+        attr(self$points.rotated, opts$UNIT_NAMES) = attr(self$points.normed.centered, opts$UNIT_NAMES);
+      ###
+
+      ###
+      # Variance
+      ###
+        variance.of.rotated.data = var(self$points.rotated)
+        diagonal.of.variance.of.rotated.data = as.vector(diag(variance.of.rotated.data))
+        self$variance = diagonal.of.variance.of.rotated.data/sum(diagonal.of.variance.of.rotated.data)
       ###
 
       ###
       # Remove zero rows from centered data
       ###
-      self$points.rotated.non.zero = remove_zero_rows_by_c(self$points.rotated, indices=self$line.weights);
+        self$points.rotated.non.zero = remove_zero_rows_by_c(self$points.rotated, indices=self$line.weights);
       ###
 
-      self = self$function.params$node.position.method(self);
+      ###
+      # Calculate node positions
+        self = self$function.params$node.position.method(self);
+      ###
 
       ###
       # Calculate the correlations
