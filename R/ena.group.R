@@ -46,7 +46,11 @@ ena.group <- function(
     } else if(all(by %in% colnames(pts))) {
       points.dt.means = points.dt[, lapply(.SD,method), by=by];
     } else {
-      points.dt.means = as.data.table(aggregate(points.dt, by = list(by), FUN = "mean"))
+      points.dt.means = as.data.frame(aggregate(points.dt, by = list(by), FUN = method)) #"mean"))
+      rownames(points.dt.means) = points.dt.means$Group.1
+      points.dt.means = points.dt.means[,colnames(points.dt)]
+      # agg.df[as.vector(unique(group.by)),]u
+      return (points.dt.means[as.vector(unique(by)),]);
     }
     return(as.data.frame(points.dt.means[,colnames(points.dt),with=F]))
   }

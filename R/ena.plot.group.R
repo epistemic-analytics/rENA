@@ -112,7 +112,7 @@ ena.plot.group <- function(
       confidence.interval.values = t.test(points, conf.level = .95)$conf.int;
     }
     if(outlier.interval != "none") {
-      outlier.interval.values = c(IQR(points[,2]), IQR(points[,2])) * 1.5;
+      outlier.interval.values = c(IQR(points[,1]), IQR(points[,2])) * 1.5;
     }
 
     if(is.null(method) || method == "mean") {

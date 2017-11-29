@@ -98,7 +98,7 @@ ena.make.set <- function(
     rotation.by = rotation.by,
     rotation.params = rotation.params,
     rotation.set = rotation.set,
-
+    norm.by = norm.by,
     node.position.method = node.position.method,
 
     endpoints.only = endpoints.only,

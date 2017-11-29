@@ -72,11 +72,12 @@ double component_norm(MatrixXd w, VectorXd t, VectorXd x) {
 // @description [TBD]
 // @param adjMats [TBD]
 // @param t [TBD]
+// @param numDims [TBD]
 // [[Rcpp::export]]
-Rcpp::List linderoth_pos_es(Eigen::MatrixXd adjMats, Eigen::MatrixXd t) { // = R_NilValue ) {
+Rcpp::List linderoth_pos_es(Eigen::MatrixXd adjMats, Eigen::MatrixXd t, int numDims) { // = R_NilValue ) {
   int upperTriSize = adjMats.cols();
-  int numNodes = ( pow(ceil(std::sqrt(2*upperTriSize)),2) ) - (2*upperTriSize);
-  int numDims = 2;
+  int numNodes = ( pow( ceil(std::sqrt(static_cast<double>(2*upperTriSize))),2) ) - (2*upperTriSize);
+  // int numDims = 2;
 
   MatrixXd weights = MatrixXd::Zero(adjMats.rows(), numNodes);
   for (int k = 0; k < adjMats.rows(); k++) {

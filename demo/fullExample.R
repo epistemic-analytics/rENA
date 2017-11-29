@@ -12,6 +12,11 @@ accum = rENA::ena.accumulate.data(
   model = "EndPoint",
   window.size.back = 4
 );
+set = ena.make.set(
+  enadata = accum,
+  rotation.by = rENA:::ena.rotate.by.mean,
+  rotation.params = list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
+);
 accum2 = rENA:::ena.accumulate.data.file(
   file = RS.data,
   window.size.back = 4,
