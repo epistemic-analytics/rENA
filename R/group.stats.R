@@ -1,28 +1,28 @@
 ##
-# @title Group Stats
-#
-# @description Generate comparison stats for groups within set
-#
-# @details [TBD]
-#
-# @param points [TBD]
-# @param groups [TBD]
-#
+#' @title Group Stats
+#'
+#' @description Generate comparison stats for groups within set
+#'
+#' @details [TBD]
+#'
+#' @param groupOne [TBD]
+#' @param groupTwo [TBD]
+#'
 #' @export
-# @return list containing all of the statistics
+#' @return list containing all of the statistics
 ##
 group.stats <- function(groupOne, groupTwo) {
   nonparam.effect <- function(U, n1, n2) {
     return(1 - ((2*U)/(n1*n2)))
   }
-  if(is.character(groupOne) && is.character(groupTwo)) {
-    pnts.one = as.data.frame(set$enadata$units[[units.by[[1]]]]) == as.vector(group.names[1])
-    pnts.two = as.data.frame(set$enadata$units[[units.by[[1]]]]) == as.vector(group.names[2])
-    groupOne = as.matrix(set$points.rotated[pnts.one,])
-    groupTwo = as.matrix(set$points.rotated[pnts.two,])
-    dim(groupOne) = c(length(which(pnts.one)),2)
-    dim(groupTwo) = c(length(which(pnts.two)),2)
-  }
+  # if(is.character(groupOne) && is.character(groupTwo)) {
+  #   pnts.one = as.data.frame(set$enadata$units[[units.by[[1]]]]) == as.vector(group.names[1])
+  #   pnts.two = as.data.frame(set$enadata$units[[units.by[[1]]]]) == as.vector(group.names[2])
+  #   groupOne = as.matrix(set$points.rotated[pnts.one,])
+  #   groupTwo = as.matrix(set$points.rotated[pnts.two,])
+  #   dim(groupOne) = c(length(which(pnts.one)),2)
+  #   dim(groupTwo) = c(length(which(pnts.two)),2)
+  # }
 
   cis = lapply((1:ncol(groupOne)), function(x) {
     ci = NA; eff = NA; std.dev = NA; mw = NA; med = NA;

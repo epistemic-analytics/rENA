@@ -1,15 +1,15 @@
 ##
-# @title Cohen's d
-#
-# @description Calculate Conhen's d
-#
-# @details [TBD]
-#
-# @param x [TBD]
-# @param y [TBD]
-#
+#' @title Cohen's d
+#'
+#' @description Calculate Conhen's d
+#'
+#' @details [TBD]
+#'
+#' @param x [TBD]
+#' @param y [TBD]
+#'
 #' @export
-# @return numeric Cohen's d calculation
+#' @return numeric Cohen's d calculation
 ##
 cohens.d <- function(x, y) {
   lx <- length(x)- 1

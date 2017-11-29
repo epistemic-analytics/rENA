@@ -5,9 +5,9 @@
 \title{Plot points on an ENAplot}
 \usage{
 ena.plot.points(enaplot, points = NULL, point.size = 5, labels = NULL,
-  label.offset = NULL, label.group = "Points", label.font.size = NULL,
-  label.font.color = NULL, label.font.family = NULL, shape = c("circle",
-  "square", "triangle-up", "diamond"), colors = default.colors[1],
+  label.offset = "top left", label.group = "Points",
+  label.font.size = NULL, label.font.color = NULL,
+  label.font.family = NULL, shape = "circle", colors = default.colors[1],
   confidence.interval.values = NULL, confidence.interval = c("none",
   "crosshairs", "box"), outlier.interval.values = NULL,
   outlier.interval = c("none", "crosshairs", "box"), show.legend = T, ...)
@@ -21,7 +21,7 @@ ena.plot.points(enaplot, points = NULL, point.size = 5, labels = NULL,
 
 \item{labels}{A character vector of point labels, length nrow(points); default: NULL}
 
-\item{label.offset}{numeric vector - x and y value to offset labels from the coordinates of the points}
+\item{label.offset}{character: top left (default), top center, top right, middle left, middle center, middle right, bottom left, bottom center, bottom right}
 
 \item{label.group}{A character vector used to group the labels in the legend}
 
@@ -53,14 +53,36 @@ ena.plot.points(enaplot, points = NULL, point.size = 5, labels = NULL,
 \description{
 Plot all or a subset of the points of an ENAplot using the plotly plotting library
 }
-\details{
-[TBD]
-}
 \examples{
-\dontrun{
-#Given an \\code{\\link{ENAplot}}
-ena.plot.points(\\code{\\link{ENAplot}})
-}
+data(RS.data)
+
+codeNames = c('Data','Technical.Constraints','Performance.Parameters',
+  'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
+
+accum = ena.accumulate.data(
+  units = RS.data[,c("UserName","Condition")],
+  conversation = RS.data[,c("Condition","GroupName")],
+  metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
+  codes = RS.data[,codeNames],
+  window.size.back = 4
+)
+
+set = ena.make.set(
+  enadata = accum,
+  rotation.by = ena.rotate.by.mean,
+  rotation.params = list(
+      accum$metadata$Condition=="FirstGame",
+      accum$metadata$Condition=="SecondGame"
+  )
+)
+
+plot = ena.plot(set)
+
+group1.points = set$points.rotated[set$enadata$units$Condition == "FirstGame",]
+group2.points = set$points.rotated[set$enadata$units$Condition == "SecondGame",]
+plot = ena.plot.points(plot, points = group1.points);
+plot = ena.plot.points(plot, points = group2.points);
+print(plot);
 
 }
 \seealso{

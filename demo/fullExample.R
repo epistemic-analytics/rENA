@@ -14,10 +14,10 @@ accum = rENA::ena.accumulate.data(
 );
 set = ena.make.set(
   enadata = accum,
-  rotation.by = rENA:::ena.rotate.by.mean,
+  rotation.by = ena.rotate.by.mean,
   rotation.params = list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
 );
-accum2 = rENA:::ena.accumulate.data.file(
+accum2 = ena.accumulate.data.file(
   file = RS.data,
   window.size.back = 4,
   units.by = make.names(c("Condition","UserName")),

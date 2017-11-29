@@ -47,14 +47,32 @@ Generates an a plot from a given ENA set object
 This function defines the axes and other features of a plot for displaying an ENAset; generates an ENAplot object that can used to plot points, network graphs, and other information from an ENAset
 }
 \examples{
-\dontrun{
-#Given an \\code{\\link{ENAset}}
-ena.plot(\\code{\\link{ENAset}})
-}
+data(RS.data)
+
+codeNames = c('Data','Technical.Constraints','Performance.Parameters',
+  'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
+
+accum = ena.accumulate.data(
+  units = RS.data[,c("UserName","Condition")],
+  conversation = RS.data[,c("Condition","GroupName")],
+  metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
+  codes = RS.data[,codeNames],
+  window.size.back = 4
+)
+
+set = ena.make.set(
+  enadata = accum
+)
+
+plot = ena.plot(set)
+
+group1.points = set$points.rotated[set$enadata$units$Condition == "FirstGame",]
+plot = ena.plot.points(plot, points = group1.points);
+print(plot);
 
 }
 \seealso{
-\code{\link{ena.make.set}}, \code{\link{ENAplot}}
+\code{\link{ena.make.set}}, \code{\link{ena.plot.points}}
 }
 \keyword{ENA,}
 \keyword{generate,}

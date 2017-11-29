@@ -4,17 +4,22 @@
 \alias{ena.rotate.by.mean}
 \title{ENA Rotate by mean}
 \usage{
-ena.rotate.by.mean(self, ...)
+ena.rotate.by.mean(enaset, groups)
 }
 \arguments{
-\item{self}{[TBD]}
+\item{enaset}{An \code{\link{ENAset}}}
 
-\item{...}{[TBD]}
+\item{groups}{A list containing two logical vectors of length \code{nrow(ENA.set$ena.data$units)},
+where each vector defines whether a unit is in one of the two groups whose means
+are used to determine the dimensional reduction}
 }
 \value{
-matrix
+\code{\link{ENARotationSet}}
 }
 \description{
-ENA Rotate by mean
+Computes a dimensional reduction from a matrix of points such that
+the first dimension of the projected space passes through the means of two
+groups in a the original space. Subsequent dimensions of the projected space
+are computed using ena.svd
 }
 
