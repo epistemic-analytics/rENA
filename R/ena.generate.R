@@ -35,7 +35,6 @@ ena.generate <- function(
   if(!is.null(args$weight.by)) {
     weight.by = args$weight.by
   }
-
   accum = ena.accumulate.data.file(
     file = file,
     window.size.back = window.size.back,
@@ -106,13 +105,12 @@ ena.generate <- function(
   }
   rle = rle(as.vector(group.by));
   groups$rle = list( lengths = rle$lengths, values = rle$values );
-  groups$points = as.matrix(groups$points[, colnames(groups$points) != "ENA_GROUP_NAME"][groups$names,])
-  groups$line.weights = as.matrix(groups$line.weights[,colnames(groups$line.weights) != "ENA_GROUP_NAME"][group.names,]);
+  groups$points = as.matrix(groups$points[, colnames(groups$points) != "ENA_GROUP_NAME"][as.character(groups$names),])
+  groups$line.weights = as.matrix(groups$line.weights[,colnames(groups$line.weights) != "ENA_GROUP_NAME"][as.character(group.names),]);
   if(group.method == "sum") {
     groups$line.weights = groups$line.weights * rle$lengths;
     groups$line.weights = scales::rescale(groups$line.weights, c(0,1));
   }
-
   cis = lapply(as.character(unique(set$enadata$units[[units.by[[1]]]])), function(x) {
     pntRows = as.matrix(rep(T, nrow(set$points.rotated)))
     if(length(units.by)>1) {
