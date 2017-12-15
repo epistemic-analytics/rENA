@@ -58,7 +58,7 @@ ena.generate <- function(
   }
   set = ena.make.set(
     enadata = accum,
-    norm.by = ifelse((is.null(args$sphere.norm) || args$sphere.norm==T),sphere_norm_c,dont_sphere_norm_c),
+    norm.by = ifelse((is.null(args$sphere.norm) || args$sphere.norm==T), rENA:::sphere_norm_c, rENA:::dont_sphere_norm_c),
     rotation.by = if(is.null(rotate.groups)) rENA:::ena.svd else rENA:::ena.rotate.by.mean, #ifelse(is.null(rotate.groups), NULL, rENA:::ena.rotate.by.mean),
     rotation.params = rotate.groups,
     ...
@@ -97,16 +97,17 @@ ena.generate <- function(
   }
   group.by = NULL;
   if(length(units.by)>1) {
-    group.by = set$enadata$units[[units.by[[1]]]];
+    group.by = as.vector(set$enadata$units[[units.by[[1]]]]);
     groups = ena.group(set, group.by, method = "mean") #group.method)
   } else {
-    group.by = rep(T, length(units.by));
+    group.by = as.vector(rep(T, length(units.by)));
     groups = ena.group(set, group.by, method = "mean"); #group.method);
     groups$names = units.by;
   }
   rle = rle(as.vector(group.by));
   groups$rle = list( lengths = rle$lengths, values = rle$values );
-  groups$line.weights = as.matrix(groups$line.weights)
+  groups$points = as.matrix(groups$points[, colnames(groups$points) != "ENA_GROUP_NAME"][groups$names,])
+  groups$line.weights = as.matrix(groups$line.weights[,colnames(groups$line.weights) != "ENA_GROUP_NAME"][group.names,]);
   if(group.method == "sum") {
     groups$line.weights = groups$line.weights * rle$lengths;
     groups$line.weights = scales::rescale(groups$line.weights, c(0,1));
@@ -162,7 +163,6 @@ ena.generate <- function(
     nodes = data.frame(set$node.positions);
     nodes$weight = rep(0, nrow(nodes))
     node.rows = rownames(set$node.positions);
-
     # browser()
     estimate.over.units = (!(set$enadata$unit.names %in% args$units.exclude))
     weights = matrix(0, ncol=nrow(set$node.positions), nrow=length(which(estimate.over.units)));
@@ -178,7 +178,6 @@ ena.generate <- function(
       network.thickness = network.scaled[x,] #scales::rescale(abs(network.scaled[x,]), thickness);
       for (i in 1:ncol(mat)) {
         weights[x,node.rows==mat[1,i]] = weights[x,node.rows==mat[1,i]] + network.thickness[i];
-        weights[x,node.rows==mat[2,i]] = weights[x,node.rows==mat[2,i]] + network.thickness[i];
       }
     }
 
