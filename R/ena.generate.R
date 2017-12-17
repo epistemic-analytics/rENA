@@ -98,15 +98,17 @@ ena.generate <- function(
   if(length(units.by)>1) {
     group.by = as.vector(set$enadata$units[[units.by[[1]]]]);
     groups = ena.group(set, group.by, method = "mean") #group.method)
+    groups$points = as.matrix(groups$points[, colnames(groups$points) != "ENA_GROUP_NAME"][as.character(groups$names),])
+    groups$line.weights = as.matrix(groups$line.weights[,colnames(groups$line.weights) != "ENA_GROUP_NAME"][as.character(group.names),]);
   } else {
     group.by = as.vector(rep(T, length(units.by)));
     groups = ena.group(set, group.by, method = "mean"); #group.method);
     groups$names = units.by;
+    groups$points = matrix(as.numeric(groups$points),nrow=1);
+    groups$line.weights = matrix(as.numeric(groups$line.weights),nrow=1);
   }
   rle = rle(as.vector(group.by));
   groups$rle = list( lengths = rle$lengths, values = rle$values );
-  groups$points = as.matrix(groups$points[, colnames(groups$points) != "ENA_GROUP_NAME"][as.character(groups$names),])
-  groups$line.weights = as.matrix(groups$line.weights[,colnames(groups$line.weights) != "ENA_GROUP_NAME"][as.character(group.names),]);
   if(group.method == "sum") {
     groups$line.weights = groups$line.weights * rle$lengths;
     groups$line.weights = scales::rescale(groups$line.weights, c(0,1));
