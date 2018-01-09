@@ -9,6 +9,7 @@
 #'
 #' @param enaplot \code{\link{ENAplot}} object to use for plotting
 #' @param network dataframe or matrix containing the edge weights for the network graph; typically comes from ENAset$line.weights
+#' @param node.positions matrix containing the positiions of the nodes. Defaults to enaplot$enaset$node.positions
 #' @param colors A String or vector of colors for positive and negative line weights. E.g. red or c(pos= red, neg = blue), default: c(pos= red, neg = blue)
 #' @param show.all.nodes A Logical variable, default: true
 #' @param threshold A vector of numeric min/max values, default: (0,1). Edge weights below the min value will not be displayed; edge weights above the max value will be shown at the max value.
