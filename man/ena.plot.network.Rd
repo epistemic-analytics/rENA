@@ -5,11 +5,12 @@
 \title{Plot an ENA network}
 \usage{
 ena.plot.network(enaplot = NULL, network = NULL,
-  node.positions = enaplot$enaset$node.positions, colors = c(pos = "red",
-  "blue"), show.all.nodes = T, threshold = 0, thin.lines.in.front = T,
-  opacity = c(0.3, 1), saturation = c(0.25, 1), thickness = c(0, 1),
-  node.size = c(3, 10), range = c(min(network), max(network)),
-  labels = rownames(enaplot$enaset$node.positions), label.offset = NULL,
+  node.positions = enaplot$enaset$node.positions,
+  adjacency.key = namesToAdjacencyKey(rownames(node.positions)),
+  colors = c(pos = "red", "blue"), show.all.nodes = T, threshold = 0,
+  thin.lines.in.front = T, opacity = c(0.3, 1), saturation = c(0.25, 1),
+  thickness = c(0, 1), node.size = c(3, 10), range = c(min(network),
+  max(network)), labels = rownames(node.positions), label.offset = NULL,
   label.font.size = enaplot$get("font.size"),
   label.font.color = enaplot$get("font.color"),
   label.font.family = enaplot$get("font.family"), legend.name = NULL,
@@ -21,6 +22,8 @@ ena.plot.network(enaplot = NULL, network = NULL,
 \item{network}{dataframe or matrix containing the edge weights for the network graph; typically comes from ENAset$line.weights}
 
 \item{node.positions}{matrix containing the positiions of the nodes. Defaults to enaplot$enaset$node.positions}
+
+\item{adjacency.key}{matrix containing the adjacency key for looking up the names and positions}
 
 \item{colors}{A String or vector of colors for positive and negative line weights. E.g. red or c(pos= red, neg = blue), default: c(pos= red, neg = blue)}
 

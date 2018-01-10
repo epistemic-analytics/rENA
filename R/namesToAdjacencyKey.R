@@ -9,7 +9,7 @@
 #'
 #' @param vector Vector representing the names of a square matrix
 ##
-names.to.adjacency.key <- function(vector) {
+namesToAdjacencyKey <- function(vector) {
   upperTriIndices = triIndices(length(vector)) + 1;
   matrix(vector[upperTriIndices], nrow=2)
 }

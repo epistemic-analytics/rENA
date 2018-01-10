@@ -90,7 +90,7 @@ ena.plot.network = function(
   enaplot = NULL,
   network = NULL,
   node.positions = enaplot$enaset$node.positions,
-  adjacency.key = names.to.adjacency.key(rownames(node.positions)), #enaplot$enaset$enadata$adjacency.matrix,
+  adjacency.key = namesToAdjacencyKey(rownames(node.positions)), #enaplot$enaset$enadata$adjacency.matrix,
   colors = c(pos="red", "blue"),
   show.all.nodes = T,
   threshold = 0.0,
