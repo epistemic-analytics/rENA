@@ -8,21 +8,22 @@ before_script:
   - export _R_CHECK_CRAN_INCOMING_=FALSE
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
 
-    #r-base:
-    #  stage: test
-    #  image: r-base:latest
-    #  only:
-    #   - develop
-    #  script:
-    #    - Rscript -e 'install.packages(c("devtools", "roxygen2"))' #, covr))'
-    #    - Rscript -e 'devtools::install_dev_deps()'
-    #    - Rscript -e 'devtools::check()'
-    #    #- Rscript -e 'covr::codecov(type = "all", quiet = FALSE)'
-    #  tags:
-    #    - docker
 cache:
   paths:
   - /usr/local/lib/R/site-library
+
+r-base:
+  stage: test
+  image: r-base:latest
+  only:
+   - develop
+  script:
+    - Rscript -e 'install.packages(c("devtools", "roxygen2"))' #, covr))'
+    - Rscript -e 'devtools::install_dev_deps()'
+    - Rscript -e 'devtools::check()'
+    #- Rscript -e 'covr::codecov(type = "all", quiet = FALSE)'
+  tags:
+    - docker
 
 r-devel:
   stage: test
@@ -41,17 +42,17 @@ r-devel:
     - RDscript -e 'devtools::install_dev_deps()'
     - RDscript -e 'devtools::check()'
   tags:
-    - docker-shell 
+    - docker
 
-      #r-oldrel:
-      #  stage: test
-      #  image: r-base:3.2.5
-      #  only:
-      #   - develop
-      #  script:
-      #    - Rscript -e 'install.packages(c("devtools", "roxygen2"))'
-      #    - Rscript -e 'devtools::install_dev_deps()'
-      #    - Rscript -e 'devtools::check()'
-      #  tags:
-      #    - docker
-      #  allow_failure: true
+r-oldrel:
+  stage: test
+  image: r-base:3.3.1
+  only:
+   - develop
+  script:
+    - Rscript -e 'install.packages(c("devtools", "roxygen2"))'
+    - Rscript -e 'devtools::install_dev_deps()'
+    - Rscript -e 'devtools::check()'
+  tags:
+    - docker
+  allow_failure: true
