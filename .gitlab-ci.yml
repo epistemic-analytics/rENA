@@ -30,6 +30,7 @@ r-devel:
     - RDscript -e 'install.packages(c("devtools", "brew", "Rcpp","stringi"))'
     #- RDscript -e 'install.packages(c("roxygen2"))'
     - RDscript -e 'devtools::install_version("roxygen2", version = "5.0.1", repos = "http://cran.us.r-project.org")'
+    - RDscript -e 'devtools::install_version("hexbin", "DiagrammeR", "Matrix")'
     #- RDscript -e 'install.packages("https://cran.r-project.org/src/contrib/Archive/roxygen2/roxygen2_5.0.1.tar.gz", repos=NULL, type="source")'  
     - RDscript -e 'devtools::install_dev_deps()'
     - RDscript -e 'devtools::check()'
