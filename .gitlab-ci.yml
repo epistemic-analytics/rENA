@@ -8,18 +8,18 @@ before_script:
   - export _R_CHECK_CRAN_INCOMING_=FALSE
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
 
-r-base:
-  stage: test
-  image: r-base:latest
-  only:
-   - develop
-  script:
-    - Rscript -e 'install.packages(c("devtools", "roxygen2"))' #, covr))'
-    - Rscript -e 'devtools::install_dev_deps()'
-    - Rscript -e 'devtools::check()'
-    #- Rscript -e 'covr::codecov(type = "all", quiet = FALSE)'
-  tags:
-    - docker
+    #r-base:
+    #  stage: test
+    #  image: r-base:latest
+    #  only:
+    #   - develop
+    #  script:
+    #    - Rscript -e 'install.packages(c("devtools", "roxygen2"))' #, covr))'
+    #    - Rscript -e 'devtools::install_dev_deps()'
+    #    - Rscript -e 'devtools::check()'
+    #    #- Rscript -e 'covr::codecov(type = "all", quiet = FALSE)'
+    #  tags:
+    #    - docker
 
 r-devel:
   stage: test
@@ -27,23 +27,24 @@ r-devel:
   only:
    - develop
   script:
-    - RDscript -e 'install.packages(c("devtools", "brew", "Rcpp"))'
+    - RDscript -e 'install.packages(c("devtools", "brew", "Rcpp","stringi"))'
     #- RDscript -e 'install.packages(c("roxygen2"))'
-    - RDscript -e 'install.packages("https://cran.r-project.org/src/contrib/Archive/roxygen2/roxygen2_5.0.1.tar.gz", repos=NULL, type="source")'  
+    - RDscript -e 'devtools::install_version("roxygen2", version = "5.0.1", repos = "http://cran.us.r-project.org")'
+    #- RDscript -e 'install.packages("https://cran.r-project.org/src/contrib/Archive/roxygen2/roxygen2_5.0.1.tar.gz", repos=NULL, type="source")'  
     - RDscript -e 'devtools::install_dev_deps()'
     - RDscript -e 'devtools::check()'
   tags:
     - docker
 
-r-oldrel:
-  stage: test
-  image: r-base:3.2.5
-  only:
-   - develop
-  script:
-    - Rscript -e 'install.packages(c("devtools", "roxygen2"))'
-    - Rscript -e 'devtools::install_dev_deps()'
-    - Rscript -e 'devtools::check()'
-  tags:
-    - docker
-  allow_failure: true
+      #r-oldrel:
+      #  stage: test
+      #  image: r-base:3.2.5
+      #  only:
+      #   - develop
+      #  script:
+      #    - Rscript -e 'install.packages(c("devtools", "roxygen2"))'
+      #    - Rscript -e 'devtools::install_dev_deps()'
+      #    - Rscript -e 'devtools::check()'
+      #  tags:
+      #    - docker
+      #  allow_failure: true
