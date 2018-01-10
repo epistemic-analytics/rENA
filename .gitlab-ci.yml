@@ -41,7 +41,7 @@ r-devel:
     - RDscript -e 'devtools::install_dev_deps()'
     - RDscript -e 'devtools::check()'
   tags:
-    - docker
+    - R-package
 
       #r-oldrel:
       #  stage: test
