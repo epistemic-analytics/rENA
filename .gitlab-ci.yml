@@ -20,10 +20,16 @@ before_script:
     #    #- Rscript -e 'covr::codecov(type = "all", quiet = FALSE)'
     #  tags:
     #    - docker
+cache:
+  paths:
+  - /usr/local/lib/R/site-library
 
 r-devel:
   stage: test
   image: rocker/r-devel:latest
+  cache:
+    paths:
+    - /usr/local/lib/R/site-library
   only:
    - develop
   script:
