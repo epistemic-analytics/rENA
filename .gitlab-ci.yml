@@ -33,7 +33,7 @@ r-devel:
   only:
    - develop
   script:
-    - RDscript -e 'install.packages(c("devtools", "stringi", "roxygen2", "Matrix","shiny"))'
+    - RDscript -e 'install.packages(c("devtools", "stringi", "roxygen2", "lattice", "Matrix","shiny"))'
     #- RDscript -e 'install.packages(c("roxygen2"))'
     #- RDscript -e 'devtools::install_version("roxygen2", version = "5.0.1", repos = "http://cran.us.r-project.org")'
     #- RDscript -e 'devtools::install_version("hexbin", "DiagrammeR", "Matrix")'
