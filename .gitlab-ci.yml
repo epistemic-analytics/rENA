@@ -23,7 +23,7 @@ before_script:
 
 r-devel:
   stage: test
-  image: rocker/drd:latest
+  image: rocker/r-devel:latest
   only:
    - develop
   script:
