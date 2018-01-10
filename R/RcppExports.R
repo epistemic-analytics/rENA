@@ -25,7 +25,7 @@ center_data_c <- function(values) {
     .Call('_rENA_center_data_c', PACKAGE = 'rENA', values)
 }
 
-triIndices <- function(len, row = 0L) {
+triIndices <- function(len, row = -1L) {
     .Call('_rENA_triIndices', PACKAGE = 'rENA', len, row)
 }
 
