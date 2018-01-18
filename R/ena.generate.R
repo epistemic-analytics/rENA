@@ -119,6 +119,7 @@ ena.generate <- function(
     norm.by = ifelse((is.null(args$sphere.norm) || args$sphere.norm==T), rENA:::sphere_norm_c, rENA:::dont_sphere_norm_c),
     rotation.by = if(is.null(rotate.groups)) rENA:::ena.svd else rENA:::ena.rotate.by.mean, #ifelse(is.null(rotate.groups), NULL, rENA:::ena.rotate.by.mean),
     rotation.params = rotate.groups,
+    dimensions = 6,
     ...
   )
 
@@ -178,7 +179,7 @@ ena.generate <- function(
       pntRows = as.data.frame(set$enadata$units[[units.by[[1]]]]) == x;
     }
     pnts = as.matrix(set$points.rotated[pntRows,])
-    dim(pnts) = c(length(which(pntRows)),2)
+    dim(pnts) = c(length(which(pntRows)),ncol(set$points.rotated))
     ci = t(matrix(c(
         tryCatch(t.test(pnts[, 1], conf.level = 0.95), error = function(e) list(conf.int = c(NA,NA)))$conf.int,
         tryCatch(t.test(pnts[, 2], conf.level = 0.95), error = function(e) list(conf.int = c(NA,NA)))$conf.int
