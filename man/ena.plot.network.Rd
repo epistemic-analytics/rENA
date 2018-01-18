@@ -4,19 +4,26 @@
 \alias{ena.plot.network}
 \title{Plot an ENA network}
 \usage{
-ena.plot.network(enaplot = NULL, network = NULL, colors = c(pos = "red",
-  "blue"), show.all.nodes = T, threshold = 0, thin.lines.in.front = T,
-  opacity = c(0.3, 1), saturation = c(0.25, 1), thickness = c(0, 1),
-  node.size = c(3, 10), range = c(min(network), max(network)),
-  labels = rownames(enaplot$enaset$node.positions), label.offset = NULL,
+ena.plot.network(enaplot = NULL, network = NULL,
+  node.positions = enaplot$enaset$node.positions,
+  adjacency.key = namesToAdjacencyKey(rownames(node.positions)),
+  colors = c(pos = "red", "blue"), show.all.nodes = T, threshold = 0,
+  thin.lines.in.front = T, opacity = c(0.3, 1), saturation = c(0.25, 1),
+  thickness = c(0, 1), node.size = c(3, 10), range = c(min(network),
+  max(network)), labels = rownames(node.positions), label.offset = NULL,
   label.font.size = enaplot$get("font.size"),
   label.font.color = enaplot$get("font.color"),
-  label.font.family = enaplot$get("font.family"), ...)
+  label.font.family = enaplot$get("font.family"), legend.name = NULL,
+  legend.include.edges = F, ...)
 }
 \arguments{
 \item{enaplot}{\code{\link{ENAplot}} object to use for plotting}
 
 \item{network}{dataframe or matrix containing the edge weights for the network graph; typically comes from ENAset$line.weights}
+
+\item{node.positions}{matrix containing the positiions of the nodes. Defaults to enaplot$enaset$node.positions}
+
+\item{adjacency.key}{matrix containing the adjacency key for looking up the names and positions}
 
 \item{colors}{A String or vector of colors for positive and negative line weights. E.g. red or c(pos= red, neg = blue), default: c(pos= red, neg = blue)}
 
@@ -46,10 +53,14 @@ ena.plot.network(enaplot = NULL, network = NULL, colors = c(pos = "red",
 
 \item{label.font.family}{A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family}
 
+\item{legend.name}{A character name to include in the legend. Not included in legend when NULL. Default: NULL}
+
+\item{legend.include.edges}{Logical value indicating if the edges should be included in the plot}
+
 \item{...}{Additional parameters}
 }
 \value{
-The  \code{\link{ENAplot}} provided to the function, with its plot updated to include the nodes and provided connecting lines.
+The \code{\link{ENAplot}} provided to the function, with its plot updated to include the nodes and provided connecting lines.
 }
 \description{
 Plot an ENA network: nodes and edges
@@ -58,14 +69,58 @@ Plot an ENA network: nodes and edges
 lots a network graph, including nodes (taken from codes in the ENAplot) and the edges (provided in network)
 }
 \examples{
-\dontrun{
-# Given an ENA plot
-ena.plot.set(\\code{\\link{ENAplot}})
+data(RS.data)
+
+codeNames = c('Data','Technical.Constraints','Performance.Parameters',
+  'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
+
+accum = ena.accumulate.data(
+  units = RS.data[,c("UserName","Condition")],
+  conversation = RS.data[,c("Condition","GroupName")],
+  metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
+  codes = RS.data[,codeNames],
+  window.size.back = 4
+)
+
+set = ena.make.set(
+  enadata = accum,
+  rotation.by = ena.rotate.by.mean,
+  rotation.params = list(
+      accum$metadata$Condition=="FirstGame",
+      accum$metadata$Condition=="SecondGame"
+  )
+)
+
+plot = ena.plot(set)
+
+unitNames = set$enadata$units
+
+### Subset rotated points and plot Condition 1 Group Mean
+first.game = unitNames$Condition == "FirstGame"
+first.game.points = set$points.rotated[first.game,]
+plot = ena.plot.group(plot, first.game.points, labels = "FirstGame",
+    colors = "red", confidence.interval = "box")
+
+### Subset rotated points and plot Condition 2 Group Mean
+second.game = unitNames$Condition == "SecondGame"
+second.game.points = set$points.rotated[second.game,]
+plot = ena.plot.group(plot, second.game.points, labels = "SecondGame",
+    colors  = "blue", confidence.interval = "box")
+
+### get mean network plots
+first.game.lineweights = set$line.weights[first.game,]
+first.game.mean = colMeans(first.game.lineweights)
+
+second.game.lineweights = set$line.weights[second.game,]
+second.game.mean = colMeans(second.game.lineweights)
+
+subtracted.network = first.game.mean - second.game.mean
+plot = ena.plot.network(plot, network = subtracted.network)
+print(plot)
 
 }
-}
 \seealso{
-\code{\link{ena.plot}}, \code{ena.plot.points}
+\code{\link{ena.plot}}, \code{\link{ena.plot.points}}
 }
 \keyword{ENA,}
 \keyword{edges}

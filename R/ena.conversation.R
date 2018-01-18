@@ -1,31 +1,27 @@
 ##
-# @title Find conversations by unit
-#
-# @description Find rows of conversations by unit
-#
-# @details [TBD]
-#
-# @param file [TBD]
-# @param window.size.back [TBD]
-# @param units.by [TBD]
-# @param conversations.by [TBD]
-# @param code [TBD]
-# @param units.used [TBD]
-#
-# units = c("FirstGame.carl b");
-# conv = c("Condition","ActivityNumber");
-# window = 3;
-#
+#' @title Find conversations by unit
+#'
+#' @description Find rows of conversations by unit
+#'
+#' @details [TBD]
+#'
+#' @param data [TBD]
+#' @param units [TBD]
+#' @param units.by [TBD]
+#' @param conversation.by [TBD]
+#' @param window [TBD]
+#' @param codes [TBD]
+#'
 #' @export
-# @return list containing the accumulation and set
+#' @return list containing the accumulation and set
 ##
 ena.conversation = function(data, units, units.by, conversation.by, window, codes=NULL) {
   # browser()
   if(!is(data, "data.table")){
     data = data.table::as.data.table(data);
   }
-  if(!any(colnames(RS.data) == "ENA_UNIT")) {
-    data$ENA_UNIT = rENA:::merge_columns_c(data, units.by)
+  if(!any(colnames(data) == "ENA_UNIT")) {
+    data$ENA_UNIT = merge_columns_c(data, units.by)
   }
   codedUnitRows = c()
   conversation.by = make.names(conversation.by)

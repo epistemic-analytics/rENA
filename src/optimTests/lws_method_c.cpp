@@ -33,7 +33,7 @@ public:
 //MatrixXcd
 Rcpp::List linderoth_pos(Eigen::MatrixXd adjMats, Eigen::MatrixXd t) { // = R_NilValue ) {
   int upperTriSize = adjMats.cols();
-  int numNodes = ( pow(ceil(sqrt(2*upperTriSize)),2) ) - (2*upperTriSize);
+  int numNodes = ( pow(ceil(std::sqrt(2*upperTriSize)),2) ) - (2*upperTriSize);
   int numDims = 2;
 
   // Rcpp::Rcout << "Num nodes: " << numNodes << std::endl;

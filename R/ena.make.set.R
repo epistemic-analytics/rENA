@@ -112,6 +112,7 @@ ena.make.set <- function(
     ...
 
   )$process();
+  set$function.call = sys.call();
 
   #output = match.arg(output);
 

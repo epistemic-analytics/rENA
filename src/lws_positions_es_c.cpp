@@ -65,7 +65,7 @@ double component_norm(MatrixXd w, VectorXd t, VectorXd x) {
     norm += ckMtk * ckMtk;
   }
 
-  return(sqrt(norm));
+  return(std::sqrt(norm));
 }
 
 // @title Multiobjective, Component by Component, with Ellipsoidal Scaling
@@ -76,7 +76,7 @@ double component_norm(MatrixXd w, VectorXd t, VectorXd x) {
 // [[Rcpp::export]]
 Rcpp::List linderoth_pos_es(Eigen::MatrixXd adjMats, Eigen::MatrixXd t, int numDims) { // = R_NilValue ) {
   int upperTriSize = adjMats.cols();
-  int numNodes = ( pow(ceil(sqrt(2*upperTriSize)),2) ) - (2*upperTriSize);
+  int numNodes = ( pow( ceil(std::sqrt(static_cast<double>(2*upperTriSize))),2) ) - (2*upperTriSize);
   // int numDims = 2;
 
   MatrixXd weights = MatrixXd::Zero(adjMats.rows(), numNodes);

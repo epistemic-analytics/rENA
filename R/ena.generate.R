@@ -1,9 +1,68 @@
-##
-# @title Accumulate and Generate
+# ##
+# # @title Accumulate and Generate
+# #
+# # @description Accumulate and Generate
+# #
+# # @details [TBD]
+# #
+# # @param file [TBD]
+# # @param window.size.back [TBD]
+# # @param units.by [TBD]
+# # @param conversations.by [TBD]
+# # @param code [TBD]
+# # @param units.used [TBD]
+# # @export
+# # @return list containing the accumulation and set
+# ##
+# ena.generate <- function(
+#   file,
+#   window.size.back,
+#   units.by,
+#   conversations.by,
+#   code,
+#   scale.nodes = T,
+#   units.used = NULL,
+#   ...
+# ) {
+#   args = list(...);
+#   conversations.used = NULL;
+#   weight.by = "binary";
+#   if(!is.null(args$conversations.used)) {
+#     conversations.used = args$conversations.used
+#     file$KEYCOL = merge_columns_c(file,conversations.by)
+#     file = file[file$KEYCOL %in% conversations.used,]
+#   }
+#   if(!is.null(args$weight.by)) {
+#     weight.by = args$weight.by
+#   }
 #
-# @description Accumulate and Generate
+#   accum = ena.accumulate.data.file(
+#     file = file,
+#     window.size.back = window.size.back,
+#     units.by = make.names(units.by),
+#     units.used = units.used,
+#     model = "EndPoint",
+#     conversations.by = make.names(conversations.by),
+#     codes = make.names(code),
+#     ...
+#   )
 #
-# @details [TBD]
+#   rotate.groups = NULL
+#   if(!is.null(args$rotate.by)) {
+#     rotate.meta = accum$metadata[accum$metadata$ENA_UNIT %in% accum$unit.names,]
+#     rotate.col = accum$metadata[accum$metadata$ENA_UNIT %in% accum$unit.names,][[names(args$rotate.by)[1]]]
+#     rotate.groups = list(
+#       rotate.col == args$rotate.by[[1]][1],
+#       rotate.col == args$rotate.by[[1]][2]
+#     )
+#   }
+#   set = ena.make.set(
+#     enadata = accum,
+#     norm.by = ifelse((is.null(args$sphere.norm) || args$sphere.norm==T),sphere_norm_c,dont_sphere_norm_c),
+#     rotation.by = if(is.null(rotate.groups)) ena.svd else ena.rotate.by.mean, #ifelse(is.null(rotate.groups), NULL, ena.rotate.by.mean),
+#     rotation.params = rotate.groups,
+#     ...
+#   )
 #
 # @param file [TBD]
 # @param window.size.back [TBD]

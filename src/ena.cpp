@@ -105,7 +105,7 @@ inline asset_info compute_asset_info(const NumericMatrix& mat,
   asset_info res;
   res.sum = sum;
   res.sum2 = sum2;
-  res.stdev = sqrt((rend-rstart) * sum2 - pow(sum, 2));
+  res.stdev = std::sqrt( (rend-rstart) * sum2 - pow(sum, 2));
   return res;
 }
 
@@ -150,7 +150,7 @@ NumericMatrix sphere_norm_c(DataFrame dfM) {
     // Calculate the length of the vector ro  w
     NumericVector squared = Rcpp::pow(m.row(p),2);
     double squaredSum = Rcpp::sum(squared);
-    double root = sqrt(squaredSum);
+    double root = std::sqrt(squaredSum);
 
     if (root > 0) {
       output.row(p) = ( m.row(p) / root );
@@ -170,7 +170,7 @@ NumericMatrix dont_sphere_norm_c(DataFrame dfM) {
   for(int rowNum=0; rowNum < nrows; rowNum++) {
     NumericVector squared = Rcpp::pow(m.row(rowNum),2);
     double squaredSum = Rcpp::sum( squared );
-    double root = sqrt( squaredSum );
+    double root = std::sqrt( squaredSum );
 
     largestRowVectorLength = std::max(largestRowVectorLength, root);
   }
@@ -206,26 +206,31 @@ Rcpp::NumericMatrix center_data_c(arma::mat values) {
 }
 
 // [[Rcpp::export]]
-arma::uvec triIndices(int len, int row = 0) {
+arma::umat triIndices(int len, int row = -1) {
   int vL = len;
   int vS = ( (vL * (vL + 1)) / 2) - vL ;
   int s = 0;
 
   arma::umat vR = arma::umat(2, vS, fill::zeros);
-  uvec vRone = uvec(vS);
+  arma::umat vRone = arma::umat(1, vS, fill::zeros);
   for( int i = 2; i <= vL; i++ ) {
     for (int j = 0; j < i-1; j++ ) {
+      vR(0, s) = j;
+      vR(1, s) = i-1;
       if(row == 0) {
-        vR(0, s) = j;
         vRone[s] = j;
-      } else {
-        vR(1, s) = i-1;
+      } else if (row == 1) {
         vRone[s] = i -1;
       }
       s++;
     }
   }
-  return vRone;
+
+  if(row == -1) {
+    return vR;
+  } else {
+    return vRone;
+  }
 }
 
 // [[Rcpp::export]]
@@ -247,7 +252,7 @@ double getcor(
 
 // [[Rcpp::export]]
 int getN(arma::mat normed) {
-  return floor(0.5 + sqrt( 0.25 + 2 * normed.n_cols ));
+  return floor(0.5 + std::sqrt( 0.25 + 2 * normed.n_cols ));
 }
 
 // [[Rcpp::export]]
