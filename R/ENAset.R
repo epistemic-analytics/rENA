@@ -513,6 +513,7 @@ ENAset = R6::R6Class("ENAset",
       # Generated the rotated points
       ###
         self$points.rotated = self$points.normed.centered %*% self$rotation.set$rotation;
+        private$dimensions = min(private$dimensions, ncol(self$points.rotated))
         attr(self$points.rotated, opts$UNIT_NAMES) = attr(self$points.normed.centered, opts$UNIT_NAMES);
       ###
 
@@ -542,11 +543,10 @@ ENAset = R6::R6Class("ENAset",
       point1 = pComb[1,]
       point2 = pComb[2,]
 
-      svdDiff = matrix(self$points.rotated[point1,] - self$points.rotated[point2,], ncol=private$dimensions)
-      optDiff = matrix(self$centroids[point1,] - self$centroids[point2,], ncol=private$dimensions)
-
+      svdDiff = matrix(self$points.rotated[point1,] - self$points.rotated[point2,], ncol=ncol(self$points.rotated))
+      optDiff = matrix(self$centroids[point1,] - self$centroids[point2,], ncol=ncol(self$points.rotated))
       self$correlations = as.data.frame(mapply(function(method) {
-        lapply(1:private$dimensions, function(dim) {
+        lapply(1:ncol(svdDiff), function(dim) {
           cor(as.numeric(svdDiff[,dim]), as.numeric(optDiff[,dim]), method=method)
         });
       }, c("pearson","spearman")))

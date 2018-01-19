@@ -81,6 +81,7 @@ ena.generate <- function(
   code,
   scale.nodes = T,
   units.used = NULL,
+  dimensions = 6,
   ...
 ) {
   args = list(...);

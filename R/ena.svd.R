@@ -6,22 +6,17 @@
 #' @export
 ###
 ena.svd <- function(enaset, ...) {
-  to.norm = data.table::data.table(
-    enaset$points.normed.centered,
-    merge_columns_c(
-      attr(
-        enaset$points.normed.centered,
-        opts$UNIT_NAMES
-      ),
-      enaset$enadata$get("units.by")
-    )
-  )
-  to.norm = as.matrix(to.norm[,tail(.SD,n=1),.SDcols=colnames(to.norm)[which(colnames(to.norm) != "V2")],by=c("V2")][,2:ncol(to.norm)]);
+  # to.norm = data.table::data.table(
+  #   enaset$points.normed.centered,
+  #   enaset$enadata$unit.names
+  # )
+  # to.norm = as.matrix(to.norm[,tail(.SD,n=1),.SDcols=colnames(to.norm)[which(colnames(to.norm) != "V2")],by=c("V2")][,2:ncol(to.norm)]);
 
-  pcaResults = pca_c(to.norm, dims = enaset$get("dimensions"));
+  # pcaResults = pca_c(to.norm, dims = enaset$get("dimensions"));
+  pcaResults = pca_c(enaset$points.normed.centered, dims = enaset$get("dimensions"));
 
   ### used to be  enaset$data$centered$pca
-  enaset$rotation.set = pcaResults$pca;
+  #enaset$rotation.set = pcaResults$pca;
 
   rotationSet = ENARotationSet$new(rotation = pcaResults$pca, codes = enaset$codes, node.positions = NULL, eigenvalues = pcaResults$latent)
   return(rotationSet)
