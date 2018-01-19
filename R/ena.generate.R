@@ -93,7 +93,7 @@ ena.generate <- function(
     file = file[file$KEYCOL %in% conversations.used,]
   }
   if(!is.null(args$weight.by)) {
-    weight.by = args$weight.by
+    weight.by = args$weight.by;
   }
   accum = ena.accumulate.data.file(
     file = file,
@@ -120,7 +120,7 @@ ena.generate <- function(
     norm.by = ifelse((is.null(args$sphere.norm) || args$sphere.norm==T), rENA:::sphere_norm_c, rENA:::dont_sphere_norm_c),
     rotation.by = if(is.null(rotate.groups)) rENA:::ena.svd else rENA:::ena.rotate.by.mean, #ifelse(is.null(rotate.groups), NULL, rENA:::ena.rotate.by.mean),
     rotation.params = rotate.groups,
-    dimensions = 6,
+    dimensions = dimensions,
     ...
   )
 
@@ -249,12 +249,13 @@ ena.generate <- function(
     set$line.weights[!estimate.over.units,] = 0
     scaleRange = c(min(set$line.weights[estimate.over.units,]) ,1);
     set$line.weights = scales::rescale(set$line.weights, to=scaleRange, from=range(set$line.weights, na.rm = T, finite = T))
-
-    codedRow1 = code[triIndices(length(code), 0)[,1]+1];
-    codedRow2 = code[triIndices(length(code), 1)[,1]+1];
+    # browser()
+    # adjRows = triIndices(length(code)) + 1
+    # codedRow1 = code[adjRows[1,]];
+    # codedRow2 = code[adjRows[2,]];
     return(list(
       codes = code,
-      adjacency.matrix = rbind(codedRow1, codedRow2),
+      adjacency.matrix = mat, #rbind(codedRow1, codedRow2),
       set = set,
       groups = groups,
       scaled = scale.nodes,

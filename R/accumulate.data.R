@@ -247,8 +247,11 @@ accumulate.data <- function(enadata) {
   #
   # TODO Most of this should be moved to a more prominent spot on ENAdata
   ###
-    codedRow1 = codes[triIndices(length(codes), 0)[,1]+1];
-    codedRow2 = codes[triIndices(length(codes), 1)[,1]+1];
+    adjRows = triIndices(length(codes)) + 1
+    codedRow1 = codes[adjRows[1, ]]
+    codedRow2 = codes[adjRows[2, ]]
+    # codedRow1 = codes[triIndices(length(codes), 0)[,1]+1];
+    # codedRow2 = codes[triIndices(length(codes), 1)[,1]+1];
     attr(dfDT.summed.units, "adjacency.matrix") = rbind(codedRow1, codedRow2);
     attr(dfDT.summed.units, "adjacency.codes") = codedTriNames;
     attr(dfDT.summed.units, opts$UNIT_NAMES) = dfDT.summed.units[,  .SD ,with=T,.SDcols=units.by]
