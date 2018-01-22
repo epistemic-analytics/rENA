@@ -87,9 +87,10 @@ ena.generate <- function(
   args = list(...);
   conversations.used = NULL;
   weight.by = "binary";
+  # browser();
   if(!is.null(args$conversations.used)) {
     conversations.used = args$conversations.used
-    file$KEYCOL = rENA:::merge_columns_c(file,conversations.by)
+    file$KEYCOL = rENA:::merge_columns_c(file, make.names(conversations.by))
     file = file[file$KEYCOL %in% conversations.used,]
   }
   if(!is.null(args$weight.by)) {
@@ -125,8 +126,9 @@ ena.generate <- function(
   )
 
   group.names = NULL;
+  # browser()
   if(length(units.by)>1) {
-    group.names = unique(set$enadata$units[[units.by[[1]]]])
+    group.names = unique(set$enadata$units[[make.names(units.by)[[1]]]])
   } else {
     group.names = units.by
   }
@@ -156,8 +158,9 @@ ena.generate <- function(
     group.method = args$weight.network.by;
   }
   group.by = NULL;
+  # browser()
   if(length(units.by)>1) {
-    group.by = as.vector(set$enadata$units[[units.by[[1]]]]);
+    group.by = as.vector(set$enadata$units[[make.names(units.by)[[1]]]]);
     groups = ena.group(set, group.by, method = "mean") #group.method)
     groups$points = as.matrix(groups$points[, colnames(groups$points) != "ENA_GROUP_NAME"][as.character(groups$names),])
     groups$line.weights = as.matrix(groups$line.weights[,colnames(groups$line.weights) != "ENA_GROUP_NAME"][as.character(group.names),]);
@@ -172,29 +175,32 @@ ena.generate <- function(
   groups$rle = list( lengths = rle$lengths, values = rle$values );
   if(group.method == "sum") {
     groups$line.weights = groups$line.weights * rle$lengths;
-    groups$line.weights = scales::rescale(groups$line.weights, c(0,1));
+    groups$line.weights = scales::rescale(groups$line.weights, c(0.1,1));
   }
-  cis = lapply(as.character(unique(set$enadata$units[[units.by[[1]]]])), function(x) {
+  cis = lapply(as.character(unique(set$enadata$units[[make.names(units.by[[1]])]])), function(x) {
     pntRows = as.matrix(rep(T, nrow(set$points.rotated)))
     if(length(units.by)>1) {
-      pntRows = as.data.frame(set$enadata$units[[units.by[[1]]]]) == x;
+      pntRows = as.data.frame(set$enadata$units[[make.names(units.by[[1]])]]) == x;
     }
     pnts = as.matrix(set$points.rotated[pntRows,])
     dim(pnts) = c(length(which(pntRows)),ncol(set$points.rotated))
-    ci = t(matrix(c(
-        tryCatch(t.test(pnts[, 1], conf.level = 0.95), error = function(e) list(conf.int = c(NA,NA)))$conf.int,
-        tryCatch(t.test(pnts[, 2], conf.level = 0.95), error = function(e) list(conf.int = c(NA,NA)))$conf.int
-        # as.numeric(t.test(pnts[,1], conf.level = 0.95)$conf.int),
-        # as.numeric(t.test(pnts[,2], conf.level = 0.95)$conf.int)
-      ), nrow=2));
-    oi = c(IQR(pnts[,1]), IQR(pnts[,2])) * 1.5
+    ci = matrix(NA, ncol=2,nrow=2)
+    oi = rep(NA, 2)
+    if(nrow(pnts) > 1) {
+      ci = t(matrix(c(
+          tryCatch(t.test(pnts[, 1], conf.level = 0.95), error = function(e) list(conf.int = c(NA,NA)))$conf.int,
+          tryCatch(t.test(pnts[, 2], conf.level = 0.95), error = function(e) list(conf.int = c(NA,NA)))$conf.int
+          # as.numeric(t.test(pnts[,1], conf.level = 0.95)$conf.int),
+          # as.numeric(t.test(pnts[,2], conf.level = 0.95)$conf.int)
+        ), nrow=2));
+      oi = c(IQR(pnts[,1]), IQR(pnts[,2])) * 1.5
+    }
     list(ci = ci, oi = oi)
   });
   for(n in 1:length(group.names)) {
     conf.ints[[n]] = cis[[n]]$ci
     outlier.ints[n, ] = cis[[n]]$oi
   }
-
   groups$line.weights = as.matrix(groups$line.weights)
 
   groups$edge.saturation = scales::rescale(groups$line.weights, c(0.25,1));
@@ -248,13 +254,15 @@ ena.generate <- function(
     set$line.weights[estimate.over.units,] = set$line.weights[estimate.over.units,];
     set$line.weights[!estimate.over.units,] = 0
     scaleRange = c(min(set$line.weights[estimate.over.units,]) ,1);
+    if(scaleRange[1] < 0.1) scaleRange[1] = 0.1;
+
     set$line.weights = scales::rescale(set$line.weights, to=scaleRange, from=range(set$line.weights, na.rm = T, finite = T))
     # browser()
     # adjRows = triIndices(length(code)) + 1
     # codedRow1 = code[adjRows[1,]];
     # codedRow2 = code[adjRows[2,]];
     return(list(
-      codes = code,
+      codes = make.names(code),
       adjacency.matrix = mat, #rbind(codedRow1, codedRow2),
       set = set,
       groups = groups,
