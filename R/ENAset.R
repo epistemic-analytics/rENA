@@ -42,7 +42,7 @@ ENAset = R6::R6Class("ENAset",
       rotation.set = NULL,
 
       #center.data = center_data_c,    ### made local to run
-      node.position.method = lws.positions.es,
+      node.position.method = lws.positions.sq,
 
       endpoints.only = T,
 
