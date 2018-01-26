@@ -9,12 +9,12 @@ ena.plot.network(enaplot = NULL, network = NULL,
   adjacency.key = namesToAdjacencyKey(rownames(node.positions)),
   colors = c(pos = "red", "blue"), show.all.nodes = T, threshold = 0,
   thin.lines.in.front = T, opacity = c(0.3, 1), saturation = c(0.25, 1),
-  thickness = c(0, 1), node.size = c(3, 10), range = c(min(network),
+  thickness = c(0.1, 1), node.size = c(3, 10), range = c(min(network),
   max(network)), labels = rownames(node.positions), label.offset = NULL,
   label.font.size = enaplot$get("font.size"),
   label.font.color = enaplot$get("font.color"),
   label.font.family = enaplot$get("font.family"), legend.name = NULL,
-  legend.include.edges = F, ...)
+  legend.include.edges = F, scale.weights = T, ...)
 }
 \arguments{
 \item{enaplot}{\code{\link{ENAplot}} object to use for plotting}
@@ -56,6 +56,8 @@ ena.plot.network(enaplot = NULL, network = NULL,
 \item{legend.name}{A character name to include in the legend. Not included in legend when NULL. Default: NULL}
 
 \item{legend.include.edges}{Logical value indicating if the edges should be included in the plot}
+
+\item{scale.weights}{Logical indicating to scale the supplied network}
 
 \item{...}{Additional parameters}
 }

@@ -1,9 +1,14 @@
 ###
 #' Calculate the correlations
 #'
-#' @description Calculate the correlations for the provided ENAset
+#' @description Calculate both Spearman and Pearson correlations for the
+#' provided ENAset
 #'
-#' @param enaset ENAset to run correclations for
+#' @param enaset ENAset to run correlations on
+#'
+#' @return Matrix of 2 columns, one for each correlation method, with the corresponding
+#' correlations per dimension as the rows.
+#'
 #' @export
 ###
 ena.correlations <- function(enaset) {
