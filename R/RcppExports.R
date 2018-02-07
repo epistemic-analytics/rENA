@@ -77,6 +77,10 @@ remove_zero_rows_by_c <- function(toFilter, indices) {
     .Call('_rENA_remove_zero_rows_by_c', PACKAGE = 'rENA', toFilter, indices)
 }
 
+lws_lsq_positions <- function(adjMats, t, numDims) {
+    .Call('_rENA_lws_lsq_positions', PACKAGE = 'rENA', adjMats, t, numDims)
+}
+
 linderoth_pos_es <- function(adjMats, t, numDims) {
     .Call('_rENA_linderoth_pos_es', PACKAGE = 'rENA', adjMats, t, numDims)
 }
