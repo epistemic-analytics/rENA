@@ -89,6 +89,7 @@ ena.accumulate.data <- function(
     ### throw error
   }
 
+  ## DOOPT - inefficient cbinds
   df <- cbind(units, conversation);
   df <- cbind(df, codes);
 

@@ -49,9 +49,6 @@ Rcpp::List lws_lsq_positions(arma::mat adjMats, arma::mat t, int numDims) { // =
     ssX.row(i) = arma::solve(ssA, ssb, solve_opts::equilibrate	).t();
   }
 
-  // Rcpp::Rcout << "4." << std::endl;
-  // arma::mat ssc1 = ssX * weights.t();
-  // arma::mat ssc = ssc1.t();
   arma::mat centroids = (ssX * weights.t()).t();
 
   return Rcpp::List::create(
