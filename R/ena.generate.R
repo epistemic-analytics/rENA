@@ -125,6 +125,8 @@ ena.generate <- function(
     ...
   )
 
+  tryCatch(set$correlations <- ena.correlations(set, dims=c(1:2)));
+
   group.names = NULL;
   # browser()
   if(length(units.by)>1) {
