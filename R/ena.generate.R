@@ -85,6 +85,7 @@ ena.generate <- function(
   ...
 ) {
   args = list(...);
+  unit.groups = NULL;
   conversations.used = NULL;
   weight.by = "binary";
   # browser();
@@ -95,6 +96,13 @@ ena.generate <- function(
   }
   if(!is.null(args$weight.by)) {
     weight.by = args$weight.by;
+  }
+  if(!is.null(args$unit.groups)){
+    unit.groups = list();
+    group.json = jsonlite::fromJSON(args$unit.groups)
+    for(grp in 1:length(group.json$name)) {
+      unit.groups[group.json$name[grp]] = group.json$units[grp];
+    }
   }
   accum = rENA:::ena.accumulate.data.file(
     file = file,
@@ -209,7 +217,12 @@ ena.generate <- function(
   # groups$outlier.ints = outlier.ints;
 
   grps = as.character(unique(set$enadata$units[[make.names(units.by[[1]])]]))
-  groups = lapply(grps, function(x) { ena.unit.group(set, set$enadata$unit.names[group.by == x], name = x, method = group.method) })
+  groups = lapply(grps, function(x) { rENA:::ena.unit.group(set, set$enadata$unit.names[group.by == x], name = x, method = group.method) })
+  if(!is.null(unit.groups)){
+    for(i in 1:length(names(unit.groups))) {
+      groups[[length(groups)+1]] = rENA:::ena.unit.group(set, set$enadata$unit.names[set$enadata$unit.names %in% unit.groups[[i]]], name = names(unit.groups)[i], method = group.method)
+    }
+  }
   if(
     !is.null(args$output) && args$output == "save" &&
     !is.null(args$output.to)
