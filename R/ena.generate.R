@@ -146,6 +146,7 @@ ena.generate <- function(
   conf.ints = list();
   outlier.ints = matrix(0, nrow=(group.cnt), ncol=(2));
 
+  set$points.rotated.scaled = set$points.rotated;
   if(scale.nodes == T) {
     np.min.x = min(set$node.positions[,1])
     np.min.y = min(set$node.positions[,2])
@@ -159,7 +160,8 @@ ena.generate <- function(
     rp.max.y = max(set$points.rotated[,2])
     maxMax = abs(max(np.max.x / rp.max.x, np.max.y / rp.max.y))
     scaleFactor = min(maxMin, maxMax)
-    set$points.rotated = set$points.rotated * scaleFactor;
+    # set$points.rotated = set$points.rotated * scaleFactor;
+    set$points.rotated.scaled = set$points.rotated * scaleFactor;
   }
 
   # groups = NULL
