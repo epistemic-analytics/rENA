@@ -136,6 +136,8 @@ ena.generate <- function(
   conf.ints = list();
   outlier.ints = matrix(0, nrow=(group.cnt), ncol=(2));
 
+  set$points.rotated.scaled = set$points.rotated;
+  scaleFactor = 1.0
   if(scale.nodes == T) {
     np.min.x = min(set$node.positions[,1])
     np.min.y = min(set$node.positions[,2])
@@ -149,7 +151,8 @@ ena.generate <- function(
     rp.max.y = max(set$points.rotated[,2])
     maxMax = abs(max(np.max.x / rp.max.x, np.max.y / rp.max.y))
     scaleFactor = min(maxMin, maxMax)
-    set$points.rotated = set$points.rotated * scaleFactor;
+    # set$points.rotated = set$points.rotated * scaleFactor;
+    set$points.rotated.scaled = set$points.rotated * scaleFactor;
   }
 
   groups = NULL
@@ -162,13 +165,13 @@ ena.generate <- function(
   if(length(units.by)>1) {
     group.by = as.vector(set$enadata$units[[make.names(units.by)[[1]]]]);
     groups = ena.group(set, group.by, method = "mean") #group.method)
-    groups$points = as.matrix(groups$points[, colnames(groups$points) != "ENA_GROUP_NAME"][as.character(groups$names),])
+    groups$points = as.matrix(groups$points[, colnames(groups$points) != "ENA_GROUP_NAME"][as.character(groups$names),]) * scaleFactor
     groups$line.weights = as.matrix(groups$line.weights[,colnames(groups$line.weights) != "ENA_GROUP_NAME"][as.character(group.names),]);
   } else {
     group.by = as.vector(rep(T, length(units.by)));
     groups = ena.group(set, group.by, method = "mean"); #group.method);
     groups$names = units.by;
-    groups$points = matrix(as.numeric(groups$points),nrow=1);
+    groups$points = matrix(as.numeric(groups$points),nrow=1) * scaleFactor;
     groups$line.weights = matrix(as.numeric(groups$line.weights),nrow=1);
   }
   rle = rle(as.vector(group.by));
@@ -178,12 +181,12 @@ ena.generate <- function(
     groups$line.weights = scales::rescale(groups$line.weights, c(0.1,1));
   }
   cis = lapply(as.character(unique(set$enadata$units[[make.names(units.by[[1]])]])), function(x) {
-    pntRows = as.matrix(rep(T, nrow(set$points.rotated)))
+    pntRows = as.matrix(rep(T, nrow(set$points.rotated.scaled)))
     if(length(units.by)>1) {
       pntRows = as.data.frame(set$enadata$units[[make.names(units.by[[1]])]]) == x;
     }
-    pnts = as.matrix(set$points.rotated[pntRows,])
-    dim(pnts) = c(length(which(pntRows)),ncol(set$points.rotated))
+    pnts = as.matrix(set$points.rotated.scaled[pntRows,])
+    dim(pnts) = c(length(which(pntRows)),ncol(set$points.rotated.scaled))
     ci = matrix(NA, ncol=2,nrow=2)
     oi = rep(NA, 2)
     if(nrow(pnts) > 1) {

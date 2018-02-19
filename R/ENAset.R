@@ -122,6 +122,7 @@ ENAset = R6::R6Class("ENAset",
     points.raw = NULL,    #was data$raw
     points.normed.centered = NULL,    #was data$centered$normed
     points.rotated = NULL,    #was data$centered$rotated
+    points.rotated.scaled = NULL,
     points.rotated.non.zero = NULL,
 
     line.weights = NULL,   #was data$normed
