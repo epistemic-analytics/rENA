@@ -1,4 +1,4 @@
-ena.unit.group = function(set, units, method = "mean", scale=T, name = "Group") {
+ena.unit.group = function(set, units, method = "mean", scale=T, name = "Group", scaleFactor = 1.0) {
   runCIs <- function(pnts) {
     # pntRows = as.matrix(rep(T, nrow(set$points.rotated)))
     # if(length(units.by)>1) {
@@ -20,7 +20,8 @@ ena.unit.group = function(set, units, method = "mean", scale=T, name = "Group") 
 
   runMean <- function(x) {
     group = ena.group(set, x, method = method) #colMeans(set$points.rotated[x,])
-    group$points = as.vector(as.matrix(group$points));
+    group$points = as.vector(as.matrix(group$points)) * scaleFactor;
+
     colnames(group$points) <- NULL;
     if(method == "sum") {
       group$line.weights = group$line.weights * rle$lengths;
