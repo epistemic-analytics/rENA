@@ -1,3 +1,8 @@
+stages:
+ #- image
+ - test
+ - buildAPI
+
 #variables:
 #  CODECOV_TOKEN: "CODECOV_TOKEN_STRING"
 
@@ -32,7 +37,7 @@ r-devel:
     paths:
     - /usr/local/lib/R/site-library
   only:
-   - develop
+    - develop
   script:
     - RDscript -e 'install.packages(c("devtools", "stringi", "roxygen2", "lattice", "Matrix","shiny"))'
     #- RDscript -e 'install.packages(c("roxygen2"))'
@@ -48,7 +53,7 @@ r-oldrel:
   stage: test
   image: r-base:3.3.1
   only:
-   - develop
+    - develop
   script:
     - Rscript -e 'install.packages(c("devtools", "roxygen2"))'
     - Rscript -e 'devtools::install_dev_deps()'
@@ -56,3 +61,25 @@ r-oldrel:
   tags:
     - docker
   allow_failure: true
+
+
+API-dev:
+  stage: buildAPI
+  image: ubuntu
+  only:
+   - feature/rENA-api
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan ec2-34-214-61-174.us-west-2.compute.amazonaws.com >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - git config --global user.email "clmarquart@wisc.edu"
+    - git config --global user.name "Cody L Marquart"
+    - ssh ubuntu@ec2-34-214-61-174.us-west-2.compute.amazonaws.com
+    - git clone clmarquart@git.doit.wisc.edu/clmarquart/rENA.git rENA
+
+
+
