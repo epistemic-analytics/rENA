@@ -65,7 +65,8 @@ r-oldrel:
 
 API-dev:
   stage: buildAPI
-  image: ubuntu
+  #image: ubuntu
+  image: r-base:3.3.1
   only:
     - feature/rENA-api
   #before_script:
