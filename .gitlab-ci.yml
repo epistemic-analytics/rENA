@@ -68,17 +68,19 @@ API-dev:
   image: ubuntu
   only:
     - feature/rENA-api
-  before_script:
-    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY"
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - ssh-keyscan ec2-34-214-61-174.us-west-2.compute.amazonaws.com >> ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
-    - git config --global user.email "clmarquart@wisc.edu"
-    - git config --global user.name "Cody L Marquart"
+  #before_script:
+    #- 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+    #- eval $(ssh-agent -s)
+    #- echo "$SSH_PRIVATE_KEY"
+    #- echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    #- mkdir -p ~/.ssh
+    #- chmod 700 ~/.ssh
+    #- ssh-keyscan ec2-34-214-61-174.us-west-2.compute.amazonaws.com >> ~/.ssh/known_hosts
+    #- chmod 644 ~/.ssh/known_hosts
+    #- git config --global user.email "clmarquart@wisc.edu"
+    #- git config --global user.name "Cody L Marquart"
   script:
-    - ssh api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com
-    - git clone clmarquart@git.doit.wisc.edu/clmarquart/rENA.git rENA
+    #- ssh api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com
+    #- git clone git@git.doit.wisc.edu:clmarquart/rENA.git rENA
+    - R CMD BUILD .
+    - scp *.tar.gz api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com
