@@ -69,7 +69,8 @@ API-dev:
   image: r-base:3.3.1
   only:
     - feature/rENA-api
-  #before_script:
+  before_script:
+    - apt-get install -y --no-install-recommends openssh-client
     #- 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
     #- eval $(ssh-agent -s)
     #- echo "$SSH_PRIVATE_KEY"
