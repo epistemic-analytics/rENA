@@ -9,7 +9,7 @@ stages:
 before_script:
   - apt-get update -qq
   - apt-get install -y --no-install-recommends libcurl4-openssl-dev libssh2-1-dev libssl-dev git libxml2-dev xml2
-  - apt-get install -y --no-install-recommends qpdf pandoc pandoc-citeproc
+  - apt-get install -y --no-install-recommends qpdf pandoc pandoc-citeproc openssh-client
   - export _R_CHECK_CRAN_INCOMING_=FALSE
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
 
@@ -70,7 +70,7 @@ API-dev:
   only:
     - feature/rENA-api
   before_script:
-    - apt-get install -y --no-install-recommends openssh-client
+    #- apt-get install -y openssh-client
     #- 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
     #- eval $(ssh-agent -s)
     #- echo "$SSH_PRIVATE_KEY"
