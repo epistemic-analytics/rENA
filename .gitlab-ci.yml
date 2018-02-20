@@ -83,5 +83,5 @@ API-dev:
   script:
     #- ssh api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com
     #- git clone git@git.doit.wisc.edu:clmarquart/rENA.git rENA
-    - R CMD BUILD .
+    - R CMD build .
     - scp *.tar.gz api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com
