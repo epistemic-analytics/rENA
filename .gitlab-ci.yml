@@ -71,14 +71,14 @@ API-dev:
     - feature/rENA-api
   before_script:
     #- apt-get install -y openssh-client
-    #- 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
-    #- eval $(ssh-agent -s)
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+    - eval $(ssh-agent -s)
     #- echo "$SSH_PRIVATE_KEY"
-    #- echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
-    #- mkdir -p ~/.ssh
-    #- chmod 700 ~/.ssh
-    #- ssh-keyscan ec2-34-214-61-174.us-west-2.compute.amazonaws.com >> ~/.ssh/known_hosts
-    #- chmod 644 ~/.ssh/known_hosts
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan ec2-34-214-61-174.us-west-2.compute.amazonaws.com >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
     #- git config --global user.email "clmarquart@wisc.edu"
     #- git config --global user.name "Cody L Marquart"
   script:
