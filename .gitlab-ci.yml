@@ -84,7 +84,7 @@ API-dev:
   script:
     #- ssh api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com
     #- git clone git@git.doit.wisc.edu:clmarquart/rENA.git rENA
-    - rm -R /usr/local/lib/R/site-library/rENA/
+    - rm -fR /usr/local/lib/R/site-library/rENA/
     - R CMD build .
     - scp rENA_0.1.3.tar.gz api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com:~/rENA.tar.gz
     - ssh api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "R CMD INSTALL rENA.tar.gz"
