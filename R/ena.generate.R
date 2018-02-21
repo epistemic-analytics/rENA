@@ -220,10 +220,10 @@ ena.generate <- function(
   # groups$outlier.ints = outlier.ints;
 
   grps = as.character(unique(set$enadata$units[[make.names(units.by[[1]])]]))
-  groups = lapply(grps, function(x) { rENA:::ena.unit.group(set, set$enadata$unit.names[group.by == x], name = x, method = group.method, scaleFactor = scaleFactor) })
+  groups = lapply(grps, function(x) { ena.unit.group(set, set$enadata$unit.names[group.by == x], name = x, method = group.method, scaleFactor = scaleFactor) })
   if(!is.null(unit.groups) && length(unit.groups) > 0){
     for(i in 1:length(names(unit.groups))) {
-      groups[[length(groups)+1]] = rENA:::ena.unit.group(set, set$enadata$unit.names[set$enadata$unit.names %in% unit.groups[[i]]], name = names(unit.groups)[i], method = group.method, scaleFactor = scaleFactor)
+      groups[[length(groups)+1]] = ena.unit.group(set, set$enadata$unit.names[set$enadata$unit.names %in% unit.groups[[i]]], name = names(unit.groups)[i], method = group.method, scaleFactor = scaleFactor)
     }
   }
   if(

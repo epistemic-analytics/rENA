@@ -9,11 +9,12 @@ ena.unit.group = function(set, units, method = "mean", scale=T, name = "Group", 
     ci = matrix(NA, ncol=2,nrow=2)
     oi = rep(NA, 2)
     if(nrow(pnts) > 1) {
+      # browser()
       ci = t(matrix(c(
         tryCatch(t.test(pnts[, 1], conf.level = 0.95), error = function(e) list(conf.int = c(NA,NA)))$conf.int,
         tryCatch(t.test(pnts[, 2], conf.level = 0.95), error = function(e) list(conf.int = c(NA,NA)))$conf.int
-      ), nrow=2));
-      oi = c(IQR(pnts[,1]), IQR(pnts[,2])) * 1.5
+      ), nrow=2)) * scaleFactor;
+      oi = c(IQR(pnts[,1]), IQR(pnts[,2])) * 1.5 * scaleFactor;
     }
     list(ci = ci, oi = oi)
   }
@@ -26,8 +27,8 @@ ena.unit.group = function(set, units, method = "mean", scale=T, name = "Group", 
     if(method == "sum") {
       group$line.weights = group$line.weights * rle$lengths;
     }
-
-    cis = runCIs(set$points.rotated[x,]);
+    # cis = runCIs(set$points.rotated[x,]);
+    cis = runCIs(matrix(set$points.rotated[x,], ncol = ncol(set$points.rotated)));
 
     group$conf.ints = cis$ci;
     group$outlier.ints = cis$oi;
