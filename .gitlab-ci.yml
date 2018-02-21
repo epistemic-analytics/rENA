@@ -88,7 +88,7 @@ API-dev:
     - ssh -tt api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "sudo rm -fR /usr/local/lib/R/site-library/rENA/"
     # Build and Install rENA from directory
     - ssh -tt api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "cd ~/rENA/; cat DESCRIPTION; sudo Rscript -e 'devtools::build()'"
-    - ssh api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "sudo R CMD INSTALL --preclean --no-multiarch $(set -- rENA_*.tar.gz; echo "$1")"
+    - ssh api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "cd ~; sudo R CMD INSTALL --preclean --no-multiarch $(set -- rENA_*.tar.gz; echo "$1")"
     # Restart services
     - ssh -tt api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "sudo /etc/init.d/opencpu restart; sudo /etc/init.d/apache2 restart"
     
