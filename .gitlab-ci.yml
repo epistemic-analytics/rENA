@@ -70,7 +70,7 @@ API-dev:
   only:
     - feature/rENA-api
   before_script:
-    #- apt-get install -y openssh-client
+    - apt-get install -y rsync
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
     - eval $(ssh-agent -s)
     #- echo "$SSH_PRIVATE_KEY"
