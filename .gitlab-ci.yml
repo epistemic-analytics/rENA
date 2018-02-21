@@ -9,7 +9,7 @@ stages:
 before_script:
   - apt-get update -qq
   - apt-get install -y --no-install-recommends libcurl4-openssl-dev libssh2-1-dev libssl-dev git libxml2-dev xml2
-  - apt-get install -y --no-install-recommends qpdf pandoc pandoc-citeproc openssh-client
+  - apt-get install -y --no-install-recommends qpdf pandoc pandoc-citeproc openssh-client rsync
   - export _R_CHECK_CRAN_INCOMING_=FALSE
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
 
