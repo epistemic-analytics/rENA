@@ -9,7 +9,7 @@ stages:
 before_script:
   - apt-get update -qq
   - apt-get install -y --no-install-recommends libcurl4-openssl-dev libssh2-1-dev libssl-dev git libxml2-dev xml2
-  - apt-get install -y --no-install-recommends qpdf pandoc pandoc-citeproc openssh-client rsync
+  - apt-get install -y --no-install-recommends qpdf pandoc pandoc-citeproc openssh-client
   - export _R_CHECK_CRAN_INCOMING_=FALSE
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
 
@@ -78,13 +78,17 @@ API-dev:
     - ssh-keyscan ec2-34-214-61-174.us-west-2.compute.amazonaws.com >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
-    - sudo apt-get install -y --no-install-recommends rsync
-    #- cd ..; tar -czf rENA-source.tar.gz rENA;
-    #- scp rENA-source.tar.gz api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com:~/rENA-source.tar.gz
-    - rsync -rvP --exclude=.gitignore --exclude=rENA.Rproj --exclude=..Rcheck/ --exclude=.git/ --exclude=.Rproj.user/ --exclude=.Rhistory -e "ssh -i ~/.ssh/api_key.pem" . api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com:~/rENA
-    #- ssh -tt api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "rm -fR ~/rENA/; tar -xf rENA-source.tar.gz -C ~/; rm rENA-source.tar.gz"
+    # Attempted rsync
+    #- sudo apt-get install -y --no-install-recommends rsync
+    #- rsync -rvP --exclude=.gitignore --exclude=rENA.Rproj --exclude=..Rcheck/ --exclude=.git/ --exclude=.Rproj.user/ --exclude=.Rhistory -e "ssh -i ~/.ssh/api_key.pem" . api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com:~/rENA
+    # Use Tar
+    - cd ..; tar -czf rENA-source.tar.gz rENA;
+    - scp rENA-source.tar.gz api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com:~/rENA-source.tar.gz
+    - ssh -tt api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "rm -fR ~/rENA/; tar -xf rENA-source.tar.gz -C ~/; rm rENA-source.tar.gz"
     - ssh -tt api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "sudo rm -fR /usr/local/lib/R/site-library/rENA/"
+    # Build and Install rENA from directory
     - ssh -tt api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "cd ~/rENA/; cat DESCRIPTION; sudo Rscript -e 'devtools::build()'"
     - ssh api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "sudo R CMD INSTALL --preclean --no-multiarch $(set -- rENA_*.tar.gz; echo "$1")"
+    # Restart services
     - ssh -tt api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "sudo /etc/init.d/opencpu restart; sudo /etc/init.d/apache2 restart"
     
