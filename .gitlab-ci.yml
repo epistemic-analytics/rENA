@@ -70,7 +70,6 @@ API-dev:
   only:
     - feature/rENA-api
   before_script:
-    - ( apt-get install -y --no-install-recommends rsync )
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
     - eval $(ssh-agent -s)
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
@@ -78,9 +77,8 @@ API-dev:
     - chmod 700 ~/.ssh
     - ssh-keyscan ec2-34-214-61-174.us-west-2.compute.amazonaws.com >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
-    #- git config --global user.email "clmarquart@wisc.edu"
-    #- git config --global user.name "Cody L Marquart"
   script:
+    - sudo apt-get install -y --no-install-recommends rsync
     #- cd ..; tar -czf rENA-source.tar.gz rENA;
     #- scp rENA-source.tar.gz api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com:~/rENA-source.tar.gz
     - rsync -rvP --exclude=.gitignore --exclude=rENA.Rproj --exclude=..Rcheck/ --exclude=.git/ --exclude=.Rproj.user/ --exclude=.Rhistory -e "ssh -i ~/.ssh/api_key.pem" . api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com:~/rENA
