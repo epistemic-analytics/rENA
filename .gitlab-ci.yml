@@ -88,11 +88,11 @@ API-dev:
     - cd ..; tar -czf rENA-source.tar.gz rENA;
     - scp rENA_0.1.3.tar.gz api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com:~/rENA-source.tar.gz
     - ssh -tt api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "rm -fR ~/rENA/"
-    - ssh api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "tar -xf rENA-source.tar.gz -C ~/"
+    - ssh api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "tar -xf rENA-source.tar.gz -C ~/; rm rENA-source.tar.gz"
 
     - ssh -tt api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "sudo rm -fR /usr/local/lib/R/site-library/rENA/"
     - ssh -tt api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "cd ~/rENA/; sudo Rscript -e 'devtools::build()'"
-    - ssh api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "cd ~; sudo R CMD INSTALL --preclean --no-multiarch rENA_0.1.3.tar.gz"
+    - ssh api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "cd ~; file="$(set -- rENA_*.tar.gz; echo "$1")"; sudo R CMD INSTALL --preclean --no-multiarch $file"
     - ssh -tt api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "sudo /etc/init.d/opencpu restart"
     - ssh -tt api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com "sudo /etc/init.d/apache2 restart"
     
