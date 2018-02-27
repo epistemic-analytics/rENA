@@ -63,7 +63,7 @@ ena.conversation = function(data, units, units.by, conversation.by, window, code
   return(list(
     allRows = numericRows[!is.na(numericRows)],
     unitRows = codedUnitRows,
-    referantRows = codedUnitRows == numericRows
+    referantRows = numericRows %in% codedUnitRows #codedUnitRows == numericRows
   ));
 }
 # convs = ena.conversation(rsdt, units, c("Condition","UserName"), c('Condition','ActivityNumber'), window, c("Data","Performance.Parameters"))
