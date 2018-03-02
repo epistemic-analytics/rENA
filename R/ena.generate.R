@@ -173,11 +173,14 @@ ena.generate <- function(
   group.by = NULL;
   if(length(units.by)>1) {
     group.by = as.vector(set$enadata$units[[make.names(units.by)[[1]]]]);
+    grps = as.character(unique(set$enadata$units[[make.names(units.by[[1]])]]))
+    groups = lapply(grps, function(x) { ena.unit.group(set, set$enadata$unit.names[group.by == x], name = x, method = group.method, scaleFactor = scaleFactor) })
   #   groups = ena.group(set, group.by, method = "mean") #group.method)
   #   groups$points = as.matrix(groups$points[, colnames(groups$points) != "ENA_GROUP_NAME"][as.character(groups$names),])
   #   groups$line.weights = as.matrix(groups$line.weights[,colnames(groups$line.weights) != "ENA_GROUP_NAME"][as.character(group.names),]);
   } else {
-    group.by = as.vector(rep(T, length(units.by)));
+    # group.by = as.vector(rep(T, length(units.by)));
+    groups = list(ena.unit.group(set, set$enadata$unit.names, name = units.by[[1]], method = group.method, scaleFactor = scaleFactor));
   #   groups = ena.group(set, group.by, method = "mean"); #group.method);
   #   groups$names = units.by;
   #   groups$points = matrix(as.numeric(groups$points),nrow=1);
@@ -219,8 +222,6 @@ ena.generate <- function(
   # groups$conf.ints = conf.ints;
   # groups$outlier.ints = outlier.ints;
 
-  grps = as.character(unique(set$enadata$units[[make.names(units.by[[1]])]]))
-  groups = lapply(grps, function(x) { ena.unit.group(set, set$enadata$unit.names[group.by == x], name = x, method = group.method, scaleFactor = scaleFactor) })
   if(!is.null(unit.groups) && length(unit.groups) > 0){
     for(i in 1:length(names(unit.groups))) {
       groups[[length(groups)+1]] = ena.unit.group(set, set$enadata$unit.names[set$enadata$unit.names %in% unit.groups[[i]]], name = names(unit.groups)[i], method = group.method, scaleFactor = scaleFactor)
