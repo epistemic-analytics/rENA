@@ -9,7 +9,6 @@ ena.unit.group = function(set, units, method = "mean", scale=T, name = "Group", 
     ci = matrix(NA, ncol=2,nrow=2)
     oi = rep(NA, 2)
     if(nrow(pnts) > 1) {
-      # browser()
       ci = t(matrix(c(
         tryCatch(t.test(pnts[, 1], conf.level = 0.95), error = function(e) list(conf.int = c(NA,NA)))$conf.int,
         tryCatch(t.test(pnts[, 2], conf.level = 0.95), error = function(e) list(conf.int = c(NA,NA)))$conf.int
@@ -20,12 +19,17 @@ ena.unit.group = function(set, units, method = "mean", scale=T, name = "Group", 
   }
 
   runMean <- function(x) {
-    group = ena.group(set, x, method = method) #colMeans(set$points.rotated[x,])
+    group = list(
+      "names" = as.vector(unique(x)),
+      "points" = ena.group(set$points.rotated, x, method=mean),
+      "line.weights" = ena.group(set$line.weights, x, method=method)
+    )
     group$points = as.vector(as.matrix(group$points)) * scaleFactor;
+
 
     colnames(group$points) <- NULL;
     if(method == "sum") {
-      group$line.weights = group$line.weights * rle$lengths;
+      group$line.weights = group$line.weights * length(which(x == T));
     }
     # cis = runCIs(set$points.rotated[x,]);
     cis = runCIs(matrix(set$points.rotated[x,], ncol = ncol(set$points.rotated)));

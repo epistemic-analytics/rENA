@@ -39,8 +39,8 @@ ena.rotate.by.mean = function(enaset, groups) {
 
     colOne.vals = deflated.data[vals[[1]],]; #deflated.data[colOne.rows,]
     colTwo.vals = deflated.data[vals[[2]],]; #deflated.data[colTwo.rows,]
-    colOne.means = colMeans(colOne.vals)
-    colTwo.means = colMeans(colTwo.vals)
+    colOne.means = colMeans(as.matrix(colOne.vals))
+    colTwo.means = colMeans(as.matrix(colTwo.vals))
     col.mean.diff = colOne.means - colTwo.means
 
     col.mean.diff.sq = col.mean.diff/sqrt(sum(col.mean.diff^2))
