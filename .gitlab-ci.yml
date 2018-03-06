@@ -1,10 +1,16 @@
-#variables:
-#  CODECOV_TOKEN: "CODECOV_TOKEN_STRING"
+stages:
+ - test
+ - buildAPI
+
+variables:
+  API_DEV: "api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com"
+  API_STAGING: "api@ec2-54-201-134-99.us-west-2.compute.amazonaws.com"
+  API_LIVE: "api@ec2-34-208-202-243.us-west-2.compute.amazonaws.com"
 
 before_script:
   - apt-get update -qq
   - apt-get install -y --no-install-recommends libcurl4-openssl-dev libssh2-1-dev libssl-dev git libxml2-dev xml2
-  - apt-get install -y --no-install-recommends qpdf pandoc pandoc-citeproc
+  - apt-get install -y --no-install-recommends qpdf pandoc pandoc-citeproc openssh-client
   - export _R_CHECK_CRAN_INCOMING_=FALSE
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
 
@@ -32,7 +38,7 @@ r-devel:
     paths:
     - /usr/local/lib/R/site-library
   only:
-   - develop
+    - develop
   script:
     - RDscript -e 'install.packages(c("devtools", "stringi", "roxygen2", "lattice", "Matrix","shiny"))'
     #- RDscript -e 'install.packages(c("roxygen2"))'
@@ -48,7 +54,7 @@ r-oldrel:
   stage: test
   image: r-base:3.3.1
   only:
-   - develop
+    - develop
   script:
     - Rscript -e 'install.packages(c("devtools", "roxygen2"))'
     - Rscript -e 'devtools::install_dev_deps()'
@@ -56,3 +62,75 @@ r-oldrel:
   tags:
     - docker
   allow_failure: true
+
+API-dev:
+  stage: buildAPI
+  image: r-base:3.3.1
+  only:
+    - feature/rENA-api
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan ec2-34-214-61-174.us-west-2.compute.amazonaws.com >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    # Use Tar
+    - cd ..; tar -czf rENA-source.tar.gz rENA;
+    - scp rENA-source.tar.gz $API_DEV:~/rENA-source.tar.gz
+    - ssh -tt $API_DEV "rm -fR ~/rENA/; tar -xf rENA-source.tar.gz -C ~/; rm rENA-source.tar.gz"
+    # Build and Install rENA from directory
+    - ssh -tt $API_DEV "sudo rm -fR /usr/local/lib/R/site-library/rENA/"
+    - ssh -tt $API_DEV "cd ~/rENA/; cat DESCRIPTION; sudo Rscript -e 'devtools::install(local=F, reload=F, quick=T, args=c(\"--preclean\",\"--no-multiarch\"))'"
+    # Restart services
+    - ssh -tt $API_DEV "sudo /etc/init.d/opencpu restart; sudo /etc/init.d/apache2 restart"
+API-staging:
+  stage: buildAPI
+  image: r-base:3.3.1
+  only:
+    - feature/rENA-api-live
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan ec2-54-201-134-99.us-west-2.compute.amazonaws.com >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    # Use Tar
+    - cd ..; tar -czf rENA-source.tar.gz rENA;
+    - scp rENA-source.tar.gz $API_STAGING:~/rENA-source.tar.gz
+    - ssh -tt $API_STAGING "rm -fR ~/rENA/; tar -xf rENA-source.tar.gz -C ~/; rm rENA-source.tar.gz"
+    - ssh -tt $API_STAGING "sudo rm -fR /usr/local/lib/R/site-library/rENA/"
+    # Build and Install rENA from directory
+    - ssh -tt $API_STAGING "cd ~/rENA/; cat DESCRIPTION; sudo Rscript -e 'devtools::install(local=F, reload=F, quick=T, args=c(\"--preclean\",\"--no-multiarch\"))'"
+    # Restart services
+    - ssh -tt $API_STAGING "sudo /etc/init.d/opencpu restart; sudo /etc/init.d/apache2 restart"
+API-live:
+  stage: buildAPI
+  image: r-base:3.3.1
+  when: manual
+  only:
+    - feature/rENA-api-live
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan ec2-34-208-202-243.us-west-2.compute.amazonaws.com >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    # Use Tar
+    - cd ..; tar -czf rENA-source.tar.gz rENA;
+    - scp rENA-source.tar.gz $API_LIVE:~/rENA-source.tar.gz
+    - ssh -tt $API_LIVE "rm -fR ~/rENA/; tar -xf rENA-source.tar.gz -C ~/; rm rENA-source.tar.gz"
+    - ssh -tt $API_LIVE "sudo rm -fR /usr/local/lib/R/site-library/rENA/"
+    # Build and Install rENA from directory
+    - ssh -tt $API_LIVE "cd ~/rENA/; cat DESCRIPTION; sudo Rscript -e 'devtools::install(local=F, reload=F, quick=T, args=c(\"--preclean\",\"--no-multiarch\"))'"
+    # Restart services
+    - ssh -tt $API_LIVE "sudo /etc/init.d/opencpu restart; sudo /etc/init.d/apache2 restart"
+    

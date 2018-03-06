@@ -85,6 +85,7 @@ ena.generate <- function(
   ...
 ) {
   args = list(...);
+  unit.groups = NULL;
   conversations.used = NULL;
   weight.by = "binary";
   # browser();
@@ -96,7 +97,14 @@ ena.generate <- function(
   if(!is.null(args$weight.by)) {
     weight.by = args$weight.by;
   }
-  accum = ena.accumulate.data.file(
+  if(!is.null(args$unit.groups)){
+    unit.groups = list();
+    group.json = jsonlite::fromJSON(args$unit.groups)
+    for(grp in 1:length(group.json$name)) {
+      unit.groups[group.json$name[grp]] = group.json$units[grp];
+    }
+  }
+  accum = rENA:::ena.accumulate.data.file(
     file = file,
     window.size.back = window.size.back,
     units.by = make.names(units.by),
@@ -116,7 +124,7 @@ ena.generate <- function(
       rotate.col == args$rotate.by[[1]][2]
     )
   }
-  set = ena.make.set(
+  set = rENA::ena.make.set(
     enadata = accum,
     norm.by = ifelse((is.null(args$sphere.norm) || args$sphere.norm==T), rENA:::sphere_norm_c, rENA:::dont_sphere_norm_c),
     rotation.by = if(is.null(rotate.groups)) rENA:::ena.svd else rENA:::ena.rotate.by.mean, #ifelse(is.null(rotate.groups), NULL, rENA:::ena.rotate.by.mean),
@@ -124,6 +132,8 @@ ena.generate <- function(
     dimensions = dimensions,
     ...
   )
+
+  tryCatch(set$correlations <- ena.correlations(set, dims=c(1:2)));
 
   group.names = NULL;
   # browser()
@@ -155,64 +165,68 @@ ena.generate <- function(
     set$points.rotated.scaled = set$points.rotated * scaleFactor;
   }
 
-  groups = NULL
+  # groups = NULL
   group.method = "mean"
   if(!is.null(args$weight.network.by) && (args$weight.network.by %in% c("mean","sum"))) {
     group.method = args$weight.network.by;
   }
   group.by = NULL;
-  # browser()
   if(length(units.by)>1) {
     group.by = as.vector(set$enadata$units[[make.names(units.by)[[1]]]]);
-    groups = ena.group(set, group.by, method = "mean") #group.method)
-    groups$points = as.matrix(groups$points[, colnames(groups$points) != "ENA_GROUP_NAME"][as.character(groups$names),]) * scaleFactor
-    groups$line.weights = as.matrix(groups$line.weights[,colnames(groups$line.weights) != "ENA_GROUP_NAME"][as.character(group.names),]);
+    grps = as.character(unique(set$enadata$units[[make.names(units.by[[1]])]]))
+    groups = lapply(grps, function(x) { ena.unit.group(set, set$enadata$unit.names[group.by == x], name = x, method = group.method, scaleFactor = scaleFactor) })
+  #   groups = ena.group(set, group.by, method = "mean") #group.method)
+  #   groups$points = as.matrix(groups$points[, colnames(groups$points) != "ENA_GROUP_NAME"][as.character(groups$names),])
+  #   groups$line.weights = as.matrix(groups$line.weights[,colnames(groups$line.weights) != "ENA_GROUP_NAME"][as.character(group.names),]);
   } else {
-    group.by = as.vector(rep(T, length(units.by)));
-    groups = ena.group(set, group.by, method = "mean"); #group.method);
-    groups$names = units.by;
-    groups$points = matrix(as.numeric(groups$points),nrow=1) * scaleFactor;
-    groups$line.weights = matrix(as.numeric(groups$line.weights),nrow=1);
+    # group.by = as.vector(rep(T, length(units.by)));
+    groups = list(ena.unit.group(set, set$enadata$unit.names, name = units.by[[1]], method = group.method, scaleFactor = scaleFactor));
+  #   groups = ena.group(set, group.by, method = "mean"); #group.method);
+  #   groups$names = units.by;
+  #   groups$points = matrix(as.numeric(groups$points),nrow=1);
+  #   groups$line.weights = matrix(as.numeric(groups$line.weights),nrow=1);
   }
-  rle = rle(as.vector(group.by));
-  groups$rle = list( lengths = rle$lengths, values = rle$values );
-  if(group.method == "sum") {
-    groups$line.weights = groups$line.weights * rle$lengths;
-    groups$line.weights = scales::rescale(groups$line.weights, c(0.1,1));
-  }
-  cis = lapply(as.character(unique(set$enadata$units[[make.names(units.by[[1]])]])), function(x) {
-    pntRows = as.matrix(rep(T, nrow(set$points.rotated.scaled)))
-    if(length(units.by)>1) {
-      pntRows = as.data.frame(set$enadata$units[[make.names(units.by[[1]])]]) == x;
+  #
+  # rle = rle(as.vector(group.by));
+  # groups$rle = list( lengths = rle$lengths, values = rle$values );
+  # if(group.method == "sum") {
+  #   groups$line.weights = groups$line.weights * rle$lengths;
+  #   groups$line.weights = scales::rescale(groups$line.weights, c(0.1,1));
+  # }
+  # cis = lapply(as.character(unique(set$enadata$units[[make.names(units.by[[1]])]])), function(x) {
+  #   pntRows = as.matrix(rep(T, nrow(set$points.rotated)))
+  #   if(length(units.by)>1) {
+  #     pntRows = as.data.frame(set$enadata$units[[make.names(units.by[[1]])]]) == x;
+  #   }
+  #   pnts = as.matrix(set$points.rotated[pntRows,])
+  #   dim(pnts) = c(length(which(pntRows)),ncol(set$points.rotated))
+  #   ci = matrix(NA, ncol=2,nrow=2)
+  #   oi = rep(NA, 2)
+  #   if(nrow(pnts) > 1) {
+  #     ci = t(matrix(c(
+  #         tryCatch(t.test(pnts[, 1], conf.level = 0.95), error = function(e) list(conf.int = c(NA,NA)))$conf.int,
+  #         tryCatch(t.test(pnts[, 2], conf.level = 0.95), error = function(e) list(conf.int = c(NA,NA)))$conf.int
+  #       ), nrow=2));
+  #     oi = c(IQR(pnts[,1]), IQR(pnts[,2])) * 1.5
+  #   }
+  #   list(ci = ci, oi = oi)
+  # });
+  # for(n in 1:length(group.names)) {
+  #   conf.ints[[n]] = cis[[n]]$ci
+  #   outlier.ints[n, ] = cis[[n]]$oi
+  # }
+  # groups$line.weights = as.matrix(groups$line.weights)
+  # groups$edge.saturation = scales::rescale(groups$line.weights, c(0.25,1));
+  # groups$edge.opacity = scales::rescale(groups$line.weights, c(0.3,1));
+  # colnames(groups$line.weights) = NULL
+  # groups$conf.ints = conf.ints;
+  # groups$outlier.ints = outlier.ints;
+
+  if(!is.null(unit.groups) && length(unit.groups) > 0){
+    for(i in 1:length(names(unit.groups))) {
+      groups[[length(groups)+1]] = ena.unit.group(set, set$enadata$unit.names[set$enadata$unit.names %in% unit.groups[[i]]], name = names(unit.groups)[i], method = group.method, scaleFactor = scaleFactor)
     }
-    pnts = as.matrix(set$points.rotated.scaled[pntRows,])
-    dim(pnts) = c(length(which(pntRows)),ncol(set$points.rotated.scaled))
-    ci = matrix(NA, ncol=2,nrow=2)
-    oi = rep(NA, 2)
-    if(nrow(pnts) > 1) {
-      ci = t(matrix(c(
-          tryCatch(t.test(pnts[, 1], conf.level = 0.95), error = function(e) list(conf.int = c(NA,NA)))$conf.int,
-          tryCatch(t.test(pnts[, 2], conf.level = 0.95), error = function(e) list(conf.int = c(NA,NA)))$conf.int
-          # as.numeric(t.test(pnts[,1], conf.level = 0.95)$conf.int),
-          # as.numeric(t.test(pnts[,2], conf.level = 0.95)$conf.int)
-        ), nrow=2));
-      oi = c(IQR(pnts[,1]), IQR(pnts[,2])) * 1.5
-    }
-    list(ci = ci, oi = oi)
-  });
-  for(n in 1:length(group.names)) {
-    conf.ints[[n]] = cis[[n]]$ci
-    outlier.ints[n, ] = cis[[n]]$oi
   }
-  groups$line.weights = as.matrix(groups$line.weights)
-
-  groups$edge.saturation = scales::rescale(groups$line.weights, c(0.25,1));
-  groups$edge.opacity = scales::rescale(groups$line.weights, c(0.3,1));
-
-  colnames(groups$line.weights) = NULL
-  groups$conf.ints = conf.ints;
-  groups$outlier.ints = outlier.ints;
-
   if(
     !is.null(args$output) && args$output == "save" &&
     !is.null(args$output.to)
@@ -268,6 +282,7 @@ ena.generate <- function(
       codes = make.names(code),
       adjacency.matrix = mat, #rbind(codedRow1, codedRow2),
       set = set,
+      # groups = groups,
       groups = groups,
       scaled = scale.nodes,
       node.sizes = weights,

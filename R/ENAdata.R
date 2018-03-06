@@ -253,6 +253,7 @@ ENAdata = R6::R6Class("ENAdata", public = list(
       }
 
       self$raw = df_DT;
+      ## DOOPT - merge_columns_c seems to be inefficient, alt?
       self$raw$ENA_UNIT = merge_columns_c(self$raw,private$units.by);
 
       self = accumulate.data(self);

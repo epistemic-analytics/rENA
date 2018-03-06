@@ -1,5 +1,5 @@
 data(RS.data)
-RS.data = RSweb #as.data.frame(web2$enadata$raw)
+# RS.data = RSweb #as.data.frame(web2$enadata$raw)
 # file <- read.csv(system.file("extdata", "rs.data.csv", package="rENA"))
 
 codeNames = c('Data','Technical.Constraints','Performance.Parameters','Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
