@@ -24,7 +24,7 @@ ena.conversation = function(data, units, units.by, conversation.by, window, code
   conversation.by = make.names(conversation.by)
 
   if(!any(colnames(data) == "ENA_UNIT")) {
-    data$ENA_UNIT = merge_columns_c(data, units.by)
+    data$ENA_UNIT = merge_columns_c(data, make.names(units.by))
   }
 
   codedUnitRows = c()
