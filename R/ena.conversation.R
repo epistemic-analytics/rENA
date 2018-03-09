@@ -20,12 +20,12 @@ ena.conversation = function(data, units, units.by, conversation.by, window, code
   if(!is(data, "data.table")){
     data = data.table::as.data.table(data);
   }
+  units.by = make.names(units.by)
   if(!any(colnames(data) == "ENA_UNIT")) {
-    data$ENA_UNIT = merge_columns_c(data, units.by)
+    data$ENA_UNIT = merge_columns_c(data, make.names(units.by))
   }
   codedUnitRows = c()
   conversation.by = make.names(conversation.by)
-  units.by = make.names(units.by)
   if(!is.null(codes)) codes = make.names(codes)
   by.unit <- function(cols, I) {
     # browser()
