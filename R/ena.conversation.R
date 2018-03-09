@@ -15,17 +15,19 @@
 #' @export
 #' @return list containing the accumulation and set
 ##
-ena.conversation = function(data, units, units.by, conversation.by, window, codes=NULL) {
+ena.conversation = function(data, units, units.by, conversation.by, window, codes=NULL, conversation.exclude = c()) {
   # browser()
   if(!is(data, "data.table")){
     data = data.table::as.data.table(data);
   }
+  units.by = make.names(units.by)
+  conversation.by = make.names(conversation.by)
+
   if(!any(colnames(data) == "ENA_UNIT")) {
     data$ENA_UNIT = merge_columns_c(data, units.by)
   }
+
   codedUnitRows = c()
-  conversation.by = make.names(conversation.by)
-  units.by = make.names(units.by)
   if(!is.null(codes)) codes = make.names(codes)
   by.unit <- function(cols, I) {
     # browser()
@@ -57,6 +59,10 @@ ena.conversation = function(data, units, units.by, conversation.by, window, code
   }
 
   rowsByConversation = data[, by.unit(.SD, .I), by=conversation.by, .SDcols=c("ENA_UNIT", conversation.by, codes)];
+  if(!any(colnames(data) == "ENA_CONV")) {
+    rowsByConversation$ENA_CONV = merge_columns_c(rowsByConversation, conversation.by)
+  }
+  rowsByConversation = rowsByConversation[! ENA_CONV %in% conversation.exclude,]
   numericRows = as.numeric(unlist(strsplit(paste(rowsByConversation$V1, collapse=","),",")));
   numericRows = numericRows[!is.na(numericRows)]
   # browser()
