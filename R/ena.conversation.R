@@ -16,7 +16,6 @@
 #' @return list containing the accumulation and set
 ##
 ena.conversation = function(data, units, units.by, conversation.by, window, codes=NULL, conversation.exclude = c()) {
-  # browser()
   if(!is(data, "data.table")){
     data = data.table::as.data.table(data);
   }
@@ -30,19 +29,19 @@ ena.conversation = function(data, units, units.by, conversation.by, window, code
   codedUnitRows = c()
   if(!is.null(codes)) codes = make.names(codes)
   by.unit <- function(cols, I) {
-    # browser()
     whichRows = which(cols$ENA_UNIT %in% units);
     unitRows = I[whichRows];
     codedRows = rowSums(data[unitRows,c(codes),with=F]) > 0;
     unitRows = unitRows[codedRows];
 
     winRows = unique(unlist(lapply(unitRows, function(x) {
-      begin = ifelse(x - window < 1, 1, x - window + 1);
-      range = c(begin:x)
+      indexI = which(I == x)
+      rangeI = (indexI - window + 1):indexI
+      rowsI = I[rangeI[rangeI > 0]]
+      range = rowsI;
       codedCols = which(colSums(data[range,c(codes),with=F]) > 0)
 
       if(length(codedCols) > 1) {
-        # browser()
         if(is.null(codedUnitRows)) {
           codedUnitRows <<- c(x);
         } else {
