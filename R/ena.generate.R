@@ -258,17 +258,17 @@ ena.generate <- function(
     # }
 
     mat = set$enadata$adjacency.matrix;
-    # for (x in 1:nrow(network.scaled)) {
-    #   network.thickness = network.scaled[x,] #scales::rescale(abs(network.scaled[x,]), thickness);
-    #   for (i in 1:ncol(mat)) {
-    #     weights[x,node.rows==mat[1,i]] = weights[x,node.rows==mat[1,i]] + network.thickness[i];
-    #   }
-    # }
-    #
-    # #weights = t(apply(weights, 1, scales::rescale, c(1,ncol(weights))));
-    # weights = scales::rescale(weights, c(1,ncol(weights)));
+    for (x in 1:nrow(network.scaled)) {
+      network.thickness = network.scaled[x,] #scales::rescale(abs(network.scaled[x,]), thickness);
+      for (i in 1:ncol(mat)) {
+        weights[x,node.rows==mat[1,i]] = weights[x,node.rows==mat[1,i]] + network.thickness[i];
+      }
+    }
 
-    # set$line.weights[estimate.over.units,] = set$line.weights[estimate.over.units,];
+    # #weights = t(apply(weights, 1, scales::rescale, c(1,ncol(weights))));
+    weights = scales::rescale(weights, c(1,ncol(weights)));
+
+    set$line.weights[estimate.over.units,] = set$line.weights[estimate.over.units,];
 
     # browser()
     # If not included, remove the weights as to not effect the scaling
