@@ -265,13 +265,18 @@ ena.generate <- function(
       }
     }
 
-    #weights = t(apply(weights, 1, scales::rescale, c(1,ncol(weights))));
+    # #weights = t(apply(weights, 1, scales::rescale, c(1,ncol(weights))));
     weights = scales::rescale(weights, c(1,ncol(weights)));
 
     set$line.weights[estimate.over.units,] = set$line.weights[estimate.over.units,];
+
+    # browser()
+    # If not included, remove the weights as to not effect the scaling
     set$line.weights[!estimate.over.units,] = 0
     scaleRange = c(min(set$line.weights[estimate.over.units,]) ,1);
-    if(scaleRange[1] < 0.1) scaleRange[1] = 0.1;
+    if(scaleRange[1] < 0.1 && min(set$line.weights)>0) {
+      scaleRange[1] = 0.1;
+    }
 
     set$line.weights = scales::rescale(set$line.weights, to=scaleRange, from=range(set$line.weights, na.rm = T, finite = T))
     # browser()
