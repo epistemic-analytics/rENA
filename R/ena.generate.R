@@ -283,10 +283,15 @@ ena.generate <- function(
     # adjRows = triIndices(length(code)) + 1
     # codedRow1 = code[adjRows[1,]];
     # codedRow2 = code[adjRows[2,]];
+
+    tmp = getwd();
+    sess = regexec("temp/(x[^/]*)/workspace", tmp)[[1]]
+    assign("set", set, envir = parent.frame())
     return(list(
       codes = make.names(code),
       adjacency.matrix = mat, #rbind(codedRow1, codedRow2),
       set = set,
+      session = substr(tmp, start=sess[2], stop=sess[2]+attr(sess, "match.length")[2]-1),
       # groups = groups,
       groups = groups,
       scaled = scale.nodes,
