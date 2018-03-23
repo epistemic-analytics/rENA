@@ -41,6 +41,8 @@ ENAdata = R6::R6Class("ENAdata", public = list(
     ...
   ) {
     self$function.call <- sys.call(-1);
+    self$function.params <- list();
+
     private$file <- file;
     self$units <- units;
     private$units.used <- units.used;
@@ -55,6 +57,11 @@ ENAdata = R6::R6Class("ENAdata", public = list(
       "back" = window.size.back,
       "forward" = window.size.forward
     );
+
+    self$function.params$units.by = private$units.by;
+    self$function.params$conversations.by = private$conversations.by;
+    self$function.params$window.size = private$window.size;
+
     #private$units.exclude <- units.exclude;
     self$model <- model;
 
