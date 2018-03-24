@@ -16,7 +16,7 @@ ena.svd <- function(enaset, ...) {
   pcaResults = prcomp(enaset$points.normed.centered, retx=FALSE,scale=FALSE,center=FALSE, tol=0)
 
   ### used to be  enaset$data$centered$pca
-  enaset$rotation.set = pcaResults$pca;
+  #enaset$rotation.set = pcaResults$pca;
 
   # rotationSet = ENARotationSet$new(rotation = pcaResults$pca, codes = enaset$codes, node.positions = NULL, eigenvalues = pcaResults$latent)
   rotationSet = ENARotationSet$new(rotation = pcaResults$rotation, codes = enaset$codes, node.positions = NULL, eigenvalues = pcaResults$sdev^2)

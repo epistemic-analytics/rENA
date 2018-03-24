@@ -50,7 +50,9 @@ ena.group <- function(
       rownames(points.dt.means) = points.dt.means$Group.1
       points.dt.means = points.dt.means[,colnames(points.dt)]
       # agg.df[as.vector(unique(group.by)),]u
-      return (points.dt.means[as.vector(unique(by)),]);
+      # return (points.dt.means[as.vector(unique(by)),]);
+      points.dt.means[['ENA_GROUP_NAME']] = rownames(points.dt.means)
+      return(points.dt.means[which(rownames(points.dt.means) %in% unique(by)),])
     }
     return(as.data.frame(points.dt.means[,colnames(points.dt),with=F]))
   }
