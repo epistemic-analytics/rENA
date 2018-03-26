@@ -50,6 +50,25 @@ test_that("Test custom rotation.set", {
   expect_equal(df.set.grps$line.weights, df.set.grps.usrs$line.weights)
 })
 
+test_that("Test rotate by mean", {
+  data(RS.data)
+  df.file <- RS.data
+
+  conversations.by = c("Condition","ActivityNumber","GroupName")
+  df.accum.usrs = rENA:::ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = conversations.by, codes = codeNames);
+
+  set.svd = ena.make.set(df.accum.usrs)
+  set.mr = ena.make.set(df.accum.usrs,
+    rotation.by = ena.rotate.by.mean,
+    rotation.params = list(df.accum.usrs$metadata$Condition=="FirstGame", df.accum.usrs$metadata$Condition=="SecondGame"));
+
+  expect_equal(ncol(set.svd$rotation.set$rotation), ncol(set.mr$rotation.set$rotation))
+  expect_equal(colnames(set.svd$rotation.set$rotation), colnames(set.svd$points.rotated))
+  expect_equal(colnames(set.mr$rotation.set$rotation), colnames(set.mr$points.rotated))
+  expect_equal("MR1", colnames(set.mr$rotation.set$rotation)[1])
+  expect_equal("SVD1", colnames(set.svd$rotation.set$rotation)[1])
+})
+
 
 
 # test_that("Simple data.frame to accumulate and make set with Linderoth method(s)", {
