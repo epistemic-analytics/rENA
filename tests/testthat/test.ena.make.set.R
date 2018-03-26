@@ -1,30 +1,57 @@
-# suppressMessages(library(rENA, quietly = T, verbose = F))
-# context("Test making sets");
+suppressMessages(library(rENA, quietly = T, verbose = F))
+context("Test making sets");
 #
 # #codeNames = c("E.data","S.data","E.design","S.design","S.professional","E.client","V.client","E.consultant","V.consultant","S.collaboration","I.engineer","I.intern","K.actuator","K.rom","K.materials","K.power");
-# codeNames = c('Data','Technical.Constraints','Performance.Parameters','Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
+codeNames = c('Data','Technical.Constraints','Performance.Parameters','Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
 #
-# test_that("Simple data.frame to accumulate and make set", {
-#   df.file <- system.file("extdata", "rs.data.csv", package="rENA")
-#   df.accum = ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
-#   df.set = ena.make.set(df.accum)
-#
-#   testthat::expect_equal(
-#     label = "Used 10 codes",
-#     object = length(df.set$codes),
-#     expected = 6
-#   );
-#   testthat::expect_equal(
-#     label = "48 units with 2 dimensions",
-#     object = dim(df.set$points.rotated),
-#     expected = c(48,2)
-#   );
-#   testthat::expect_equal(
-#     label = "Has all 48 units",
-#     object = length(df.set$enadata$unit.names),
-#     expected = 48
-#   );
-# })
+test_that("Simple data.frame to accumulate and make set", {
+  # df.file <- system.file("extdata", "rs.data.csv", package="rENA")
+  data(RS.data)
+  df.file <- RS.data
+  df.accum = rENA:::ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
+  df.set = ena.make.set(df.accum)
+
+  testthat::expect_equal(
+    label = "Used 6 codes",
+    object = length(df.set$codes),
+    expected = 6
+  );
+  testthat::expect_equal(
+    label = "48 units with all dimensions",
+    object = dim(df.set$points.rotated),
+    expected = c(48,choose(length(codeNames),2))
+  );
+  testthat::expect_equal(
+    label = "Has all 48 units",
+    object = length(df.set$enadata$unit.names),
+    expected = 48
+  );
+})
+
+test_that("Test custom rotation.set", {
+  # df.file <- system.file("extdata", "rs.data.csv", package="rENA")
+  data(RS.data)
+  df.file <- RS.data
+
+  conversations.by = c("Condition","ActivityNumber","GroupName")
+  df.accum.grps = rENA:::ena.accumulate.data.file(df.file, units.by = c("GroupName","Condition"), conversations.by = conversations.by, codes = codeNames);
+  df.accum.usrs = rENA:::ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = conversations.by, codes = codeNames);
+
+  df.set.grps = ena.make.set(df.accum.grps)
+  df.set.usrs = ena.make.set(df.accum.usrs)
+  df.set.grps.usrs = ena.make.set(df.accum.grps, rotation.set = df.set.usrs$rotation.set)
+
+  expect_false(all(df.set.grps$rotation.set$rotation == df.set.grps.usrs$rotation.set$rotation))
+  expect_false(all(df.set.grps$rotation.set$rotation == df.set.grps.usrs$rotation.set$rotation))
+
+  expect_equal(df.set.usrs$rotation.set$rotation, df.set.grps.usrs$rotation.set$rotation)
+  expect_equal(df.set.usrs$node.positions, df.set.grps.usrs$node.positions)
+
+  expect_equal(df.set.grps$line.weights, df.set.grps.usrs$line.weights)
+})
+
+
+
 # test_that("Simple data.frame to accumulate and make set with Linderoth method(s)", {
 #   df.file <- system.file("extdata", "rs.data.csv", package="rENA")
 #   df.accum = ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
