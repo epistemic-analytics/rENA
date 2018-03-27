@@ -124,9 +124,14 @@ ena.generate <- function(
       rotate.col == args$rotate.by[[1]][2]
     )
   }
+
+  use.to.norm = rENA:::dont_sphere_norm_c;
+  if(is.null(args$sphere.norm) || args$sphere.norm == T) {
+    use.to.norm = rENA:::sphere_norm_c
+  }
   set = rENA::ena.make.set(
     enadata = accum,
-    norm.by = ifelse((is.null(args$sphere.norm) || args$sphere.norm==T), rENA:::sphere_norm_c, rENA:::dont_sphere_norm_c),
+    norm.by = use.to.norm,
     rotation.by = if(is.null(rotate.groups)) rENA:::ena.svd else rENA:::ena.rotate.by.mean, #ifelse(is.null(rotate.groups), NULL, rENA:::ena.rotate.by.mean),
     rotation.params = rotate.groups,
     dimensions = dimensions,
@@ -291,6 +296,7 @@ ena.generate <- function(
       codes = make.names(code),
       adjacency.matrix = mat, #rbind(codedRow1, codedRow2),
       set = set,
+      dimensions = colnames(set$rotation.set$rotation),
       session = substr(tmp, start=sess[2], stop=sess[2]+attr(sess, "match.length")[2]-1),
       # groups = groups,
       groups = groups,
