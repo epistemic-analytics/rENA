@@ -54,7 +54,8 @@ ena.rotate.by.mean = function(enaset, groups) {
   deflated.data.svd = orthogonal.svd(deflated.data, weights); #col.mean.diff.sq);
 
   colnames(deflated.data.svd) = c(
-     paste('V',as.character(1:ncol(deflated.data.svd)), sep='')
+    paste('MR',as.character(1:length(groups)), sep=''),
+    paste('SVD',as.character((length(groups)+1):(ncol(deflated.data.svd))), sep='')
   );
 
   rotationSet = ENARotationSet$new(node.positions=NULL, rotation=deflated.data.svd, codes=enaset$codes);

@@ -48,8 +48,6 @@ ENAset = R6::R6Class("ENAset",
 
        self$codes <- enadata$codes;
 
-       self$rotation.set <- rotation.set;
-
        self$function.call <- sys.call(-1);
 
        self$function.params$norm.by <- norm.by;    #was sphere_norm
@@ -57,6 +55,7 @@ ENAset = R6::R6Class("ENAset",
        self$function.params$node.position.method <- node.position.method;    #was position.method
        self$function.params$rotation.by <- rotation.by;
        self$function.params$rotation.params <- rotation.params;
+       self$function.params$rotation.set <- rotation.set;
        self$function.params$endpoints.only <- endpoints.only;
 
        private$args <- list(...);
@@ -241,18 +240,56 @@ ENAset = R6::R6Class("ENAset",
        attr(self$points.normed.centered, opts$UNIT_NAMES) = attr(self$enadata$adjacency.vectors.raw, opts$UNIT_NAMES)
        ###
 
-       ###### END NEW ROTATION
+       ###
+       # Generate and Assign the rotation set
+       ###
+        if(!is.null(self$function.params$rotation.by) && is.null(self$function.params$rotation.set)) {
+          self$rotation.set = do.call(self$function.params$rotation.by, list(self, self$function.params$rotation.params));
+        } else if (!is.null(self$function.params$rotation.set)) {
+          if(is(self$function.params$rotation.set, "ENARotationSet")) {
+            print("Using custom rotation.set.")
 
-       if(!is.null(self$function.params$rotation.by)) {
-         self$rotation.set = do.call(self$function.params$rotation.by, list(self, self$function.params$rotation.params))
-       }
+            self$rotation.set = self$function.params$rotation.set;
+          } else {
+            stop("Supplied rotation.set is not an instance of ENARotationSet")
+          }
+        } else {
+          stop("Unable to find or create a rotation set")
+        }
+       ###
 
        ###
        # Generated the rotated points
        ###
-       self$points.rotated = self$points.normed.centered %*% self$rotation.set$rotation;
-       private$dimensions = min(private$dimensions, ncol(self$points.rotated))
-       attr(self$points.rotated, opts$UNIT_NAMES) = attr(self$points.normed.centered, opts$UNIT_NAMES);
+        self$points.rotated = self$points.normed.centered %*% self$rotation.set$rotation;
+        private$dimensions = min(private$dimensions, ncol(self$points.rotated))
+        attr(self$points.rotated, opts$UNIT_NAMES) = attr(self$points.normed.centered, opts$UNIT_NAMES);
+       ###
+
+       ###
+       # Calculate node positions
+       #  - The supplied methoed is responsible is expected to return a list
+       #    with two keys, "node.positions" and "centroids"
+       ###
+        if(!is.null(self$rotation.set) && is.null(self$function.params$rotation.set)) {
+          positions = self$function.params$node.position.method(self);
+          if(all(names(positions) %in% c("node.positions","centroids"))) {
+            self$node.positions = positions$node.positions
+            self$centroids = positions$centroids
+
+            self$rotation.set$node.positions = positions$node.positions
+          } else {
+            print("The node position method didn't return back the expected objects:")
+            print("    Expected: c('node.positions','centroids')");
+            print(paste("    Received: ",names(positions),sep=""));
+          }
+        } else if (!is.null(self$function.params$rotation.set)) {
+          self$node.positions = self$function.params$rotation.set$node.positions
+        } else {
+          stop("Unable to determine the node positions either by calculating
+                them using `node.position.method` or using a supplied
+                `rotation.set`");
+        }
        ###
 
        ###
@@ -261,21 +298,6 @@ ENAset = R6::R6Class("ENAset",
        variance.of.rotated.data = var(self$points.rotated)
        diagonal.of.variance.of.rotated.data = as.vector(diag(variance.of.rotated.data))
        self$variance = diagonal.of.variance.of.rotated.data/sum(diagonal.of.variance.of.rotated.data)
-
-       ## Eigenvalues
-       # self$rotationSet$eigenvalues = diagonal.of.variance.of.rotated.data;
-       ###
-
-       ###
-       # Remove zero rows from centered data
-       ###
-       # self$points.rotated.non.zero = remove_zero_rows_by_c(self$points.rotated, indices=self$line.weights);
-       ###
-
-       ###
-       # Calculate node positions
-       self = self$function.params$node.position.method(self);
-       ###
 
        return(self);
      }
