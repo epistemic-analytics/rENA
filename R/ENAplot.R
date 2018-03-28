@@ -29,9 +29,6 @@ ENAplot = R6::R6Class("ENAplot",
         dimension.labels = c("X","Y"),
         dimension.show.variance = T,
 
-        flip.axis.x = F,
-        flip.axis.y = F,
-
         font.size = 14,
         font.color = "#000000",
         font.family = "Arial",
@@ -50,8 +47,6 @@ ENAplot = R6::R6Class("ENAplot",
         private$dimensions <- dimensions;
         private$dimension.labels <- dimension.labels;
         private$dimension.show.variance <- dimension.show.variance;
-        private$flip.axis.x <- flip.axis.x;
-        private$flip.axis.y <- flip.axis.y;
         private$font.size <- font.size;
         private$font.color <- font.color;
         private$font.family <- font.family;
@@ -144,9 +139,6 @@ ENAplot = R6::R6Class("ENAplot",
     dimensions = c(1,2),
     dimension.labels = c("X","Y"),
     dimension.show.variance = T,
-
-    flip.axis.x = F,
-    flip.axis.y = F,
 
     font = list(),
     font.size = 14,
