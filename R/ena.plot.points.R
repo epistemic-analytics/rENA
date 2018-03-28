@@ -150,8 +150,8 @@ ena.plot.points = function(
     } else if(grepl("^c", outlier.interval) && !is.null(outlier.interval.values)) {
       int.values = outlier.interval.values;
     }
-    error$x$array = int.values[1];
-    error$y$array = int.values[2];
+    error$x$array = int.values[,1];
+    error$y$array = int.values[,2];
   ###
   # END: Set error value for crosshair on plot
   ###

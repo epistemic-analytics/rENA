@@ -109,7 +109,11 @@ ena.plot.group <- function(
     nrow(points) > 1
   ){
     if(confidence.interval != "none") {
-      confidence.interval.values = t.test(points, conf.level = .95)$conf.int;
+      # confidence.interval.values = t.test(points, conf.level = .95)$conf.int;
+      confidence.interval.values = matrix(
+        c(as.vector(t.test(points[,1], conf.level = 0.95)$conf.int), as.vector(t.test(points[,2], conf.level = 0.95)$conf.int)),
+        ncol=2
+      );
     }
     if(outlier.interval != "none") {
       outlier.interval.values = c(IQR(points[,1]), IQR(points[,2])) * 1.5;
