@@ -25,8 +25,8 @@
 #' @param label.font.size An integer which determines the font size for graph labels, default: enaplot$font.size
 #' @param label.font.color A character which determines the color of label font, default: enaplot$font.color
 #' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
-#' @param legend.name A character name to include in the legend. Not included in legend when NULL. Default: NULL
-#' @param legend.include.edges Logical value indicating if the edges should be included in the plot
+#' @param legend.name A character name to use in the plot legend. Not included in legend when NULL. Default: "Network" if legend.include.edges is FALSE, else will be "Nodes"
+#' @param legend.include.edges Logical value indicating if the edge names should be included in the plot legend
 #' @param scale.weights Logical indicating to scale the supplied network
 #' @param ... Additional parameters
 #'
@@ -105,7 +105,7 @@ ena.plot.network = function(
   label.font.size = enaplot$get("font.size"),
   label.font.color = enaplot$get("font.color"),
   label.font.family = enaplot$get("font.family"),
-  legend.name = NULL,
+  legend.name = "Network",
   legend.include.edges = F,
   scale.weights = T,
   ...
@@ -128,6 +128,12 @@ ena.plot.network = function(
   if(length(label.offset) != length(labels)) {
     stop("length(label.offset) must be equal to 1 or length(labels)")
   }
+
+  # Handle legend parameters
+  if(legend.include.edges == T) {
+    legend.name = "Nodes"
+  }
+
 
   network.scaled = network;
   if(!is.null(threshold)) {
@@ -274,7 +280,7 @@ ena.plot.network = function(
         x = ~X1, y = ~X2,
         line = e$line,
         opacity = e$opacity,
-        legendgroup = legend.name,
+        legendgroup = ifelse(legend.include.edges == T, 'Edges', NULL),
         showlegend = show.legend,
         name = name
       )
