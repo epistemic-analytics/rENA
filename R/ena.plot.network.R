@@ -20,7 +20,8 @@
 #' @param thickness A vector of numeric min/max values for thickness, default: (0, 1)
 #' @param node.size A lower and upper bound used for scaling the size of the nodes, default c(0, 20)
 #' @param labels A character vector of node labels, default: code names
-#' @param label.offset A numeric vector of an x and y value to offset labels from the coordinates of the points
+#' @param label.offset A character vector of representing the positional offset relative to the respective node. Defaults to "middle right" for all nodes. If a single values is provided, it is used for all positions, else the length of the
+#' provided label.offset must be equal to the length of the labels vector
 #' @param label.font.size An integer which determines the font size for graph labels, default: enaplot$font.size
 #' @param label.font.color A character which determines the color of label font, default: enaplot$font.color
 #' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
@@ -100,7 +101,7 @@ ena.plot.network = function(
   thickness = c(0.1,1),
   node.size = c(3,10),
   labels = rownames(node.positions),
-  label.offset = NULL,
+  label.offset = "middle right",
   label.font.size = enaplot$get("font.size"),
   label.font.color = enaplot$get("font.color"),
   label.font.family = enaplot$get("font.family"),
@@ -120,8 +121,15 @@ ena.plot.network = function(
   nodes$color = "black";
   node.rows = rownames(node.positions) #labels; #rownames(enaplot$enaset$node.positions);
 
-  network.scaled = network;
+  # Handle label parameters
+  if(length(label.offset) == 1) {
+    label.offset = rep(label.offset[1], length(labels))
+  }
+  if(length(label.offset) != length(labels)) {
+    stop("length(label.offset) must be equal to 1 or length(labels)")
+  }
 
+  network.scaled = network;
   if(!is.null(threshold)) {
     multiplier.mask = ((network.scaled >= 0) * 1) - ((network.scaled < 0) * 1)
     if(length(threshold) == 1) {
@@ -225,15 +233,16 @@ ena.plot.network = function(
 
   enaplot$plot = plotly::add_trace(
     enaplot$plot,
+    type = "scatter",
     data = nodes,
     x = ~X1,
     y = ~X2,
     mode = mode,
-    textposition = 'middle right',
+    textposition = label.offset[rows.to.keep],
     marker = list(
       color = "#000000",
-      size = abs(nodes$weight),
-      name = labels[i] #rownames(nodes)[i]
+      size = abs(nodes$weight)
+      #,name = labels[i] #rownames(nodes)[i]
     ),
     text = labels[rows.to.keep], #rownames(nodes),
     legendgroup = legend.name,
