@@ -93,7 +93,7 @@ ena.plot.trajectory = function(
   label.font.color = enaplot$get("font.color"),
   label.font.family = c("Arial", "Courier New", "Times New Roman"),
   shape = c("circle", "square", "triangle-up", "diamond"),
-  colors = rep(I("black"), length(unique(by))),
+  colors = NULL,
   confidence.interval = NULL,
   confidence.interval.values = NULL,
   outlier.interval = NULL,
@@ -113,7 +113,7 @@ ena.plot.trajectory = function(
     points = data.table::as.data.table(points);
   }
 
-  mode="lines+markers";
+  mode="lines+markers+text";
   hoverinfo = "x+y";
   tbl = data.table::data.table(points);
   if(!is.null(labels)) {
@@ -126,6 +126,11 @@ ena.plot.trajectory = function(
   }
   dfDT.trajs = tbl[,{ data.table::data.table(lines = list(.SD))  }, by=by]
 
+  if (!is.null(colors) && length(colors) != length(points)) {
+    stop("Length of the colors must be 1 or the same length as by")
+  }
+
+
   for(x in 1:nrow(dfDT.trajs)) {
     enaplot$plot = plotly::add_trace(
       enaplot$plot,
@@ -137,6 +142,18 @@ ena.plot.trajectory = function(
       textposition = 'middle right',
       hoverinfo = hoverinfo,
       showlegend = T,
+      line = list (
+        color = if(!is.null(colors)) colors[x] else NULL
+      ),
+      marker = list (
+        symbol = shape
+        ,color = if(!is.null(colors)) colors[x] else NULL
+      ),
+      textfont = list (
+        family = label.font.family,
+        size = label.font.size,
+        color = label.font.color
+      ),
       visible = ifelse(default.hidden, "legendonly", T)
     );
   }
