@@ -9,7 +9,6 @@
 #'
 #' @param enaset The \code{\link{ENAset}} that will be used to generate a plot
 #' @param title A character used for the title of the plot, default: ENA Plot
-#' @param dimensions A numeric vector determining the dimensions from the projected ENA space to include in the plot, default: c(1,2)
 #' @param dimension.labels A character vector containing labels for the axes, default: c(X, Y)
 #' @param font.size An integer determining the font size for graph labels, default: 10
 #' @param font.color A character determining the color of label font, default: black
@@ -53,7 +52,6 @@ ena.plot <- function(
 
   title = "ENA Plot",
 
-  dimensions = c(1,2),
   dimension.labels = c("X","Y"),
 
   font.size = 10,
@@ -67,7 +65,6 @@ ena.plot <- function(
 
   plot = ENAplot$new(enaset,
                      title,
-                     dimensions,
                      dimension.labels,
                      font.size,
                      font.color,

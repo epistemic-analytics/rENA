@@ -25,7 +25,6 @@ ENAplot = R6::R6Class("ENAplot",
 
         title = "ENA Plot",
 
-        dimensions = c(1,2),
         dimension.labels = c("X","Y"),
 
         font.size = 14,
@@ -43,7 +42,6 @@ ENAplot = R6::R6Class("ENAplot",
         self$enaset <- enaset;
 
         private$title <- title;
-        private$dimensions <- dimensions;
         private$dimension.labels <- dimension.labels;
         private$font.size <- font.size;
         private$font.color <- font.color;
@@ -134,7 +132,6 @@ ENAplot = R6::R6Class("ENAplot",
     ####
     title = "ENA Plot",
 
-    dimensions = c(1,2),
     dimension.labels = c("X","Y"),
 
     font = list(),
