@@ -19,7 +19,6 @@
 #' @param saturation A vector of numeric min/max values for saturation, default: (0.25, 1)
 #' @param thickness A vector of numeric min/max values for thickness, default: (0, 1)
 #' @param node.size A lower and upper bound used for scaling the size of the nodes, default c(0, 20)
-#' @param range  A vector of min/max values. Options are numeric, set.min,  set.max, plot.min, plot.max, default: (set.min, set.max). Determines the line weight that corresponds to the thinnest (min) and thickest (max) lines in the network graph
 #' @param labels A character vector of node labels, default: code names
 #' @param label.offset A numeric vector of an x and y value to offset labels from the coordinates of the points
 #' @param label.font.size An integer which determines the font size for graph labels, default: enaplot$font.size
@@ -100,7 +99,6 @@ ena.plot.network = function(
   saturation = c(0.25,1),
   thickness = c(0.1,1),
   node.size = c(3,10),
-  range = c(min(network), max(network)),
   labels = rownames(node.positions),
   label.offset = NULL,
   label.font.size = enaplot$get("font.size"),
