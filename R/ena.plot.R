@@ -12,7 +12,6 @@
 #' @param dimensions A numeric vector determining the dimensions from the projected ENA space to include in the plot, default: c(1,2)
 #' @param dimension.labels A character vector containing labels for the axes, default: c(X, Y)
 #' @param dimension.show.variance A logical indicating whether to display values for variance accounted for by each dimension in the plot; default: T
-#' @param end.points A logical variable that determines whether to show only endpoints for trajectory models; default: F
 #' @param flip.axis.x	A logical that controls whether the x-axis is inverted before plotting, default: F
 #' @param flip.axis.y	A logical that controls whether the y-axis is inverted before plotting, default: F
 #' @param font.size An integer determining the font size for graph labels, default: 10
@@ -61,8 +60,6 @@ ena.plot <- function(
   dimension.labels = c("X","Y"),
   dimension.show.variance = T,
 
-  end.points = F,
-
   flip.axis.x = F,
   flip.axis.y = F,
 
@@ -80,7 +77,6 @@ ena.plot <- function(
                      dimensions,
                      dimension.labels,
                      dimension.show.variance,
-                     end.points,
                      flip.axis.x,
                      flip.axis.y,
                      font.size,

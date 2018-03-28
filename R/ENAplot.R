@@ -29,8 +29,6 @@ ENAplot = R6::R6Class("ENAplot",
         dimension.labels = c("X","Y"),
         dimension.show.variance = T,
 
-        end.points = F,
-
         flip.axis.x = F,
         flip.axis.y = F,
 
@@ -52,7 +50,6 @@ ENAplot = R6::R6Class("ENAplot",
         private$dimensions <- dimensions;
         private$dimension.labels <- dimension.labels;
         private$dimension.show.variance <- dimension.show.variance;
-        private$end.points <- end.points;
         private$flip.axis.x <- flip.axis.x;
         private$flip.axis.y <- flip.axis.y;
         private$font.size <- font.size;
@@ -147,8 +144,6 @@ ENAplot = R6::R6Class("ENAplot",
     dimensions = c(1,2),
     dimension.labels = c("X","Y"),
     dimension.show.variance = T,
-
-    end.points = F,
 
     flip.axis.x = F,
     flip.axis.y = F,
