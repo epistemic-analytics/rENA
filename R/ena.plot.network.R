@@ -280,7 +280,7 @@ ena.plot.network = function(
         x = ~X1, y = ~X2,
         line = e$line,
         opacity = e$opacity,
-        legendgroup = ifelse(legend.include.edges == T, 'Edges', NULL),
+        legendgroup = (if(legend.include.edges == T) "Edges" else NULL),
         showlegend = show.legend,
         name = name
       )
