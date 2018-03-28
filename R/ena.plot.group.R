@@ -79,7 +79,7 @@ ena.plot.group <- function(
   shape = c("square", "triangle-up", "diamond", "circle"),
   confidence.interval = c("none", "crosshairs", "box"),
   outlier.interval = c("none", "crosshairs", "box"),
-  label.offset = NULL,
+  label.offset = "bottom right",
   label.font.size = NULL,
   label.font.color = NULL,
   label.font.family = NULL,
