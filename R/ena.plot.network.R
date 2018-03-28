@@ -126,11 +126,17 @@ ena.plot.network = function(
   network.thickness = network;
   network.saturation = network;
   network.opacity = network;
+
+  network.to.keep = (network != 0) * 1
   if(!is.null(args$scale.weights) && args$scale.weights == T) {
     network.scaled = network * (1 / max(abs(network)));
 
     network.thickness = scales::rescale(abs(network.scaled), thickness);
   }
+  network.scaled = network.scaled * network.to.keep
+  network.thickness = network.thickness * network.to.keep
+
+
   network.saturation = scales::rescale(abs(network.scaled), saturation);
   network.opacity = scales::rescale(abs(network.scaled), opacity);
 
@@ -191,9 +197,12 @@ ena.plot.network = function(
   if(threshold > 0) {
     network.edges.shapes = network.edges.shapes[sapply(network.edges.shapes, "[[", "size") > threshold];
   }
+  rows.to.keep = rep(T, nrow(nodes))
   if(show.all.nodes == F) {
-    nodes = nodes[rownames(nodes) %in% unique(as.character(sapply(network.edges.shapes, "[[", "nodes"))), ]
+    rows.to.keep = nodes$weight != 0
+    # nodes = nodes[rownames(nodes) %in% unique(as.character(sapply(network.edges.shapes, "[[", "nodes"))), ]
   }
+  nodes = nodes[rows.to.keep,];
   mode = "markers+text"
   if(!is.null(args$labels.hide) && args$labels.hide == T) {
     mode="markers"
@@ -212,7 +221,7 @@ ena.plot.network = function(
       size = abs(nodes$weight),
       name = labels[i] #rownames(nodes)[i]
     ),
-    text = labels, #rownames(nodes),
+    text = labels[rows.to.keep], #rownames(nodes),
     legendgroup = legend.name,
     name = legend.name,
     hoverinfo = 'none'
@@ -227,6 +236,7 @@ ena.plot.network = function(
       name = paste(e$nodes[1],e$nodes[2], sep=".");
       show.legend = T;
     }
+
     enaplot$plot = plotly::add_trace(
       enaplot$plot,
       type = "scatter",
@@ -240,6 +250,5 @@ ena.plot.network = function(
       name = name
     )
   }
-
   enaplot
 }
