@@ -99,7 +99,8 @@ ENAplot = R6::R6Class("ENAplot",
           self$plot,
           title =  title,
           xaxis = graph.axis.x,
-          yaxis = graph.axis.y
+          yaxis = graph.axis.y,
+          font = private$font
         );
       },
     ####
