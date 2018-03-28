@@ -244,6 +244,9 @@ ena.plot.network = function(
       size = abs(nodes$weight)
       #,name = labels[i] #rownames(nodes)[i]
     ),
+    textfont = list (
+      family = label.font.family
+    ),
     text = labels[rows.to.keep], #rownames(nodes),
     legendgroup = legend.name,
     name = legend.name,
