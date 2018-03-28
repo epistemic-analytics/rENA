@@ -109,7 +109,6 @@ ena.plot.group <- function(
     nrow(points) > 1
   ){
     if(confidence.interval != "none") {
-      # confidence.interval.values = t.test(points, conf.level = .95)$conf.int;
       confidence.interval.values = matrix(
         c(as.vector(t.test(points[,1], conf.level = 0.95)$conf.int), as.vector(t.test(points[,2], conf.level = 0.95)$conf.int)),
         ncol=2
@@ -122,7 +121,7 @@ ena.plot.group <- function(
     if(is.null(method) || method == "mean") {
       points = colMeans(points);
     } else {
-      points = do.call(method, args = list(points))
+      points = apply(points, 2, function(x) do.call(method, list(x)) )
     }
   }
 
