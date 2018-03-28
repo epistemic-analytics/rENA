@@ -13,7 +13,7 @@
 #' @param adjacency.key matrix containing the adjacency key for looking up the names and positions
 #' @param colors A String or vector of colors for positive and negative line weights. E.g. red or c(pos= red, neg = blue), default: c(pos= red, neg = blue)
 #' @param show.all.nodes A Logical variable, default: true
-#' @param threshold A vector of numeric min/max values, default: (0,1). Edge weights below the min value will not be displayed; edge weights above the max value will be shown at the max value.
+#' @param threshold A vector of numeric min/max values, default: c(0,Inf) plotting . Edge weights below the min value will not be displayed; edge weights above the max value will be shown at the max value.
 #' @param thin.lines.in.front A logical, default: true
 #' @param opacity A vector of numeric min/max values for opacity, default: (0.3,1)
 #' @param saturation A vector of numeric min/max values for saturation, default: (0.25, 1)
@@ -94,7 +94,7 @@ ena.plot.network = function(
   adjacency.key = namesToAdjacencyKey(rownames(node.positions)), #enaplot$enaset$enadata$adjacency.matrix,
   colors = c(pos="red", "blue"),
   show.all.nodes = T,
-  threshold = 0.0,
+  threshold = c(0),
   thin.lines.in.front = T,
   opacity = c(0.3,1),
   saturation = c(0.25,1),
@@ -123,9 +123,28 @@ ena.plot.network = function(
   node.rows = rownames(node.positions) #labels; #rownames(enaplot$enaset$node.positions);
 
   network.scaled = network;
-  network.thickness = network;
-  network.saturation = network;
-  network.opacity = network;
+
+  if(!is.null(threshold)) {
+    multiplier.mask = ((network.scaled >= 0) * 1) - ((network.scaled < 0) * 1)
+    if(length(threshold) == 1) {
+      threshold[2] = Inf;
+    } else if(threshold[2] < threshold[1]) {
+      stop("Minimum threshold value must be less than the maximum value.");
+    }
+
+    if(threshold[1] > 0) {
+      # network.scaled = network.scaled[sizes > threshold[1]]
+      network.scaled[abs(network.scaled) < threshold[1]] = 0
+    }
+    if(threshold[2] < Inf && any(abs(network.scaled) > threshold[2]))  {
+      to.threshold = abs(network.scaled) > threshold[2]
+      network.scaled[to.threshold] = threshold[2]
+      network.scaled[to.threshold] = network.scaled[to.threshold] * multiplier.mask[to.threshold]
+    }
+  }
+  network.thickness = network.scaled;
+  network.saturation = network.scaled;
+  network.opacity = network.scaled;
 
   network.to.keep = (network != 0) * 1
   if(!is.null(args$scale.weights) && args$scale.weights == T) {
@@ -135,7 +154,6 @@ ena.plot.network = function(
   }
   network.scaled = network.scaled * network.to.keep
   network.thickness = network.thickness * network.to.keep
-
 
   network.saturation = scales::rescale(abs(network.scaled), saturation);
   network.opacity = scales::rescale(abs(network.scaled), opacity);
@@ -194,9 +212,7 @@ ena.plot.network = function(
   } else {
     network.edges.shapes = network.edges.shapes[order(sapply(network.edges.shapes, "[[", "size"))]
   }
-  if(threshold > 0) {
-    network.edges.shapes = network.edges.shapes[sapply(network.edges.shapes, "[[", "size") > threshold];
-  }
+
   rows.to.keep = rep(T, nrow(nodes))
   if(show.all.nodes == F) {
     rows.to.keep = nodes$weight != 0
@@ -227,28 +243,30 @@ ena.plot.network = function(
     hoverinfo = 'none'
   );
 
-  for(n in 1:length(network.edges.shapes)) {
-    e = network.edges.shapes[[n]];
+  if(length(network.edges.shapes) > 0 ) {
+    for(n in 1:length(network.edges.shapes)) {
+      e = network.edges.shapes[[n]];
 
-    name = NULL;
-    show.legend = F;
-    if(!is.null(legend.name) && legend.include.edges) {
-      name = paste(e$nodes[1],e$nodes[2], sep=".");
-      show.legend = T;
+      name = NULL;
+      show.legend = F;
+      if(!is.null(legend.name) && legend.include.edges) {
+        name = paste(e$nodes[1],e$nodes[2], sep=".");
+        show.legend = T;
+      }
+
+      enaplot$plot = plotly::add_trace(
+        enaplot$plot,
+        type = "scatter",
+        mode = "lines",
+        data = data.frame(X1=c(e$x0,e$x1), X2=c(e$y0,e$y1)),
+        x = ~X1, y = ~X2,
+        line = e$line,
+        opacity = e$opacity,
+        legendgroup = legend.name,
+        showlegend = show.legend,
+        name = name
+      )
     }
-
-    enaplot$plot = plotly::add_trace(
-      enaplot$plot,
-      type = "scatter",
-      mode = "lines",
-      data = data.frame(X1=c(e$x0,e$x1), X2=c(e$y0,e$y1)),
-      x = ~X1, y = ~X2,
-      line = e$line,
-      opacity = e$opacity,
-      legendgroup = legend.name,
-      showlegend = show.legend,
-      name = name
-    )
   }
   enaplot
 }
