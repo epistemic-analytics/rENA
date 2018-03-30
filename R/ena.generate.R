@@ -129,11 +129,20 @@ ena.generate <- function(
   if(is.null(args$sphere.norm) || args$sphere.norm == T) {
     use.to.norm = rENA:::sphere_norm_c
   }
+  rotation.set = NULL
+  if(!is.null(args$rotation.matrix)) {
+    rotation.set = ENARotationSet$new(
+      rotation = args$rotation.matrix$rotation$rotation,
+      node.positions = args$rotation.matrix$rotation$node.positions,
+      codes = args$rotation.matrix$codes
+    );
+  }
   set = rENA::ena.make.set(
     enadata = accum,
     norm.by = use.to.norm,
     rotation.by = if(is.null(rotate.groups)) rENA:::ena.svd else rENA:::ena.rotate.by.mean, #ifelse(is.null(rotate.groups), NULL, rENA:::ena.rotate.by.mean),
     rotation.params = rotate.groups,
+    rotation.set = rotation.set,
     dimensions = dimensions,
     ...
   )
@@ -141,7 +150,6 @@ ena.generate <- function(
   tryCatch(set$correlations <- ena.correlations(set, dims=c(1:2)));
 
   group.names = NULL;
-  # browser()
   if(length(units.by)>1) {
     group.names = unique(set$enadata$units[[make.names(units.by)[[1]]]])
   } else {
