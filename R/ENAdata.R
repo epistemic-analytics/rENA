@@ -58,9 +58,15 @@ ENAdata = R6::R6Class("ENAdata", public = list(
       "forward" = window.size.forward
     );
 
-    self$function.params$units.by = private$units.by;
-    self$function.params$conversations.by = private$conversations.by;
-    self$function.params$window.size = private$window.size;
+    for(p in c("units","units.used","units.by","conversations.by","codes","model","weight.by","window.size.back","window.size.forward","mask")) {
+      self$function.params[[p]] = get(p)
+    }
+
+    # self$function.params$units = units;
+    # self$function.params$units.used = units.used;
+    # self$function.params$units.by = private$units.by;
+    # self$function.params$conversations.by = private$conversations.by;
+    # self$function.params$window.size = private$window.size;
 
     #private$units.exclude <- units.exclude;
     self$model <- model;
