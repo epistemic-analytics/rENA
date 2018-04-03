@@ -304,6 +304,8 @@ ena.generate <- function(
       codes = make.names(code),
       adjacency.matrix = mat, #rbind(codedRow1, codedRow2),
       set = set,
+      custom.rotation = if(!is.null(rotation.set)) T else F,
+      custom.rotation.set = rotation.set,
       dimensions = colnames(set$rotation.set$rotation),
       session = substr(tmp, start=sess[2], stop=sess[2]+attr(sess, "match.length")[2]-1),
       # groups = groups,
