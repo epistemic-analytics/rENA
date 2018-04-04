@@ -118,7 +118,8 @@ ena.generate <- function(
   rotate.groups = NULL
   if(!is.null(args$rotate.by)) {
     rotate.meta = accum$metadata[accum$metadata$ENA_UNIT %in% accum$unit.names,]
-    rotate.col = accum$metadata[accum$metadata$ENA_UNIT %in% accum$unit.names,][[names(args$rotate.by)[1]]]
+    # rotate.col = accum$metadata[accum$metadata$ENA_UNIT %in% accum$unit.names,][[names(args$rotate.by)[1]]]
+    rotate.col = accum$metadata[accum$metadata$ENA_UNIT %in% accum$unit.names,][[make.names(names(args$rotate.by)[1])]]
     rotate.groups = list(
       rotate.col == args$rotate.by[[1]][1],
       rotate.col == args$rotate.by[[1]][2]
