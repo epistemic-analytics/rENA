@@ -126,6 +126,13 @@ ena.plot.trajectory = function(
   }
   dfDT.trajs = tbl[,{ data.table::data.table(lines = list(.SD))  }, by=by]
 
+
+  valid.label.offsets = c("top left","top center","top right","middle left","middle center","middle right","bottom left","bottom center","bottom right");
+  if(!all(label.offset %in% valid.label.offsets))
+    stop(sprintf( "Unrecognized label.offsets: %s", paste(unique(label.offset[!(label.offset %in% valid.label.offsets)]), collapse = ", ") ))
+  if(length(label.offset) == 1)
+    label.offset = rep(label.offset, nrow(dfDT.trajs))
+
   if (!is.null(colors) && length(colors) != length(points)) {
     stop("Length of the colors must be 1 or the same length as by")
   }
@@ -139,7 +146,8 @@ ena.plot.trajectory = function(
       name = names[x], #as.character(names[x]), #dfDT.trajs[x]$lines[[1]]$labels,
       mode = mode,
       text = dfDT.trajs[x,]$lines[[1]]$labels,
-      textposition = 'middle right',
+      # textposition = 'middle right',
+      textposition = label.offset[x],
       hoverinfo = hoverinfo,
       showlegend = T,
       line = list (
