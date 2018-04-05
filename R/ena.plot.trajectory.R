@@ -11,10 +11,10 @@
 #' @param names character vector - labels for each trajectory of points, length length(unique(by))
 #' @param labels character vector - point labels, length nrow(points)
 #' @param labels.show A character choice: Always, Hover, Both.  Default: Both
-#' @param confidence.interval A character that determines which confidence interval type to use, choices: none, box, crosshair, default: none
-#' @param outlier.interval A character that determines which outlier interval type to use, choices: none, box, crosshair, default: none
-#' @param confidence.interval.values A matrix/dataframe where columns are CI x and y values for each point
-#' @param outlier.interval.values A matrix/dataframe where columns are OI x and y values for each point
+# @param confidence.interval A character that determines which confidence interval type to use, choices: none, box, crosshair, default: none
+# @param outlier.interval A character that determines which outlier interval type to use, choices: none, box, crosshair, default: none
+# @param confidence.interval.values A matrix/dataframe where columns are CI x and y values for each point
+# @param outlier.interval.values A matrix/dataframe where columns are OI x and y values for each point
 #' @param colors A character, determines marker color, default: enaplot\$color
 #' @param shape A character which determines the shape of markers, choices: square, triangle, diamond, circle, default: circle
 #' @param label.offset A numeric vector of an x and y value to offset labels from the coordinates of the points
@@ -94,10 +94,10 @@ ena.plot.trajectory = function(
   label.font.family = c("Arial", "Courier New", "Times New Roman"),
   shape = c("circle", "square", "triangle-up", "diamond"),
   colors = NULL,
-  confidence.interval = NULL,
-  confidence.interval.values = NULL,
-  outlier.interval = NULL,
-  outlier.interval.values = NULL,
+  #confidence.interval = NULL,
+  #confidence.interval.values = NULL,
+  #outlier.interval = NULL,
+  #outlier.interval.values = NULL,
   default.hidden = F
 ) {
   if(!is.character(label.font.family)) {
