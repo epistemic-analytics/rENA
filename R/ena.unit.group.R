@@ -6,11 +6,11 @@ ena.unit.group = function(set, units, method = "mean", scale=T, name = "Group", 
     # }
     # pnts = as.matrix(set$points.rotated[pntRows,])
     # dim(pnts) = c(length(which(pntRows)),ncol(set$points.rotated))
-    ci = matrix(NA, ncol=2,nrow=2)
-    oi = rep(NA, 2)
+    ci = matrix(NA, ncol=ncol(pnts),nrow=2)
+    oi = rep(NA, ncol(pnts))
     if(nrow(pnts) > 1) {
       ci = t(apply(pnts,2,function(x) {
-        tryCatch(t.test(x, conf.level = 0.95), error = function(e) list(conf.int = c(NA,NA)))$conf.int
+        tryCatch(t.test(x, conf.level = 0.95), error = function(e) list(conf.int = rep(x[1],length(x))))$conf.int
       })) * scaleFactor
       oi = apply(pnts, 2, function(x) { IQR(x) }) * 1.5 * scaleFactor
       # ci = t(matrix(c(
