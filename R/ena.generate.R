@@ -117,13 +117,13 @@ ena.generate <- function(
 
   rotate.groups = NULL
   if(!is.null(args$rotate.by)) {
-    rotate.meta = accum$metadata[accum$metadata$ENA_UNIT %in% accum$unit.names,]
-    # rotate.col = accum$metadata[accum$metadata$ENA_UNIT %in% accum$unit.names,][[names(args$rotate.by)[1]]]
-    rotate.col = accum$metadata[accum$metadata$ENA_UNIT %in% accum$unit.names,][[make.names(names(args$rotate.by)[1])]]
-    rotate.groups = list(
-      rotate.col == args$rotate.by[[1]][1],
-      rotate.col == args$rotate.by[[1]][2]
-    )
+    # rotate.meta = accum$metadata[accum$metadata$ENA_UNIT %in% accum$unit.names,]
+    # rotate.col = accum$metadata[accum$metadata$ENA_UNIT %in% accum$unit.names,][[make.names(names(args$rotate.by)[1])]]
+    # rotate.groups = list(
+    #   rotate.col == args$rotate.by[[1]][1],
+    #   rotate.col == args$rotate.by[[1]][2]
+    # )
+    rotate.groups = lapply(args$rotate.by, function(x) accum$unit.names %in% x )
   }
 
   use.to.norm = rENA:::dont_sphere_norm_c;
@@ -141,7 +141,7 @@ ena.generate <- function(
   set = rENA::ena.make.set(
     enadata = accum,
     norm.by = use.to.norm,
-    rotation.by = if(is.null(rotate.groups)) rENA:::ena.svd else rENA:::ena.rotate.by.mean, #ifelse(is.null(rotate.groups), NULL, rENA:::ena.rotate.by.mean),
+    rotation.by = if(is.null(rotate.groups)) rENA:::ena.svd else rENA:::ena.rotate.by.mean,
     rotation.params = rotate.groups,
     rotation.set = rotation.set,
     dimensions = dimensions,
@@ -184,23 +184,25 @@ ena.generate <- function(
   if(!is.null(args$weight.network.by) && (args$weight.network.by %in% c("mean","sum"))) {
     group.method = args$weight.network.by;
   }
-  group.by = NULL;
-  if(length(units.by)>1) {
-    group.by = as.vector(set$enadata$units[[make.names(units.by)[[1]]]]);
-    grps = as.character(unique(set$enadata$units[[make.names(units.by[[1]])]]))
-    groups = lapply(grps, function(x) { ena.unit.group(set, set$enadata$unit.names[group.by == x], name = x, method = group.method, scaleFactor = scaleFactor) })
-  #   groups = ena.group(set, group.by, method = "mean") #group.method)
-  #   groups$points = as.matrix(groups$points[, colnames(groups$points) != "ENA_GROUP_NAME"][as.character(groups$names),])
-  #   groups$line.weights = as.matrix(groups$line.weights[,colnames(groups$line.weights) != "ENA_GROUP_NAME"][as.character(group.names),]);
-  } else {
-    # group.by = as.vector(rep(T, length(units.by)));
-    groups = list(ena.unit.group(set, set$enadata$unit.names, name = units.by[[1]], method = group.method, scaleFactor = scaleFactor));
-  #   groups = ena.group(set, group.by, method = "mean"); #group.method);
-  #   groups$names = units.by;
-  #   groups$points = matrix(as.numeric(groups$points),nrow=1);
-  #   groups$line.weights = matrix(as.numeric(groups$line.weights),nrow=1);
-  }
-  #
+
+  groups = list()
+  # group.by = NULL;
+  # if(length(units.by)>1) {
+  #   group.by = as.vector(set$enadata$units[[make.names(units.by)[[1]]]]);
+  #   grps = as.character(unique(set$enadata$units[[make.names(units.by[[1]])]]))
+  #   groups = lapply(grps, function(x) { ena.unit.group(set, set$enadata$unit.names[group.by == x], name = x, method = group.method, scaleFactor = scaleFactor) })
+  # #   groups = ena.group(set, group.by, method = "mean") #group.method)
+  # #   groups$points = as.matrix(groups$points[, colnames(groups$points) != "ENA_GROUP_NAME"][as.character(groups$names),])
+  # #   groups$line.weights = as.matrix(groups$line.weights[,colnames(groups$line.weights) != "ENA_GROUP_NAME"][as.character(group.names),]);
+  # } else {
+  #   # group.by = as.vector(rep(T, length(units.by)));
+  #   groups = list(ena.unit.group(set, set$enadata$unit.names, name = units.by[[1]], method = group.method, scaleFactor = scaleFactor));
+  # #   groups = ena.group(set, group.by, method = "mean"); #group.method);
+  # #   groups$names = units.by;
+  # #   groups$points = matrix(as.numeric(groups$points),nrow=1);
+  # #   groups$line.weights = matrix(as.numeric(groups$line.weights),nrow=1);
+  # }
+
   # rle = rle(as.vector(group.by));
   # groups$rle = list( lengths = rle$lengths, values = rle$values );
   # if(group.method == "sum") {
