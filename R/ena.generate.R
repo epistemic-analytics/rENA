@@ -303,13 +303,16 @@ ena.generate <- function(
     tmp = getwd();
     sess = regexec("temp/(x[^/]*)/workspace", tmp)[[1]]
     assign("set", set, envir = parent.frame())
+
+    dimension.names = paste("SVD",1:ncol(set$points.rotated), sep="")
+    if(length(set$function.params$rotation.params) == 2) dimension.names[1] = "MR1"
     return(list(
       codes = make.names(code),
       adjacency.matrix = mat, #rbind(codedRow1, codedRow2),
       set = set,
       custom.rotation = if(!is.null(rotation.set)) T else F,
       custom.rotation.set = rotation.set,
-      dimensions = colnames(set$rotation.set$rotation),
+      dimensions = dimension.names, #colnames(set$points.rotated),
       session = substr(tmp, start=sess[2], stop=sess[2]+attr(sess, "match.length")[2]-1),
       # groups = groups,
       groups = groups,
