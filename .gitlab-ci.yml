@@ -56,6 +56,12 @@ r-devel:
     - RDscript -e 'install.packages(c("plotly","data.tree"))'
     - RDscript -e 'devtools::install_dev_deps()'
     - RDscript -e 'devtools::check()'
+    - Rdscript -e 'devtools::build(".")' 
+    - ls -al .. 
+    - ls -al . 
+  artifacts: 
+    paths: 
+      - ../rENA-0.1.4.tar.gz 
     # - R CMD build .
     # - VERSION=$(cat DESCRIPTION | grep Version | awk '{ print $2 }')
   tags:
