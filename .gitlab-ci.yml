@@ -64,8 +64,8 @@ r-devel:
       - ../rENA-0.1.4.tar.gz 
     # - R CMD build .
     # - VERSION=$(cat DESCRIPTION | grep Version | awk '{ print $2 }')
-  tags:
-    - docker
+  # tags:
+  #   - docker
 # r-devel-win:
 #   stage: test
 #   image: rocker/r-devel:latest
