@@ -88,7 +88,6 @@ ena.generate <- function(
   unit.groups = NULL;
   conversations.used = NULL;
   weight.by = "binary";
-  # browser();
   if(!is.null(args$conversations.used)) {
     conversations.used = args$conversations.used
     file$KEYCOL = rENA:::merge_columns_c(file, make.names(conversations.by))
@@ -263,7 +262,6 @@ ena.generate <- function(
     nodes = data.frame(set$node.positions);
     nodes$weight = rep(0, nrow(nodes))
     node.rows = rownames(set$node.positions);
-    # browser()
     estimate.over.units = (!(set$enadata$unit.names %in% args$units.exclude))
     weights = matrix(0, ncol=nrow(set$node.positions), nrow=length(which(estimate.over.units)));
 
@@ -286,7 +284,6 @@ ena.generate <- function(
 
     set$line.weights[estimate.over.units,] = set$line.weights[estimate.over.units,];
 
-    # browser()
     # If not included, remove the weights as to not effect the scaling
     set$line.weights[!estimate.over.units,] = 0
     scaleRange = c(min(set$line.weights[estimate.over.units,]) ,1);
@@ -295,7 +292,6 @@ ena.generate <- function(
     }
 
     set$line.weights = scales::rescale(set$line.weights, to=scaleRange, from=range(set$line.weights, na.rm = T, finite = T))
-    # browser()
     # adjRows = triIndices(length(code)) + 1
     # codedRow1 = code[adjRows[1,]];
     # codedRow2 = code[adjRows[2,]];

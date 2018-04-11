@@ -10,7 +10,7 @@ ena.unit.group = function(set, units, method = "mean", scale=T, name = "Group", 
     oi = rep(NA, ncol(pnts))
     if(nrow(pnts) > 1) {
       ci = t(apply(pnts,2,function(x) {
-        tryCatch(t.test(x, conf.level = 0.95), error = function(e) list(conf.int = rep(x[1],length(x))))$conf.int
+        tryCatch(t.test(x, conf.level = 0.95), error = function(e) list(conf.int = rep(x[1],2)))$conf.int
       })) * scaleFactor
       oi = apply(pnts, 2, function(x) { IQR(x) }) * 1.5 * scaleFactor
       # ci = t(matrix(c(
