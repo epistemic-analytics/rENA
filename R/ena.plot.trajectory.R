@@ -15,7 +15,10 @@
 # @param outlier.interval A character that determines which outlier interval type to use, choices: none, box, crosshair, default: none
 # @param confidence.interval.values A matrix/dataframe where columns are CI x and y values for each point
 # @param outlier.interval.values A matrix/dataframe where columns are OI x and y values for each point
-#' @param colors A character, determines marker color, default: enaplot\$color
+#' @param colors A character vector, that determines marker color, default NULL results in
+#' alternating random colors. If single color is supplied, it will be used for all
+#' trajectories, otherwise the length of the supplied color vector should be equal
+#' to the length of the supplied names (i.e a color for each trajectory being plotted)
 #' @param shape A character which determines the shape of markers, choices: square, triangle, diamond, circle, default: circle
 #' @param label.offset A numeric vector of an x and y value to offset labels from the coordinates of the points
 #' @param label.font.size An integer which determines the font size for labels, default: enaplot\$font.size
@@ -112,6 +115,8 @@ ena.plot.trajectory = function(
   if(!is(points, "data.table")) {
     points = data.table::as.data.table(points);
   }
+  if(length(colors) == 1)
+    colors = rep(colors, length(names))
 
   mode="lines+markers+text";
   hoverinfo = "x+y";
@@ -133,10 +138,9 @@ ena.plot.trajectory = function(
   if(length(label.offset) == 1)
     label.offset = rep(label.offset, nrow(dfDT.trajs))
 
-  if (!is.null(colors) && length(colors) != length(points)) {
+  if (!is.null(colors) && length(colors) > 1 && length(colors) != length(names)) {
     stop("Length of the colors must be 1 or the same length as by")
   }
-
 
   for(x in 1:nrow(dfDT.trajs)) {
     enaplot$plot = plotly::add_trace(
