@@ -78,16 +78,20 @@ ENAplot = R6::R6Class("ENAplot",
           graph.axis$tickcolor = args$ticks$color;
           graph.axis$tickangle = args$ticks$angle;
         }
-        graph.axis.x = graph.axis
-        graph.axis.x$title = dimension.labels[1];
+        self$axes$x = graph.axis
+        self$axes$x$title = dimension.labels[1];
+        self$axes$y = graph.axis
+        self$axes$y$title = dimension.labels[2];
 
-        graph.axis.y = graph.axis
-        graph.axis.y$title = dimension.labels[2];
+        # self$axes$max = max.axis;
+        # self$axes$objects$x = graph.axis.x;
+        # self$axes$objects$y = graph.axis.y;
+
         self$plot = plotly::layout(
           self$plot,
           title =  title,
-          xaxis = graph.axis.x,
-          yaxis = graph.axis.y,
+          xaxis = self$axes$x,
+          yaxis = self$axes$y,
           font = private$font
         );
       },
@@ -100,6 +104,9 @@ ENAplot = R6::R6Class("ENAplot",
     ####
       enaset = NULL,
       plot = NULL,
+      axes = list(
+        x = NULL, y = NULL
+      ),
     ####
     ## END: Public Properties
     ####
@@ -120,6 +127,9 @@ ENAplot = R6::R6Class("ENAplot",
       ####
       get = function(x) {
         return(private[[x]])
+      },
+      update.axis.lines = function() {
+
       }
     ####
     ## END: Public Functions
@@ -130,17 +140,17 @@ ENAplot = R6::R6Class("ENAplot",
     ####
     ## Private Properties
     ####
-    title = "ENA Plot",
+      title = "ENA Plot",
 
-    dimension.labels = c("X","Y"),
+      dimension.labels = c("X","Y"),
 
-    font = list(),
-    font.size = 14,
-    font.color = "#000000",
-    font.family = "Arial",
-    #plot.color = I("black"),
+      font = list(),
+      font.size = 14,
+      font.color = "#000000",
+      font.family = "Arial",
+      #plot.color = I("black"),
 
-    multiplier = 5
+      multiplier = 5
     ####
     ## END: Private Properties
     ####

@@ -175,6 +175,7 @@ ena.plot.points = function(
   ###
   # Plot
   ###
+    this.max = max(points.layout);
     for(m in 1:nrow(points.layout)) {
       enaplot$plot = plotly::add_trace(
         p = enaplot$plot,
@@ -208,6 +209,7 @@ ena.plot.points = function(
         X1 = c(box.values[1,1], box.values[2,1], box.values[2,1], box.values[1,1] ,box.values[1,1]),
         X2 = c(box.values[1,2], box.values[1,2], box.values[2,2], box.values[2,2], box.values[1,2])
       )
+      this.max = max(boxv, this.max)
       enaplot$plot = plotly::add_trace(
         p = enaplot$plot,
         data = boxv,
@@ -223,6 +225,17 @@ ena.plot.points = function(
         showlegend = show.legend,
         name = box.label
       )
+    }
+
+    if(this.max*1.2 > max(plot2$axes$y$range)) {
+      this.max = this.max * 1.2
+      enaplot$axes$x$range = c(-this.max, this.max)
+      enaplot$axes$y$range = c(-this.max, this.max)
+      enaplot$plot = plotly::layout(
+        enaplot$plot,
+        xaxis = enaplot$axes$x,
+        yaxis = enaplot$axes$y
+      );
     }
   ###
   # END: Plot

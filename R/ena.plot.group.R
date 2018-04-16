@@ -108,19 +108,22 @@ ena.plot.group <- function(
     (is(points, "data.frame") || is(points, "matrix")) &&
     nrow(points) > 1
   ){
-    if(confidence.interval != "none") {
-      confidence.interval.values = matrix(
-        c(as.vector(t.test(points[,1], conf.level = 0.95)$conf.int), as.vector(t.test(points[,2], conf.level = 0.95)$conf.int)),
-        ncol=2
-      );
-    }
-    if(outlier.interval != "none") {
-      outlier.interval.values = c(IQR(points[,1]), IQR(points[,2])) * 1.5;
-    }
-
     if(is.null(method) || method == "mean") {
+      if(confidence.interval != "none") {
+        confidence.interval.values = matrix(
+          c(as.vector(t.test(points[,1], conf.level = 0.95)$conf.int), as.vector(t.test(points[,2], conf.level = 0.95)$conf.int)),
+          ncol=2
+        );
+      }
+      if(outlier.interval != "none") {
+        outlier.interval.values = c(IQR(points[,1]), IQR(points[,2])) * 1.5;
+      }
+
       points = colMeans(points);
     } else {
+      if(confidence.interval != "none") warning("Confidence Intervals can only be used when method=`mean`")
+      if(outlier.interval != "none") warning("Outlier Intervals can only be used when method=`mean`")
+
       points = apply(points, 2, function(x) do.call(method, list(x)) )
     }
   }
