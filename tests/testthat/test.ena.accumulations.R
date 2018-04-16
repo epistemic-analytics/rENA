@@ -245,6 +245,7 @@ test_that("Test accumulation with infinite windows", {
   df.accum.sep = ena.accumulate.data(units = df.units, conversation = df.conversation, codes = df.codes);
   df.accum.inf = ena.accumulate.data(units = df.units, conversation = df.conversation, codes = df.codes, window.size.back = Inf);
   df.accum.inf2 = ena.accumulate.data(units = df.units, conversation = df.conversation, codes = df.codes, window.size.back = "Inf");
+  df.accum.inf3 = ena.accumulate.data(units = df.units, conversation = df.conversation, codes = df.codes, window.size.back = "INF");
 
   codeCols = sapply(1:choose(ncol(df.codes),2), function(x) { paste("adjacency.code.",x,sep="") })
   expect_false(all(df.accum.sep$accumulated.adjacency.vectors[,codeCols,with=F] == df.accum.inf$accumulated.adjacency.vectors[,codeCols,with=F]))
