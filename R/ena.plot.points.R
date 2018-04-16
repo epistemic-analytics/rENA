@@ -204,13 +204,13 @@ ena.plot.points = function(
     }
 
     if(!is.null(box.values)) {
-      box.values = data.frame(
-        X1 = c(points[1]-box.values[1],points[1]+box.values[1],points[1]+box.values[1],points[1]-box.values[1],points[1]-box.values[1]),
-        X2 = c(points[2]-box.values[2],points[2]-box.values[2],points[2]+box.values[2],points[2]+box.values[2],points[2]-box.values[2])
+      boxv = data.frame(
+        X1 = c(box.values[1,1], box.values[2,1], box.values[2,1], box.values[1,1] ,box.values[1,1]),
+        X2 = c(box.values[1,2], box.values[1,2], box.values[2,2], box.values[2,2], box.values[1,2])
       )
       enaplot$plot = plotly::add_trace(
         p = enaplot$plot,
-        data = box.values,
+        data = boxv,
         type = "scatter",
         x = ~X1, y = ~X2,
         mode = "lines",
