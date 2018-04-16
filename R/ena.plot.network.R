@@ -105,7 +105,7 @@ ena.plot.network = function(
   label.font.size = enaplot$get("font.size"),
   label.font.color = enaplot$get("font.color"),
   label.font.family = enaplot$get("font.family"),
-  legend.name = "Network",
+  legend.name = NULL,
   legend.include.edges = F,
   scale.weights = T,
   ...
@@ -130,10 +130,9 @@ ena.plot.network = function(
   }
 
   # Handle legend parameters
-  if(legend.include.edges == T) {
+  if(legend.include.edges == T && !is.null(legend.name)) {
     legend.name = "Nodes"
   }
-
 
   network.scaled = network;
   if(!is.null(threshold)) {
@@ -237,6 +236,14 @@ ena.plot.network = function(
   }
   nodes$weight = scales::rescale((nodes$weight * (1 / max(abs(nodes$weight)))), node.size) # * enaplot$get("multiplier"));
 
+  show.legend = !is.null(legend.name);
+  if(legend.include.edges) {
+    if(is.null(legend.name)) {
+      legend.name = "Nodes"
+    }
+    show.legend = T;
+  }
+
   enaplot$plot = plotly::add_trace(
     enaplot$plot,
     type = "scatter",
@@ -258,6 +265,7 @@ ena.plot.network = function(
     text = labels[rows.to.keep], #rownames(nodes),
     legendgroup = legend.name,
     name = legend.name,
+    showlegend = show.legend,
     hoverinfo = 'none'
   );
 
@@ -267,8 +275,9 @@ ena.plot.network = function(
 
       name = NULL;
       show.legend = F;
-      if(!is.null(legend.name) && legend.include.edges) {
-        name = paste(e$nodes[1],e$nodes[2], sep=".");
+      this.name = paste(e$nodes[1],e$nodes[2], sep=".")
+      if(legend.include.edges) {
+        name = this.name;
         show.legend = T;
       }
 
@@ -280,7 +289,7 @@ ena.plot.network = function(
         x = ~X1, y = ~X2,
         line = e$line,
         opacity = e$opacity,
-        legendgroup = (if(legend.include.edges == T) "Edges" else NULL),
+        legendgroup = if(legend.include.edges == T) this.name else legend.name,
         showlegend = show.legend,
         name = name
       )
