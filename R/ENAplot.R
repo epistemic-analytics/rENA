@@ -92,7 +92,11 @@ ENAplot = R6::R6Class("ENAplot",
           title =  title,
           xaxis = self$axes$x,
           yaxis = self$axes$y,
-          font = private$font
+          font = list (
+            size = 12,
+            color = private$font.color,
+            family = private$font.family
+          )
         );
       },
     ####
