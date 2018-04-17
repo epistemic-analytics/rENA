@@ -16,7 +16,7 @@
 #' @param shape A character which determines the shape of point markers, choices:   square, triangle, diamond, circle, default: circle
 #' @param colors A character vector of the point marker colors; if one given it is used for all, otherwise must be same length as points; default: black
 #' @param label.offset character: top left (default), top center, top right, middle left, middle center, middle right, bottom left, bottom center, bottom right
-#' @param label.group A character vector used to group the labels in the legend. Items plotted with the same label.group will show/hide together when clicked within the legend.
+#' @param label.group A string used to group the labels in the legend. Items plotted with the same label.group will show/hide together when clicked within the legend.
 #' @param label.font.size An integer which determines the font size for point labels, default: enaplot$font.size
 #' @param label.font.color A character which determines the color of label font, default: enaplot$font.color
 #' @param label.font.family	A character which determines label font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
