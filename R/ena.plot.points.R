@@ -227,7 +227,7 @@ ena.plot.points = function(
       )
     }
 
-    if(this.max*1.2 > max(plot2$axes$y$range)) {
+    if(this.max*1.2 > max(enaplot$axes$y$range)) {
       this.max = this.max * 1.2
       enaplot$axes$x$range = c(-this.max, this.max)
       enaplot$axes$y$range = c(-this.max, this.max)
