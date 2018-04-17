@@ -25,8 +25,8 @@
 #' @param label.font.size An integer which determines the font size for graph labels, default: enaplot$font.size
 #' @param label.font.color A character which determines the color of label font, default: enaplot$font.color
 #' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
-#' @param legend.name A character name to use in the plot legend. Not included in legend when NULL. Default: "Network" if legend.include.edges is FALSE, else will be "Nodes"
-#' @param legend.include.edges Logical value indicating if the edge names should be included in the plot legend
+#' @param legend.name A character name used in the plot legend. Not included in legend when NULL (Default), if legend.include.edges is TRUE will always be "Nodes"
+#' @param legend.include.edges Logical value indicating if the edge names should be included in the plot legend. Forces legend.name to be "Nodes"
 #' @param scale.weights Logical indicating to scale the supplied network
 #' @param ... Additional parameters
 #'
