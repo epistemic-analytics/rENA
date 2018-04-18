@@ -42,7 +42,7 @@ test_that("Accumulate using conversation model", {
     c4=c(1,1,1,0,0,1,0,1,0,1,0,0)
   );
 
-  df.accum = ena.accumulate.data.file(
+  df.accum = rENA:::ena.accumulate.data.file(
     df,
     units.by = c("Name"),
     conversations.by = c("Day"),
