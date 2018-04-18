@@ -33,39 +33,38 @@ r-oldrel:
   allow_failure: true
 r-base:
   stage: test
-  image: r-base:latest
+  image: r-base:3.4.4
   only:
    - develop
   script:
     - Rscript -e 'install.packages(c("devtools", "roxygen2"))' #, covr))'
     - Rscript -e 'devtools::install_dev_deps()'
     - Rscript -e 'devtools::check()'
-    - Rscript -e ''
   tags:
     - docker
-r-devel:
-  stage: test
-  image: rocker/r-devel:latest
-  cache:
-    paths:
-    - /usr/local/lib/R/site-library
-  only:
-    - develop
-  script:
-    - RDscript -e 'install.packages(c("devtools", "stringi", "roxygen2", "lattice", "Matrix","shiny","dplyr","tidyselect","hexbin", "DiagrammeR", "Matrix", "glue"))'
-    - RDscript -e 'install.packages(c("plotly","data.tree"))'
-    - RDscript -e 'devtools::install_dev_deps()'
-    - RDscript -e 'devtools::check()'
-    - Rdscript -e 'devtools::build(".")' 
-    - ls -al .. 
-    - ls -al . 
-  artifacts: 
-    paths: 
-      - ../rENA-0.1.4.tar.gz 
-    # - R CMD build .
-    # - VERSION=$(cat DESCRIPTION | grep Version | awk '{ print $2 }')
-  # tags:
-  #   - docker
+#r-devel:
+#  stage: test
+#  image: r-base:3.4.4 
+#  cache:
+#    paths:
+#    - /usr/local/lib/R/site-library
+#  only:
+#    - develop
+#  script:
+#    - RDscript -e 'install.packages(c("devtools", "stringi", "roxygen2", "lattice", "Matrix","shiny","dplyr","tidyselect","hexbin", "DiagrammeR", "Matrix", "glue"))'
+#    - RDscript -e 'install.packages(c("plotly","data.tree"))'
+#    - RDscript -e 'devtools::install_dev_deps()'
+#    - RDscript -e 'devtools::check()'
+#    - Rdscript -e 'devtools::build(".")' 
+#    - ls -al .. 
+#    - ls -al . 
+#  artifacts: 
+#    paths: 
+#      - ../rENA-0.1.4.tar.gz 
+#    # - R CMD build .
+#    # - VERSION=$(cat DESCRIPTION | grep Version | awk '{ print $2 }')
+#  # tags:
+#  #   - docker
 # r-devel-win:
 #   stage: test
 #   image: rocker/r-devel:latest
