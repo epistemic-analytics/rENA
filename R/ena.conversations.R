@@ -19,7 +19,7 @@ ena.conversations = function(set, units, units.by=NULL, codes=NULL, conversation
     units.by = set$enadata$function.params$units.by;
   }
   conversation.by = set$enadata$function.params$conversations.by;
-  window = set$enadata$function.params$window.size$back;
+  window = set$enadata$function.params$window.size.back;
 
   rawAcc = data.table::copy(set$enadata$accumulated.adjacency.vectors);
   rawAcc$KEYCOL = rENA:::merge_columns_c(rawAcc, conversation.by)
@@ -33,14 +33,16 @@ ena.conversations = function(set, units, units.by=NULL, codes=NULL, conversation
 
   unitRows = rENA:::merge_columns_c(rawAcc[,c(units.by),with=F], units.by)
   codedUnitRows = which(unitRows %in% units & rawAcc[[adjColName]] == 1)
-
-  codedUnitRowConvs = rawAcc[codedUnitRows,KEYCOL]
-  codedUnitRowConvsAll = unique(unlist(sapply(X = 1:length(codedUnitRows), simplify = F, FUN = function(x) {
-    thisConvRows = rows[[codedUnitRowConvs[x]]]
-    thisRowInConv = which(thisConvRows == codedUnitRows[x])
-    thisRowAndWindow = rep(thisRowInConv,window) - (window-1):0;
-    thisConvRows[thisRowAndWindow[thisRowAndWindow > 0]]
-  })))
+  codedUnitRowConvs = rawAcc[codedUnitRows,KEYCOL];
+  codedUnitRowConvsAll = NULL;
+  if(length(codedUnitRows) > 0) {
+    codedUnitRowConvsAll = unique(unlist(sapply(X = 1:length(codedUnitRows), simplify = F, FUN = function(x) {
+      thisConvRows = rows[[codedUnitRowConvs[x]]]
+      thisRowInConv = which(thisConvRows == codedUnitRows[x])
+      thisRowAndWindow = rep(thisRowInConv,window) - (window-1):0;
+      thisConvRows[thisRowAndWindow[thisRowAndWindow > 0]]
+    })))
+  }
   return(list(
     conversations = rows,
     unitConvs = unique(rawAcc[codedUnitRows,KEYCOL]),
