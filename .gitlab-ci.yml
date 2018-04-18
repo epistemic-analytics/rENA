@@ -19,30 +19,30 @@ cache:
   - /usr/local/lib/R/site-library
 
 
-# r-oldrel:
-#   stage: test
-#   image: r-base:3.3.1
-#   only:
-#     - develop
-#   script:
-#     - Rscript -e 'install.packages(c("devtools", "roxygen2"))'
-#     - Rscript -e 'devtools::install_dev_deps()'
-#     - Rscript -e 'devtools::check()'
-#   tags:
-#     - docker
-#   allow_failure: true
-# r-base:
-#   stage: test
-#   image: r-base:latest
-#   only:
-#    - develop
-#   script:
-#     - Rscript -e 'install.packages(c("devtools", "roxygen2"))' #, covr))'
-#     - Rscript -e 'devtools::install_dev_deps()'
-#     - Rscript -e 'devtools::check()'
-#     - Rscript -e ''
-#   tags:
-#     - docker
+r-oldrel:
+  stage: test
+  image: r-base:3.3.1
+  only:
+    - develop
+  script:
+    - Rscript -e 'install.packages(c("devtools", "roxygen2"))'
+    - Rscript -e 'devtools::install_dev_deps()'
+    - Rscript -e 'devtools::check()'
+  tags:
+    - docker
+  allow_failure: true
+r-base:
+  stage: test
+  image: r-base:latest
+  only:
+   - develop
+  script:
+    - Rscript -e 'install.packages(c("devtools", "roxygen2"))' #, covr))'
+    - Rscript -e 'devtools::install_dev_deps()'
+    - Rscript -e 'devtools::check()'
+    - Rscript -e ''
+  tags:
+    - docker
 r-devel:
   stage: test
   image: rocker/r-devel:latest

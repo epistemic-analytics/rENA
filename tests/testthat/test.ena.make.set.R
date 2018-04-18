@@ -8,7 +8,7 @@ test_that("Simple data.frame to accumulate and make set", {
   # df.file <- system.file("extdata", "rs.data.csv", package="rENA")
   data(RS.data)
   df.file <- RS.data
-  df.accum = rENA:::ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
+  df.accum = ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
   df.set = ena.make.set(df.accum)
 
   testthat::expect_equal(
@@ -34,8 +34,8 @@ test_that("Test custom rotation.set", {
   df.file <- RS.data
 
   conversations.by = c("Condition","ActivityNumber","GroupName")
-  df.accum.grps = rENA:::ena.accumulate.data.file(df.file, units.by = c("GroupName","Condition"), conversations.by = conversations.by, codes = codeNames);
-  df.accum.usrs = rENA:::ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = conversations.by, codes = codeNames);
+  df.accum.grps = ena.accumulate.data.file(df.file, units.by = c("GroupName","Condition"), conversations.by = conversations.by, codes = codeNames);
+  df.accum.usrs = ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = conversations.by, codes = codeNames);
 
   df.set.grps = ena.make.set(df.accum.grps)
   df.set.usrs = ena.make.set(df.accum.usrs)
@@ -55,7 +55,7 @@ test_that("Test rotate by mean", {
   df.file <- RS.data
 
   conversations.by = c("Condition","ActivityNumber","GroupName")
-  df.accum.usrs = rENA:::ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = conversations.by, codes = codeNames);
+  df.accum.usrs = ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = conversations.by, codes = codeNames);
 
   set.svd = ena.make.set(df.accum.usrs)
   set.mr = ena.make.set(df.accum.usrs,
