@@ -107,11 +107,13 @@ ena.accumulate.data <- function(
     conversations.by = c(conversations.by, units.by);
     window.size.back = window;
   } else if (identical(window, "MovingStanzaWindow")) {
-    infCheck = c("Inf", "Infinite")
-    if(any(window.size.back %in% infCheck)) {
+    # infCheck = c("Inf", "Infinite")
+    # if(any(window.size.back %in% infCheck)) {
+    if(grepl(pattern = "inf",x = window.size.back, ignore.case=T)) {
       window.size.back = Inf
     }
-    if(any(window.size.forward %in% infCheck)) {
+    # if(any(window.size.forward %in% infCheck)) {
+    if(grepl(pattern = "inf",x = window.size.forward, ignore.case=T)) {
       window.size.forward = Inf
     }
   }

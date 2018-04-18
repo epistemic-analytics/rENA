@@ -88,7 +88,6 @@ ena.generate <- function(
   unit.groups = NULL;
   conversations.used = NULL;
   weight.by = "binary";
-  # browser();
   if(!is.null(args$conversations.used)) {
     conversations.used = args$conversations.used
     file$KEYCOL = rENA:::merge_columns_c(file, make.names(conversations.by))
@@ -117,13 +116,13 @@ ena.generate <- function(
 
   rotate.groups = NULL
   if(!is.null(args$rotate.by)) {
-    rotate.meta = accum$metadata[accum$metadata$ENA_UNIT %in% accum$unit.names,]
-    # rotate.col = accum$metadata[accum$metadata$ENA_UNIT %in% accum$unit.names,][[names(args$rotate.by)[1]]]
-    rotate.col = accum$metadata[accum$metadata$ENA_UNIT %in% accum$unit.names,][[make.names(names(args$rotate.by)[1])]]
-    rotate.groups = list(
-      rotate.col == args$rotate.by[[1]][1],
-      rotate.col == args$rotate.by[[1]][2]
-    )
+    # rotate.meta = accum$metadata[accum$metadata$ENA_UNIT %in% accum$unit.names,]
+    # rotate.col = accum$metadata[accum$metadata$ENA_UNIT %in% accum$unit.names,][[make.names(names(args$rotate.by)[1])]]
+    # rotate.groups = list(
+    #   rotate.col == args$rotate.by[[1]][1],
+    #   rotate.col == args$rotate.by[[1]][2]
+    # )
+    rotate.groups = lapply(args$rotate.by, function(x) accum$unit.names %in% x )
   }
 
   use.to.norm = rENA:::dont_sphere_norm_c;
@@ -141,7 +140,7 @@ ena.generate <- function(
   set = rENA::ena.make.set(
     enadata = accum,
     norm.by = use.to.norm,
-    rotation.by = if(is.null(rotate.groups)) rENA:::ena.svd else rENA:::ena.rotate.by.mean, #ifelse(is.null(rotate.groups), NULL, rENA:::ena.rotate.by.mean),
+    rotation.by = if(is.null(rotate.groups)) rENA:::ena.svd else rENA:::ena.rotate.by.mean,
     rotation.params = rotate.groups,
     rotation.set = rotation.set,
     dimensions = dimensions,
@@ -184,23 +183,25 @@ ena.generate <- function(
   if(!is.null(args$weight.network.by) && (args$weight.network.by %in% c("mean","sum"))) {
     group.method = args$weight.network.by;
   }
-  group.by = NULL;
-  if(length(units.by)>1) {
-    group.by = as.vector(set$enadata$units[[make.names(units.by)[[1]]]]);
-    grps = as.character(unique(set$enadata$units[[make.names(units.by[[1]])]]))
-    groups = lapply(grps, function(x) { ena.unit.group(set, set$enadata$unit.names[group.by == x], name = x, method = group.method, scaleFactor = scaleFactor) })
-  #   groups = ena.group(set, group.by, method = "mean") #group.method)
-  #   groups$points = as.matrix(groups$points[, colnames(groups$points) != "ENA_GROUP_NAME"][as.character(groups$names),])
-  #   groups$line.weights = as.matrix(groups$line.weights[,colnames(groups$line.weights) != "ENA_GROUP_NAME"][as.character(group.names),]);
-  } else {
-    # group.by = as.vector(rep(T, length(units.by)));
-    groups = list(ena.unit.group(set, set$enadata$unit.names, name = units.by[[1]], method = group.method, scaleFactor = scaleFactor));
-  #   groups = ena.group(set, group.by, method = "mean"); #group.method);
-  #   groups$names = units.by;
-  #   groups$points = matrix(as.numeric(groups$points),nrow=1);
-  #   groups$line.weights = matrix(as.numeric(groups$line.weights),nrow=1);
-  }
-  #
+
+  groups = list()
+  # group.by = NULL;
+  # if(length(units.by)>1) {
+  #   group.by = as.vector(set$enadata$units[[make.names(units.by)[[1]]]]);
+  #   grps = as.character(unique(set$enadata$units[[make.names(units.by[[1]])]]))
+  #   groups = lapply(grps, function(x) { ena.unit.group(set, set$enadata$unit.names[group.by == x], name = x, method = group.method, scaleFactor = scaleFactor) })
+  # #   groups = ena.group(set, group.by, method = "mean") #group.method)
+  # #   groups$points = as.matrix(groups$points[, colnames(groups$points) != "ENA_GROUP_NAME"][as.character(groups$names),])
+  # #   groups$line.weights = as.matrix(groups$line.weights[,colnames(groups$line.weights) != "ENA_GROUP_NAME"][as.character(group.names),]);
+  # } else {
+  #   # group.by = as.vector(rep(T, length(units.by)));
+  #   groups = list(ena.unit.group(set, set$enadata$unit.names, name = units.by[[1]], method = group.method, scaleFactor = scaleFactor));
+  # #   groups = ena.group(set, group.by, method = "mean"); #group.method);
+  # #   groups$names = units.by;
+  # #   groups$points = matrix(as.numeric(groups$points),nrow=1);
+  # #   groups$line.weights = matrix(as.numeric(groups$line.weights),nrow=1);
+  # }
+
   # rle = rle(as.vector(group.by));
   # groups$rle = list( lengths = rle$lengths, values = rle$values );
   # if(group.method == "sum") {
@@ -261,7 +262,6 @@ ena.generate <- function(
     nodes = data.frame(set$node.positions);
     nodes$weight = rep(0, nrow(nodes))
     node.rows = rownames(set$node.positions);
-    # browser()
     estimate.over.units = (!(set$enadata$unit.names %in% args$units.exclude))
     weights = matrix(0, ncol=nrow(set$node.positions), nrow=length(which(estimate.over.units)));
 
@@ -284,7 +284,6 @@ ena.generate <- function(
 
     set$line.weights[estimate.over.units,] = set$line.weights[estimate.over.units,];
 
-    # browser()
     # If not included, remove the weights as to not effect the scaling
     set$line.weights[!estimate.over.units,] = 0
     scaleRange = c(min(set$line.weights[estimate.over.units,]) ,1);
@@ -293,7 +292,6 @@ ena.generate <- function(
     }
 
     set$line.weights = scales::rescale(set$line.weights, to=scaleRange, from=range(set$line.weights, na.rm = T, finite = T))
-    # browser()
     # adjRows = triIndices(length(code)) + 1
     # codedRow1 = code[adjRows[1,]];
     # codedRow2 = code[adjRows[2,]];
@@ -301,13 +299,16 @@ ena.generate <- function(
     tmp = getwd();
     sess = regexec("temp/(x[^/]*)/workspace", tmp)[[1]]
     assign("set", set, envir = parent.frame())
+
+    dimension.names = paste("SVD",1:ncol(set$points.rotated), sep="")
+    if(length(set$function.params$rotation.params) == 2) dimension.names[1] = "MR1"
     return(list(
       codes = make.names(code),
       adjacency.matrix = mat, #rbind(codedRow1, codedRow2),
       set = set,
       custom.rotation = if(!is.null(rotation.set)) T else F,
       custom.rotation.set = rotation.set,
-      dimensions = colnames(set$rotation.set$rotation),
+      dimensions = dimension.names, #colnames(set$points.rotated),
       session = substr(tmp, start=sess[2], stop=sess[2]+attr(sess, "match.length")[2]-1),
       # groups = groups,
       groups = groups,

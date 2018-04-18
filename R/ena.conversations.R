@@ -10,6 +10,28 @@
 #' @param codes [TBD]
 #' @param conversation.exclude [TBD]
 #'
+#' @example
+#' data(RS.data)
+#' RS.data = RSweb #as.data.frame(web2$enadata$raw)
+#' file <- read.csv(system.file("extdata", "rs.data.csv", package="rENA"))
+#'
+#' codeNames = c('Data','Technical.Constraints','Performance.Parameters','Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
+#'
+#' accum = rENA::ena.accumulate.data(
+#'   units = RS.data[,c("Condition","UserName")],
+#'   conversation = RS.data[,c("Condition","GroupName")],
+#'   metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
+#'   codes = RS.data[,codeNames],
+#'   model = "EndPoint",
+#'   window.size.back = 4
+#' );
+#' set = ena.make.set(
+#'   enadata = accum,
+#'   rotation.by = ena.rotate.by.mean,
+#'   rotation.params = list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
+#' );
+#' ena.conversations(set, accum$unit.names[2], codes = set$enadata$codes)
+#'
 #' @export
 #' @return list containing the accumulation and set
 ##
