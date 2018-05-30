@@ -10,7 +10,11 @@
 #'
 #' @export
 ###
-ena.methods <- function( enaset ) {
+ena.methods <- function(
+  enaset,
+  tool = "rENA", tool.version = as.character(packageVersion(tool)),
+  comparison = NULL, comparison.groups = NULL, sig.dig = 2
+) {
   rmarkdown::render(system.file("rmd","methods.rmd", package="rENA"))
 }
 

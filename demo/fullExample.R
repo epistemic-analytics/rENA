@@ -13,7 +13,7 @@ accum = rENA::ena.accumulate.data(
 set = ena.make.set(
   enadata = accum,
   rotation.by = ena.rotate.by.mean,
-  rotation.params = list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
+  rotation.params = list(FirstGame=accum$metadata$Condition=="FirstGame", SecondGame=accum$metadata$Condition=="SecondGame")
 );
 accum2 = ena.accumulate.data.file(
   file = RS.data,
