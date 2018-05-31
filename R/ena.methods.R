@@ -13,9 +13,11 @@
 ena.methods <- function(
   enaset,
   tool = "rENA", tool.version = as.character(packageVersion(tool)),
-  comparison = NULL, comparison.groups = NULL, sig.dig = 2
+  comparison = NULL, comparison.groups = NULL, sig.dig = 2,
+  output_dir = getwd()
 ) {
-  rmarkdown::render(system.file("rmd","methods.rmd", package="rENA"))
+  rmarkdown::render(system.file("rmd","methods.rmd", package="rENA"), output_dir = getwd(),
+                    knit_root_dir = getwd(), intermediates_dir = getwd())
 }
 
 #' @title methods_report
