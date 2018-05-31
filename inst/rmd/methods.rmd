@@ -1,6 +1,6 @@
 ---
 title: ENA Methods
-output: rENA::methods_report
+output: rENA:::methods_report
 ---
 `r accum = enaset$enadata`
 `r ub = enaset$enadata$function.params$units.by`
@@ -11,7 +11,7 @@ output: rENA::methods_report
 `r codes = enaset$enadata$codes`
 `r wb = enaset$enadata$function.params$window.size.back`
 `r wgt = enaset$enadata$function.params$weight.by`
-`r normed = identical(set$function.params$norm.by, rENA::sphere_norm_c)`
+`r normed = identical(enaset$function.params$norm.by, rENA:::sphere_norm_c)`
 `r corr = ena.correlations(enaset)`
 `r corrRnd = apply(apply(matrix(corr), 1, unlist), c(1,2), round, sig.dig)`
 In this study, we applied Epistemic Network Analysis (Shaffer, 2017; Shaffer, Collier, & Ruis, 2016; Shaffer & Ruis, 2017) to our data using the ENA `r if(tool=="rENA") paste0("package for the statistical programming language R (version ", tool.version, ") (Marquart, Swiecki, et al., 2018)")``r if(tool=="webENA") paste0("Web Tool (version ", tool.version, ") (Marquart, Hinojosa, Swiecki, & Shaffer, 2018)")`
@@ -22,7 +22,7 @@ We defined the units of analysis as all lines of data associated with a single v
 
 Our ENA model included the following codes: `r concatenate::cc(codes)`. We defined conversations as all lines of data associated with a single value of `r cvb[1]``r if(length(cvb) > 1) paste0(" subsetted by ", concatenate::cc_and(cvb[2:length(cvb)], oxford=T))`. For example, one conversation consisted of all the lines associated with `r concatenate::cc_and(apply(matrix(c(cvb, cvEx), nrow=2), 1, paste, collapse=" "), oxford=T)`.
 
-`r if(normed) paste0("The ENA model normalized the networks for all units of analysis before they were subjected to a dimensional reduction, which accounts for the fact that different units of analysis may have different amounts of coded lines in the data.")` For the dimensional reduction, we used a `r if(identical(set$function.params$rotation.by, rENA::ena.rotate.by.mean)) paste0("means rotation based on two groups in our data: ", concatenate::cc_and(names(set$function.params$rotation.params)),". This projection highlights the differences between these groups (if any) by constructing a dimensional reduction that places the means of the groups as close as possible to the x-axis of the projected space. Subsequent dimensions were projected using")` singular value decomposition, which produces orthogonal dimensions that maximize the variance explained by each dimension. (See Shaffer et al., 2016 for a more detailed explanation of the mathematics; see Arastoopour, Swiecki, Chesler, & Shaffer, 2015 and Sullivan et al., 2017 for examples of this kind of analysis.)
+`r if(normed) paste0("The ENA model normalized the networks for all units of analysis before they were subjected to a dimensional reduction, which accounts for the fact that different units of analysis may have different amounts of coded lines in the data.")` For the dimensional reduction, we used a `r if(identical(enaset$function.params$rotation.by, rENA::ena.rotate.by.mean)) paste0("means rotation based on two groups in our data: ", concatenate::cc_and(names(enaset$function.params$rotation.params)),". This projection highlights the differences between these groups (if any) by constructing a dimensional reduction that places the means of the groups as close as possible to the x-axis of the projected space. Subsequent dimensions were projected using")` singular value decomposition, which produces orthogonal dimensions that maximize the variance explained by each dimension. (See Shaffer et al., 2016 for a more detailed explanation of the mathematics; see Arastoopour, Swiecki, Chesler, & Shaffer, 2015 and Sullivan et al., 2017 for examples of this kind of analysis.)
 
 Networks were visualized using network graphs where nodes correspond to the codes, and edges reflect the`r if(normed) paste0(" relative")` frequency of co-occurrence, or connection, between two codes. The result is two coordinated representations for each unit of analysis: (1) a plotted point, which represents the location of that unit’s network in the low-dimensional projected space, and (2) a weighted network graph. The positions of the network graph nodes are fixed, and those positions are determined by an optimization routine that minimizes the difference between the plotted points and their corresponding network centroids. Because of this co-registration of network graphs and projected space, the positions of the network graph nodes—and the connections they define—can be used to interpret the dimensions of the projected space and explain the positions of plotted points in the space. Our model had co-registration correlations of `r paste0(corrRnd[1,1]," (Pearson) and ",corrRnd[1,2]," (Spearman)")` for the first dimension and co-registration correlations of `r paste0(corrRnd[2,1]," (Pearson) and ",corrRnd[2,2]," (Spearman)")` for the second.`r if(all(corrRnd > 0.9)) paste0("These measures indicate that there is a strong goodness of fit between the visualization and the original model.")`
 
@@ -34,7 +34,7 @@ References
 
 Arastoopour, G., Swiecki, Z., Chesler, N. C., & Shaffer, D. W. (2015). Epistemic Network Analysis as a tool for engineering design assessment. Presented at the American Society for Engineering Education, Seattle, WA.
 
-`r if(tool=="rENA") paste0("Marquart, C. L., Hinojosa, C., Swiecki, Z., & Shaffer, D. W. (2018). Epistemic Network Analysis (Version ", tool.version, ") [Software]. Available from http://app.epistemicnetwork.org/login.html")``r if(tool=="webENA") paste0("Marquart, C. L., Swiecki, Z., Collier, W., Eagan, B., Woodward, R., & Shaffer, D. W. (2018). rENA: Epistemic Network Analysis (Version ", tool.version, "). Retrieved from https://cran.r-project.org/web/packages/rENA/index.html")`
+`r if(tool=="webENA") paste0("Marquart, C. L., Hinojosa, C., Swiecki, Z., & Shaffer, D. W. (2018). Epistemic Network Analysis (Version ", tool.version, ") [Software]. Available from http://app.epistemicnetwork.org/login.html")``r if(tool=="rENA") paste0("Marquart, C. L., Swiecki, Z., Collier, W., Eagan, B., Woodward, R., & Shaffer, D. W. (2018). rENA: Epistemic Network Analysis (Version ", tool.version, "). Retrieved from https://cran.r-project.org/web/packages/rENA/index.html")`
 
 Shaffer, D. W. (2017). Quantitative ethnography. Madison, WI: Cathcart Press.
 
