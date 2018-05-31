@@ -1,19 +1,19 @@
 ##
-#' @title Find conversations by unit
-#'
-#' @description Find rows of conversations by unit
-#'
-#' @details [TBD]
-#'
-#' @param data [TBD]
-#' @param units [TBD]
-#' @param units.by [TBD]
-#' @param conversation.by [TBD]
-#' @param window [TBD]
-#' @param codes [TBD]
-#'
-#' @export
-#' @return list containing the accumulation and set
+# @title Find conversations by unit
+#
+# @description Find rows of conversations by unit
+#
+# @details [TBD]
+#
+# @param data [TBD]
+# @param units [TBD]
+# @param units.by [TBD]
+# @param conversation.by [TBD]
+# @param window [TBD]
+# @param codes [TBD]
+#
+# @export
+# @return list containing the accumulation and set
 ##
 ena.conversation = function(data, units, units.by, conversation.by, window, codes=NULL, conversation.exclude = c()) {
   if(!is(data, "data.table")){

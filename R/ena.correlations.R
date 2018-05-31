@@ -5,6 +5,7 @@
 #' provided ENAset
 #'
 #' @param enaset ENAset to run correlations on
+#' @param dims The dimensions to calculate the correlations for. Default: c(1,2)
 #'
 #' @return Matrix of 2 columns, one for each correlation method, with the corresponding
 #' correlations per dimension as the rows.

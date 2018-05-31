@@ -5,22 +5,24 @@
 #'
 #' @details [TBD]
 #'
-#' @param data [TBD]
+#' @param set [TBD]
 #' @param units [TBD]
+#' @param units.by [TBD]
 #' @param codes [TBD]
 #' @param conversation.exclude [TBD]
 #'
-#' @example
+#' @examples
 #' data(RS.data)
-#' RS.data = RSweb #as.data.frame(web2$enadata$raw)
-#' file <- read.csv(system.file("extdata", "rs.data.csv", package="rENA"))
 #'
-#' codeNames = c('Data','Technical.Constraints','Performance.Parameters','Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
+#' codeNames = c('Data','Technical.Constraints','Performance.Parameters',
+#'               'Client.and.Consultant.Requests','Design.Reasoning',
+#'               'Collaboration');
 #'
 #' accum = rENA::ena.accumulate.data(
 #'   units = RS.data[,c("Condition","UserName")],
 #'   conversation = RS.data[,c("Condition","GroupName")],
-#'   metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
+#'   metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre",
+#'                         "CONFIDENCE.Post","C.Change")],
 #'   codes = RS.data[,codeNames],
 #'   model = "EndPoint",
 #'   window.size.back = 4
@@ -28,12 +30,13 @@
 #' set = ena.make.set(
 #'   enadata = accum,
 #'   rotation.by = ena.rotate.by.mean,
-#'   rotation.params = list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
+#'   rotation.params = list(accum$metadata$Condition=="FirstGame",
+#'                          accum$metadata$Condition=="SecondGame")
 #' );
 #' ena.conversations(set, accum$unit.names[2], codes = set$enadata$codes)
 #'
 #' @export
-#' @return list containing the accumulation and set
+#' @return list containing row indices representing conversations
 ##
 ena.conversations = function(set, units, units.by=NULL, codes=NULL, conversation.exclude = c()) {
   # rawData = data.table::copy(set$enadata$raw);
@@ -44,16 +47,16 @@ ena.conversations = function(set, units, units.by=NULL, codes=NULL, conversation
   window = set$enadata$function.params$window.size.back;
 
   rawAcc = data.table::copy(set$enadata$accumulated.adjacency.vectors);
-  rawAcc$KEYCOL = rENA:::merge_columns_c(rawAcc, conversation.by)
+  rawAcc$KEYCOL = merge_columns_c(rawAcc, conversation.by)
 
   conversationsTable = rawAcc[, paste(.I, collapse = ","), by = c(conversation.by)]
   rows = sapply(conversationsTable$V1, function(x) as.numeric(unlist(strsplit(x, split=","))),USE.NAMES = T)
-  names(rows) = rENA:::merge_columns_c(conversationsTable,conversation.by); #unique(rawAcc[,KEYCOL])
+  names(rows) = merge_columns_c(conversationsTable,conversation.by); #unique(rawAcc[,KEYCOL])
 
   adjCol = set$enadata$adjacency.matrix[1,] %in%  codes[1] & set$enadata$adjacency.matrix[2,] %in% codes[2]
   adjColName = paste("adjacency.code.", which(adjCol), sep = "")
 
-  unitRows = rENA:::merge_columns_c(rawAcc[,c(units.by),with=F], units.by)
+  unitRows = merge_columns_c(rawAcc[,c(units.by),with=F], units.by)
   codedUnitRows = which(unitRows %in% units & rawAcc[[adjColName]] == 1)
   codedUnitRowConvs = rawAcc[codedUnitRows,KEYCOL];
   codedUnitRowConvsAll = NULL;

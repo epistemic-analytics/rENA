@@ -70,7 +70,7 @@
 # @param conversations.by [TBD]
 # @param code [TBD]
 # @param units.used [TBD]
-#' @export
+# @export
 # @return list containing the accumulation and set
 ##
 ena.generate <- function(
@@ -302,10 +302,12 @@ ena.generate <- function(
 
     dimension.names = paste("SVD",1:ncol(set$points.rotated), sep="")
     if(length(set$function.params$rotation.params) == 2) dimension.names[1] = "MR1"
+    methods = ena.methods(enaset = set, tool = "webENA", tool.version = "0.1.0")
     return(list(
       codes = make.names(code),
       adjacency.matrix = mat, #rbind(codedRow1, codedRow2),
       set = set,
+      methods = readChar(methods, file.info(methods)$size),
       custom.rotation = if(!is.null(rotation.set)) T else F,
       custom.rotation.set = rotation.set,
       dimensions = dimension.names, #colnames(set$points.rotated),
