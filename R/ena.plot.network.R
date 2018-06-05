@@ -188,8 +188,8 @@ ena.plot.network = function(
   for (i in 1:length(network)) {
     v0 <- node.positions[node.rows==mat[1,i], ];
     v1 <- node.positions[node.rows==mat[2,i], ];
-    nodes[node.rows==mat[1,i],]$weight = nodes[node.rows==mat[1,i],]$weight + network.thickness[i];
-    nodes[node.rows==mat[2,i],]$weight = nodes[node.rows==mat[2,i],]$weight + network.thickness[i];
+    nodes[node.rows==mat[1,i],]$weight = nodes[node.rows==mat[1,i],]$weight + abs(network.thickness[i]);
+    nodes[node.rows==mat[2,i],]$weight = nodes[node.rows==mat[2,i],]$weight + abs(network.thickness[i]);
 
     color = NULL
     if(i %in% pos.inds) {
@@ -206,7 +206,7 @@ ena.plot.network = function(
       line = list(
         name = "test",
         color= hsv(color[1],color[2],color[3]),
-        width= network.thickness[i] * enaplot$get("multiplier")
+        width= abs(network.thickness[i]) * enaplot$get("multiplier")
       ),
       x0 = v0[1],
       y0 = v0[2],
