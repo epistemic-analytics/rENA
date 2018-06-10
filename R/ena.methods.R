@@ -8,6 +8,7 @@
 #'
 #' @return String representing the methods used to generate the model
 #'
+#'
 #' @export
 ###
 ena.methods <- function(
