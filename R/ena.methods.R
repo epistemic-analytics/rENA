@@ -10,12 +10,16 @@
 #'
 #' @export
 ###
-ena.methods <- function(
+ena.writeup <- function(
   enaset,
   tool = "rENA", tool.version = as.character(packageVersion(tool)),
-  comparison = NULL, comparison.groups = NULL, sig.dig = 2
+  comparison = NULL, comparison.groups = NULL, sig.dig = 2,
+  output_dir = getwd(), type = c("file","stream"), theory = T, methods = T
 ) {
-  rmarkdown::render(system.file("rmd","methods.rmd", package="rENA"))
+  file = rmarkdown::render(system.file("rmd","methods.rmd", package="rENA"), output_dir = getwd(),
+                    knit_root_dir = getwd(), intermediates_dir = getwd())
+  if(type == "file") file
+  else readChar(file, file.info(file)$size)
 }
 
 #' @title methods_report

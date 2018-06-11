@@ -64,6 +64,7 @@
 #     ...
 #   )
 #
+#
 # @param file [TBD]
 # @param window.size.back [TBD]
 # @param units.by [TBD]
@@ -302,7 +303,11 @@ ena.generate <- function(
 
     dimension.names = paste("SVD",1:ncol(set$points.rotated), sep="")
     if(length(set$function.params$rotation.params) == 2) dimension.names[1] = "MR1"
-    # methods = ena.methods(enaset = set, tool = "webENA", tool.version = "0.1.0")
+    # if(length(args$plotted.nodes) == 2) {
+    #   methods = ena.methods(enaset = set, tool = "webENA", tool.version = "0.1.0", comparison = "parametric", comparison.groups = args$plotted.nodes)
+    # } else {
+    #   methods = ena.methods(enaset = set, tool = "webENA", tool.version = "0.1.0")
+    # }
     return(list(
       codes = make.names(code),
       adjacency.matrix = mat, #rbind(codedRow1, codedRow2),
