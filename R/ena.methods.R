@@ -10,11 +10,11 @@
 #'
 #' @export
 ###
-ena.methods <- function(
+ena.writeup <- function(
   enaset,
   tool = "rENA", tool.version = as.character(packageVersion(tool)),
   comparison = NULL, comparison.groups = NULL, sig.dig = 2,
-  output_dir = getwd(), type = c("file","stream")
+  output_dir = getwd(), type = c("file","stream"), theory = T, methods = T
 ) {
   file = rmarkdown::render(system.file("rmd","methods.rmd", package="rENA"), output_dir = getwd(),
                     knit_root_dir = getwd(), intermediates_dir = getwd())
