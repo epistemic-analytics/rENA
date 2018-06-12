@@ -64,7 +64,6 @@
 #     ...
 #   )
 #
-#
 # @param file [TBD]
 # @param window.size.back [TBD]
 # @param units.by [TBD]
