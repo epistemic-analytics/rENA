@@ -96,10 +96,14 @@ ena.plot.network = function(
   show.all.nodes = T,
   threshold = c(0),
   thin.lines.in.front = T,
-  opacity = c(0.3,1),
-  saturation = c(0.25,1),
-  thickness = c(0.1,1),
+
+  thickness = c(min(abs(network)), max(abs(network))),
+  opacity = thickness,
+  saturation = thickness,
+  scale.range = c(ifelse(min(network)==0, 0, 0.1), 1),
+
   node.size = c(3,10),
+
   labels = rownames(node.positions),
   label.offset = "middle right",
   label.font.size = enaplot$get("font.size"),
@@ -153,26 +157,27 @@ ena.plot.network = function(
       network.scaled[to.threshold] = network.scaled[to.threshold] * multiplier.mask[to.threshold]
     }
   }
-  network.thickness = network.scaled;
-  network.saturation = network.scaled;
-  network.opacity = network.scaled;
+  network.thickness = abs(network.scaled);
+  network.saturation = abs(network.scaled);
+  network.opacity = abs(network.scaled);
 
   network.to.keep = (network != 0) * 1
   if(!is.null(args$scale.weights) && args$scale.weights == T) {
     network.scaled = network * (1 / max(abs(network)));
 
-    network.thickness = scales::rescale(abs(network.scaled), thickness);
+    network.thickness = scales::rescale(x = abs(network.scaled), to = scale.range, from = thickness);
   }
   network.scaled = network.scaled * network.to.keep
   network.thickness = network.thickness * network.to.keep
 
-  network.saturation = scales::rescale(abs(network.scaled), saturation);
-  network.opacity = scales::rescale(abs(network.scaled), opacity);
+  network.saturation = scales::rescale(x = abs(network.scaled), to = scale.range, from = saturation);
+  network.opacity = scales::rescale(x = abs(network.scaled), to = scale.range, from = opacity);
 
   pos.inds = as.numeric(which(network.scaled >=0));
   neg.inds = as.numeric(which(network.scaled < 0));
 
   colors.hsv = rgb2hsv(col2rgb(colors))
+
   if(ncol(colors.hsv) == 1) {
     colors.hsv[[4]] = colors.hsv[1] + 0.5;
     if(colors.hsv[4] > 1) {
@@ -183,7 +188,6 @@ ena.plot.network = function(
     colors.hsv[[6]] = colors.hsv[3];
     dim(colors.hsv) = c(3,2);
   }
-
   mat = adjacency.key;
   for (i in 1:length(network)) {
     v0 <- node.positions[node.rows==mat[1,i], ];
