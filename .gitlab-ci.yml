@@ -5,7 +5,7 @@ stages:
 variables:
   API_DEV: "api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com"
   API_STAGING: "api@ec2-54-201-134-99.us-west-2.compute.amazonaws.com"
-  API_LIVE: "api@ec2-34-208-202-243.us-west-2.compute.amazonaws.com"
+  API_LIVE: "api@ec2-34-212-132-200.us-west-2.compute.amazonaws.com"
 
 before_script:
   - apt-get update -qq
@@ -101,7 +101,7 @@ API-dev:
     - ssh -tt $API_DEV "rm -fR ~/rENA/; tar -xf rENA-source.tar.gz -C ~/; rm rENA-source.tar.gz"
     # Build and Install rENA from directory
     - ssh -tt $API_DEV "sudo rm -fR /usr/local/lib/R/site-library/rENA/"
-    - sudo Rscript -e 'install.packages(c("openxlsx"))'
+    - Rscript -e 'install.packages(c("openxlsx","concatenate"))'
     - ssh -tt $API_DEV "cd ~/rENA/; cat DESCRIPTION; sudo Rscript -e 'devtools::install(local=F, reload=F, quick=T, args=c(\"--preclean\",\"--no-multiarch\"))'"
     # Restart services
     - ssh -tt $API_DEV "sudo /etc/init.d/opencpu restart; sudo /etc/init.d/apache2 restart"
@@ -125,7 +125,7 @@ API-staging:
     - ssh -tt $API_STAGING "rm -fR ~/rENA/; tar -xf rENA-source.tar.gz -C ~/; rm rENA-source.tar.gz"
     - ssh -tt $API_STAGING "sudo rm -fR /usr/local/lib/R/site-library/rENA/"
     # Build and Install rENA from directory
-    - sudo Rscript -e 'install.packages(c("openxlsx"))'
+    - Rscript -e 'install.packages(c("openxlsx","concatenate"))'
     - ssh -tt $API_STAGING "cd ~/rENA/; cat DESCRIPTION; sudo Rscript -e 'devtools::install(local=F, reload=F, quick=T, args=c(\"--preclean\",\"--no-multiarch\"))'"
     # Restart services
     - ssh -tt $API_STAGING "sudo /etc/init.d/opencpu restart; sudo /etc/init.d/apache2 restart"
@@ -141,7 +141,7 @@ API-live:
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    - ssh-keyscan ec2-34-208-202-243.us-west-2.compute.amazonaws.com >> ~/.ssh/known_hosts
+    - ssh-keyscan ec2-34-212-132-200.us-west-2.compute.amazonaws.com >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
     # Use Tar
@@ -150,7 +150,7 @@ API-live:
     - ssh -tt $API_LIVE "rm -fR ~/rENA/; tar -xf rENA-source.tar.gz -C ~/; rm rENA-source.tar.gz"
     - ssh -tt $API_LIVE "sudo rm -fR /usr/local/lib/R/site-library/rENA/"
     # Build and Install rENA from directory
-    - sudo Rscript -e 'install.packages(c("openxlsx"))'
+    - Rscript -e 'install.packages(c("openxlsx","concatenate"))'
     - ssh -tt $API_LIVE "cd ~/rENA/; cat DESCRIPTION; sudo Rscript -e 'devtools::install(local=F, reload=F, quick=T, args=c(\"--preclean\",\"--no-multiarch\"))'"
     # Restart services
     - ssh -tt $API_LIVE "sudo /etc/init.d/opencpu restart; sudo /etc/init.d/apache2 restart"
