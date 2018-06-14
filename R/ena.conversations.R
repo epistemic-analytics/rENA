@@ -9,6 +9,8 @@
 #' @param units [TBD]
 #' @param units.by [TBD]
 #' @param codes [TBD]
+#' @param conversation.by [TBD]
+#' @param window [TBD]
 #' @param conversation.exclude [TBD]
 #'
 #' @examples
@@ -33,7 +35,10 @@
 #'   rotation.params = list(accum$metadata$Condition=="FirstGame",
 #'                          accum$metadata$Condition=="SecondGame")
 #' );
-#' ena.conversations(set, accum$unit.names[2], codes = set$enadata$codes)
+#' ena.conversations(set = RS.data,
+#'   units = c("FirstGame.steven z"), units.by=c("Condition","UserName"),
+#'   codes=codeNames, window = 4
+#' )
 #'
 #' @export
 #' @return list containing row indices representing conversations

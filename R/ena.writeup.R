@@ -5,6 +5,15 @@
 #' provided ENAset
 #'
 #' @param enaset ENAset to view methods of
+#' @param tool c("rENA","webENA")
+#' @param tool.version as.character(packageVersion(tool))
+#' @param comparison character string representing the comparison used, c(NULL, "parametric", "non-parametric"). Default NULL
+#' @param comparison.groups Groups that were used for the comparison
+#' @param sig.dig Integer for the number of digits to round to
+#' @param output_dir Where to save the output file
+#' @param type c("file","stream") File will save to a file in output_dir, Stream returns the contents directly
+#' @param theory Logical indicating whether to include theory in the writeup
+#' @param methods Logical indicating whether to include methods in the writeup
 #'
 #' @return String representing the methods used to generate the model
 #'
@@ -24,6 +33,13 @@ ena.writeup <- function(
 
 #' @title methods_report
 #' @description Methods report for rmarkdwon
+#' @param toc [TBD]
+#' @param toc_depth [TBD]
+#' @param fig_width [TBD]
+#' @param fig_height [TBD]
+#' @param keep_md [TBD]
+#' @param md_extensions [TBD]
+#' @param pandoc_args [TBD]
 #' @export
 methods_report <- function(toc = FALSE,
                           toc_depth = 3,

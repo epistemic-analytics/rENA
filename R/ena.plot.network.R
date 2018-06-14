@@ -15,13 +15,13 @@
 #' @param show.all.nodes A Logical variable, default: true
 #' @param threshold A vector of numeric min/max values, default: c(0,Inf) plotting . Edge weights below the min value will not be displayed; edge weights above the max value will be shown at the max value.
 #' @param thin.lines.in.front A logical, default: true
-#' @param opacity A vector of numeric min/max values for opacity, default: (0.3,1)
-#' @param saturation A vector of numeric min/max values for saturation, default: (0.25, 1)
-#' @param thickness A vector of numeric min/max values for thickness, default: (0, 1)
+#' @param thickness A vector of numeric min/max values for thickness, default:  c(min(abs(network)), max(abs(network)))
+#' @param opacity A vector of numeric min/max values for opacity, default: thickness
+#' @param saturation A vector of numeric min/max values for saturation, default: thickness
+#' @param scale.range A vector of numeric min/max to scale from, default: c(0.1,1) or if min(network) is 0, c(0,1)
 #' @param node.size A lower and upper bound used for scaling the size of the nodes, default c(0, 20)
 #' @param labels A character vector of node labels, default: code names
 #' @param label.offset A character vector of representing the positional offset relative to the respective node. Defaults to "middle right" for all nodes. If a single values is provided, it is used for all positions, else the length of the
-#' provided label.offset must be equal to the length of the labels vector
 #' @param label.font.size An integer which determines the font size for graph labels, default: enaplot$font.size
 #' @param label.font.color A character which determines the color of label font, default: enaplot$font.color
 #' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
