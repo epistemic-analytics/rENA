@@ -87,7 +87,7 @@ ena.conversations = function(set, units, units.by=NULL, codes=NULL, conversation
     })))
   }
   return(list(
-    conversations = rows2,
+    conversations = as.list(rows2),
     unitConvs = unique(rawAcc2[codedUnitRows2,KEYCOL]),
     allRows = codedUnitRowConvsAll,
     unitRows = codedUnitRows2
