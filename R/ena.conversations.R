@@ -55,8 +55,8 @@ ena.conversations = function(set, units, units.by=NULL, codes=NULL, conversation
   conversationsTable2 = rawAcc2[, paste(.I, collapse = ","), by = c(conversation.by)]
 
   # rows = sapply(conversationsTable$V1, function(x) as.numeric(unlist(strsplit(x, split=","))),USE.NAMES = T)
-  rows2 = sapply(conversationsTable2$V1, function(x) as.numeric(unlist(strsplit(x, split=","))),USE.NAMES = T)
-
+  rows2 = lapply(conversationsTable2$V1, function(x) as.numeric(unlist(strsplit(x, split=","))))
+  # browser()
   # names(rows) = merge_columns_c(conversationsTable,conversation.by); #unique(rawAcc[,KEYCOL])
   names(rows2) = merge_columns_c(conversationsTable2,conversation.by); #unique(rawAcc[,KEYCOL])
 
