@@ -20,7 +20,7 @@
 #'               'Client.and.Consultant.Requests','Design.Reasoning',
 #'               'Collaboration');
 #'
-#' accum = rENA::ena.accumulate.data(
+#' accum = ena.accumulate.data(
 #'   units = RS.data[,c("Condition","UserName")],
 #'   conversation = RS.data[,c("Condition","GroupName")],
 #'   metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre",
@@ -37,6 +37,7 @@
 #' );
 #' ena.conversations(set = RS.data,
 #'   units = c("FirstGame.steven z"), units.by=c("Condition","UserName"),
+#'   conversation.by = c("Condition","GroupName"),
 #'   codes=codeNames, window = 4
 #' )
 #'
