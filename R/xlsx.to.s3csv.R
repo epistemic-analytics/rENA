@@ -24,3 +24,30 @@ xlsx.to.s3csv <- function(file, name, bucket, folder) {
     name = name
   ))
 }
+
+##
+#' @export
+##
+csv.to.s3csv <- function(file, name, bucket, folder) {
+  readFile = utils::read.csv(file = file, header = T)
+  tmp <- tempfile(fileext = ".csv")
+  aws.signature::locate_credentials(***REMOVED***, ***REMOVED***)
+  on.exit(unlink(tmp))
+  utils::write.csv(readFile, file = tmp, fileEncoding = "UTF-8")
+  res = rENA:::put.s3.object(file = tmp, object = paste0("/",name), bucket = bucket) #paste0(bucket,"/",folder))
+
+
+  return(list(
+    status = 'success',
+    location = paste0("https://",bucket,".us-west-2.amazonaws.com/",name),
+    raw = list(
+      Bucket = bucket,
+      ETag = attr(res, "etag"),
+      Key = name,
+      Location = paste0("https://",bucket,".us-west-2.amazonaws.com/",name),
+      VersionId = attr(res, "x-amz-version-id"),
+      key = name
+    ),
+    name = name
+  ))
+}
