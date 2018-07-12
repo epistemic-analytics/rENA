@@ -29,7 +29,7 @@ xlsx.to.s3csv <- function(file, name, bucket, folder) {
 #' @export
 ##
 csv.to.s3csv <- function(file, name, bucket, folder) {
-  readFile = utils::read.csv(file = file, header = T)
+  readFile = utils::read.csv(file = file, header = T, check.names = T)
   tmp <- tempfile(fileext = ".csv")
   aws.signature::locate_credentials(***REMOVED***, ***REMOVED***)
   on.exit(unlink(tmp))
