@@ -1,11 +1,10 @@
 rdata.to.set <- function(file, name, bucket, folder) {
-  browser()
   readin = load(file)
   # readin2= source(tmp)
 
   # Pull CSV data out and store in AWS S3
   csv = set$enadata$raw
-
+  colnames(csv) = make.names(colnames(csv), unique=T)
   aws.signature::locate_credentials(***REMOVED***, ***REMOVED***)
   tmp <- tempfile(fileext = ".csv")
   on.exit(unlink(tmp))
