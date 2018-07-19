@@ -42,6 +42,8 @@ csv.to.s3csv <- function(file, name, bucket, folder) {
   return(list(
     status = 'success',
     location = paste0("https://",bucket,".us-west-2.amazonaws.com/",name),
+    hasNA = any(is.na(readFile)),
+    emptyColumnNames = any(sapply(colnames(readFile), grepl , pattern="^X[\\d]+$", perl=T)),
     raw = list(
       Bucket = bucket,
       ETag = attr(res, "etag"),
