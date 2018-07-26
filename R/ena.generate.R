@@ -273,10 +273,13 @@ ena.generate <- function(
 
     mat = set$enadata$adjacency.matrix;
     for (x in 1:nrow(network.scaled)) {
-      network.thickness = network.scaled[x,] #scales::rescale(abs(network.scaled[x,]), thickness);
-      for (i in 1:ncol(mat)) {
-        weights[x,node.rows==mat[1,i]] = weights[x,node.rows==mat[1,i]] + network.thickness[i];
-      }
+      weights[x, ] = sapply(node.rows, function(y) {
+        sum(network.scaled[x,as.logical(colSums(!is.na(apply(mat,2,match, y))))])
+      })
+      # network.thickness = network.scaled[x,] #scales::rescale(abs(network.scaled[x,]), thickness);
+      # for (i in 1:ncol(mat)) {
+      #   weights[x,node.rows==mat[1,i]] = weights[x,node.rows==mat[1,i]] + network.thickness[i];
+      # }
     }
 
     # #weights = t(apply(weights, 1, scales::rescale, c(1,ncol(weights))));
