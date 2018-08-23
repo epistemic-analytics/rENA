@@ -88,6 +88,7 @@ ena.generate <- function(
   unit.groups = NULL;
   conversations.used = NULL;
   weight.by = "binary";
+
   if(!is.null(args$conversations.used)) {
     conversations.used = args$conversations.used
     file$KEYCOL = rENA:::merge_columns_c(file, make.names(conversations.by))
@@ -147,7 +148,8 @@ ena.generate <- function(
     ...
   )
 
-  tryCatch(set$correlations <- ena.correlations(set, dims=c(1:2)));
+  # browser()
+  # tryCatch(set$correlations <- ena.correlations(set, dims=c(1:2)));
 
   group.names = NULL;
   if(length(units.by)>1) {
