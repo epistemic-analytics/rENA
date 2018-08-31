@@ -93,6 +93,10 @@ rows_to_co_occurrences <- function(df, binary = TRUE) {
     .Call('_rENA_rows_to_co_occurrences', PACKAGE = 'rENA', df, binary)
 }
 
+try_one <- function(df, window, binary = TRUE) {
+    .Call('_rENA_try_one', PACKAGE = 'rENA', df, window, binary)
+}
+
 ref_window_df <- function(df, windowSize = 1, windowForward = 0, binary = TRUE, binaryStanzas = FALSE) {
     .Call('_rENA_ref_window_df', PACKAGE = 'rENA', df, windowSize, windowForward, binary, binaryStanzas)
 }

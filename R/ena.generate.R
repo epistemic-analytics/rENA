@@ -274,6 +274,7 @@ ena.generate <- function(
     # }
 
     mat = set$enadata$adjacency.matrix;
+    # browser()
     for (x in 1:nrow(network.scaled)) {
       weights[x, ] = sapply(node.rows, function(y) {
         sum(network.scaled[x,as.logical(colSums(!is.na(apply(mat,2,match, y))))])
