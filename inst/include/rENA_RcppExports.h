@@ -64,17 +64,17 @@ namespace rENA {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline DataFrame try_one(DataFrame df, size_t window, bool binary = true) {
-        typedef SEXP(*Ptr_try_one)(SEXP,SEXP,SEXP);
+    inline DataFrame try_one(DataFrame df, size_t window, bool binary = true, int grainSize = 10) {
+        typedef SEXP(*Ptr_try_one)(SEXP,SEXP,SEXP,SEXP);
         static Ptr_try_one p_try_one = NULL;
         if (p_try_one == NULL) {
-            validateSignature("DataFrame(*try_one)(DataFrame,size_t,bool)");
+            validateSignature("DataFrame(*try_one)(DataFrame,size_t,bool,int)");
             p_try_one = (Ptr_try_one)R_GetCCallable("rENA", "_rENA_try_one");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_try_one(Shield<SEXP>(Rcpp::wrap(df)), Shield<SEXP>(Rcpp::wrap(window)), Shield<SEXP>(Rcpp::wrap(binary)));
+            rcpp_result_gen = p_try_one(Shield<SEXP>(Rcpp::wrap(df)), Shield<SEXP>(Rcpp::wrap(window)), Shield<SEXP>(Rcpp::wrap(binary)), Shield<SEXP>(Rcpp::wrap(grainSize)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();

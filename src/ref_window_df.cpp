@@ -17,6 +17,7 @@ NumericMatrix toNumericMatrix_(DataFrame x) {
   }
   return y;
 }
+
 arma::rowvec vector_to_ut(arma::mat v) {
   int vL = v.size();
   int vS = ( (vL * (vL + 1)) / 2) - vL ;
@@ -175,7 +176,7 @@ struct WindowWorker : public RcppParallel::Worker {
 };
 
 // [[Rcpp::export]]
-DataFrame try_one(DataFrame df, size_t window, bool binary = true) {
+DataFrame try_one(DataFrame df, size_t window, bool binary = true, int grainSize = 10) {
   int dfRows = df.nrows();
   int dfCols = df.size();
   int numCoOccurences = ( (dfCols * (dfCols + 1)) / 2) - dfCols;
@@ -191,10 +192,17 @@ DataFrame try_one(DataFrame df, size_t window, bool binary = true) {
   // arma::mat output(dfRows, numCoOccurences, fill::zeros);
 
   WindowWorker worker(df_AsMatrix, window, binary, output);
-  parallelFor(0, df_AsMatrix.n_rows, worker, binary);
-  // parallelFor(2, 3, worker);
+  parallelFor(0, df_AsMatrix.n_rows, worker, grainSize);
 
-  return(output);
+  if(binary == true) {
+    //This conversion could be really slow, need more testing, or move
+    //the binary check to each
+    arma::mat out_bin = Rcpp::as<arma::mat>(output);
+    out_bin.elem( find(out_bin > 0) ).ones();
+    return(out_bin);
+  } else {
+    return(output);
+  }
 }
 
 // @title ref_window_df

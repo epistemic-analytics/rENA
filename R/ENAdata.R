@@ -40,6 +40,7 @@ ENAdata = R6::R6Class("ENAdata", public = list(
     mask = NULL,
     ...
   ) {
+    args = list(...);
     self$function.call <- sys.call(-1);
     self$function.params <- list();
 
@@ -58,8 +59,15 @@ ENAdata = R6::R6Class("ENAdata", public = list(
       "forward" = window.size.forward
     );
 
-    for(p in c("units","units.used","units.by","conversations.by","codes","model","weight.by","window.size.back","window.size.forward","mask")) {
-      self$function.params[[p]] = get(p)
+    for(p in c("units","units.used","units.by",
+               "conversations.by","codes","model","weight.by","window.size.back",
+               "window.size.forward","mask","in.par","grainSize")
+    ) {
+      if(exists(x = p)) {
+        self$function.params[[p]] = get(p)
+      } else if(!is.null(args[[p]])) {
+        self$function.params[[p]] = args[[p]]
+      }
     }
 
     # self$function.params$units = units;
