@@ -123,21 +123,21 @@ accumulate.data <- function(enadata) {
     ## parallell: https://stackoverflow.com/questions/14759905/data-table-and-parallel-computing
     ### Calculate occurrences of code within the provided window
 
-    if(enadata$function.params$in.par == T) {
-      grainSize = ifelse(!is.null(enadata$function.params$grainSize), enadata$function.params$grainSize, 10);
-      dfDT.co.occurrences = dfDT_codes[,
-                               (codedTriNames) := try_one(
-                                 .SD[,.SD, .SDcols=just_codes],
-                                 window=window$back,
-                                 binary = binary,
-                                 grainSize = grainSize
-                               ),
-                               by=conversations.by,
-                               .SDcols=initial_cols,
-                               with=T
-                             ];
-
-    } else {
+    # if(enadata$function.params$in.par == T) {
+    #   grainSize = ifelse(!is.null(enadata$function.params$grainSize), enadata$function.params$grainSize, 10);
+    #   dfDT.co.occurrences = dfDT_codes[,
+    #                            (codedTriNames) := try_one(
+    #                              .SD[,.SD, .SDcols=just_codes],
+    #                              window=window$back,
+    #                              binary = binary,
+    #                              grainSize = grainSize
+    #                            ),
+    #                            by=conversations.by,
+    #                            .SDcols=initial_cols,
+    #                            with=T
+    #                          ];
+    #
+    # } else {
       dfDT.co.occurrences = dfDT_codes[,
                              (codedTriNames) := ref_window_df(
                                .SD[,.SD, .SDcols=just_codes],
@@ -150,7 +150,7 @@ accumulate.data <- function(enadata) {
                              .SDcols=initial_cols,
                              with=T
                           ];
-    }
+    # }
     # dfDT.co.occurrences = dfDT_codes[,{
     #     ocs = ref_window_df(.SD, windowSize=window$back, windowForward=window$forward, binary = binary, binaryStanzas = binaryStanzas);
     #

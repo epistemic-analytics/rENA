@@ -40,6 +40,8 @@ namespace rENA {
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
         if (rcpp_result_gen.inherits("try-error"))
             throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<std::vector<std::string> >(rcpp_result_gen);
@@ -59,28 +61,11 @@ namespace rENA {
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
         if (rcpp_result_gen.inherits("try-error"))
             throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<arma::mat >(rcpp_result_gen);
-    }
-
-    inline DataFrame try_one(DataFrame df, size_t window, bool binary = true, int grainSize = 10) {
-        typedef SEXP(*Ptr_try_one)(SEXP,SEXP,SEXP,SEXP);
-        static Ptr_try_one p_try_one = NULL;
-        if (p_try_one == NULL) {
-            validateSignature("DataFrame(*try_one)(DataFrame,size_t,bool,int)");
-            p_try_one = (Ptr_try_one)R_GetCCallable("rENA", "_rENA_try_one");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_try_one(Shield<SEXP>(Rcpp::wrap(df)), Shield<SEXP>(Rcpp::wrap(window)), Shield<SEXP>(Rcpp::wrap(binary)), Shield<SEXP>(Rcpp::wrap(grainSize)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<DataFrame >(rcpp_result_gen);
     }
 
     inline DataFrame ref_window_df(DataFrame df, float windowSize = 1, float windowForward = 0, bool binary = true, bool binaryStanzas = false) {
@@ -97,6 +82,8 @@ namespace rENA {
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
         if (rcpp_result_gen.inherits("try-error"))
             throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<DataFrame >(rcpp_result_gen);
@@ -116,6 +103,8 @@ namespace rENA {
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
         if (rcpp_result_gen.inherits("try-error"))
             throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<DataFrame >(rcpp_result_gen);
