@@ -154,7 +154,9 @@ ena.generate <- function(
   )
 
   use.dimensions = 1:2
-  # tryCatch(set$correlations <- ena.correlations(set, dims=c(1:2)));
+  if(!is.null(args$keep.dimensions)) {
+    use.dimensions = which(colnames(set$points.rotated) %in% args$keep.dimensions)
+  }
 
   group.names = NULL;
   if(length(units.by)>1) {
@@ -169,16 +171,16 @@ ena.generate <- function(
   set$points.rotated.scaled = set$points.rotated;
   scaleFactor = 1.0
   if(scale.nodes == T) {
-    np.min.x = min(set$node.positions[,1])
-    np.min.y = min(set$node.positions[,2])
-    rp.min.x = min(set$points.rotated[,1])
-    rp.min.y = min(set$points.rotated[,2])
+    np.min.x = min(set$node.positions[,use.dimensions[1]])
+    np.min.y = min(set$node.positions[,use.dimensions[2]])
+    rp.min.x = min(set$points.rotated[,use.dimensions[1]])
+    rp.min.y = min(set$points.rotated[,use.dimensions[2]])
     maxMin = abs(max(np.min.x / rp.min.x, np.min.y / rp.min.y))
 
-    np.max.x = max(set$node.positions[,1])
-    np.max.y = max(set$node.positions[,2])
-    rp.max.x = max(set$points.rotated[,1])
-    rp.max.y = max(set$points.rotated[,2])
+    np.max.x = max(set$node.positions[,use.dimensions[1]])
+    np.max.y = max(set$node.positions[,use.dimensions[2]])
+    rp.max.x = max(set$points.rotated[,use.dimensions[1]])
+    rp.max.y = max(set$points.rotated[,use.dimensions[2]])
     maxMax = abs(max(np.max.x / rp.max.x, np.max.y / rp.max.y))
     scaleFactor = min(maxMin, maxMax)
     # set$points.rotated = set$points.rotated * scaleFactor;
@@ -197,7 +199,14 @@ ena.generate <- function(
     #   groups[[length(groups)+1]] = ena.unit.group(set, set$enadata$unit.names[set$enadata$unit.names %in% unit.groups[[i]]], name = names(unit.groups)[i], method = group.method, scaleFactor = scaleFactor)
     # }
     groups = lapply(names(unit.groups), function(nm) {
-      ena.unit.group(set, set$enadata$unit.names[set$enadata$unit.names %in% unit.groups[[nm]]], name = nm, method = group.method, scaleFactor = scaleFactor)
+      ena.unit.group(
+        set,
+        set$enadata$unit.names[set$enadata$unit.names %in% unit.groups[[nm]]],
+        name = nm,
+        method = group.method,
+        scaleFactor = scaleFactor
+        # ,keep.dimensions = use.dimensions
+      )
     })
   }
 
@@ -273,6 +282,11 @@ ena.generate <- function(
     # }
     doneTime = as.numeric(Sys.time())
 
+    ### Limit dimensions
+    # set$points.rotated = set$points.rotated[,use.dimensions]
+    # set$points.rotated.scaled = set$points.rotated.scaled[,use.dimensions]
+    # set$node.positions = set$node.positions[,use.dimensions]
+    # set$rotation.set$rotation = set$rotation.set$rotation[,use.dimensions]
     return(list(
       codes = make.names(code),
       adjacency.matrix = mat, #rbind(codedRow1, codedRow2),
