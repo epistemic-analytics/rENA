@@ -96,7 +96,6 @@ ena.generate <- function(
     file$KEYCOL = rENA:::merge_columns_c(file, make.names(conversations.by))
     file = file[file$KEYCOL %in% conversations.used,]
   }
-  cat("Check one: ", as.numeric(Sys.time()) - startedTime , " \n")
 
   if(!is.null(args$weight.by)) {
     weight.by = args$weight.by;
@@ -108,7 +107,6 @@ ena.generate <- function(
       unit.groups[group.json$name[grp]] = group.json$units[grp];
     }
   }
-  cat("Check two: ", as.numeric(Sys.time()) - startedTime , " \n")
 
   accum = ena.accumulate.data.file(
     file = file,
@@ -121,7 +119,6 @@ ena.generate <- function(
     include.meta = include.meta,
     ...
   )
-  cat("Check accum: ", as.numeric(Sys.time()) - startedTime , " \n")
 
   rotate.groups = NULL
   if(!is.null(args$rotate.by)) {
@@ -155,9 +152,8 @@ ena.generate <- function(
     dimensions = dimensions,
     ...
   )
-  cat("Check set: ", as.numeric(Sys.time()) - startedTime , " \n")
 
-  # browser()
+  use.dimensions = 1:2
   # tryCatch(set$correlations <- ena.correlations(set, dims=c(1:2)));
 
   group.names = NULL;
@@ -188,7 +184,6 @@ ena.generate <- function(
     # set$points.rotated = set$points.rotated * scaleFactor;
     set$points.rotated.scaled = set$points.rotated * scaleFactor;
   }
-  cat("Check scaled: ", as.numeric(Sys.time()) - startedTime , " \n")
 
   # groups = NULL
   group.method = "mean"
@@ -201,12 +196,11 @@ ena.generate <- function(
     # for(i in 1:length(names(unit.groups))) {
     #   groups[[length(groups)+1]] = ena.unit.group(set, set$enadata$unit.names[set$enadata$unit.names %in% unit.groups[[i]]], name = names(unit.groups)[i], method = group.method, scaleFactor = scaleFactor)
     # }
-    browser()
     groups = lapply(names(unit.groups), function(nm) {
       ena.unit.group(set, set$enadata$unit.names[set$enadata$unit.names %in% unit.groups[[nm]]], name = nm, method = group.method, scaleFactor = scaleFactor)
     })
   }
-  cat("Check grpd: ", as.numeric(Sys.time()) - startedTime , " \n")
+
   if(
     !is.null(args$output) && args$output == "save" &&
     !is.null(args$output.to)
@@ -237,7 +231,6 @@ ena.generate <- function(
     # }
 
     mat = set$enadata$adjacency.matrix;
-    # browser()
     # for (x in 1:nrow(network.scaled)) {
     #   weights[x, ] = sapply(node.rows, function(y) {
     #     # sum(network.scaled[x,as.logical(colSums(!is.na(apply(mat,2,match, y))))])
@@ -249,7 +242,6 @@ ena.generate <- function(
     #   # }
     # }
     weights = sapply(node.rows, function(x) rowSums(network.scaled[,as.logical(colSums(mat == x) )]))
-    # browser()
 
     # #weights = t(apply(weights, 1, scales::rescale, c(1,ncol(weights))));
     weights = scales::rescale(weights, c(1,ncol(weights)));
@@ -280,7 +272,7 @@ ena.generate <- function(
     #   methods = ena.methods(enaset = set, tool = "webENA", tool.version = "0.1.0")
     # }
     doneTime = as.numeric(Sys.time())
-    cat("Check last: ", as.numeric(Sys.time()) - startedTime, "\n")
+
     return(list(
       codes = make.names(code),
       adjacency.matrix = mat, #rbind(codedRow1, codedRow2),
