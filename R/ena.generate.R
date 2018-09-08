@@ -82,6 +82,7 @@ ena.generate <- function(
   scale.nodes = T,
   units.used = NULL,
   dimensions = 6,
+  include.meta = F,
   ...
 ) {
   startedTime = as.numeric(Sys.time())
@@ -109,7 +110,7 @@ ena.generate <- function(
   }
   cat("Check two: ", as.numeric(Sys.time()) - startedTime , " \n")
 
-  accum = rENA:::ena.accumulate.data.file(
+  accum = ena.accumulate.data.file(
     file = file,
     window.size.back = window.size.back,
     units.by = make.names(units.by),
@@ -117,6 +118,7 @@ ena.generate <- function(
     model = "EndPoint",
     conversations.by = make.names(conversations.by),
     codes = make.names(code),
+    include.meta = include.meta,
     ...
   )
   cat("Check accum: ", as.numeric(Sys.time()) - startedTime , " \n")

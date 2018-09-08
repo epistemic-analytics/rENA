@@ -38,6 +38,7 @@ ENAdata = R6::R6Class("ENAdata", public = list(
     # units.selected = NULL,
     # units.exclude = c(),
     mask = NULL,
+    include.meta = T,
     ...
   ) {
     args = list(...);
@@ -61,7 +62,7 @@ ENAdata = R6::R6Class("ENAdata", public = list(
 
     for(p in c("units","units.used","units.by",
                "conversations.by","codes","model","weight.by","window.size.back",
-               "window.size.forward","mask","in.par","grainSize")
+               "window.size.forward","mask","in.par","grainSize","include.meta")
     ) {
       if(exists(x = p)) {
         self$function.params[[p]] = get(p)
@@ -322,8 +323,12 @@ ENAdata = R6::R6Class("ENAdata", public = list(
         # self$adjacency.vectors[, (cols) := lapply(.SD, private$weight.by), .SDcols = cols, by=c("ENA_ROW_IDX")];
         self$adjacency.vectors = self$adjacency.vectors[,lapply(.SD, private$weight.by),.SDcols=cols,by=c("ENA_ROW_IDX")];
       }
-      # browser()
-      self$metadata = self$add.metadata(merge = F);
+
+      if( self$function.params$include.meta == T) {
+        self$metadata = self$add.metadata(merge = F);
+      } else {
+        self$metadata = data.frame();
+      }
 
       ### remove non-adjacency vector columns from adj.vecs
       ####### idea: if those cols are needed later - use adjacency.vectors.raw
