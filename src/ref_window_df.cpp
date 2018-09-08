@@ -5,8 +5,8 @@
 #include <RcppArmadillo.h>
 using namespace Rcpp;
 using namespace arma;
-#include <RcppParallel.h>
-using namespace RcppParallel;
+// #include <RcppParallel.h>
+// using namespace RcppParallel;
 
 NumericMatrix toNumericMatrix_(DataFrame x) {
   int nRows=x.nrows();

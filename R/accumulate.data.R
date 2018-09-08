@@ -197,7 +197,7 @@ accumulate.data <- function(enadata) {
     ###
     # Sum each unit found in dfDT.co.occurrences
     ###
-    # browser()
+    browser()
     dfDT.summed.units = dfDT.co.occurrences[,lapply(.SD,sum),by=units.by,.SDcols=codedTriNames]
     dfDT.summed.units$ENA_UNIT = merge_columns_c(dfDT.summed.units, units.by, sep=".");
 

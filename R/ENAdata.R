@@ -321,7 +321,9 @@ ENAdata = R6::R6Class("ENAdata", public = list(
         cols = colnames(self$adjacency.vectors)[grep("adjacency.code", colnames(self$adjacency.vectors))];
         # self$adjacency.vectors[, (cols) := lapply(.SD, private$weight.by), .SDcols = cols];
         # self$adjacency.vectors[, (cols) := lapply(.SD, private$weight.by), .SDcols = cols, by=c("ENA_ROW_IDX")];
-        self$adjacency.vectors = self$adjacency.vectors[,lapply(.SD, private$weight.by),.SDcols=cols,by=c("ENA_ROW_IDX")];
+        # browser()
+        # self$adjacency.vectors = self$adjacency.vectors[,lapply(.SD, private$weight.by),.SDcols=cols,by=c("ENA_ROW_IDX")];
+        self$adjacency.vectors = self$adjacency.vectors[,lapply(.SD, private$weight.by),.SDcols=cols,by=1:nrow(self$adjacency.vectors)]
       }
 
       if( self$function.params$include.meta == T) {
