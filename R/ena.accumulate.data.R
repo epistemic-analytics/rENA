@@ -74,10 +74,7 @@ ena.accumulate.data <- function(
   window.size.back = 1,
   window.size.forward = 0,
   mask = NULL, #matrix (default - upper triangle of 1's)
-
-  ### PARAMS NOT IN SPECS
-  # output = c("class","json"),    #keep for now
-  # output.fields = NULL,       #keep for now
+  include.meta = T,
   ...
 ) {
 
@@ -122,21 +119,17 @@ ena.accumulate.data <- function(
 
   data = ENAdata$new(
     file = df,
-
     units = units,    #data frame of unit columns (including values)
     units.used = units.used,
-
     units.by = units.by,    # KEEP- automatically uses all units for accumulation from separate data frames
     conversations.by = conversations.by,    #column names of conversation df, automatically accumulating by all cols for accum from dfs
     codes = codes,
-
     window.size.back = window.size.back,
     window.size.forward = window.size.forward,
-
     weight.by = weight.by,
-
     model = model,
     mask = mask,
+    include.meta = include.meta,
     ...
   );
 

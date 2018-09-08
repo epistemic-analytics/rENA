@@ -82,8 +82,10 @@ ena.generate <- function(
   scale.nodes = T,
   units.used = NULL,
   dimensions = 6,
+  include.meta = F,
   ...
 ) {
+  startedTime = as.numeric(Sys.time())
   args = list(...);
   unit.groups = NULL;
   conversations.used = NULL;
@@ -94,6 +96,7 @@ ena.generate <- function(
     file$KEYCOL = rENA:::merge_columns_c(file, make.names(conversations.by))
     file = file[file$KEYCOL %in% conversations.used,]
   }
+
   if(!is.null(args$weight.by)) {
     weight.by = args$weight.by;
   }
@@ -104,7 +107,8 @@ ena.generate <- function(
       unit.groups[group.json$name[grp]] = group.json$units[grp];
     }
   }
-  accum = rENA:::ena.accumulate.data.file(
+
+  accum = ena.accumulate.data.file(
     file = file,
     window.size.back = window.size.back,
     units.by = make.names(units.by),
@@ -112,6 +116,7 @@ ena.generate <- function(
     model = "EndPoint",
     conversations.by = make.names(conversations.by),
     codes = make.names(code),
+    include.meta = include.meta,
     ...
   )
 
@@ -138,7 +143,7 @@ ena.generate <- function(
       codes = args$rotation.matrix$codes
     );
   }
-  set = rENA::ena.make.set(
+  set = ena.make.set(
     enadata = accum,
     norm.by = use.to.norm,
     rotation.by = if(is.null(rotate.groups)) rENA:::ena.svd else rENA:::ena.rotate.by.mean,
@@ -148,8 +153,10 @@ ena.generate <- function(
     ...
   )
 
-  # browser()
-  # tryCatch(set$correlations <- ena.correlations(set, dims=c(1:2)));
+  use.dimensions = 1:2
+  if(!is.null(args$keep.dimensions)) {
+    use.dimensions = which(colnames(set$points.rotated) %in% args$keep.dimensions)
+  }
 
   group.names = NULL;
   if(length(units.by)>1) {
@@ -164,16 +171,16 @@ ena.generate <- function(
   set$points.rotated.scaled = set$points.rotated;
   scaleFactor = 1.0
   if(scale.nodes == T) {
-    np.min.x = min(set$node.positions[,1])
-    np.min.y = min(set$node.positions[,2])
-    rp.min.x = min(set$points.rotated[,1])
-    rp.min.y = min(set$points.rotated[,2])
+    np.min.x = min(set$node.positions[,use.dimensions[1]])
+    np.min.y = min(set$node.positions[,use.dimensions[2]])
+    rp.min.x = min(set$points.rotated[,use.dimensions[1]])
+    rp.min.y = min(set$points.rotated[,use.dimensions[2]])
     maxMin = abs(max(np.min.x / rp.min.x, np.min.y / rp.min.y))
 
-    np.max.x = max(set$node.positions[,1])
-    np.max.y = max(set$node.positions[,2])
-    rp.max.x = max(set$points.rotated[,1])
-    rp.max.y = max(set$points.rotated[,2])
+    np.max.x = max(set$node.positions[,use.dimensions[1]])
+    np.max.y = max(set$node.positions[,use.dimensions[2]])
+    rp.max.x = max(set$points.rotated[,use.dimensions[1]])
+    rp.max.y = max(set$points.rotated[,use.dimensions[2]])
     maxMax = abs(max(np.max.x / rp.max.x, np.max.y / rp.max.y))
     scaleFactor = min(maxMin, maxMax)
     # set$points.rotated = set$points.rotated * scaleFactor;
@@ -187,63 +194,22 @@ ena.generate <- function(
   }
 
   groups = list()
-  # group.by = NULL;
-  # if(length(units.by)>1) {
-  #   group.by = as.vector(set$enadata$units[[make.names(units.by)[[1]]]]);
-  #   grps = as.character(unique(set$enadata$units[[make.names(units.by[[1]])]]))
-  #   groups = lapply(grps, function(x) { ena.unit.group(set, set$enadata$unit.names[group.by == x], name = x, method = group.method, scaleFactor = scaleFactor) })
-  # #   groups = ena.group(set, group.by, method = "mean") #group.method)
-  # #   groups$points = as.matrix(groups$points[, colnames(groups$points) != "ENA_GROUP_NAME"][as.character(groups$names),])
-  # #   groups$line.weights = as.matrix(groups$line.weights[,colnames(groups$line.weights) != "ENA_GROUP_NAME"][as.character(group.names),]);
-  # } else {
-  #   # group.by = as.vector(rep(T, length(units.by)));
-  #   groups = list(ena.unit.group(set, set$enadata$unit.names, name = units.by[[1]], method = group.method, scaleFactor = scaleFactor));
-  # #   groups = ena.group(set, group.by, method = "mean"); #group.method);
-  # #   groups$names = units.by;
-  # #   groups$points = matrix(as.numeric(groups$points),nrow=1);
-  # #   groups$line.weights = matrix(as.numeric(groups$line.weights),nrow=1);
-  # }
-
-  # rle = rle(as.vector(group.by));
-  # groups$rle = list( lengths = rle$lengths, values = rle$values );
-  # if(group.method == "sum") {
-  #   groups$line.weights = groups$line.weights * rle$lengths;
-  #   groups$line.weights = scales::rescale(groups$line.weights, c(0.1,1));
-  # }
-  # cis = lapply(as.character(unique(set$enadata$units[[make.names(units.by[[1]])]])), function(x) {
-  #   pntRows = as.matrix(rep(T, nrow(set$points.rotated)))
-  #   if(length(units.by)>1) {
-  #     pntRows = as.data.frame(set$enadata$units[[make.names(units.by[[1]])]]) == x;
-  #   }
-  #   pnts = as.matrix(set$points.rotated[pntRows,])
-  #   dim(pnts) = c(length(which(pntRows)),ncol(set$points.rotated))
-  #   ci = matrix(NA, ncol=2,nrow=2)
-  #   oi = rep(NA, 2)
-  #   if(nrow(pnts) > 1) {
-  #     ci = t(matrix(c(
-  #         tryCatch(t.test(pnts[, 1], conf.level = 0.95), error = function(e) list(conf.int = c(NA,NA)))$conf.int,
-  #         tryCatch(t.test(pnts[, 2], conf.level = 0.95), error = function(e) list(conf.int = c(NA,NA)))$conf.int
-  #       ), nrow=2));
-  #     oi = c(IQR(pnts[,1]), IQR(pnts[,2])) * 1.5
-  #   }
-  #   list(ci = ci, oi = oi)
-  # });
-  # for(n in 1:length(group.names)) {
-  #   conf.ints[[n]] = cis[[n]]$ci
-  #   outlier.ints[n, ] = cis[[n]]$oi
-  # }
-  # groups$line.weights = as.matrix(groups$line.weights)
-  # groups$edge.saturation = scales::rescale(groups$line.weights, c(0.25,1));
-  # groups$edge.opacity = scales::rescale(groups$line.weights, c(0.3,1));
-  # colnames(groups$line.weights) = NULL
-  # groups$conf.ints = conf.ints;
-  # groups$outlier.ints = outlier.ints;
-
   if(!is.null(unit.groups) && length(unit.groups) > 0){
-    for(i in 1:length(names(unit.groups))) {
-      groups[[length(groups)+1]] = ena.unit.group(set, set$enadata$unit.names[set$enadata$unit.names %in% unit.groups[[i]]], name = names(unit.groups)[i], method = group.method, scaleFactor = scaleFactor)
-    }
+    # for(i in 1:length(names(unit.groups))) {
+    #   groups[[length(groups)+1]] = ena.unit.group(set, set$enadata$unit.names[set$enadata$unit.names %in% unit.groups[[i]]], name = names(unit.groups)[i], method = group.method, scaleFactor = scaleFactor)
+    # }
+    groups = lapply(names(unit.groups), function(nm) {
+      ena.unit.group(
+        set,
+        set$enadata$unit.names[set$enadata$unit.names %in% unit.groups[[nm]]],
+        name = nm,
+        method = group.method,
+        scaleFactor = scaleFactor
+        # ,keep.dimensions = use.dimensions
+      )
+    })
   }
+
   if(
     !is.null(args$output) && args$output == "save" &&
     !is.null(args$output.to)
@@ -274,15 +240,17 @@ ena.generate <- function(
     # }
 
     mat = set$enadata$adjacency.matrix;
-    for (x in 1:nrow(network.scaled)) {
-      weights[x, ] = sapply(node.rows, function(y) {
-        sum(network.scaled[x,as.logical(colSums(!is.na(apply(mat,2,match, y))))])
-      })
-      # network.thickness = network.scaled[x,] #scales::rescale(abs(network.scaled[x,]), thickness);
-      # for (i in 1:ncol(mat)) {
-      #   weights[x,node.rows==mat[1,i]] = weights[x,node.rows==mat[1,i]] + network.thickness[i];
-      # }
-    }
+    # for (x in 1:nrow(network.scaled)) {
+    #   weights[x, ] = sapply(node.rows, function(y) {
+    #     # sum(network.scaled[x,as.logical(colSums(!is.na(apply(mat,2,match, y))))])
+    #     sum(network.scaled[x, as.logical(colSums(mat == y))])
+    #   })
+    #   # network.thickness = network.scaled[x,] #scales::rescale(abs(network.scaled[x,]), thickness);
+    #   # for (i in 1:ncol(mat)) {
+    #   #   weights[x,node.rows==mat[1,i]] = weights[x,node.rows==mat[1,i]] + network.thickness[i];
+    #   # }
+    # }
+    weights = sapply(node.rows, function(x) rowSums(network.scaled[,as.logical(colSums(mat == x) )]))
 
     # #weights = t(apply(weights, 1, scales::rescale, c(1,ncol(weights))));
     weights = scales::rescale(weights, c(1,ncol(weights)));
@@ -312,6 +280,13 @@ ena.generate <- function(
     # } else {
     #   methods = ena.methods(enaset = set, tool = "webENA", tool.version = "0.1.0")
     # }
+    doneTime = as.numeric(Sys.time())
+
+    ### Limit dimensions
+    # set$points.rotated = set$points.rotated[,use.dimensions]
+    # set$points.rotated.scaled = set$points.rotated.scaled[,use.dimensions]
+    # set$node.positions = set$node.positions[,use.dimensions]
+    # set$rotation.set$rotation = set$rotation.set$rotation[,use.dimensions]
     return(list(
       codes = make.names(code),
       adjacency.matrix = mat, #rbind(codedRow1, codedRow2),
@@ -327,7 +302,10 @@ ena.generate <- function(
       node.sizes = weights,
       esitmated.over = args$units.exclude,
       edge.saturation = scales::rescale(set$line.weights, c(0.25,1)),
-      edge.opacity = scales::rescale(set$line.weights, c(0.3,1))
+      edge.opacity = scales::rescale(set$line.weights, c(0.3,1)),
+      startedTime = startedTime,
+      doneTime = doneTime,
+      durationTime = doneTime - startedTime
     ));
   }
 }
