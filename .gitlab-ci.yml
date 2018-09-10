@@ -95,8 +95,8 @@ API-dev:
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    #- ssh-keyscan ec2-34-214-61-174.us-west-2.compute.amazonaws.com >> ~/.ssh/known_hosts
-    - ssh-keyscan $DEV_HOST >> ~/.ssh/known_hosts
+    - ssh-keyscan ec2-34-222-37-77.us-west-2.compute.amazonaws.com >> ~/.ssh/known_hosts
+    #- ssh-keyscan $DEV_HOST >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
     # Use Tar
