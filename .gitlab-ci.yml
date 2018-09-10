@@ -39,6 +39,7 @@ r-base:
   script:
     - Rscript -e 'install.packages(c("devtools", "roxygen2"))' #, covr))'
     - Rscript -e 'devtools::install_dev_deps()'
+    - Rscript -e 'devtools::clean_dll()'
     - Rscript -e 'devtools::check()'
   tags:
     - docker
@@ -102,7 +103,7 @@ API-dev:
     # Build and Install rENA from directory
     - ssh -tt $API_DEV "sudo rm -fR /usr/local/lib/R/site-library/rENA/"
     - Rscript -e 'install.packages(c("openxlsx","concatenate"))'
-    - cd ~/rENA; rm src/*.o;  rm src/*.so;
+    - cd ~/rENA; rm -f src/*.o;  rm -f src/*.so;
     - ssh -tt $API_DEV "cd ~/rENA/; cat DESCRIPTION; sudo Rscript -e 'devtools::clean_dll(); devtools::install(local=F, reload=F, quick=T, args=c(\"--preclean\",\"--no-multiarch\"))'"
     # Restart services
     - ssh -tt $API_DEV "sudo /etc/init.d/opencpu restart; sudo /etc/init.d/apache2 restart"
