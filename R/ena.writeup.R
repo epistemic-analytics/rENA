@@ -5,11 +5,19 @@
 #' provided ENAset
 #'
 #' @param enaset ENAset to view methods of
-#'
-#' @return String representing the methods used to generate the model
+#' @param tool [TBD]
+#' @param tool.version [TBD]
+#' @param comparison  [TBD]
+#' @param comparison.groups [TBD]
+#' @param sig.dig  [TBD]
+#' @param output_dir  [TBD]
+#' @param type  [TBD]
+#' @param theory  [TBD]
+#' @param methods  [TBD]
 #'
 #' @export
-###
+#'
+#' @return String representing the methods used to generate the model
 ena.writeup <- function(
   enaset,
   tool = "rENA", tool.version = as.character(packageVersion(tool)),
@@ -24,6 +32,15 @@ ena.writeup <- function(
 
 #' @title methods_report
 #' @description Methods report for rmarkdwon
+#' @param toc  [TBD]
+#' @param toc_depth  [TBD]
+#' @param fig_width  [TBD]
+#' @param fig_height  [TBD]
+#' @param keep_md  [TBD]
+#' @param md_extensions  [TBD]
+#' @param pandoc_args  [TBD]
+#'
+#' @return
 #' @export
 methods_report <- function(toc = FALSE,
                           toc_depth = 3,
