@@ -3,7 +3,8 @@ stages:
  - buildAPI
 
 variables:
-  API_DEV: "api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com"
+  #API_DEV: "api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com"
+  API_DEV: "api@ec2-34-222-37-77.us-west-2.compute.amazonaws.com"
   API_STAGING: "api@ec2-54-201-134-99.us-west-2.compute.amazonaws.com"
   API_LIVE: "api@ec2-34-212-132-200.us-west-2.compute.amazonaws.com"
 
