@@ -32,6 +32,8 @@ ena.accumulate.data(units = NULL, conversation = NULL, codes = NULL,
 
 \item{mask}{(optional) A binary matrix of size ncol(codes) x ncol(codes). 0s in the mask matrix row i column j indicates that co-occurrence will not be modeled between code i and code j}
 
+\item{include.meta}{Locigal indicating if unit metadata should be attached to the resulting ENAdata object, default is TRUE}
+
 \item{...}{additional parameters addressed in inner function}
 }
 \value{
