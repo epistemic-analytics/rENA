@@ -137,7 +137,7 @@ ena.generate <- function(
       codes = args$rotation.matrix$codes
     );
   }
-  set = rENA::ena.make.set(
+  set = ena.make.set(
     enadata = accum,
     norm.by = use.to.norm,
     rotation.by = if(is.null(rotate.groups)) rENA:::ena.svd else rENA:::ena.rotate.by.mean,
