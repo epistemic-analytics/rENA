@@ -7,8 +7,9 @@
 ena.accumulate.data(units = NULL, conversation = NULL, codes = NULL,
   metadata = NULL, model = c("EndPoint", "AccumulatedTrajectory",
   "SeparateTrajectory"), weight.by = "binary",
-  window = c("MovingStanzaWindow", "Conversation"), window.size.back = 1,
-  window.size.forward = 0, mask = NULL, ...)
+  window = c("MovingStanzaWindow", "Conversation"),
+  window.size.back = 1, window.size.forward = 0, mask = NULL,
+  include.meta = T, ...)
 }
 \arguments{
 \item{units}{A data frame where the columns are the properties by which units will be identified}
@@ -30,6 +31,8 @@ ena.accumulate.data(units = NULL, conversation = NULL, codes = NULL,
 \item{window.size.forward}{(optional) A positive integer, Inf, or character (INF or Infinite), default: 0. Determines, for each line in the data frame, the number of subsequent lines in a conversation to include in the stanza window, which defines how co-occurrences are modeled}
 
 \item{mask}{(optional) A binary matrix of size ncol(codes) x ncol(codes). 0s in the mask matrix row i column j indicates that co-occurrence will not be modeled between code i and code j}
+
+\item{include.meta}{Locigal indicating if unit metadata should be attached to the resulting ENAdata object, default is TRUE}
 
 \item{...}{additional parameters addressed in inner function}
 }

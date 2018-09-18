@@ -3,7 +3,9 @@ stages:
  - buildAPI
 
 variables:
-  API_DEV: "api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com"
+  #API_DEV: "api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com"
+  DEV_HOST: "ec2-34-222-37-77.us-west-2.computer.amazonws.com"
+  API_DEV: "api@ec2-34-222-37-77.us-west-2.compute.amazonaws.com"
   API_STAGING: "api@ec2-54-201-134-99.us-west-2.compute.amazonaws.com"
   API_LIVE: "api@ec2-34-212-132-200.us-west-2.compute.amazonaws.com"
 
@@ -39,6 +41,7 @@ r-base:
   script:
     - Rscript -e 'install.packages(c("devtools", "roxygen2"))' #, covr))'
     - Rscript -e 'devtools::install_dev_deps()'
+    - Rscript -e 'devtools::clean_dll()'
     - Rscript -e 'devtools::check()'
   tags:
     - docker
@@ -92,7 +95,8 @@ API-dev:
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    - ssh-keyscan ec2-34-214-61-174.us-west-2.compute.amazonaws.com >> ~/.ssh/known_hosts
+    - ssh-keyscan ec2-34-222-37-77.us-west-2.compute.amazonaws.com >> ~/.ssh/known_hosts
+    #- ssh-keyscan $DEV_HOST >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
     # Use Tar
@@ -102,7 +106,8 @@ API-dev:
     # Build and Install rENA from directory
     - ssh -tt $API_DEV "sudo rm -fR /usr/local/lib/R/site-library/rENA/"
     - Rscript -e 'install.packages(c("openxlsx","concatenate"))'
-    - ssh -tt $API_DEV "cd ~/rENA/; cat DESCRIPTION; sudo Rscript -e 'devtools::install(local=F, reload=F, quick=T, args=c(\"--preclean\",\"--no-multiarch\"))'"
+    - ssh -tt $API_DEV "cd ~/rENA; rm -f src/*.o;  rm -f src/*.so;"
+    - ssh -tt $API_DEV "cd ~/rENA/; cat DESCRIPTION; sudo Rscript -e 'devtools::clean_dll(); devtools::install(local=F, reload=F, quick=T, args=c(\"--preclean\",\"--no-multiarch\"))'"
     # Restart services
     - ssh -tt $API_DEV "sudo /etc/init.d/opencpu restart; sudo /etc/init.d/apache2 restart"
 API-staging:
