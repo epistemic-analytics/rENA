@@ -142,6 +142,7 @@ ena.generate <- function(
       node.positions = args$rotation.matrix$rotation$node.positions,
       codes = args$rotation.matrix$codes
     );
+    colnames(rotation.set$rotation) = args$rotation.matrix$dimensions;
   }
   set = ena.make.set(
     enadata = accum,
