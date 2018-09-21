@@ -155,9 +155,9 @@ ena.generate <- function(
   )
 
   use.dimensions = 1:2
-  if(!is.null(args$keep.dimensions)) {
-    use.dimensions = which(colnames(set$points.rotated) %in% args$keep.dimensions)
-  }
+  # if(!is.null(args$keep.dimensions)) {
+  #   use.dimensions = which(colnames(set$points.rotated) %in% args$keep.dimensions)
+  # }
 
   group.names = NULL;
   if(length(units.by)>1) {
