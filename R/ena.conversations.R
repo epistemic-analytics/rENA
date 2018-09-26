@@ -12,8 +12,6 @@
 #' @param conversation.by [TBD]
 #' @param window [TBD]
 #' @param conversation.exclude [TBD]
-#' @param conversation.by [TBD]
-#' @param window [TBD]
 #'
 #' @examples
 #' data(RS.data)

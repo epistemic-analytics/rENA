@@ -44,20 +44,6 @@
 #'
 #' @seealso \code{\link{ENAdata}}, \code{\link{ena.make.set}}
 #'
-#' @examples
-#' data(RS.data)
-#'
-#' codeNames = c('Data','Technical.Constraints','Performance.Parameters',
-#'   'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
-#'
-#' accum = ena.accumulate.data(
-#'   units = RS.data[,c("UserName","Condition")],
-#'   conversation = RS.data[,c("Condition","GroupName")],
-#'   metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
-#'   codes = RS.data[,codeNames],
-#'   window.size.back = 4
-#' )
-#'
 #' @return \code{\link{ENAdata}} object with data [adjacency (co-occurrence) vectors] accumulated from the provided data frames.
 #'
 ##

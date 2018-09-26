@@ -65,21 +65,6 @@ each conversation is modeled as a separate network. In an AccumulatedTrajectory 
 adjacency (co-occurrence) vector for the current conversation includes the co-occurrences
 from all previous conversations in the data.
 }
-\examples{
-data(RS.data)
-
-codeNames = c('Data','Technical.Constraints','Performance.Parameters',
-  'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
-
-accum = ena.accumulate.data(
-  units = RS.data[,c("UserName","Condition")],
-  conversation = RS.data[,c("Condition","GroupName")],
-  metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
-  codes = RS.data[,codeNames],
-  window.size.back = 4
-)
-
-}
 \seealso{
 \code{\link{ENAdata}}, \code{\link{ena.make.set}}
 }

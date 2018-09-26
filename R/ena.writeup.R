@@ -40,7 +40,6 @@ ena.writeup <- function(
 #' @param md_extensions [TBD]
 #' @param pandoc_args [TBD]
 #'
-#' @return
 #' @export
 methods_report <- function(toc = FALSE,
                           toc_depth = 3,
