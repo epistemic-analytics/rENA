@@ -130,14 +130,14 @@ API-staging:
     - ssh-keyscan $STAGING_HOST >> ~/.ssh/known_hosts
     # Use Tar
     - cd ..; tar -czf rENA-source.tar.gz rENA;
-    - scp rENA-source.tar.gz $API_STAGING:~/rENA-source.tar.gz
-    - ssh -tt $API_STAGING "rm -fR ~/rENA/; tar -xf rENA-source.tar.gz -C ~/; rm rENA-source.tar.gz"
-    - ssh -tt $API_STAGING "sudo rm -fR /usr/local/lib/R/site-library/rENA/"
+    - scp rENA-source.tar.gz api@$STAGING_HOST:~/rENA-source.tar.gz
+    - ssh -tt api@$STAGING_HOST "rm -fR ~/rENA/; tar -xf rENA-source.tar.gz -C ~/; rm rENA-source.tar.gz"
+    - ssh -tt api@$STAGING_HOST "sudo rm -fR /usr/local/lib/R/site-library/rENA/"
     # Build and Install rENA from directory
     - Rscript -e 'install.packages(c("openxlsx","concatenate"))'
-    - ssh -tt $API_STAGING "cd ~/rENA/; cat DESCRIPTION; sudo Rscript -e 'devtools::install(local=F, reload=F, quick=T, args=c(\"--preclean\",\"--no-multiarch\"))'"
+    - ssh -tt api@$STAGING_HOST "cd ~/rENA/; cat DESCRIPTION; sudo Rscript -e 'devtools::install(local=F, reload=F, quick=T, args=c(\"--preclean\",\"--no-multiarch\"))'"
     # Restart services
-    - ssh -tt $API_STAGING "sudo /etc/init.d/opencpu restart; sudo /etc/init.d/apache2 restart"
+    - ssh -tt api@$STAGING_HOST "sudo /etc/init.d/opencpu restart; sudo /etc/init.d/apache2 restart"
 API-live:
   stage: buildAPI
   image: r-base:3.3.1
