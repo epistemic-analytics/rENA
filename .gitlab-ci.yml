@@ -124,9 +124,9 @@ API-staging:
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    - ssh-keyscan $STAGING_HOST >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
+    - ssh-keyscan $STAGING_HOST >> ~/.ssh/known_hosts
     # Use Tar
     - cd ..; tar -czf rENA-source.tar.gz rENA;
     - scp rENA-source.tar.gz $API_STAGING:~/rENA-source.tar.gz
