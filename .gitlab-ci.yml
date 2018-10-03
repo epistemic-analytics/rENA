@@ -4,7 +4,7 @@ stages:
 
 variables:
   #API_DEV: "api@ec2-34-214-61-174.us-west-2.compute.amazonaws.com"
-  DEV_HOST: "ec2-34-222-37-77.us-west-2.computer.amazonws.com"
+  DEV_HOST: "34.222.37.77"
   API_DEV: "api@$DEV_HOST"
 
   STAGING_HOST: "ec2-54-201-134-99.us-west-2.compute.amazonaws.com"
@@ -100,7 +100,6 @@ API-dev:
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
     - ssh-keyscan $DEV_HOST >> ~/.ssh/known_hosts
-    #- ssh-keyscan $DEV_HOST >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
     # Use Tar
