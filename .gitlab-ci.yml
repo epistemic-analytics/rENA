@@ -7,10 +7,10 @@ variables:
   DEV_HOST: "34.222.37.77"
   API_DEV: "api@$DEV_HOST"
 
-  STAGING_HOST: "ec2-54-201-134-99.us-west-2.compute.amazonaws.com"
+  STAGING_HOST: "54.201.134.99"
   API_STAGING: "api@STAGING_HOST"
 
-  LIVE_HOST: "ec2-54-218-105-250.us-west-2.compute.amazonaws.com"
+  LIVE_HOST: "54.218.105.250"
   API_LIVE: "api@$LIVE_HOST"
 
 before_script:
