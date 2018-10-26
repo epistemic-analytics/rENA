@@ -56,7 +56,7 @@ References
 
 `r if(theory == T) paste0("Linn, M. C., Eylon, B.-S., & Davis, E. A. (2004). The knowledge integration perspective on learning. In M. C. Linn, E. A. Davis, & P. Bell (Eds.), Internet environments for science education (pp. 29–46). Mahwah, NJ: Lawrence Erlbaum Associates.")`
 
-`r if(methods == T && tool=="webENA") paste0("Marquart, C. L., Hinojosa, C., Swiecki, Z., & Shaffer, D. W. (2018). Epistemic Network Analysis (Version ", tool.version, ") [Software]. Available from http://app.epistemicnetwork.org")``r if(methods == T && tool=="rENA") paste0("Marquart, C. L., Swiecki, Z., Collier, W., Eagan, B., Woodward, R., & Shaffer, D. W. (2018). rENA: Epistemic Network Analysis (Version ", tool.version, "). Retrieved from https://cran.r-project.org/web/packages/rENA/index.html")`
+`r if(methods == T && tool=="webENA") paste0("Marquart, C. L., Hinojosa, C., Swiecki, Z., Eagan, B., & Shaffer, D. W. (2018). Epistemic Network Analysis (Version ", tool.version, ") [Software]. Available from http://app.epistemicnetwork.org")``r if(methods == T && tool=="rENA") paste0("Marquart, C. L., Swiecki, Z., Collier, W., Eagan, B., Woodward, R., & Shaffer, D. W. (2018). rENA: Epistemic Network Analysis (Version ", tool.version, "). Retrieved from https://cran.r-project.org/web/packages/rENA/index.html")`
 
 `r if(theory == T) paste0("Ruis, A. R. (In press). “Trois Empreintes d’un Même Cachet”: Toward a Historical Definition of Nutrition. Viral Networks.")`
 
