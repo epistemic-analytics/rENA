@@ -21,7 +21,7 @@ ena.correlations <- function(enaset, dims = c(1:2)) {
   optDiff = matrix(enaset$centroids[point1,dims] - enaset$centroids[point2,dims], ncol=length(dims), nrow=length(point1))
 
   correlations = as.data.frame(mapply(function(method) {
-    lapply(dims, function(dim) {
+    lapply(1:2, function(dim) {
       cor(as.numeric(svdDiff[,dim]), as.numeric(optDiff[,dim]), method=method)
     });
   }, c("pearson","spearman")))
