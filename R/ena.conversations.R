@@ -43,12 +43,13 @@
 ena.conversations = function(set, units, units.by=NULL, codes=NULL, conversation.by = NULL, window = 4, conversation.exclude = c()) {
   # rawData = data.table::copy(set$enadata$raw);
   if(is.null(units.by)) {
-    units.by = set$enadata$function.params$units.by;
+    # units.by = set$enadata$function.params$units.by;
+    units.by = set$function.params$units.by;
   }
   # conversation.by = set$enadata$function.params$conversations.by;
   # window = set$enadata$function.params$window.size.back;
   # rawAcc = data.table::copy(set$enadata$accumulated.adjacency.vectors);
-    rawAcc2 = data.table::data.table(set); #set$enadata$raw);
+    rawAcc2 = data.table::data.table(set) #$enadata$raw);
 
   # rawAcc$KEYCOL = merge_columns_c(rawAcc, conversation.by)
   rawAcc2$KEYCOL = merge_columns_c(rawAcc2, conversation.by)
