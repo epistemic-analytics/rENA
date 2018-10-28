@@ -48,7 +48,7 @@ ena.conversations = function(set, units, units.by=NULL, codes=NULL, conversation
   # conversation.by = set$enadata$function.params$conversations.by;
   # window = set$enadata$function.params$window.size.back;
   # rawAcc = data.table::copy(set$enadata$accumulated.adjacency.vectors);
-    rawAcc2 = data.table::data.table(set); #set$enadata$raw);
+    rawAcc2 = data.table::data.table(set$enadata$raw);
 
   # rawAcc$KEYCOL = merge_columns_c(rawAcc, conversation.by)
   rawAcc2$KEYCOL = merge_columns_c(rawAcc2, conversation.by)
