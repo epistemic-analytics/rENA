@@ -38,7 +38,7 @@ output: rENA:::methods_report
 
 `r if(methods == T && !is.null(comparison)) paste0("ENA can be used to compare units of analysis in terms of their plotted point positions, individual networks, mean plotted point positions, and mean networks, which average the connection weights across individual networks. Networks may also be compared using network difference graphs. These graphs are calculated by subtracting the weight of each connection in one network from the corresponding connections in another.")`
 
-`r if(methods == T && !is.null(comparison)) paste0("To test for differences we applied a ", if(comparison == "parametric") "two-sample t-test assuming unequal variance" else "Mann-Whitney test", " to the location of points in the projected ENA space for units in ", comparison.groups[1], " and ", comparison.groups[2], ".")`
+`r if(methods == T && !is.null(comparison) && !is.null(comparison.groups)) paste0("To test for differences we applied a ", if(comparison == "parametric") "two-sample t-test assuming unequal variance" else "Mann-Whitney test", " to the location of points in the projected ENA space for units in ", comparison.groups[1], " and ", comparison.groups[2], ".")`
 
 References
 
