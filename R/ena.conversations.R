@@ -78,6 +78,7 @@ ena.conversations = function(set, units, units.by=NULL, codes=NULL, conversation
 
   # codedUnitRowConvsAll = NULL;
   codedUnitRowConvsAll2 = NULL;
+  unitRowsNotCooccurred = c()
   if(length(codedUnitRows2) > 0) {
     codedUnitRowConvsAll = unique(unlist(sapply(X = 1:length(codedUnitRows2), simplify = F, FUN = function(x) {
       thisConvRows = rows2[[codedUnitRowConvs2[x]]]
@@ -86,6 +87,9 @@ ena.conversations = function(set, units, units.by=NULL, codes=NULL, conversation
       coOccursFound = all(rawAcc2[thisConvRows[thisRowAndWindow[thisRowAndWindow > 0]], lapply(.SD, sum), .SDcols=codes] > 0)
       if(coOccursFound) {
         thisConvRows[thisRowAndWindow[thisRowAndWindow > 0]]
+      } else {
+        unitRowsNotCooccurred <<- c(unitRowsNotCooccurred, thisConvRows[thisRowInConv])
+        coOccursFound
       }
     })))
   }
@@ -93,6 +97,7 @@ ena.conversations = function(set, units, units.by=NULL, codes=NULL, conversation
     conversations = as.list(rows2),
     unitConvs = unique(rawAcc2[codedUnitRows2,KEYCOL]),
     allRows = codedUnitRowConvsAll,
-    unitRows = codedUnitRows2
+    unitRows = codedUnitRows2,
+    toRemove = unitRowsNotCooccurred
   ));
 }
