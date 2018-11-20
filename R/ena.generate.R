@@ -101,10 +101,15 @@ ena.generate <- function(
     weight.by = args$weight.by;
   }
   if(!is.null(args$unit.groups)){
-    unit.groups = list();
-    group.json = jsonlite::fromJSON(args$unit.groups)
-    for(grp in 1:length(group.json$name)) {
-      unit.groups[group.json$name[grp]] = group.json$units[grp];
+    if(is.data.frame(args$unit.groups)) {
+      unit.groups = args$unit.groups$units;
+      names(unit.groups) = args$unit.groups$name;
+    } else {
+      unit.groups = list();
+      group.json = jsonlite::fromJSON(args$unit.groups)
+      for(grp in 1:length(group.json$name)) {
+        unit.groups[group.json$name[grp]] = group.json$units[grp];
+      }
     }
   }
 
