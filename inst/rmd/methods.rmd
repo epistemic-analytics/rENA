@@ -24,7 +24,7 @@ output: rENA:::methods_report
 
 `r if(methods == T) paste0("ENA Methods")`
 
-`r if(methods == T) paste0("In this study, we applied Epistemic Network Analysis (Shaffer, 2017; Shaffer, Collier, & Ruis, 2016; Shaffer & Ruis, 2017) to our data using the ENA", if(tool=="rENA") "package for the statistical programming language R (version ", tool.version, ") (Marquart, Swiecki, et al., 2018)", if(tool=="webENA") " Web Tool (version ", tool.version, ") (Marquart, Hinojosa, Swiecki, & Shaffer, 2018)")`
+`r if(methods == T) paste0("In this study, we applied Epistemic Network Analysis (Shaffer, 2017; Shaffer, Collier, & Ruis, 2016; Shaffer & Ruis, 2017) to our data using the ENA", if(tool=="rENA") "package for the statistical programming language R (version ", tool.version, ") (Marquart, Swiecki, et al., 2018)", if(tool=="webENA") " Web Tool (version ", tool.version, ") (Marquart, Hinojosa, Swiecki, Eagan, & Shaffer, 2018)")`
 
 `r if(methods == T) paste0("We defined the units of analysis as all lines of data associated with a single value of ", ub[1], if(length(ub) > 1)" subsetted by ", concatenate::cc_and(ub[2:length(ub)], oxford=T), ". For example, one unit consisted of all the lines associated with ", concatenate::cc_and(apply(matrix(c(ub, as.matrix(u[1,])[1,]), nrow=2), 1, paste, collapse=" "), oxford=T),".")`
 
