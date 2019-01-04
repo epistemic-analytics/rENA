@@ -1,0 +1,1 @@
+FLIBS= 'gfortran -print-search-dirs | grep ^libraries: | sed 's|libraries: =||' | sed 's|:| -L|g' | sed 's|^|-L|''

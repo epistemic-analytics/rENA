@@ -12,6 +12,7 @@
 #' @param node.positions matrix containing the positiions of the nodes. Defaults to enaplot$enaset$node.positions
 #' @param adjacency.key matrix containing the adjacency key for looking up the names and positions
 #' @param colors A String or vector of colors for positive and negative line weights. E.g. red or c(pos= red, neg = blue), default: c(pos= red, neg = blue)
+#' @param edge_type A String representing the type of line to draw, either "line", "dash", or "dot"
 #' @param show.all.nodes A Logical variable, default: true
 #' @param threshold A vector of numeric min/max values, default: c(0,Inf) plotting . Edge weights below the min value will not be displayed; edge weights above the max value will be shown at the max value.
 #' @param thin.lines.in.front A logical, default: true
