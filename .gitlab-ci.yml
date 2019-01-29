@@ -27,8 +27,9 @@ r-oldrel:
     - Rscript -e 'install.packages(c("devtools", "roxygen2"))'
     - Rscript -e 'devtools::clean_dll()'
     - Rscript -e 'devtools::install_dev_deps()'
-    - Rscript -e 'devtools::check()'
+    - Rscript -e 'Rcpp::compileAttributes()'
     - Rscript -e 'devtools::build(".")'
+    #- Rscript -e 'devtools::check()'
     - ls -al
   tags:
     - docker
