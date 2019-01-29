@@ -29,9 +29,8 @@ r-oldrel:
     - Rscript -e 'devtools::install_dev_deps()'
     - Rscript -e 'Rcpp::compileAttributes()'
     - Rscript -e 'devtools::build(".")'
-    #- Rscript -e 'devtools::check()'
-    - ls -al ./
     - ls -al ../
+    - cd ..; R CMD check rENA_0.1.6.tar.gz
   tags:
     - docker
   allow_failure: true
