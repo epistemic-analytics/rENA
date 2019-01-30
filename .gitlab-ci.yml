@@ -28,6 +28,7 @@ r-oldrel:
     - ls -al ./
     - ls -al ./src/
     - ls -al ./R/
+    - rm -f ./R/RcppExports.R
     #- rm -R ../rENA.Rcheck/
     #- Rscript -e 'install.packages(c("devtools", "roxygen2"))'
     #- Rscript -e 'remove.packages("rENA")'
@@ -36,6 +37,7 @@ r-oldrel:
     - Rscript -e 'Rcpp::compileAttributes()'
     #- Rscript -e 'devtools::build(".")'
     - cd ..; R CMD build rENA
+    - ls -al ./R/
     - R CMD check --as-cran rENA_0.1.6.tar.gz || true
     - ls -al ./rENA.Rcheck/rENA/libs/
     - ls -al ./
