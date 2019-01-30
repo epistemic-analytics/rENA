@@ -11,9 +11,6 @@ if [[ `uname` -eq Darwin ]] ; then
 
 #if linux
 elif [[ `uname` -eq Linux ]] ;then
-  echo "`$(R_HOME)/bin/Rscript -e "Rcpp::compileAttributes()"`\
-PKG_CXXFLAGS = -I../inst/include $(SHLIB_OPENMP_CXXFLAGS) \
-PKG_LIBS= $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) \
-FLIBS= 'gfortran -print-search-dirs | grep ^libraries: | sed 's|libraries: =||' | sed 's|:| -L|g' | sed 's|^|-L|''" > ./src/Makevars
+  echo "FLIBS= 'gfortran -print-search-dirs | grep ^libraries: | sed 's|libraries: =||' | sed 's|:| -L|g' | sed 's|^|-L|''" > ./src/Makevars
 
 fi
