@@ -37,7 +37,7 @@ r-oldrel:
     - Rscript -e 'Rcpp::compileAttributes()'
     #- Rscript -e 'devtools::build(".")'
     - cd ..; R CMD build rENA
-    - ls -al ./R/
+    - ls -al ./rENA/R/
     - R CMD check --as-cran rENA_0.1.6.tar.gz || true
     - ls -al ./rENA.Rcheck/rENA/libs/
     - ls -al ./
