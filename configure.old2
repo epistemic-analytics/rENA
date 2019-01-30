@@ -1,0 +1,18 @@
+#!/bin/bash
+
+#make the Makevars file
+if [ ! -e "./src/Makevars" ]; then
+  touch ./src/Makevars
+fi
+
+#if mac
+if [[ `uname` -eq Darwin ]] ; then
+  echo "FLIBS= 'gfortran -print-search-dirs | grep ^libraries: | sed 's|libraries: =||' | sed 's|:| -L|g' | sed 's|^|-L|''" > ./src/Makevars
+
+#if linux
+elif [[ `uname` -eq Linux ]] ;then
+  echo "PKG_CXXFLAGS = -I../inst/include $(SHLIB_OPENMP_CXXFLAGS) \
+PKG_LIBS= $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) \
+FLIBS= 'gfortran -print-search-dirs | grep ^libraries: | sed 's|libraries: =||' | sed 's|:| -L|g' | sed 's|^|-L|''" > ./src/Makevars
+
+fi
