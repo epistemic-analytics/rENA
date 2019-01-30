@@ -33,7 +33,7 @@ r-oldrel:
     #- rm -R ../rENA.Rcheck/
     #- Rscript -e 'install.packages(c("devtools", "roxygen2"))'
     #- Rscript -e 'remove.packages("rENA")'
-    #- Rscript -e 'devtools::clean_dll()'
+    - Rscript -e 'devtools::clean_dll()'
     #- Rscript -e 'devtools::install_dev_deps()'
     - Rscript -e 'Rcpp::compileAttributes()'
     - Rscript -e 'devtools::check(".")'
