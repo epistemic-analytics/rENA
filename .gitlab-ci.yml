@@ -29,7 +29,8 @@ r-oldrel:
     - Rscript -e 'devtools::clean_dll()'
     #- Rscript -e 'devtools::install_dev_deps()'
     - Rscript -e 'Rcpp::compileAttributes()'
-    - Rscript -e 'devtools::build(".")'
+    #- Rscript -e 'devtools::build(".")'
+    - cd ..; R CMD build rENA
     - ls -al ../
     - cd ..; R CMD check --as-cran rENA_0.1.6.tar.gz || true
     - ls -al ../
