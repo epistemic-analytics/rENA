@@ -25,15 +25,16 @@ r-oldrel:
   only:
     - master
   script:
+    - ls -al ./
+    - rm -R ./rENA.Rcheck/
     #- Rscript -e 'install.packages(c("devtools", "roxygen2"))'
     - Rscript -e 'devtools::clean_dll()'
     #- Rscript -e 'devtools::install_dev_deps()'
     - Rscript -e 'Rcpp::compileAttributes()'
     #- Rscript -e 'devtools::build(".")'
     - cd ..; R CMD build rENA
-    - ls -al ../
     - R CMD check --as-cran rENA_0.1.6.tar.gz || true
-    - ls -al ../
+    - ls -al ./rENA.Rcheck/rENA/libs/
     - ls -al ./
     - cat ./rENA.Rcheck/00check.log || true
     - cat ./rENA.Rcheck/00install.out || true
