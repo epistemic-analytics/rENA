@@ -8,9 +8,9 @@ variables:
   LIVE_HOST: "54.218.105.250"
 
 before_script:
-  - apt-get update -qq
-  - apt-get install -y --no-install-recommends libcurl4-openssl-dev libssh2-1-dev libssl-dev git libxml2-dev xml2
-  - apt-get install -y --no-install-recommends qpdf pandoc pandoc-citeproc openssh-client
+  #- apt-get update -qq
+  #- apt-get install -y --no-install-recommends libcurl4-openssl-dev libssh2-1-dev libssl-dev git libxml2-dev xml2
+  #- apt-get install -y --no-install-recommends qpdf pandoc pandoc-citeproc openssh-client
   - export _R_CHECK_CRAN_INCOMING_=FALSE
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
 
@@ -25,10 +25,10 @@ r-oldrel:
   only:
     - master
   script:
-    - Rscript -e 'install.packages(c("devtools", "roxygen2"))'
+    #- Rscript -e 'install.packages(c("devtools", "roxygen2"))'
     - Rscript -e 'devtools::clean_dll()'
     - Rscript -e 'devtools::install_dev_deps()'
-    - Rscript -e 'Rcpp::compileAttributes()'
+    #- Rscript -e 'Rcpp::compileAttributes()'
     - Rscript -e 'devtools::build(".")'
     - ls -al ../
     - cd ..; R CMD check --as-cran rENA_0.1.6.tar.gz || true
