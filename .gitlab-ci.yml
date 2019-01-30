@@ -39,7 +39,7 @@ r-oldrel:
     - cd ..; R CMD build rENA
     - ls -al ./rENA/R/
     - R CMD check --as-cran rENA_0.1.6.tar.gz || true
-    - ls -al ./rENA.Rcheck/rENA/libs/
+    #- ls -al ./rENA.Rcheck/rENA/libs/
     - ls -al ./
     - cat ./rENA.Rcheck/00check.log || true
     - cat ./rENA.Rcheck/00install.out || true
