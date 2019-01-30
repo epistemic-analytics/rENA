@@ -25,6 +25,7 @@ r-oldrel:
   only:
     - master
   script:
+    - ls -al ../
     - ls -al ./
     - ls -al ./src/
     - ls -al ./R/
