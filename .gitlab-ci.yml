@@ -14,9 +14,9 @@ before_script:
   - export _R_CHECK_CRAN_INCOMING_=FALSE
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
 
-cache:
-  paths:
-  - /usr/local/lib/R/site-library
+#cache:
+#  paths:
+#  - /usr/local/lib/R/site-library
 
 r-oldrel:
   stage: test
@@ -25,10 +25,11 @@ r-oldrel:
   only:
     - master
   script:
-    - ls -al ../
+    - ls -al ./
     - ls -al ./src/
-    - rm -R ../rENA.Rcheck/
+    #- rm -R ../rENA.Rcheck/
     #- Rscript -e 'install.packages(c("devtools", "roxygen2"))'
+    - Rscript -e 'remove.packages("rENA")'
     - Rscript -e 'devtools::clean_dll()'
     #- Rscript -e 'devtools::install_dev_deps()'
     - Rscript -e 'Rcpp::compileAttributes()'
