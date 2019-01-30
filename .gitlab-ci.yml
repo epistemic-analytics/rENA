@@ -36,7 +36,7 @@ r-oldrel:
     #- Rscript -e 'devtools::clean_dll()'
     #- Rscript -e 'devtools::install_dev_deps()'
     - Rscript -e 'Rcpp::compileAttributes()'
-    - Rscript -e 'devtools::check_cran("rENA")'
+    - Rscript -e 'devtools::check(".")'
     #- Rscript -e 'devtools::build(".")'
     #- cd ..; R CMD build rENA
     #- ls -al ./rENA/R/
