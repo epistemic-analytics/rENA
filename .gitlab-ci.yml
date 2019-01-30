@@ -27,8 +27,8 @@ r-oldrel:
   script:
     #- Rscript -e 'install.packages(c("devtools", "roxygen2"))'
     - Rscript -e 'devtools::clean_dll()'
-    - Rscript -e 'devtools::install_dev_deps()'
-    #- Rscript -e 'Rcpp::compileAttributes()'
+    #- Rscript -e 'devtools::install_dev_deps()'
+    - Rscript -e 'Rcpp::compileAttributes()'
     - Rscript -e 'devtools::build(".")'
     - ls -al ../
     - cd ..; R CMD check --as-cran rENA_0.1.6.tar.gz || true
