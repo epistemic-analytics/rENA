@@ -20,7 +20,8 @@ cache:
 
 r-oldrel:
   stage: test
-  image: r-base:3.5.1
+  #image: r-base:3.5.1
+  image: egruw/rena-build-image
   only:
     - master
   script:
@@ -33,8 +34,8 @@ r-oldrel:
     - cd ..; R CMD check --as-cran rENA_0.1.6.tar.gz || true
     - ls -al ../
     - ls -al ./
-    - cat ../rENA.Rcheck/00check.log || true
     - cat ./rENA.Rcheck/00check.log || true
+    - cat ./rENA.Rcheck/00install.out || true
   tags:
     - docker
   allow_failure: true
