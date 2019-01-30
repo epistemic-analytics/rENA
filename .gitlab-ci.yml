@@ -32,7 +32,7 @@ r-oldrel:
     #- Rscript -e 'devtools::build(".")'
     - cd ..; R CMD build rENA
     - ls -al ../
-    - cd ..; R CMD check --as-cran rENA_0.1.6.tar.gz || true
+    - R CMD check --as-cran rENA_0.1.6.tar.gz || true
     - ls -al ../
     - ls -al ./
     - cat ./rENA.Rcheck/00check.log || true
