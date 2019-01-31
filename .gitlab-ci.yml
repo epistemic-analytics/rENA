@@ -14,19 +14,32 @@ before_script:
   - export _R_CHECK_CRAN_INCOMING_=FALSE
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
 
-r-oldrelease:
-  stage: test
-  image: egruw/rena-r-oldrelease
-  only:
-    - master
-  script:
-    - rm -f ./R/RcppExports.R
-    - Rscript -e 'Rcpp::compileAttributes()'
-    - cd ..; R CMD build rENA
-    - R CMD check --as-cran rENA_0.1.6.tar.gz
-  tags:
-    - docker
-  allow_failure: false
+#r-oldrelease:
+#  stage: test
+#  image: egruw/rena-r-oldrelease
+#  only:
+#    - master
+#  script:
+#    - rm -f ./R/RcppExports.R
+#    - Rscript -e 'Rcpp::compileAttributes()'
+#    - cd ..; R CMD build rENA
+#    - R CMD check --as-cran rENA_0.1.6.tar.gz
+#  tags:
+#    - docker
+#  allow_failure: false
+#r-devel:
+#  stage: test
+#  image: egruw/rena-r-devel
+#  only:
+#    - master
+#  script:
+#    - rm -f ./R/RcppExports.R
+#    - Rscript -e 'Rcpp::compileAttributes()'
+#    - cd ..; R CMD build rENA
+#    - R CMD check --as-cran rENA_0.1.6.tar.gz
+#  tags:
+#    - docker
+#  allow_failure: false
 r-release:
   stage: test
   image: egruw/rena-r-release
@@ -40,32 +53,19 @@ r-release:
   tags:
     - docker
   allow_failure: false
-r-devel:
-  stage: test
-  image: egruw/rena-r-devel
-  only:
-    - master
-  script:
-    - rm -f ./R/RcppExports.R
-    - Rscript -e 'Rcpp::compileAttributes()'
-    - cd ..; R CMD build rENA
-    - R CMD check --as-cran rENA_0.1.6.tar.gz
-  tags:
-    - docker
-  allow_failure: false
-r-winbuilder-release:
-  stage: test
-  image: egruw/r-ftp
-  only:
-    - master
-  script:
-    - rm -f ./R/RcppExports.R
-    - Rscript -e 'Rcpp::compileAttributes()'
-    - cd ..; R CMD build rENA
-    - ftp -Ainp -u ftp://win-builder.r-project.org/R-release/rENA_0.1.6.tar.gz rENA_0.1.6.tar.gz
-  tags:
-    - docker
-  allow_failure: false
+#r-winbuilder-release:
+#  stage: test
+#  image: egruw/r-ftp
+#  only:
+#    - master
+#  script:
+#    - rm -f ./R/RcppExports.R
+#    - Rscript -e 'Rcpp::compileAttributes()'
+#    - cd ..; R CMD build rENA
+#    - ftp -Ainp -u ftp://win-builder.r-project.org/R-release/rENA_0.1.6.tar.gz rENA_0.1.6.tar.gz
+#  tags:
+#    - docker
+#  allow_failure: false
 
 #API-dev:
 #  stage: buildAPI
