@@ -47,6 +47,7 @@ r-release:
     - master
   script:
     - rm -f ./R/RcppExports.R
+    - R --version
     #- Rscript -e 'devtools::install_deps()'
     #- Rscript -e 'Rcpp::compileAttributes()'
     - cd ..; R CMD build rENA || true
