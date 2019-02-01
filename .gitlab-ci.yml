@@ -51,6 +51,11 @@ r-release:
     #- Rscript -e 'Rcpp::compileAttributes()'
     - cd ..; R CMD build rENA
     - R CMD check --as-cran rENA_0.1.6.tar.gz
+    - R CMD check --as-cran rENA_0.1.6.tar.gz || true
+    - ls -al ../
+    - ls -al ./
+    - cat ./rENA.Rcheck/00check.log || true
+    - cat ./rENA.Rcheck/00install.out || true
   tags:
     - docker
   allow_failure: false
