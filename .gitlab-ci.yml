@@ -42,7 +42,7 @@ before_script:
 #  allow_failure: false
 r-release:
   stage: test
-  image: egruw/rena-r-release
+  image: egruw/rena-r-release:latest
   only:
     - master
   script:
