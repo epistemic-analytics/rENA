@@ -49,6 +49,7 @@ r-release:
     - rm -f ./R/RcppExports.R
     - R --version
     #- Rscript -e 'devtools::install_deps()'
+    - Rscript -e 'devtools::update_packages()'
     #- Rscript -e 'Rcpp::compileAttributes()'
     - cd ..; R CMD build rENA || true
     - R CMD check --as-cran rENA_0.1.6.tar.gz || true
