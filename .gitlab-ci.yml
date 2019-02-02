@@ -49,7 +49,7 @@ r-release:
     - rm -f ./R/RcppExports.R
     - R --version
     - Rscript -e 'install.packages("devtools")'
-    - Rscript -e 'devtools::update(devtools::dev_package_deps("."))'
+    - Rscript -e 'update(devtools::dev_package_deps("."))'
     - Rscript -e 'Sys.info()'
     #- Rscript -e 'Rcpp::compileAttributes()'
     - cd ..; R CMD build rENA || true
