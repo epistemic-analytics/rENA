@@ -48,8 +48,8 @@ r-release:
   script:
     - rm -f ./R/RcppExports.R
     - R --version
-    - Rscript -e 'install.packages("git2r","usethis","devtools","testthat")'
-    - Rscript -e 'update(devtools::dev_package_deps("."))'
+    #- Rscript -e 'install.packages("git2r","usethis","devtools","testthat")'
+    #- Rscript -e 'update(devtools::dev_package_deps("."))'
     - Rscript -e 'Sys.info()'
     #- Rscript -e 'Rcpp::compileAttributes()'
     - cd ..; R CMD build rENA || true
