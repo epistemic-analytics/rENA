@@ -48,7 +48,7 @@ r-release:
   script:
     - rm -f ./R/RcppExports.R
     - R --version
-    - Rscript -e 'install.packags("devtools")'
+    - Rscript -e 'install.packages("devtools")'
     - Rscript -e 'devtools::update(devtools::dev_package_deps("."))'
     - Rscript -e 'Sys.info()'
     #- Rscript -e 'Rcpp::compileAttributes()'
