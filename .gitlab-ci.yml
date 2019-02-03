@@ -14,19 +14,27 @@ before_script:
   - export _R_CHECK_CRAN_INCOMING_=FALSE
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
 
-#r-oldrelease:
-#  stage: test
-#  image: egruw/rena-r-oldrelease
-#  only:
-#    - master
-#  script:
-#    - rm -f ./R/RcppExports.R
-#    - Rscript -e 'Rcpp::compileAttributes()'
-#    - cd ..; R CMD build rENA
-#    - R CMD check --as-cran rENA_0.1.6.tar.gz
-#  tags:
-#    - docker
-#  allow_failure: false
+r-oldrelease:
+  stage: test
+  image: egruw/rena-r-oldrelease:latest
+  only:
+    - master
+  script:
+    - rm -f ./R/RcppExports.R
+    - R --version
+    #- Rscript -e 'install.packages("git2r","usethis","devtools","testthat")'
+    #- Rscript -e 'update(devtools::dev_package_deps("."))'
+    - Rscript -e 'Sys.info()'
+    #- Rscript -e 'Rcpp::compileAttributes()'
+    - cd ..; R CMD build rENA || true
+    - R CMD check --as-cran rENA_0.1.6.tar.gz || true
+    - ls -al ../
+    - ls -al ./
+    - cat ./rENA.Rcheck/00check.log || true
+    - cat ./rENA.Rcheck/00install.out || true
+  tags:
+    - docker
+  allow_failure: false
 r-devel:
   stage: test
   image: egruw/rena-r-devel:latest
