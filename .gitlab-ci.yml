@@ -22,11 +22,9 @@ r-devel:
   script:
     - rm -f ./R/RcppExports.R
     - R --version
-    #- Rscript -e 'install.packages("git2r","usethis","devtools","testthat")'
-    #- Rscript -e 'update(devtools::dev_package_deps("."))'
     - Rscript -e 'Sys.info()'
     - Rscript -e 'Rcpp::compileAttributes()'
-    #- Rscript -e "devtools::document(roclets = c('rd', 'collate', 'namespace'))"
+    - Rscript -e 'update(devtools::dev_package_deps("."))'
     - ls -al ./man/
     - ls -al ../
     - cd ..; R CMD build --resave-data --no-manual --log rENA || true
