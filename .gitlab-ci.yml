@@ -44,7 +44,9 @@ r-devel:
     #- Rscript -e 'install.packages("git2r","usethis","devtools","testthat")'
     #- Rscript -e 'update(devtools::dev_package_deps("."))'
     - Rscript -e 'Sys.info()'
-    #- Rscript -e 'Rcpp::compileAttributes()'
+    - Rscript -e 'Rcpp::compileAttributes()'
+    - ls -al ./
+    - ls -al ../
     - cd ..; R CMD build rENA || true
     - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_0.1.6.tar.gz --as-cran --no-manual
     - cat ./rENA.Rcheck/00check.log || true
