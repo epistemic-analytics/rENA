@@ -20,8 +20,8 @@ r-devel:
   only:
     - master
   script:
-    - cat ~/.R/Makevars
-    - rm -f ~/.R/Makevars
+    - cat /etc/R/Makeconf
+    - rm -f /etc/R/Makeconf
     - rm -f ./R/RcppExports.R
     - R --version
     - Rscript -e 'Sys.info()'
