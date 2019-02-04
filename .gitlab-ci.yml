@@ -26,7 +26,7 @@ r-devel:
     #- Rscript -e 'update(devtools::dev_package_deps("."))'
     - Rscript -e 'Sys.info()'
     - Rscript -e 'Rcpp::compileAttributes()'
-    - Rscript -e "devtools::document(roclets = c('rd', 'collate', 'namespace'))"
+    #- Rscript -e "devtools::document(roclets = c('rd', 'collate', 'namespace'))"
     - ls -al ./man/
     - ls -al ../
     - cd ..; R CMD build --resave-data --no-manual --log rENA || true

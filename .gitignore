@@ -11,6 +11,5 @@ data/bigdata
 *.Rcheck/
 rENA.Rcheck/
 *.tar.gz
-man/*.Rd
 
 src/symbols\.rds
