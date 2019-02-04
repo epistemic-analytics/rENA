@@ -27,7 +27,7 @@ r-oldrelease:
     - Rscript -e 'Sys.info()'
     #- Rscript -e 'Rcpp::compileAttributes()'
     - cd ..; R CMD build rENA || true
-    - R CMD check --as-cran --no-manual --no-vignettes --no-build-vignettes rENA_0.1.6.tar.gz
+    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_0.1.6.tar.gz --as-cran --no-manual
     - cat ./rENA.Rcheck/00check.log || true
     - cat ./rENA.Rcheck/00install.out || true
   tags:
@@ -46,7 +46,7 @@ r-devel:
     - Rscript -e 'Sys.info()'
     #- Rscript -e 'Rcpp::compileAttributes()'
     - cd ..; R CMD build rENA || true
-    - R CMD check --as-cran --no-manual --no-vignettes --no-build-vignettes rENA_0.1.6.tar.gz
+    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_0.1.6.tar.gz --as-cran --no-manual
     - cat ./rENA.Rcheck/00check.log || true
     - cat ./rENA.Rcheck/00install.out || true
   tags:
@@ -65,7 +65,7 @@ r-release:
     - Rscript -e 'Sys.info()'
     #- Rscript -e 'Rcpp::compileAttributes()'
     - cd ..; R CMD build rENA || true
-    - R CMD check --as-cran --no-manual --no-vignettes --no-build-vignettes rENA_0.1.6.tar.gz
+    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_0.1.6.tar.gz --as-cran --no-manual
     - cat ./rENA.Rcheck/00check.log || true
     - cat ./rENA.Rcheck/00install.out || true
   tags:
