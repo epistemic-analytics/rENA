@@ -14,25 +14,6 @@ before_script:
   - export _R_CHECK_CRAN_INCOMING_=FALSE
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
 
-r-oldrelease:
-  stage: test
-  image: egruw/rena-r-oldrelease:latest
-  only:
-    - master
-  script:
-    - rm -f ./R/RcppExports.R
-    - R --version
-    #- Rscript -e 'install.packages("git2r","usethis","devtools","testthat")'
-    #- Rscript -e 'update(devtools::dev_package_deps("."))'
-    - Rscript -e 'Sys.info()'
-    #- Rscript -e 'Rcpp::compileAttributes()'
-    - cd ..; R CMD build rENA || true
-    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_0.1.6.tar.gz --as-cran --no-manual
-    - cat ./rENA.Rcheck/00check.log || true
-    - cat ./rENA.Rcheck/00install.out || true
-  tags:
-    - docker
-  allow_failure: false
 r-devel:
   stage: test
   image: egruw/rena-r-devel:latest
@@ -45,34 +26,57 @@ r-devel:
     #- Rscript -e 'update(devtools::dev_package_deps("."))'
     - Rscript -e 'Sys.info()'
     - Rscript -e 'Rcpp::compileAttributes()'
-    - ls -al ./
+    - Rscript -e "devtools::document(roclets = c('rd', 'collate', 'namespace'))"
+    - ls -al ./man/
     - ls -al ../
-    - cd ..; R CMD build rENA || true
-    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_0.1.6.tar.gz --as-cran --no-manual
+    - cd ..; R CMD build --resave-data --no-manual --log rENA || true
+    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_0.1.6.tar.gz --as-cran --no-manual |& tee build.txt
+    - ls -al ./
+    - cat ./rENA.Rcheck/*build.log || true
     - cat ./rENA.Rcheck/00check.log || true
     - cat ./rENA.Rcheck/00install.out || true
+    - cat ./build.txt
   tags:
     - docker
   allow_failure: false
-r-release:
-  stage: test
-  image: egruw/rena-r-release:latest
-  only:
-    - master
-  script:
-    - rm -f ./R/RcppExports.R
-    - R --version
-    #- Rscript -e 'install.packages("git2r","usethis","devtools","testthat")'
-    #- Rscript -e 'update(devtools::dev_package_deps("."))'
-    - Rscript -e 'Sys.info()'
-    #- Rscript -e 'Rcpp::compileAttributes()'
-    - cd ..; R CMD build rENA || true
-    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_0.1.6.tar.gz --as-cran --no-manual
-    - cat ./rENA.Rcheck/00check.log || true
-    - cat ./rENA.Rcheck/00install.out || true
-  tags:
-    - docker
-  allow_failure: false
+#r-oldrelease:
+#  stage: test
+#  image: egruw/rena-r-oldrelease:latest
+#  only:
+#    - master
+#  script:
+#    - rm -f ./R/RcppExports.R
+#    - R --version
+#    #- Rscript -e 'install.packages("git2r","usethis","devtools","testthat")'
+#    #- Rscript -e 'update(devtools::dev_package_deps("."))'
+#    - Rscript -e 'Sys.info()'
+#    #- Rscript -e 'Rcpp::compileAttributes()'
+#    - cd ..; R CMD build rENA || true
+#    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_0.1.6.tar.gz --as-cran --no-manual
+#    - cat ./rENA.Rcheck/00check.log || true
+#    - cat ./rENA.Rcheck/00install.out || true
+#  tags:
+#    - docker
+#  allow_failure: false
+#r-release:
+#  stage: test
+#  image: egruw/rena-r-release:latest
+#  only:
+#    - master
+#  script:
+#    - rm -f ./R/RcppExports.R
+#    - R --version
+#    #- Rscript -e 'install.packages("git2r","usethis","devtools","testthat")'
+#    #- Rscript -e 'update(devtools::dev_package_deps("."))'
+#    - Rscript -e 'Sys.info()'
+#    #- Rscript -e 'Rcpp::compileAttributes()'
+#    - cd ..; R CMD build rENA || true
+#    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_0.1.6.tar.gz --as-cran --no-manual
+#    - cat ./rENA.Rcheck/00check.log || true
+#    - cat ./rENA.Rcheck/00install.out || true
+#  tags:
+#    - docker
+#  allow_failure: false
 #r-winbuilder-release:
 #  stage: test
 #  image: egruw/r-ftp
