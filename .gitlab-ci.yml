@@ -27,9 +27,7 @@ r-oldrelease:
     - Rscript -e 'Sys.info()'
     #- Rscript -e 'Rcpp::compileAttributes()'
     - cd ..; R CMD build rENA || true
-    - R CMD check --as-cran rENA_0.1.6.tar.gz || true
-    - ls -al ../
-    - ls -al ./
+    - R CMD check --as-cran rENA_0.1.6.tar.gz
     - cat ./rENA.Rcheck/00check.log || true
     - cat ./rENA.Rcheck/00install.out || true
   tags:
@@ -48,9 +46,7 @@ r-devel:
     - Rscript -e 'Sys.info()'
     #- Rscript -e 'Rcpp::compileAttributes()'
     - cd ..; R CMD build rENA || true
-    - R CMD check --as-cran rENA_0.1.6.tar.gz || true
-    - ls -al ../
-    - ls -al ./
+    - R CMD check --as-cran rENA_0.1.6.tar.gz
     - cat ./rENA.Rcheck/00check.log || true
     - cat ./rENA.Rcheck/00install.out || true
   tags:
@@ -69,9 +65,7 @@ r-release:
     - Rscript -e 'Sys.info()'
     #- Rscript -e 'Rcpp::compileAttributes()'
     - cd ..; R CMD build rENA || true
-    - R CMD check --as-cran rENA_0.1.6.tar.gz || true
-    - ls -al ../
-    - ls -al ./
+    - R CMD check --as-cran rENA_0.1.6.tar.gz
     - cat ./rENA.Rcheck/00check.log || true
     - cat ./rENA.Rcheck/00install.out || true
   tags:
