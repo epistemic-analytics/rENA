@@ -83,9 +83,9 @@ r-winbuilder:
   only:
     - master
   script:
-    - rm -f ./R/RcppExports.R
-    - Rscript -e 'Rcpp::compileAttributes()'
-    - Rscript -e 'update(devtools::dev_package_deps("."))'
+    #- rm -f ./R/RcppExports.R
+    #- Rscript -e 'Rcpp::compileAttributes()'
+    #- Rscript -e 'update(devtools::dev_package_deps("."))'
     - cd ..; R CMD build --resave-data --no-manual --log rENA || true
     - curl -v -T rENA_0.1.6.tar.gz ftp://win-builder.r-project.org/R-oldrelease/rENA_0.1.6.tar.gz
     - curl -v -T rENA_0.1.6.tar.gz ftp://win-builder.r-project.org/R-release/rENA_0.1.6.tar.gz
