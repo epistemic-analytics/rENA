@@ -21,62 +21,62 @@ r-devel:
     - master
   script:
     - rm -f ./R/RcppExports.R
-    #- cat /etc/R/Makeconf
-    #- rm -f /etc/R/Makeconf
     - mkdir -p ~/.R/
     - rm -f ~/.R/Makevars
-    - cat ~/.R/Makevars || true
     - cp demo/backup/Makevars ~/.R/
     - cat ~/.R/Makevars
     - Rscript -e 'Rcpp::compileAttributes()'
     - Rscript -e 'update(devtools::dev_package_deps("."))'
     - cd ..; R CMD build --resave-data --no-manual --log rENA || true
-    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_0.1.6.tar.gz --as-cran --no-manual |& tee build.txt
+    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_0.1.6.tar.gz --as-cran --no-manual
     - cat ./rENA.Rcheck/rENA-00build.log || true
     - cat ./rENA.Rcheck/00check.log || true
     - cat ./rENA.Rcheck/00install.out || true
-    - cat ./build.txt
   tags:
     - docker
   allow_failure: false
-#r-oldrelease:
-#  stage: test
-#  image: egruw/rena-r-oldrelease:latest
-#  only:
-#    - master
-#  script:
-#    - rm -f ./R/RcppExports.R
-#    - R --version
-#    #- Rscript -e 'install.packages("git2r","usethis","devtools","testthat")'
-#    #- Rscript -e 'update(devtools::dev_package_deps("."))'
-#    - Rscript -e 'Sys.info()'
-#    #- Rscript -e 'Rcpp::compileAttributes()'
-#    - cd ..; R CMD build rENA || true
-#    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_0.1.6.tar.gz --as-cran --no-manual
-#    - cat ./rENA.Rcheck/00check.log || true
-#    - cat ./rENA.Rcheck/00install.out || true
-#  tags:
-#    - docker
-#  allow_failure: false
-#r-release:
-#  stage: test
-#  image: egruw/rena-r-release:latest
-#  only:
-#    - master
-#  script:
-#    - rm -f ./R/RcppExports.R
-#    - R --version
-#    #- Rscript -e 'install.packages("git2r","usethis","devtools","testthat")'
-#    #- Rscript -e 'update(devtools::dev_package_deps("."))'
-#    - Rscript -e 'Sys.info()'
-#    #- Rscript -e 'Rcpp::compileAttributes()'
-#    - cd ..; R CMD build rENA || true
-#    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_0.1.6.tar.gz --as-cran --no-manual
-#    - cat ./rENA.Rcheck/00check.log || true
-#    - cat ./rENA.Rcheck/00install.out || true
-#  tags:
-#    - docker
-#  allow_failure: false
+r-oldrelease:
+  stage: test
+  image: egruw/rena-r-oldrelease:latest
+  only:
+    - master
+  script:
+    - rm -f ./R/RcppExports.R
+    - mkdir -p ~/.R/
+    - rm -f ~/.R/Makevars
+    - cp demo/backup/Makevars ~/.R/
+    - cat ~/.R/Makevars
+    - Rscript -e 'Rcpp::compileAttributes()'
+    - Rscript -e 'update(devtools::dev_package_deps("."))'
+    - cd ..; R CMD build --resave-data --no-manual --log rENA || true
+    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_0.1.6.tar.gz --as-cran --no-manual
+    - cat ./rENA.Rcheck/rENA-00build.log || true
+    - cat ./rENA.Rcheck/00check.log || true
+    - cat ./rENA.Rcheck/00install.out || true
+  tags:
+    - docker
+  allow_failure: false
+r-release:
+  stage: test
+  image: egruw/rena-r-release:latest
+  only:
+    - master
+  script:
+    - rm -f ./R/RcppExports.R
+    - mkdir -p ~/.R/
+    - rm -f ~/.R/Makevars
+    - cp demo/backup/Makevars ~/.R/
+    - cat ~/.R/Makevars
+    - Rscript -e 'Rcpp::compileAttributes()'
+    - Rscript -e 'update(devtools::dev_package_deps("."))'
+    - cd ..; R CMD build --resave-data --no-manual --log rENA || true
+    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_0.1.6.tar.gz --as-cran --no-manual
+    - cat ./rENA.Rcheck/rENA-00build.log || true
+    - cat ./rENA.Rcheck/00check.log || true
+    - cat ./rENA.Rcheck/00install.out || true
+  tags:
+    - docker
+  allow_failure: false
 #r-winbuilder-release:
 #  stage: test
 #  image: egruw/r-ftp
