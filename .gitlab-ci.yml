@@ -24,7 +24,7 @@ r-devel:
     #- rm -f /etc/R/Makeconf
     - mkdir -p ~/.R/
     - rm -f ~/.R/Makevars
-    - cat ~/.R/Makevars
+    - cat ~/.R/Makevars || true
     - cp demo/backup/Makevars ~/.R/
     - cat ~/.R/Makevars
     - Rscript -e 'Rcpp::compileAttributes()'
