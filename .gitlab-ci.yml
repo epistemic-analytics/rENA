@@ -20,6 +20,7 @@ r-devel:
   only:
     - master
   script:
+    - rm -f ./R/RcppExports.R
     #- cat /etc/R/Makeconf
     #- rm -f /etc/R/Makeconf
     - mkdir -p ~/.R/
