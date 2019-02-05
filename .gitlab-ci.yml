@@ -82,6 +82,7 @@ r-winbuilder:
   image: egruw/r-ftp
   only:
     - master
+  when: manual
   script:
     #- rm -f ./R/RcppExports.R
     #- Rscript -e 'Rcpp::compileAttributes()'
