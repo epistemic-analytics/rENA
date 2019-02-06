@@ -6,11 +6,9 @@ variables:
   DEV_HOST: "34.212.25.148"
   STAGING_HOST: "54.201.134.99"
   LIVE_HOST: "54.218.105.250"
+  VERSION: "0.1.6"
 
 before_script:
-  #- apt-get update -qq
-  #- apt-get install -y --no-install-recommends libcurl4-openssl-dev libssh2-1-dev libssl-dev git libxml2-dev xml2
-  #- apt-get install -y --no-install-recommends qpdf pandoc pandoc-citeproc openssh-client
   - export _R_CHECK_CRAN_INCOMING_=FALSE
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
 
@@ -28,7 +26,7 @@ r-devel:
     - Rscript -e 'Rcpp::compileAttributes()'
     - Rscript -e 'update(devtools::dev_package_deps("."))'
     - cd ..; R CMD build --resave-data --no-manual --log rENA || true
-    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_0.1.6.tar.gz --as-cran --no-manual
+    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_$VERSION.tar.gz --as-cran --no-manual
     - cat ./rENA.Rcheck/rENA-00build.log || true
     - cat ./rENA.Rcheck/00check.log || true
     - cat ./rENA.Rcheck/00install.out || true
@@ -49,7 +47,7 @@ r-oldrelease:
     - Rscript -e 'Rcpp::compileAttributes()'
     - Rscript -e 'update(devtools::dev_package_deps("."))'
     - cd ..; R CMD build --resave-data --no-manual --log rENA || true
-    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_0.1.6.tar.gz --as-cran --no-manual
+    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_$VERSION.tar.gz --as-cran --no-manual
     - cat ./rENA.Rcheck/rENA-00build.log || true
     - cat ./rENA.Rcheck/00check.log || true
     - cat ./rENA.Rcheck/00install.out || true
@@ -61,6 +59,10 @@ r-release:
   image: egruw/rena-r-release:latest
   only:
     - master
+  artifacts:
+    paths:
+      - rENA_$VERSION.tar.gz
+    expire_in: 1 week
   script:
     - rm -f ./R/RcppExports.R
     - mkdir -p ~/.R/
@@ -70,7 +72,7 @@ r-release:
     - Rscript -e 'Rcpp::compileAttributes()'
     - Rscript -e 'update(devtools::dev_package_deps("."))'
     - cd ..; R CMD build --resave-data --no-manual --log rENA || true
-    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_0.1.6.tar.gz --as-cran --no-manual
+    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_$VERSION.tar.gz --as-cran --no-manual
     - cat ./rENA.Rcheck/rENA-00build.log || true
     - cat ./rENA.Rcheck/00check.log || true
     - cat ./rENA.Rcheck/00install.out || true
@@ -82,15 +84,15 @@ r-winbuilder:
   image: egruw/r-ftp
   only:
     - master
-  when:
+  when: manual
   script:
     - rm -f ./R/RcppExports.*
     - Rscript -e 'update(devtools::dev_package_deps("."))'
     - Rscript -e 'Rcpp::compileAttributes(v=T)'
     - cd ..; R CMD build --resave-data --no-manual --log rENA || true
-    - curl -v -T rENA_0.1.6.tar.gz ftp://win-builder.r-project.org/R-oldrelease/rENA_0.1.6.tar.gz
-    - curl -v -T rENA_0.1.6.tar.gz ftp://win-builder.r-project.org/R-release/rENA_0.1.6.tar.gz
-    - curl -v -T rENA_0.1.6.tar.gz ftp://win-builder.r-project.org/R-devel/rENA_0.1.6.tar.gz
+    - curl -v -T rENA_$VERSION.tar.gz ftp://win-builder.r-project.org/R-oldrelease/rENA_$VERSION.tar.gz
+    - curl -v -T rENA_$VERSION.tar.gz ftp://win-builder.r-project.org/R-release/rENA_$VERSION.tar.gz
+    - curl -v -T rENA_$VERSION.tar.gz ftp://win-builder.r-project.org/R-devel/rENA_$VERSION.tar.gz
   tags:
     - docker
   allow_failure: false
