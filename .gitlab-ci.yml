@@ -43,9 +43,13 @@ before_script:
 
 check:r-devel:
   image: egruw/rena-r-devel:latest
+  only:
+    - master
   <<: *check_definition
 check:r-oldrelease:
   image: egruw/rena-r-oldrelease:latest
+  only:
+    - master
   <<: *check_definition
 check:r-release:
   image: egruw/rena-r-release:latest
