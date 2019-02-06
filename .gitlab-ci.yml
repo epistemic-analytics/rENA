@@ -119,7 +119,7 @@ r-upload:
   when: manual
   script:
     - cat cran-comments.md
-    - Rscript -e 'devtools:::upload_cran(devtools::as.package("."), "./build/rENA_$VERSION.tar.gz")'
+    - Rscript -e "devtools:::upload_cran(devtools::as.package("."), './build/rENA_$VERSION.tar.gz')"
   tags:
     - docker
   allow_failure: false
