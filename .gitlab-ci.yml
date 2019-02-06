@@ -60,7 +60,7 @@ r-release:
   image: egruw/rena-r-release:latest
   artifacts:
     paths:
-      - ../rENA_$VERSION.tar.gz
+      - ./rENA_$VERSION.tar.gz
     expire_in: 1 week
   script:
     - rm -f ./R/RcppExports.R
@@ -75,6 +75,7 @@ r-release:
     - cat ./rENA.Rcheck/rENA-00build.log || true
     - cat ./rENA.Rcheck/00check.log || true
     - cat ./rENA.Rcheck/00install.out || true
+    - mv ./rENA_$VERSION.tar.gz rENA/
   tags:
     - docker
   allow_failure: false
