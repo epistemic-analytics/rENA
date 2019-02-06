@@ -60,7 +60,7 @@ r-release:
     - master
   artifacts:
     paths:
-      - rENA_$VERSION.tar.gz
+      - ../rENA_$VERSION.tar.gz
     expire_in: 1 week
   script:
     - rm -f ./R/RcppExports.R
