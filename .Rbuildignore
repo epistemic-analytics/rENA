@@ -16,3 +16,5 @@ R/getHandsetCT.R
 ^configure.old*
 ^src/Makevars.bak*
 Dockerfile
+build
+^build/*
