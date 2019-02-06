@@ -82,11 +82,11 @@ r-winbuilder:
   image: egruw/r-ftp
   only:
     - master
-  when: manual
+  when:
   script:
-    #- rm -f ./R/RcppExports.R
-    #- Rscript -e 'Rcpp::compileAttributes()'
-    #- Rscript -e 'update(devtools::dev_package_deps("."))'
+    - rm -f ./R/RcppExports.*
+    - Rscript -e 'update(devtools::dev_package_deps("."))'
+    - Rscript -e 'Rcpp::compileAttributes(v=T)'
     - cd ..; R CMD build --resave-data --no-manual --log rENA || true
     - curl -v -T rENA_0.1.6.tar.gz ftp://win-builder.r-project.org/R-oldrelease/rENA_0.1.6.tar.gz
     - curl -v -T rENA_0.1.6.tar.gz ftp://win-builder.r-project.org/R-release/rENA_0.1.6.tar.gz
