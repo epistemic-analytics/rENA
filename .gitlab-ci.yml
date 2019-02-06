@@ -15,61 +15,8 @@ before_script:
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
   - mkdir -p build/
 
-check:r-devel:
+.check_template: &check_definition
   stage: check
-  image: egruw/rena-r-devel:latest
-  artifacts:
-    paths:
-      - build/
-    expire_in: 1 week
-  only:
-    - master
-  script:
-    - rm -f ./R/RcppExports.R
-    - mkdir -p ~/.R/
-    - rm -f ~/.R/Makevars
-    - cp demo/backup/Makevars ~/.R/
-    - cat ~/.R/Makevars
-    - Rscript -e 'Rcpp::compileAttributes()'
-    - Rscript -e 'update(devtools::dev_package_deps("."))'
-    - cd ..; R CMD build --resave-data --no-manual --log rENA || true
-    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_$VERSION.tar.gz --as-cran --no-manual
-    - mv ./rENA-00build.log rENA/build/ || true
-    - mv ./rENA.Rcheck/00check.log rENA/build/ || true
-    - mv ./rENA.Rcheck/00install.out rENA/build/ || true
-    - mv ./rENA_$VERSION.tar.gz rENA/build/
-  tags:
-    - docker
-  allow_failure: false
-check:r-oldrelease:
-  stage: check
-  image: egruw/rena-r-oldrelease:latest
-  artifacts:
-    paths:
-      - build/
-    expire_in: 1 week
-  only:
-    - master
-  script:
-    - rm -f ./R/RcppExports.R
-    - mkdir -p ~/.R/
-    - rm -f ~/.R/Makevars
-    - cp demo/backup/Makevars ~/.R/
-    - cat ~/.R/Makevars
-    - Rscript -e 'Rcpp::compileAttributes()'
-    - Rscript -e 'update(devtools::dev_package_deps("."))'
-    - cd ..; R CMD build --resave-data --no-manual --log rENA || true
-    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_$VERSION.tar.gz --as-cran --no-manual
-    - mv ./rENA-00build.log rENA/build/ || true
-    - mv ./rENA.Rcheck/00check.log rENA/build/ || true
-    - mv ./rENA.Rcheck/00install.out rENA/build/ || true
-    - mv ./rENA_$VERSION.tar.gz rENA/build/
-  tags:
-    - docker
-  allow_failure: false
-check:r-release:
-  stage: check
-  image: egruw/rena-r-release:latest
   artifacts:
     paths:
       - build/
@@ -93,6 +40,17 @@ check:r-release:
   tags:
     - docker
   allow_failure: false
+
+check:r-devel:
+  image: egruw/rena-r-devel:latest
+  <<: *check_template
+check:r-oldrelease:
+  image: egruw/rena-r-oldrelease:latest
+  <<: *check_template
+check:r-release:
+  image: egruw/rena-r-release:latest
+  <<: *check_template
+
 check:r-winbuilder:
   stage: checkWindows
   image: egruw/r-ftp
@@ -119,7 +77,7 @@ r-upload:
   when: manual
   script:
     - cat cran-comments.md
-    - Rscript -e "devtools:::upload_cran(devtools::as.package("."), './build/rENA_$VERSION.tar.gz')"
+    - Rscript -e "devtools:::upload_cran(devtools::as.package('.'), './build/rENA_$VERSION.tar.gz')"
   tags:
     - docker
   allow_failure: false
