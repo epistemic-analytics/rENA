@@ -118,9 +118,8 @@ r-upload:
     - develop
   when: manual
   script:
-    - ls -al
-    - ([ -e cran-comments.md ] && echo "Exists")
-    - Rscript -e 'devtools:::upload_cran(devtools::as.package("."), "./rENA_$VERSION.tar.gz")'
+    - cat cran-comments.md
+    - Rscript -e 'devtools:::upload_cran(devtools::as.package("."), "./build/rENA_$VERSION.tar.gz")'
   tags:
     - docker
   allow_failure: false
