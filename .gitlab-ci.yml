@@ -84,6 +84,8 @@ check:r-release:
     - Rscript -e 'update(devtools::dev_package_deps("."))'
     - cd ..; R CMD build --resave-data --no-manual --log rENA || true
     - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_$VERSION.tar.gz --as-cran --no-manual
+    - ls -al ./
+    - ls -al ./rENA.Rcheck/
     - mv ./rENA.Rcheck/rENA-00build.log rENA/build/
     - mv ./rENA.Rcheck/00check.log rENA/build/
     - mv ./rENA.Rcheck/00install.out rENA/build/
