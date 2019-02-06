@@ -16,6 +16,8 @@ before_script:
 r-devel:
   stage: check
   image: egruw/rena-r-devel:latest
+  only:
+    - master
   script:
     - rm -f ./R/RcppExports.R
     - mkdir -p ~/.R/
@@ -56,8 +58,6 @@ r-oldrelease:
 r-release:
   stage: check
   image: egruw/rena-r-release:latest
-  only:
-    - master
   artifacts:
     paths:
       - ../rENA_$VERSION.tar.gz
