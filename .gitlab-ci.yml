@@ -1,5 +1,6 @@
 stages:
- - test
+ - check
+ - checkWindows
  - buildAPI
 
 variables:
@@ -13,10 +14,8 @@ before_script:
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
 
 r-devel:
-  stage: test
+  stage: check
   image: egruw/rena-r-devel:latest
-  only:
-    - master
   script:
     - rm -f ./R/RcppExports.R
     - mkdir -p ~/.R/
@@ -34,7 +33,7 @@ r-devel:
     - docker
   allow_failure: false
 r-oldrelease:
-  stage: test
+  stage: check
   image: egruw/rena-r-oldrelease:latest
   only:
     - master
@@ -55,7 +54,7 @@ r-oldrelease:
     - docker
   allow_failure: false
 r-release:
-  stage: test
+  stage: check
   image: egruw/rena-r-release:latest
   only:
     - master
@@ -80,7 +79,7 @@ r-release:
     - docker
   allow_failure: false
 r-winbuilder:
-  stage: test
+  stage: checkWindows
   image: egruw/r-ftp
   only:
     - master
