@@ -118,6 +118,7 @@ r-upload:
     - develop
   when: manual
   script:
+    - ls -al
     - ([ -e cran-comments.md ] && echo "Exists")
     - Rscript -e 'devtools:::upload_cran(devtools::as.package("."), "./rENA_$VERSION.tar.gz")'
   tags:
