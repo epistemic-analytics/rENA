@@ -13,4 +13,6 @@
 R/ena.generate.R
 R/put.s3.object.R
 R/getHandsetCT.R
-^configure.old
+^configure.old*
+^src/Makevars.bak*
+Dockerfile

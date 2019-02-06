@@ -63,7 +63,6 @@ accumulate.data <- function(enadata) {
   # by the the `units.by` parameter
   ###
   if(!"ENA_UNIT" %in% colnames(dfDT_codes)) {
-    browser()
     dfDT_codes$ENA_UNIT = merge_columns_c(dfDT_codes, cols=units.by, sep=".");
   }
 
