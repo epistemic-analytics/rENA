@@ -45,17 +45,16 @@ variables:
 
 # Check Steps
 check:r-devel:
-  image: egruw/rena-r-devel:latest
+  image: registry.doit.wisc.edu/clmarquart/rena/devel:current
   only:
     - master
   <<: *check_template
 check:r-oldrelease:
-  image: egruw/rena-r-oldrelease:latest
+  image: registry.doit.wisc.edu/clmarquart/rena/old-release:current
   only:
     - master
   <<: *check_template
 check:r-release:
-  #image: egruw/rena-r-release:latest
   image: registry.doit.wisc.edu/clmarquart/rena/release:current
   <<: *check_template
 check:r-winbuilder:
