@@ -45,17 +45,17 @@ variables:
 
 # Check Steps
 check:r-devel:
-  image: egruw/rena-r-devel:latest
+  image: registry.doit.wisc.edu/clmarquart/rena/devel:current
   only:
     - master
   <<: *check_template
 check:r-oldrelease:
-  image: egruw/rena-r-oldrelease:latest
+  image: registry.doit.wisc.edu/clmarquart/rena/old-release:current
   only:
     - master
   <<: *check_template
 check:r-release:
-  image: egruw/rena-r-release:latest
+  image: registry.doit.wisc.edu/clmarquart/rena/release:current
   <<: *check_template
 check:r-winbuilder:
   stage: checkWindows
@@ -88,80 +88,3 @@ release:cran:
   tags:
     - docker
   allow_failure: false
-
-#API-dev:
-#  stage: buildAPI
-#  image: r-base:3.3.1
-#  only:
-#    - feature/rENA-api
-#  before_script:
-#    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
-#    - eval $(ssh-agent -s)
-#    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
-#    - mkdir -p ~/.ssh
-#    - chmod 700 ~/.ssh
-#    - ssh-keyscan $DEV_HOST >> ~/.ssh/known_hosts
-#    - chmod 644 ~/.ssh/known_hosts
-#  script:
-#    # Use Tar
-#    - cd ..; tar -czf rENA-source.tar.gz rENA;
-#    - scp rENA-source.tar.gz api@$DEV_HOST:~/rENA-source.tar.gz
-#    - ssh -tt api@$DEV_HOST "rm -fR ~/rENA/; tar -xf rENA-source.tar.gz -C ~/; rm rENA-source.tar.gz"
-#    # Build and Install rENA from directory
-#    - ssh -tt api@$DEV_HOST "sudo rm -fR /usr/local/lib/R/site-library/rENA/"
-#    - Rscript -e 'install.packages(c("openxlsx","concatenate"))'
-#    - ssh -tt api@$DEV_HOST "cd ~/rENA; rm -f src/*.o;  rm -f src/*.so;"
-#    - ssh -tt api@$DEV_HOST "cd ~/rENA/; cat DESCRIPTION; sudo Rscript -e 'devtools::clean_dll(); devtools::install(local=F, reload=F, quick=T, args=c(\"--preclean\",\"--no-multiarch\"))'"
-#    # Restart services
-#    - ssh -tt api@$DEV_HOST "sudo /etc/init.d/opencpu restart; sudo /etc/init.d/apache2 restart"
-#API-staging:
-#  stage: buildAPI
-#  image: r-base:3.3.1
-#  only:
-#    - feature/rENA-api-live
-#  before_script:
-#    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
-#    - eval $(ssh-agent -s)
-#    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
-#    - mkdir -p ~/.ssh
-#    - chmod 700 ~/.ssh
-#    - touch ~/.ssh/known_hosts
-#    - chmod 644 ~/.ssh/known_hosts
-#  script:
-#    - ssh-keyscan $STAGING_HOST >> ~/.ssh/known_hosts
-#    # Use Tar
-#    - cd ..; tar -czf rENA-source.tar.gz rENA;
-#    - scp rENA-source.tar.gz api@$STAGING_HOST:~/rENA-source.tar.gz
-#    - ssh -tt api@$STAGING_HOST "rm -fR ~/rENA/; tar -xf rENA-source.tar.gz -C ~/; rm rENA-source.tar.gz"
-#    - ssh -tt api@$STAGING_HOST "sudo rm -fR /usr/local/lib/R/site-library/rENA/"
-#    # Build and Install rENA from directory
-#    - Rscript -e 'install.packages(c("openxlsx","concatenate"))'
-#    - ssh -tt api@$STAGING_HOST "cd ~/rENA/; cat DESCRIPTION; sudo Rscript -e 'devtools::install(local=F, reload=F, quick=T, args=c(\"--preclean\",\"--no-multiarch\"))'"
-#    # Restart services
-#    - ssh -tt api@$STAGING_HOST "sudo /etc/init.d/opencpu restart; sudo /etc/init.d/apache2 restart"
-#API-live:
-#  stage: buildAPI
-#  image: r-base:3.3.1
-#  when: manual
-#  only:
-#    - feature/rENA-api-live
-#  before_script:
-#    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
-#    - eval $(ssh-agent -s)
-#    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
-#    - mkdir -p ~/.ssh
-#    - chmod 700 ~/.ssh
-#    - ssh-keyscan $LIVE_HOST >> ~/.ssh/known_hosts
-#    - chmod 644 ~/.ssh/known_hosts
-#  script:
-#    # Use Tar
-#    - cd ..; tar -czf rENA-source.tar.gz rENA;
-#    - scp rENA-source.tar.gz api@$LIVE_HOST:~/rENA-source.tar.gz
-#    - ssh -tt api@$LIVE_HOST "rm -fR ~/rENA/; tar -xf rENA-source.tar.gz -C ~/; rm rENA-source.tar.gz"
-#    - ssh -tt api@$LIVE_HOST "sudo rm -fR /usr/local/lib/R/site-library/rENA/"
-#    # Build and Install rENA from directory
-#    - Rscript -e 'install.packages(c("openxlsx","concatenate"))'
-#    - ssh -tt api@$LIVE_HOST "cd ~/rENA/; cat DESCRIPTION; sudo Rscript -e 'devtools::install(local=F, reload=F, quick=T, args=c(\"--preclean\",\"--no-multiarch\"))'"
-#    # Restart services
-#    - ssh -tt api@$LIVE_HOST "sudo /etc/init.d/opencpu restart; sudo /etc/init.d/apache2 restart"
-#    #
