@@ -55,7 +55,8 @@ check:r-oldrelease:
     - master
   <<: *check_template
 check:r-release:
-  image: egruw/rena-r-release:latest
+  #image: egruw/rena-r-release:latest
+  image: registry.doit.wisc.edu/clmarquart/rena/release:current
   <<: *check_template
 check:r-winbuilder:
   stage: checkWindows
