@@ -18,4 +18,4 @@ R/getHandsetCT.R
 Dockerfile
 build
 ^build/*
-^cran-comments.md
+cran-comments.md
