@@ -1,0 +1,21 @@
+## Citation Prep
+pkgDesc = packageDescription("rENA")
+pkgLink = paste0("https://cran.rstudio.com/web/packages/", pkgDesc$Package, "/index.html")
+pkgPeople = eval(parse(text=pkgDesc$`Authors@R`))
+
+authorPeople = sapply(pkgPeople, function(p) {
+  paste(p$family, paste(paste0(abbreviate(strsplit(p$given, " ")[[1]], minlength = 1, dot = F, named = F), "."), collapse =  " "), sep = ", ")
+})
+authorStr = paste0(paste(authorPeople[1:length(authorPeople)-1], collapse = ", "), " & ", authorPeople[length(authorPeople)])
+
+## Actual citation
+citHeader(paste0("To cite ", pkgDesc$Package," in publications use:"))
+
+citEntry(
+  entry = "Manual",
+  title        = paste0(pkgDesc$Package, ": ", pkgDesc$Title),
+  author       = authorPeople,
+
+  textVersion  =
+   paste0(authorStr, " (2018). ", pkgDesc$Package, ": ", pkgDesc$Title, " (", pkgDesc$Version, "). https://cran.rstudio.com/web/packages/", pkgDesc$Package, "/")
+)
