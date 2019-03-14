@@ -13,3 +13,4 @@ rENA.Rcheck/
 *.tar.gz
 
 src/symbols\.rds
+inst/doc
