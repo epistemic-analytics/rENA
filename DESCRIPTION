@@ -21,11 +21,9 @@ Imports:
     plotly,
     doParallel,
     parallel,
-    RcppRoll,
     data.tree,
     scales,
-    magrittr,
-    rmarkdown
+    magrittr
 Suggests:
     testthat,
     knitr,
