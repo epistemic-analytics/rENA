@@ -100,7 +100,7 @@ release:cran:
     - docker
   allow_failure: false
 
-docker:release
+docker:release:
   stage: docker
   tags:
     - shell
@@ -112,7 +112,7 @@ docker:release
     changes:
       - "inst/docker/rENA-release"
       - ".gitlab-ci.yml"
-docker:old-release
+docker:old-release:
   stage: docker
   tags:
     - shell
@@ -124,7 +124,7 @@ docker:old-release
     changes:
       - "inst/docker/rENA-oldrelease"
       - ".gitlab-ci.yml"
-docker:devel
+docker:devel:
   stage: docker
   tags:
     - shell
