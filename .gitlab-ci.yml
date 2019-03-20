@@ -105,7 +105,9 @@ docker:
   tags:
     - shell
   script:
+    - docker login registry.doit.wisc.edu -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD
     - docker build -t registry.doit.wisc.edu/clmarquart/rena/release:current -f inst/docker/rENA-release inst/docker/
+    - docker push registry.doit.wisc.edu/clmarquart/rena/release:current
   only:
     changes:
       - "inst/docker/*"
