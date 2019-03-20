@@ -100,39 +100,34 @@ release:cran:
     - docker
   allow_failure: false
 
+.docker_definition: &docker_template
+  stage: docker
+  tags:
+    - shell
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - docker build -t $CI_REGISTRY/clmarquart/rena/$TAG:current -f inst/docker/rENA-$FILE inst/docker/
+    - docker push $CI_REGISTRY/clmarquart/rena/$TAG:current
+  only:
+    changes:
+      - "inst/docker/rENA-$FILE"
+      - ".gitlab-ci.yml"
+
 docker:release:
-  stage: docker
-  tags:
-    - shell
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker build -t $CI_REGISTRY/clmarquart/rena/release:current -f inst/docker/rENA-release inst/docker/
-    - docker push $CI_REGISTRY/clmarquart/rena/release:current
-  only:
-    changes:
-      - "inst/docker/rENA-release"
-      - ".gitlab-ci.yml"
+  variables:
+    TAG: "release"
+    FILE: "release"
+  <<: *docker_template
+
 docker:old-release:
-  stage: docker
-  tags:
-    - shell
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker build -t $CI_REGISTRY/clmarquart/rena/old-release:current -f inst/docker/rENA-oldrelease inst/docker/
-    - docker push $CI_REGISTRY/clmarquart/rena/old-release:current
-  only:
-    changes:
-      - "inst/docker/rENA-oldrelease"
-      - ".gitlab-ci.yml"
+  variables:
+    TAG: "old-release"
+    FILE: "oldrelease"
+  <<: *docker_template
+
 docker:devel:
-  stage: docker
-  tags:
-    - shell
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker build -t $CI_REGISTRY/clmarquart/rena/devel:current -f inst/docker/rENA-devel inst/docker/
-    - docker push $CI_REGISTRY/clmarquart/rena/devel:current
-  only:
-    changes:
-      - "inst/docker/rENA-devel"
-      - ".gitlab-ci.yml"
+  variables:
+    TAG: "devel"
+    FILE: "devel"
+  <<: *docker_template
