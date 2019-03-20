@@ -102,6 +102,9 @@ release:cran:
 
 docker:
   stage: docker
+  image: gitlab/dind
+  services:
+    - docker:dind
   script:
     - docker build -t registry.doit.wisc.edu/clmarquart/rena/release:current inst/docker/rENA-release
   only:
