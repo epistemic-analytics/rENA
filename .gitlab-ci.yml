@@ -112,20 +112,16 @@ release:cran:
   only:
     changes:
       - "inst/docker/rENA-$FILE"
-      - ".gitlab-ci.yml"
-
 docker:release:
   variables:
     TAG: "release"
     FILE: "release"
   <<: *docker_template
-
 docker:old-release:
   variables:
     TAG: "old-release"
     FILE: "oldrelease"
   <<: *docker_template
-
 docker:devel:
   variables:
     TAG: "devel"
