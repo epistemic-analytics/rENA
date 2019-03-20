@@ -102,11 +102,10 @@ release:cran:
 
 docker:
   stage: docker
-  image: gitlab/dind
-  services:
-    - docker:dind
+  tags: shell
   script:
     - docker build -t registry.doit.wisc.edu/clmarquart/rena/release:current inst/docker/rENA-release
   only:
     changes:
       - "inst/docker/*"
+      - ".gitlab-ci.yml"
