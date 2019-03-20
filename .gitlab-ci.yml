@@ -105,7 +105,7 @@ docker:
   tags:
     - shell
   script:
-    - docker login -u gitlab+deploy-token-16 -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker build -t $CI_REGISTRY/clmarquart/rena/release:current -f inst/docker/rENA-release inst/docker/
     - docker push $CI_REGISTRY/clmarquart/rena/release:current
   only:
