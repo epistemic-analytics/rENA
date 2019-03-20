@@ -105,7 +105,7 @@ docker:
   tags:
     - shell
   script:
-    - docker build -t registry.doit.wisc.edu/clmarquart/rena/release:current inst/docker/rENA-release
+    - docker build -t registry.doit.wisc.edu/clmarquart/rena/release:current -f inst/docker/rENA-release inst/docker/
   only:
     changes:
       - "inst/docker/*"
