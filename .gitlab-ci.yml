@@ -1,8 +1,10 @@
 stages:
  - check
  - checkWindows
+ - deploy
  - release
  - buildAPI
+ - docker
 
 variables:
   DEV_HOST: "34.212.25.148"
@@ -23,12 +25,16 @@ variables:
     - cat ~/.R/Makevars
     - Rscript -e 'Rcpp::compileAttributes()'
     - Rscript -e 'update(devtools::dev_package_deps("."))'
+    - Rscript -e 'install.packages("webshot", repos = "https://cran.rstudio.com")'
+    #- Rscript -e 'devtools::build_vignettes()' || true
     - cd ..; R CMD build --resave-data --no-manual --log rENA || true
 .check_definition: &check_template
   stage: check
   artifacts:
     paths:
       - build/
+      - doc/
+      - inst/doc/
     expire_in: 1 week
   <<: *build_template
   script:
@@ -56,6 +62,11 @@ check:r-oldrelease:
   <<: *check_template
 check:r-release:
   image: registry.doit.wisc.edu/clmarquart/rena/release:current
+  only:
+    refs:
+      - "branches"
+    changes:
+      - "!inst/docker/*"
   <<: *check_template
 check:r-winbuilder:
   stage: checkWindows
@@ -88,3 +99,31 @@ release:cran:
   tags:
     - docker
   allow_failure: false
+
+.docker_definition: &docker_template
+  stage: docker
+  tags:
+    - shell
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - docker build -t $CI_REGISTRY/clmarquart/rena/$TAG:current -f inst/docker/rENA-$FILE inst/docker/
+    - docker push $CI_REGISTRY/clmarquart/rena/$TAG:current
+  only:
+    changes:
+      - "inst/docker/rENA-$FILE"
+docker:release:
+  variables:
+    TAG: "release"
+    FILE: "release"
+  <<: *docker_template
+docker:old-release:
+  variables:
+    TAG: "old-release"
+    FILE: "oldrelease"
+  <<: *docker_template
+docker:devel:
+  variables:
+    TAG: "devel"
+    FILE: "devel"
+  <<: *docker_template
