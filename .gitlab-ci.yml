@@ -62,11 +62,6 @@ check:r-oldrelease:
   <<: *check_template
 check:r-release:
   image: registry.doit.wisc.edu/clmarquart/rena/release:current
-  only:
-    refs:
-      - "branches"
-    changes:
-      - "!inst/docker/*"
   <<: *check_template
 check:r-winbuilder:
   stage: checkWindows
