@@ -1,16 +1,14 @@
 stages:
+ - docker
  - check
  - checkWindows
- - deploy
  - release
- - buildAPI
- - docker
 
 variables:
-  DEV_HOST: "34.212.25.148"
-  STAGING_HOST: "54.201.134.99"
-  LIVE_HOST: "54.218.105.250"
   VERSION: "0.1.6.1"
+  PKG: "rENA"
+  PKGL: "rena"
+  REG_URL: "registry.doit.wisc.edu/clmarquart/rena"
 
 # Templates
 .build_definition: &build_template
@@ -51,22 +49,17 @@ variables:
 
 # Check Steps
 check:r-devel:
-  image: registry.doit.wisc.edu/clmarquart/rena/devel:current
+  image: $REG_URL/devel:current
   only:
     - master
   <<: *check_template
 check:r-oldrelease:
-  image: registry.doit.wisc.edu/clmarquart/rena/old-release:current
+  image: $REG_URL/old-release:current
   only:
     - master
   <<: *check_template
 check:r-release:
-  image: registry.doit.wisc.edu/clmarquart/rena/release:current
-  only:
-    refs:
-      - "branches"
-    changes:
-      - "!inst/docker/*"
+  image: $REG_URL/release:current
   <<: *check_template
 check:r-winbuilder:
   stage: checkWindows
@@ -75,10 +68,10 @@ check:r-winbuilder:
     - master
   <<: *build_template
   script:
-    - curl -v -T rENA_$VERSION.tar.gz ftp://win-builder.r-project.org/R-oldrelease/rENA_$VERSION.tar.gz
-    - curl -v -T rENA_$VERSION.tar.gz ftp://win-builder.r-project.org/R-release/rENA_$VERSION.tar.gz
-    - curl -v -T rENA_$VERSION.tar.gz ftp://win-builder.r-project.org/R-devel/rENA_$VERSION.tar.gz
-    - mv ./rENA_$VERSION.tar.gz rENA/build/
+    - curl -v -T ${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-oldrelease/${PKG}_${VERSION}.tar.gz
+    - curl -v -T ${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-release/${PKG}_${VERSION}.tar.gz
+    - curl -v -T ${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-devel/${PKG}_${VERSION}.tar.gz
+    - mv ./${PKG}_${VERSION}.tar.gz ${PKG}/build/
   tags:
     - docker
   allow_failure: false
@@ -107,9 +100,11 @@ release:cran:
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
-    - docker build -t $CI_REGISTRY/clmarquart/rena/$TAG:current -f inst/docker/rENA-$FILE inst/docker/
-    - docker push $CI_REGISTRY/clmarquart/rena/$TAG:current
+    - docker build -t $CI_REGISTRY/clmarquart/$PKGL/$TAG:current -f inst/docker/${PKG}-$FILE inst/docker/
+    - docker push $CI_REGISTRY/clmarquart/$PKGL/$TAG:current
   only:
+    refs:
+      - develop
     changes:
       - "inst/docker/rENA-$FILE"
 docker:release:
