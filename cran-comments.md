@@ -1,3 +1,3 @@
-# v0.1.6
+# v0.1.6.1
 
-Updates to accomodate changes in depenedent data.table packages
+Updates to CITATION and vignettes
