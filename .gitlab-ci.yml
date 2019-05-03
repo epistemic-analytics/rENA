@@ -103,7 +103,8 @@ release:cran:
     - docker build -t $CI_REGISTRY/clmarquart/$PKGL/$TAG:current -f inst/docker/${PKG}-$FILE inst/docker/
     - docker push $CI_REGISTRY/clmarquart/$PKGL/$TAG:current
   only:
-    - develop
+    refs:
+      - develop
     changes:
       - "inst/docker/rENA-$FILE"
 docker:release:
