@@ -67,8 +67,7 @@ check:r-release:
 check:r-winbuilder:
   stage: checkWindows
   image: egruw/r-ftp
-  only:
-    - master
+  when: manual
   <<: *build_template
   script:
     - curl -v -T ${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-oldrelease/${PKG}_${VERSION}.tar.gz
