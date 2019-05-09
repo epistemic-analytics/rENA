@@ -46,7 +46,7 @@ variables:
     - mv ./rENA-00build.log rENA/archive/ || true
     - mv ./rENA.Rcheck/00check.log rENA/archive/ || true
     - mv ./rENA.Rcheck/00install.out rENA/archive/ || true
-    - mv ./*.tar.gz rENA/archive/ || true
+    - mv ./rENA_*.tar.gz rENA/archive/ || true
     #- cp ./${PKG}/doc/ ./${PKG}/inst/doc/
   tags:
     - docker
