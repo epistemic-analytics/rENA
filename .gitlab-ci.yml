@@ -27,7 +27,7 @@ variables:
     - Rscript -e 'devtools::build_vignettes(upgrade = F, install = T, keep_md = F)' || true
     - mkdir -p build/
     - mv Meta/* build/ || true
-    - cd ..; R CMD build --resave-data --no-manual --log rENA || true
+    - cd ..; R CMD build --resave-data --no-manual --log --no-build-vignettes rENA || true
 .check_definition: &check_template
   stage: check
   artifacts:
@@ -49,6 +49,7 @@ variables:
     - mv ./rENA.Rcheck/00check.log rENA/archive/ || true
     - mv ./rENA.Rcheck/00install.out rENA/archive/ || true
     - mv ./rENA_$VERSION.tar.gz rENA/archive/
+    - mv ./${PKG}_${VERSION}.tar.gz ${PKG}/archive/
   tags:
     - docker
   allow_failure: false
@@ -73,10 +74,10 @@ check:r-winbuilder:
   when: manual
   # <<: *build_template
   script:
-    - curl -v -T ${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-oldrelease/${PKG}_${VERSION}.tar.gz
-    - curl -v -T ${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-release/${PKG}_${VERSION}.tar.gz
-    - curl -v -T ${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-devel/${PKG}_${VERSION}.tar.gz
-    - mv ./${PKG}_${VERSION}.tar.gz ${PKG}/archive/
+    - curl -v -T archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-oldrelease/${PKG}_${VERSION}.tar.gz
+    - curl -v -T archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-release/${PKG}_${VERSION}.tar.gz
+    - curl -v -T archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-devel/${PKG}_${VERSION}.tar.gz
+    #- mv ./${PKG}_${VERSION}.tar.gz ${PKG}/archive/
   tags:
     - docker
   allow_failure: false
