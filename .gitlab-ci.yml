@@ -15,7 +15,7 @@ variables:
   before_script:
     - export _R_CHECK_CRAN_INCOMING_=FALSE
     - export _R_CHECK_FORCE_SUGGESTS_=TRUE
-    - mkdir -p build/
+    - mkdir -p archive/
     - rm -f ./R/RcppExports.R
     - mkdir -p ~/.R/
     - rm -f ~/.R/Makevars
@@ -25,12 +25,14 @@ variables:
     - Rscript -e 'update(devtools::dev_package_deps("."))'
     - Rscript -e 'install.packages("webshot", repos = "https://cran.rstudio.com")'
     - Rscript -e 'devtools::build_vignettes(upgrade = F, install = T, keep_md = F)' || true
+    - mv Meta/* build/
     - cd ..; R CMD build --resave-data --no-manual --log rENA || true
 .check_definition: &check_template
   stage: check
   artifacts:
     paths:
       - build/
+      - archive/
       - doc/
       - inst/doc/
     expire_in: 1 week
@@ -42,10 +44,10 @@ variables:
     - ls -al ./rENA/ || true
     - ls -al ./rENA/doc/ || true
     - ls -al ./rENA/Meta/ || true
-    - mv ./rENA-00build.log rENA/build/ || true
-    - mv ./rENA.Rcheck/00check.log rENA/build/ || true
-    - mv ./rENA.Rcheck/00install.out rENA/build/ || true
-    - mv ./rENA_$VERSION.tar.gz rENA/build/
+    - mv ./rENA-00build.log rENA/archive/ || true
+    - mv ./rENA.Rcheck/00check.log rENA/archive/ || true
+    - mv ./rENA.Rcheck/00install.out rENA/archive/ || true
+    - mv ./rENA_$VERSION.tar.gz rENA/archive/
   tags:
     - docker
   allow_failure: false
@@ -73,7 +75,7 @@ check:r-winbuilder:
     - curl -v -T ${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-oldrelease/${PKG}_${VERSION}.tar.gz
     - curl -v -T ${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-release/${PKG}_${VERSION}.tar.gz
     - curl -v -T ${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-devel/${PKG}_${VERSION}.tar.gz
-    - mv ./${PKG}_${VERSION}.tar.gz ${PKG}/build/
+    - mv ./${PKG}_${VERSION}.tar.gz ${PKG}/archive/
   tags:
     - docker
   allow_failure: false
@@ -90,7 +92,7 @@ release:cran:
   when: manual
   script:
     - cat cran-comments.md
-    - Rscript -e "devtools:::upload_cran(devtools::as.package('.'), './build/rENA_$VERSION.tar.gz')"
+    - Rscript -e "devtools:::upload_cran(devtools::as.package('.'), './archive/rENA_$VERSION.tar.gz')"
   tags:
     - docker
   allow_failure: false
