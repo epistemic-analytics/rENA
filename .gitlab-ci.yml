@@ -26,7 +26,7 @@ variables:
     - Rscript -e 'install.packages("webshot", repos = "https://cran.rstudio.com")'
     - Rscript -e 'devtools::build_vignettes(upgrade = F, install = T, keep_md = F)' || true
     - mkdir -p build/
-    - mv Meta/* build/
+    - mv Meta/* build/ || true
     - cd ..; R CMD build --resave-data --no-manual --log rENA || true
 .check_definition: &check_template
   stage: check
