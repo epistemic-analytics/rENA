@@ -8,7 +8,7 @@ variables:
   VERSION: "0.1.6.1"
   PKG: "rENA"
   PKGL: "rena"
-  REG_URL: "registry.doit.wisc.edu/clmarquart/rena"
+  REG_URL: "registry.doit.wisc.edu/epistemic-analytics/qe-packages/rena"
 
 # Templates
 .build_definition: &build_template
@@ -104,13 +104,14 @@ release:cran:
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
-    - docker build -t $CI_REGISTRY/clmarquart/$PKGL/$TAG:current -f inst/docker/${PKG}-$FILE inst/docker/
-    - docker push $CI_REGISTRY/clmarquart/$PKGL/$TAG:current
+    - docker build -t $REG_URL/$TAG:current -f inst/docker/${PKG}-$FILE inst/docker/
+    - docker push $REG_URL/$TAG:current
   only:
     refs:
       - develop
     changes:
       - "inst/docker/rENA-$FILE"
+      - ".gitlab-ci.yml"
 docker:release:
   variables:
     TAG: "release"
