@@ -23,7 +23,7 @@ variables:
     - cat ~/.R/Makevars
     - Rscript -e 'Rcpp::compileAttributes()'
     - Rscript -e 'update(devtools::dev_package_deps("."))'
-    - Rscript -e 'install.packages("webshot", repos = "https://cran.rstudio.com")'
+    #- Rscript -e 'install.packages("webshot", repos = "https://cran.rstudio.com")'
     #- Rscript -e 'devtools::build_vignettes(upgrade = F, install = T, keep_md = F)' || true
     #- mkdir -p build/
     #- mv Meta/* build/ || true

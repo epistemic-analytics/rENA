@@ -1,6 +1,5 @@
 FROM rocker/r-ver:latest
 
-
 RUN apt-get update -y
 RUN apt-get install -y apt-utils
 RUN apt-get install -y libxml2 xml2
@@ -23,5 +22,6 @@ RUN R -e 'install.packages(c("rmarkdown"), repos="http://cran.rstudio.com")'
 RUN R -e 'install.packages(c("RcppArmadillo"), repos="http://cran.rstudio.com")'
 RUN R -e 'install.packages(c("RcppParallel"), repos="http://cran.rstudio.com")'
 RUN R -e 'install.packages(c("RcppEigen"), repos="http://cran.rstudio.com")'
+RUN R -e 'install.packages(c("webshot"), repos="http://cran.rstudio.com")'
 
 RUN R --version
