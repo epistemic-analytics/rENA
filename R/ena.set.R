@@ -28,6 +28,12 @@ ena.set <- function(x) {
     )
   )
   class(newset) <- c("ena.set")
+  class(newset$connection.counts) <- c("ena.connection", class(newset$connection.counts))
 
   return(newset);
+}
+
+
+as.matrix.ena.connection <- function(x, ...) {
+  connection.matrix(x, ...)
 }
