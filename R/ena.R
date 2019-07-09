@@ -118,8 +118,7 @@ ena = function(
     plot1 = ena.plot.network(plot1, network = group1.mean)
     plot1 = ena.plot.group(plot1, group1.points, labels = group1, colors = "red", confidence.interval = "box")
 
-    if(showPlots == TRUE){
-
+    if(showPlots == TRUE) {
       print(plot1)
     }
 
@@ -142,12 +141,13 @@ ena = function(
       rotation.params = list(accum$metadata[,..groupCol] == group1, accum$metadata[,..groupCol]== group2)
     )
 
-    metaNames = data.frame(set$enadata$metadata)
+    metaNames = data.frame(set$meta.data)
+    browser()
     group1.rows = metaNames[,groupCol] == group1
-    group1.points = set$points.rotated[group1.rows,]
+    group1.points = set$points[group1.rows,]
 
     group2.rows = metaNames[,groupCol] == group2
-    group2.points = set$points.rotated[group2.rows,]
+    group2.points = set$points[group2.rows,]
 
     group1.lineweights = set$line.weights[group1.rows,]
     group1.mean = colMeans(group1.lineweights)

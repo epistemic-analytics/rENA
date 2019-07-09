@@ -1,16 +1,27 @@
 ena.set <- function(x) {
 
   newset = list()
-  class(newset) <- c("ena.set")
+  class(newset) <- c("ena.set", class(newset))
+
+  newset$meta.data = x$enadata$metadata
+
+  code.columns = apply(x$enadata$adjacency.matrix, 2, paste, collapse = " & ")
 
   newset$connection.counts = x$points.raw
-  newset$line.weights = x$line.weights
-  newset$meta.data = x$enadata$raw
-  newset$points = x$points.rotated
+  colnames(newset$connection.counts) = code.columns
+  newset$line.weights = cbind(newset$meta.data, newset$connection.counts)
+
+
+  newset$line.weights = as.data.table(x$line.weights)
+  newset$line.weights = cbind(newset$meta.data, newset$line.weights)
+
+  newset$points = cbind(newset$meta.data, x$points.rotated)
+
   newset$rotation.matrix = x$rotation.set$rotation
   newset$trajectories = x$enadata$trajectories$step
   newset$units = x$enadata$units
   newset$model = list(
+    raw.input = x$enadata$raw,
     model.type = x$enadata$model,
     centroids = x$centroids,
     correlations = x$correlations,
@@ -21,6 +32,10 @@ ena.set <- function(x) {
     row.connection.counts = x$enadata$accumulated.adjacency.vectors,
     unit.labels = x$enadata$unit.names
   )
+  newset$model$points.for.projection = cbind(newset$meta.data, newset$model$points.for.projection)
+  newset$model$row.connection.counts = newset$model$row.connection.counts[, unique(names(newset$model$row.connection.counts)), with=F]
+
+
   newset$rotation = list(
     eigenvalues = x$rotation.set$eigenvalues,
     rotation.matrix = x$rotation.set$rotation,
@@ -34,11 +49,11 @@ ena.set <- function(x) {
   conn.env = new.env(parent = globalenv())
   class(conn.env) = 'pointer'
 
-  connection.matrices = vector(mode = "list", length = length(set2$model$unit.labels))
-  names(connection.matrices) = set2$model$unit.labels
+  connection.matrices = vector(mode = "list", length = length(newset$model$unit.labels))
+  names(connection.matrices) = newset$model$unit.labels
 
   conn.env = list2env(connection.matrices)
-  for(l in set2$model$unit.labels) {
+  for(l in newset$model$unit.labels) {
     delayedAssign(l, {
       print(Sys.time())
       connection.matrix(newset$connection.counts, l)

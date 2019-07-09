@@ -80,5 +80,7 @@ ena.make.set <- function(
 
   set$function.call = sys.call();
 
+  set = ena.set(set)
+
   return(set)
 }
