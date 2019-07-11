@@ -91,7 +91,7 @@
 ena.plot.network = function(
   enaplot = NULL,
   network = NULL,
-  node.positions = enaplot$enaset$node.positions,
+  node.positions = enaplot$enaset$rotation$nodes,
   adjacency.key = namesToAdjacencyKey(rownames(node.positions)), #enaplot$enaset$enadata$adjacency.matrix,
   colors = c(pos="red", "blue"),
   edge_type = "line", #c("line", "dash", "dot"),

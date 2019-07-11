@@ -33,6 +33,8 @@ ENAplot = R6::R6Class("ENAplot",
         scale.to = c("network", "points"),
         ...
       ) {
+        code.cols = !colnames(enaset$line.weights) %in% colnames(enaset$meta.data)
+
         scale.to = match.arg(scale.to);
 
         args = list(...);
@@ -56,12 +58,10 @@ ENAplot = R6::R6Class("ENAplot",
           type ="scatter"
         );
 
-
-        # browser()
         # max.axis = max(abs(points))*1.2;
-        max.axis = max(abs(enaset$node.positions))*1.2;
+        max.axis = max(abs(enaset$rotation$nodes))*1.2;
         if(scale.to == "points") {
-          max.axis = max(abs(enaset$points.rotated))*1.2;
+          max.axis = max(abs(enaset$points[, code.cols, with = F]))*1.2
         };
         # network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T, range=c(-max.axis,max.axis));
         graph.axis <- list(

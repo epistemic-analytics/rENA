@@ -3,47 +3,41 @@ ena.set <- function(x) {
   newset = list()
   class(newset) <- c("ena.set", class(newset))
 
-  newset$meta.data = x$enadata$metadata
 
   code.columns = apply(x$enadata$adjacency.matrix, 2, paste, collapse = " & ")
 
   newset$connection.counts = x$points.raw
-  colnames(newset$connection.counts) = code.columns
-  newset$line.weights = cbind(newset$meta.data, newset$connection.counts)
+    colnames(newset$connection.counts) = code.columns
+    class(newset$connection.counts) <- c("ena.connection", class(newset$connection.counts))
 
-
-  newset$line.weights = as.data.table(x$line.weights)
-  newset$line.weights = cbind(newset$meta.data, newset$line.weights)
-
-  newset$points = cbind(newset$meta.data, x$points.rotated)
-
+  newset$line.weights = as.data.table(cbind(x$enadata$metadata, x$line.weights))
+  newset$meta.data = x$enadata$metadata
+  newset$points = cbind(x$enadata$metadata, x$points.rotated)
   newset$rotation.matrix = x$rotation.set$rotation
   newset$trajectories = x$enadata$trajectories$step
-  newset$units = x$enadata$units
+  # newset$units = x$enadata$units
+
   newset$model = list(
-    raw.input = x$enadata$raw,
-    model.type = x$enadata$model,
     centroids = x$centroids,
     correlations = x$correlations,
-    points.for.projection = x$points.normed.centered,
-    variance = x$variance,
     function.call = x$function.call,
     function.params = x$function.params,
-    row.connection.counts = x$enadata$accumulated.adjacency.vectors,
-    unit.labels = x$enadata$unit.names
+    model.type = x$enadata$model,
+    points.for.projection = cbind(x$enadata$metadata, x$points.normed.centered),
+    raw.input = x$enadata$raw,
+    row.connection.counts = x$enadata$accumulated.adjacency.vectors[, unique(names(x$enadata$accumulated.adjacency.vectors)), with=F],
+    unit.labels = x$enadata$unit.names,
+    variance = x$variance
   )
-  newset$model$points.for.projection = cbind(newset$meta.data, newset$model$points.for.projection)
-  newset$model$row.connection.counts = newset$model$row.connection.counts[, unique(names(newset$model$row.connection.counts)), with=F]
 
 
   newset$rotation = list(
-    eigenvalues = x$rotation.set$eigenvalues,
-    rotation.matrix = x$rotation.set$rotation,
     adjacency.key = x$enadata$adjacency.matrix,
     codes = x$enadata$codes,
-    nodes = x$node.positions
+    eigenvalues = x$rotation.set$eigenvalues,
+    nodes = x$node.positions,
+    rotation.matrix = x$rotation.set$rotation
   )
-  class(newset$connection.counts) <- c("ena.connection", class(newset$connection.counts))
 
 
   conn.env = new.env(parent = globalenv())
@@ -55,21 +49,20 @@ ena.set <- function(x) {
   conn.env = list2env(connection.matrices)
   for(l in newset$model$unit.labels) {
     delayedAssign(l, {
-      print(Sys.time())
       connection.matrix(newset$connection.counts, l)
     }, assign.env = conn.env)
   }
 
   newset$connection.matrices = conn.env
   class(connection.matrices) <- c("connection.matrix", class(connection.matrices))
+  # browser()
+
   # attr(connection.matrices, "ena.set") <- newset;
   # matrices.object = new.env(parent = globalenv())
   # matrices.object$value = connection.matrices
   # class(matrices.object) = 'pointer'
 
   # object.set$value = newset
-
-  # browser()
 
   return(newset);
 }
@@ -84,3 +77,34 @@ as.matrix.ena.connection <- function(x, ...) {
 #   # it is attached to when accessing it
 #   browser()
 # }
+
+# list(
+#   connection.matrices = NULL,
+#   connection.counts = NULL,
+#   line.weights = NULL,
+#   meta.data = NULL,
+#   points = NULL,
+#   rotation.matrix = NULL,
+#   trajectories = NULL,
+#
+#   model = list(
+#     centroids = NULL,
+#     correlations = NULL,
+#     function.call = NULL,
+#     function.params = NULL,
+#     model.type = NULL,
+#     points.for.projection = NULL,
+#     raw.input = NULL,
+#     row.connection.counts = NULL,
+#     unit.labels = NULL,
+#     variance = NULL
+#   ),
+#
+#   rotation = list(
+#     adjacency.key = NULL,
+#     codes = NULL,
+#     eigenvalues = NULL,
+#     nodes = NULL,
+#     rotation.matrix = NULL
+#   )
+# )
