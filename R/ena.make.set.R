@@ -66,21 +66,113 @@ ena.make.set <- function(
   node.position.method = lws.positions.sq,
   ...
 ) {
-  set = ENAset$new(
-    enadata = enadata,
-    dimensions = dimensions,
-    rotation.by = rotation.by,
-    rotation.params = rotation.params,
-    rotation.set = rotation.set,
-    norm.by = norm.by,
-    node.position.method = node.position.method,
-    endpoints.only = endpoints.only,
-    ...
-  )$process();
+  if("ENAdata" %in% enadata) {
+    warning("Usage of ENAdata object will be deprecated and potentially removed altogether in future versions. See ena.accumulate.data() or ena.set()");
+    enadata = ena.set(enadata);
+  }
+  # set = ENAset$new(
+  #   enadata = enadata,
+  #   dimensions = dimensions,
+  #   rotation.by = rotation.by,
+  #   rotation.params = rotation.params,
+  #   rotation.set = rotation.set,
+  #   norm.by = norm.by,
+  #   node.position.method = node.position.method,
+  #   endpoints.only = endpoints.only,
+  #   ...
+  # )$process();
 
-  set$function.call = sys.call();
 
-  set = ena.set(set)
+  ###
+  # Normalize the raw data using self$function.params$norm.by,
+  # which defaults to calling rENA::dont_sphere_norm_c
+  ###
+  enadata$line.weights = norm.by(enadata$connection.counts);
 
-  return(set)
+  ###
+  # Convert the string vector of code names to their corresponding
+  # co-occurence names and set as colnames for the self$line.weights
+  ##
+  code_columns = svector_to_ut(enadata$rotation$codes);
+  colnames(enadata$line.weights) = code_columns;
+
+  ###
+
+
+  ###
+  # Center the normed data
+  ###
+  enadata$model$points.for.projection = center_data_c(enadata$line.weights);
+  colnames(enadata$model$points.for.projection) = code_columns;
+
+  enadata$model$points.for.projection = cbind(enadata$meta.data, enadata$model$points.for.projection)
+  ###
+
+  ###
+  # Generate and Assign the rotation set
+  ###
+  if(!is.null(rotation.by) && is.null(rotation.set)) {
+    rotation = do.call(rotation.by, list(enadata, rotation.params));
+    enadata$rotation.matrix = rotation$rotation;
+    enadata$rotation$nodes = rotation$node.positions;
+    enadata$rotation$eigenvalues = rotation$eigenvalues;
+  } else if (!is.null(rotation.set)) {
+    if(is(rotation.set, "ENARotationSet")) {
+      print("Using custom rotation.set.")
+
+      enadata$rotation.matrix = rotation.set$rotation;
+      enadata$rotation$nodes = rotation.set$node.positions;
+      enadata$rotation$eigenvalues = rotation.set$eigenvalues
+    } else {
+      stop("Supplied rotation.set is not an instance of ENARotationSet")
+    }
+  } else {
+    stop("Unable to find or create a rotation set")
+  }
+  ###
+
+  ###
+  # Generated the rotated points
+  ###
+  points = as.matrix(enadata$model$points.for.projection[,!colnames(enadata$model$points.for.projection) %in% colnames(enadata$meta.data), with=F]) %*% enadata$rotation.matrix;
+  enadata$points = cbind(enadata$meta.data, points)
+  ###
+
+  ###
+  # Calculate node positions
+  #  - The supplied methoed is responsible is expected to return a list
+  #    with two keys, "node.positions" and "centroids"
+  ###
+  if(!is.null(rotation) && is.null(rotation.set)) {
+    positions = node.position.method(enadata);
+    if(all(names(positions) %in% c("node.positions","centroids"))) {
+      enadata$rotation$nodes = positions$node.positions
+      enadata$model$centroids = positions$centroids
+    } else {
+      print("The node position method didn't return back the expected objects:")
+      print("    Expected: c('node.positions','centroids')");
+      print(paste("    Received: ",names(positions),sep=""));
+    }
+  } else if (!is.null(rotation.set)) {
+    self$node.positions = rotation.set$nodes
+  } else {
+    stop("Unable to determine the node positions either by calculating
+                them using `node.position.method` or using a supplied
+                `rotation.set`");
+  }
+  ###
+
+  ###
+  # Variance
+  ###
+  variance.of.rotated.data = var(points)
+  diagonal.of.variance.of.rotated.data = as.vector(diag(variance.of.rotated.data))
+  enadata$model$variance = diagonal.of.variance.of.rotated.data/sum(diagonal.of.variance.of.rotated.data)
+
+
+  # set$function.call = sys.call();
+
+  # set = ena.set(set)
+
+  return(enadata)
 }

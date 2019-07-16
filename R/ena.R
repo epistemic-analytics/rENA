@@ -177,6 +177,11 @@ ena = function(
       print(plot3)
     }
 
-    return(list(set = set, group1.plot = plot1, group2.plot = plot2, network.subtraction = plot3))
+    set$model$plots = list(
+      group1.plot = plot1,
+      group2.plot = plot2,
+      network.subtraction = plot3
+    )
+    return(set)
   }
 }

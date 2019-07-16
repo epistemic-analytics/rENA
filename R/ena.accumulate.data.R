@@ -119,6 +119,7 @@ ena.accumulate.data <- function(
     include.meta = include.meta,
     ...
   );
+  data$process();
 
   data$function.call = sys.call();
 
@@ -133,6 +134,8 @@ ena.accumulate.data <- function(
   #   r6.to.json(data, o.class = output.class, o.fields = output.fields)
   # }
   #else
+
+  data = ena.set(data);
   data
 }
 

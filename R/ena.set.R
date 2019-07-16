@@ -1,44 +1,55 @@
 ena.set <- function(x) {
-
   newset = list()
   class(newset) <- c("ena.set", class(newset))
+  x.is.set = T
 
-
+  if("ENAdata" %in% class(x)) {
+    x = list(enadata = x);
+    x.is.set = F
+  }
+  browser()
   code.columns = apply(x$enadata$adjacency.matrix, 2, paste, collapse = " & ")
 
-  newset$connection.counts = x$points.raw
-    colnames(newset$connection.counts) = code.columns
-    class(newset$connection.counts) <- c("ena.connection", class(newset$connection.counts))
 
-  newset$line.weights = as.data.table(cbind(x$enadata$metadata, x$line.weights))
   newset$meta.data = x$enadata$metadata
-  newset$points = cbind(x$enadata$metadata, x$points.rotated)
-  newset$rotation.matrix = x$rotation.set$rotation
+  newset$connection.counts = x$enadata$adjacency.vectors;
+  colnames(newset$connection.counts) = code.columns
+  class(newset$connection.counts) <- c("ena.connection", class(newset$connection.counts))
+
+  if(x.is.set) {
+    newset$line.weights = as.data.table(cbind(x$enadata$metadata, x$line.weights))
+    newset$points = cbind(x$enadata$metadata, x$points.rotated)
+    newset$rotation.matrix = x$rotation.set$rotation
+  }
+
   newset$trajectories = x$enadata$trajectories$step
-  # newset$units = x$enadata$units
 
   newset$model = list(
-    centroids = x$centroids,
-    correlations = x$correlations,
-    function.call = x$function.call,
-    function.params = x$function.params,
     model.type = x$enadata$model,
-    points.for.projection = cbind(x$enadata$metadata, x$points.normed.centered),
     raw.input = x$enadata$raw,
     row.connection.counts = x$enadata$accumulated.adjacency.vectors[, unique(names(x$enadata$accumulated.adjacency.vectors)), with=F],
-    unit.labels = x$enadata$unit.names,
-    variance = x$variance
+    unit.labels = x$enadata$unit.names
   )
 
+  if(x.is.set) {
+    newset$model$centroids = x$centroids
+    newset$model$correlations = x$correlations
+    newset$model$function.call = x$function.call
+    newset$model$function.params = x$function.params
+    newset$model$points.for.projection = cbind(x$enadata$metadata, x$points.normed.centered)
+    newset$model$variance = x$variance
+  }
 
   newset$rotation = list(
     adjacency.key = x$enadata$adjacency.matrix,
-    codes = x$enadata$codes,
-    eigenvalues = x$rotation.set$eigenvalues,
-    nodes = x$node.positions,
-    rotation.matrix = x$rotation.set$rotation
+    codes = x$enadata$codes
   )
 
+  if(x.is.set) {
+    newset$rotation$eigenvalues = x$rotation.set$eigenvalues
+    newset$rotation$nodes = x$node.positions
+    newset$rotation$rotation.matrix = x$rotation.set$rotation
+  }
 
   conn.env = new.env(parent = globalenv())
   class(conn.env) = 'pointer'
@@ -55,14 +66,6 @@ ena.set <- function(x) {
 
   newset$connection.matrices = conn.env
   class(connection.matrices) <- c("connection.matrix", class(connection.matrices))
-  # browser()
-
-  # attr(connection.matrices, "ena.set") <- newset;
-  # matrices.object = new.env(parent = globalenv())
-  # matrices.object$value = connection.matrices
-  # class(matrices.object) = 'pointer'
-
-  # object.set$value = newset
 
   return(newset);
 }
@@ -108,3 +111,8 @@ as.matrix.ena.connection <- function(x, ...) {
 #     rotation.matrix = NULL
 #   )
 # )
+
+plot.ena.set <- function(x) {
+  x$model$plots
+}
+

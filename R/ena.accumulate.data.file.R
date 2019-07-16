@@ -91,6 +91,7 @@ ena.accumulate.data.file <- function(
     include.meta = include.meta,
     ...
   );
+  data$process();
 
   data$function.call = sys.call();
   # output = match.arg(output);

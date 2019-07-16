@@ -82,7 +82,6 @@ ENAdata = R6::R6Class("ENAdata", public = list(
 
     private$mask <- mask;
     # private$trajectory.by <- conversations.by;
-    private$loadFile();
 
     self
   },
@@ -113,6 +112,12 @@ ENAdata = R6::R6Class("ENAdata", public = list(
     ####
     ## Public Functions
     ####
+      ####
+      # Process the accumulation
+      #####
+      process = function() {
+        private$loadFile();
+      },
 
       ####
       # \code{get()} - Return a read-only property
@@ -140,61 +145,6 @@ ENAdata = R6::R6Class("ENAdata", public = list(
           colnames(namedData)[grep("adjacency.code",colnames(namedData))] = apply(namedRows, 2, function(x) paste(x[1], x[2], sep=sep))
         }
         namedData
-      },
-
-      ####
-      # \code{update()} - Change any of the allowed properties then reprocess the ENAdata.
-      # \preformatted{  Example:
-      #     update(
-      #       file = private$file,
-      #       codes = self$codes,
-      #       conversations.by = private$conversations.by,
-      #       units = self$units,
-      #       unitsSelected = private$unitsSelected,
-      #       windowSize = private$windowSize,
-      #       reload = FALSE
-      #       ...
-      #     )}
-      #
-      # \preformatted{  Parameters:
-      #     file - The original data to accumulate, as a data.frame or data.table
-      #     codes - String vector of column names to use as codes
-      #     conversations.by - String vector of column names to create the conversations
-      #     units - String vector of which units to include in the ENAset
-      #      windowSize - Integer used to select the size of each stanza window within a conversation
-      #     reload - Logical, force reloading of the ENAdata object}
-      ####
-      update = function(
-        file = private$file,
-        codes = self$codes,
-        conversations.by = private$conversations.by,
-        units = self$units,
-        #units.exclude = private$units.exclude,
-        windowSize = private$window.size,
-        reload = F
-      ) {
-        if(all.equal.raw(file, private$file) == FALSE) {
-          private$file <- file; reload = T;
-        }
-        if( identical(codes, self$codes) == F ) {
-          self$codes <- codes; reload = T;
-        }
-        if( is.null(units) || !all(units == self$units) ) {
-          self$units <- units; reload = T;
-        }
-        # if( identical(units.exclude, private$units.exclude) == F ) {
-        #   private$units.exclude <- units.exclude; reload = T;
-        # }
-        if( is.null(conversations.by) || !all(conversations.by == private$conversations.by) ) {
-          private$conversations.by <- conversations.by; reload = T;
-        }
-        if( identical(windowSize, private$window.size) == F) {
-          private$window.size = windowSize; reload = T;
-        }
-
-        if(reload == T) self$data <- private$loadFile();
-
-        return(self);
       },
 
       add.metadata = function(merge = F) {
@@ -257,23 +207,22 @@ ENAdata = R6::R6Class("ENAdata", public = list(
 
     ####
     ## Private Properties
-    ####
+    #####
       file = NULL,
       window.size = NULL,
       units.used = NULL,
       units.by = NULL,
       conversations.by = NULL,
       weight.by = NULL,
-      #units.exclude = NULL,
       trajectory.by = NULL,
       mask = NULL,
-    ####
+    #####
     ## END: Private Properties
     ####
 
     ####
     ## Private Functions
-    ####
+    #####
     loadFile = function() {
       if(any(class(private$file) == "data.table")) {
         df_DT = private$file;

@@ -46,7 +46,7 @@ ENAset = R6::R6Class("ENAset",
 
        private$dimensions <- dimensions;
 
-       self$codes <- enadata$codes;
+       self$codes <- enadata$rotation$codes;
 
        self$function.call <- sys.call(-1);
 
@@ -196,8 +196,10 @@ ENAset = R6::R6Class("ENAset",
      ## Private Functions
      #####
      run = function() {
-       # Reference for the ENAdata object
-       df = self$enadata$adjacency.vectors;
+       browser();
+
+       df = self$enadata$connection.counts;
+
        ###
        # Backup of ENA data, this is not touched again.
        ###
@@ -220,11 +222,12 @@ ENAset = R6::R6Class("ENAset",
        # Convert the string vector of code names to their corresponding
        # co-occurence names and set as colnames for the self$line.weights
        ##
-       codeNames_tri = svector_to_ut(self$enadata$codes);
+       codeNames_tri = svector_to_ut(self$codes);
        colnames(self$line.weights) = codeNames_tri;
        # set the rownames to that of the original ENAdata file object
        rownames(self$line.weights) = rownames(df);
-       attr(self$line.weights, opts$UNIT_NAMES) = attr(df, opts$UNIT_NAMES) #df[, .SD, with=T, .SDcols=self$enadata$get("unitsBy")];
+
+       # attr(self$line.weights, opts$UNIT_NAMES) = attr(df, opts$UNIT_NAMES) #df[, .SD, with=T, .SDcols=self$enadata$get("unitsBy")];
        ###
 
 
@@ -237,7 +240,8 @@ ENAset = R6::R6Class("ENAset",
 
        colnames(self$points.normed.centered) = codeNames_tri;
        rownames(self$points.normed.centered) = rownames(df);
-       attr(self$points.normed.centered, opts$UNIT_NAMES) = attr(self$enadata$adjacency.vectors.raw, opts$UNIT_NAMES)
+       # attr(self$points.normed.centered, opts$UNIT_NAMES) = attr(self$enadata$adjacency.vectors.raw, opts$UNIT_NAMES)
+
        ###
 
        ###
