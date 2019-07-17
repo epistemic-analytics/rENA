@@ -92,7 +92,7 @@ ena.plot.network = function(
   enaplot = NULL,
   network = NULL,
   node.positions = enaplot$enaset$rotation$nodes,
-  adjacency.key = namesToAdjacencyKey(rownames(node.positions)), #enaplot$enaset$enadata$adjacency.matrix,
+  adjacency.key = enaplot$enaset$rotation$adjacency.key, #namesToAdjacencyKey(rownames(node.positions)), #enaplot$enaset$enadata$adjacency.matrix,
   colors = c(pos="red", "blue"),
   edge_type = "line", #c("line", "dash", "dot"),
   show.all.nodes = T,
@@ -106,7 +106,7 @@ ena.plot.network = function(
 
   node.size = c(3,10),
 
-  labels = rownames(node.positions),
+  labels = enaplot$enaset$rotation$codes,
   label.offset = "middle right",
   label.font.size = enaplot$get("font.size"),
   label.font.color = enaplot$get("font.color"),
@@ -126,7 +126,7 @@ ena.plot.network = function(
   nodes = data.frame(node.positions);
   nodes$weight = rep(0, nrow(nodes))
   nodes$color = "black";
-  node.rows = rownames(node.positions) #labels; #rownames(enaplot$enaset$node.positions);
+  node.rows = enaplot$enaset$rotation$codes; #rownames(node.positions) #labels; #rownames(enaplot$enaset$node.positions);
 
   # Handle label parameters
   if(length(label.offset) == 1) {
@@ -191,6 +191,7 @@ ena.plot.network = function(
     colors.hsv[[6]] = colors.hsv[3];
     dim(colors.hsv) = c(3,2);
   }
+
   mat = adjacency.key;
   for (i in 1:length(network)) {
     v0 <- node.positions[node.rows==mat[1,i], ];

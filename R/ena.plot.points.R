@@ -94,7 +94,8 @@ ena.plot.points = function(
     }
 
     if(is.null(points)) {
-      stop("Must provide points to plot.")
+      # stop("Must provide points to plot.")
+      points = as.matrix(enaplot$enaset$points)
     }
     if(is(points, "numeric")){
       points = matrix(points);
@@ -243,3 +244,4 @@ ena.plot.points = function(
 
   return(enaplot);
 }
+

@@ -18,8 +18,9 @@
 
 # Ellipsoidal scaling version
 lws.positions.sq <- function(enaset) {
-  points = enaset$points[,!colnames(enaset$points) %in% colnames(enaset$meta.data), with=F]
-  positions = lws_lsq_positions(as.matrix(enaset$line.weights), as.matrix(points), ncol(points));
+  points = as.matrix(enaset$points)
+  weights = as.matrix(enaset$line.weights)
+  positions = lws_lsq_positions(weights, points, ncol(points));
 
   node.positions = positions$nodes;
   rownames(node.positions) = enaset$enadata$codes;

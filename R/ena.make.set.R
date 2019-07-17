@@ -82,27 +82,26 @@ ena.make.set <- function(
   #   ...
   # )$process();
 
+  ###
+  # Convert the string vector of code names to their corresponding co-occurence names
+  #####
+    code_columns = svector_to_ut(enadata$rotation$codes);
 
   ###
   # Normalize the raw data using self$function.params$norm.by,
   # which defaults to calling rENA::dont_sphere_norm_c
-  ###
-  enadata$line.weights = norm.by(enadata$connection.counts);
+  #####
+    line.weights = norm.by(enadata$connection.counts);
+    colnames(line.weights) = code_columns;
 
-  ###
-  # Convert the string vector of code names to their corresponding
-  # co-occurence names and set as colnames for the self$line.weights
-  ##
-  code_columns = svector_to_ut(enadata$rotation$codes);
-  colnames(enadata$line.weights) = code_columns;
-
-  ###
-
+    enadata$line.weights = cbind(enadata$meta.data, line.weights)
+    class(enadata$line.weights) = c("line.weights", class(enadata$line.weights))
+  #####
 
   ###
   # Center the normed data
   ###
-  enadata$model$points.for.projection = center_data_c(enadata$line.weights);
+  enadata$model$points.for.projection = center_data_c(line.weights);
   colnames(enadata$model$points.for.projection) = code_columns;
 
   enadata$model$points.for.projection = cbind(enadata$meta.data, enadata$model$points.for.projection)
@@ -133,10 +132,12 @@ ena.make.set <- function(
 
   ###
   # Generated the rotated points
-  ###
-  points = as.matrix(enadata$model$points.for.projection[,!colnames(enadata$model$points.for.projection) %in% colnames(enadata$meta.data), with=F]) %*% enadata$rotation.matrix;
-  enadata$points = cbind(enadata$meta.data, points)
-  ###
+  #####
+    points = as.matrix(enadata$model$points.for.projection[,!colnames(enadata$model$points.for.projection) %in% colnames(enadata$meta.data), with=F]) %*% enadata$rotation.matrix;
+    enadata$points = cbind(enadata$meta.data, points)
+    class(enadata$points) = c("ena.points", class(enadata$points))
+
+  #####
 
   ###
   # Calculate node positions
