@@ -59,6 +59,7 @@ ena = function(
 ){
   model = match.arg(model)
   window = match.arg(window)
+
   accum = ena.accumulate.data(
     units = data[,units],
     conversation = data[,conversation],
@@ -72,14 +73,13 @@ ena = function(
     mask = mask,
     include.meta = include.meta
   );
-
   #Plot mean network of all points if no group column is specified
   if( is.null(groupCol) == TRUE ) {
     set = ena.make.set(
       enadata = accum
     )
 
-    points = set$points.rotated
+    points = set$points
     lineweights = set$line.weights
     mean = colMeans(lineweights)
 

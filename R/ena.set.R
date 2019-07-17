@@ -149,12 +149,12 @@ add_points <- function(x, wh = NULL, ...) {
   set
 }
 
-colMeans <- function(x) {
-  if( is(x, "line.weights" ) ) {
-    browser()
-  }
-  base::colMeans(x)
-}
+# colMeans <- function(x) {
+#   if( is(x, "line.weights" ) ) {
+#     browser()
+#   }
+#   base::colMeans(x)
+# }
 
 as.meta.data <- function(x) {
   if(is.factor(x)) {
