@@ -239,8 +239,6 @@ find.meta.cols <- function(x) {
 remove.meta.data <- function(x) {
   x[,find.meta.cols(x), with=F]
 }
-
-
 # "[.ena.points" = function (x, i, j, value) {
 #   class(x) = class(x)[-1]
 #   x = remove.meta.data(x)
@@ -311,6 +309,32 @@ remove.meta.data <- function(x) {
   unique(x)
 }
 
+# "[.metadata" = function(x, i, j = NULL, value = NULL) {
+#   browser();
+#   if(is.null(value) || is.null(j)) {
+#     parts = unlist(strsplit(x = as.character(sys.call())[2], split = "\\$"))[1:2]
+#
+#     if(is.null(value))
+#       set = get(parts[1], envir = sys.frame(-2))
+#   } else {
+#     set = value
+#   }
+#
+#   if(is.null(j))
+#     wh = set[[parts[2]]]
+#   else
+#     wh = set[[j]]
+#
+#   wh[x ==i,]
+# }
+"$.metadata" = function(x, i) {
+  parts = unlist(strsplit(x = as.character(sys.call())[2], split = "\\$"))[1:2]
+  set = get(parts[1], envir = sys.frame(-2))
+  m = set[[parts[2]]][x == i,]
+
+  m
+}
+
 #' @export
 summary.ena.set <- function(x) {
   print_dims <- function(n = 2) {
@@ -320,10 +344,15 @@ summary.ena.set <- function(x) {
   cat("Codes: ", length(x$rotation$codes), "\n")
   cat("Variance: \n")
   print_dims()
-  cat("\t", paste(round(x$model$variance[1:2], 3), collapse="\t\t"), "\n")
+  cat("\t", paste(round(x$model$variance[1:2], 3), collapse="\t\t"), "\n\n")
 
   cat("Eigenvalues: \n")
   print_dims()
-  cat("\t", paste(round(x$rotation$eigenvalues[1:2], 3), collapse="\t\t"), "\n")
+  cat("\t", paste(round(x$rotation$eigenvalues[1:2], 3), collapse="\t\t"), "\n\n")
+
+  cat("Correlations: \n")
+  cors = ena.correlations(x)
+  rownames(cors) = paste("Dimension", 1:2)
+  print(cors)
 }
 
