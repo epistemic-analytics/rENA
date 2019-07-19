@@ -175,5 +175,8 @@ ena.make.set <- function(
 
   # set = ena.set(set)
 
+  enadata$model$plots = list();
+  class(enadata$model$plots) = c("ena.plots", class(enadata$model$plots))
+
   return(enadata)
 }

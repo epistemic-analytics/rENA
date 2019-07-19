@@ -82,6 +82,7 @@ ena.plot.points = function(
   outlier.interval.values = NULL,
   outlier.interval = c("none", "crosshairs", "box"),
   show.legend = T,
+  legend.name = "Points",
   ...
 ) {
   ###
@@ -159,7 +160,7 @@ ena.plot.points = function(
 
   ###
   # Set box value for CI|OI box on plot
-  ###
+  #####
     box.values = NULL;
     if(grepl("^b", confidence.interval) && !is.null(confidence.interval.values)) {
       box.values = confidence.interval.values;
@@ -169,13 +170,13 @@ ena.plot.points = function(
       box.values = outlier.interval.values;
       box.label = "Outlier Int.";
     }
-  ###
+  ######
   # END: Set box value for CI|OI box on plot
   ###
 
   ###
   # Plot
-  ###
+  #####
     this.max = max(points.layout);
     for(m in 1:nrow(points.layout)) {
       enaplot$plot = plotly::add_trace(
@@ -191,17 +192,18 @@ ena.plot.points = function(
         ),
         error_x = error$x, error_y = error$y,
         showlegend = show.legend,
-        legendgroup = label.group,
+        # legendgroup = label.group,
         # legendgroup = ifelse(!is.null(box.label), labels[1], NULL),
         name = labels[m],
-        text = labels[m],
+        text = NULL, #labels[m],
         textfont = list(
           family = label.font.family,
           size = label.font.size,
           color = label.font.color
         ),
+        legendgroup = legend.name,
         textposition = label.offset[m],
-        hoverinfo = "text+x+y"
+        hoverinfo = "x+y+name"
       )
     }
 
@@ -238,7 +240,7 @@ ena.plot.points = function(
         yaxis = enaplot$axes$y
       );
     }
-  ###
+  #####
   # END: Plot
   ###
 

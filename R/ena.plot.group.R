@@ -84,6 +84,7 @@ ena.plot.group <- function(
   label.font.color = NULL,
   label.font.family = NULL,
   show.legend = T,
+  legend.name = NULL,
   ...
 ) {
   shape = match.arg(shape);
@@ -142,6 +143,7 @@ ena.plot.group <- function(
     label.font.color = label.font.color,
     label.font.family = label.font.family,
     show.legend = show.legend,
+    legend.name = legend.name,
     ...
   )
   return(enaplot)
