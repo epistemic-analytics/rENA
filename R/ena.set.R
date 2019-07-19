@@ -161,12 +161,16 @@ add_points <- function(x, wh = NULL, name = "plot", ...) {
 group <- function(x, wh = NULL,  ...) {
   set = x$enaset
   args = list(...)
+  wh.clean = substitute(wh)
 
-  if(is.null(wh)) { #, "ena.points")) {
+  if(identical(as.character(wh.clean), "wh.clean") || identical(as.character(wh.clean), "y")) {
+    wh.clean = wh;
+  }
 
+  if(is.null(wh.clean)) { #, "ena.points")) {
     x = ena.plot.group(x, ...)
   } else {
-    parts = as.character(substitute(wh))
+    parts = as.character(wh.clean)
     label = parts[3]
     group.means = colMeans(set$points[set$points[[parts[2]]] == parts[3],])
 
@@ -177,23 +181,34 @@ group <- function(x, wh = NULL,  ...) {
 }
 
 #' @export
-network <- function(x, wh = NULL,  ...) {
+network <- function(x, wh = NULL, with.mean = T, ...) {
   set = x$enaset
   wh.clean = substitute(wh)
   args = list(...)
 
   if(is.null(wh.clean)) { #, "ena.points")) {
     x = ena.plot.network(x, network = colMeans(x$enaset$line.weights), points = x$enaset$rotation$nodes[,1:2] ,...)
+    if(with.mean) {
+      x = group(x, ...)
+    }
   } else {
     parts = as.character(wh.clean)
     if(is.call(wh.clean[[2]])) {
       means = sapply(c(wh.clean[[2]], wh.clean[[3]]), function(y) {
         parts = as.character(y)
+
+        if(with.mean)
+          x = group(x, y, colors = default.colors[length(attr(x, "means"))+1], ...)
+
         colMeans(set$line.weights[set$line.weights[[parts[2]]] == parts[3],])
       })
+
       group.means = means[,1] - means[,2]
     } else {
       group.means = colMeans(set$line.weights[set$line.weights[[parts[2]]] == parts[3],])
+
+      if(with.mean)
+        x = group(x, wh.clean, ...)
     }
 
     x = ena.plot.network(x, network = group.means, points = x$enaset$rotation$nodes[,1:2], ...)

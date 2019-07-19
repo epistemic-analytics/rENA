@@ -75,7 +75,7 @@ ena.plot.group <- function(
   points = NULL,
   method = "mean",
   labels = NULL,
-  colors = "black",
+  colors = default.colors[1],
   shape = c("square", "triangle-up", "diamond", "circle"),
   confidence.interval = c("none", "crosshairs", "box"),
   outlier.interval = c("none", "crosshairs", "box"),
@@ -129,6 +129,7 @@ ena.plot.group <- function(
     }
   }
 
+  attr(enaplot, "means") <- length(attr(enaplot, "means")) + 1
   enaplot %<>% ena.plot.points(
     points = points,
     labels = labels,
