@@ -105,18 +105,8 @@ as.matrix.ena.points <- function(x) {
   as.matrix(x)
 }
 
-# print.connection.matrix <- function(x, ...) {
-#   # If this is left as NULL, we need to be able to figure out the set/object
-#   # it is attached to when accessing it
-#   browser()
-# }
-
 plot.ena.set <- function(x, ...) {
-  # if(is.null(x$model$plots)) {
   ena.plot(x, ...)
-  # } else {
-  #   print(x$model$plots)
-  # }
 }
 
 points <- function(x, wh = NULL, mean = F, labels = T, label.text = NULL, ...) {
@@ -130,7 +120,6 @@ points <- function(x, wh = NULL, mean = F, labels = T, label.text = NULL, ...) {
   }
 
   if(mean == T) {
-    # browser()
     x = group(x, points = colMeans(points), labels = parts[3], legend.name = parts[3], ...)
   }
   x = ena.plot.points(x, points = as.matrix(points), labels = label.values, legend.name = paste0(parts[3],".","points"), ...)
@@ -217,13 +206,6 @@ network <- function(x, wh = NULL, with.mean = T, ...) {
   x
 }
 
-# colMeans <- function(x) {
-#   if( is(x, "line.weights" ) ) {
-#     browser()
-#   }
-#   base::colMeans(x)
-# }
-
 as.metadata <- function(x) {
   if(is.factor(x)) {
     x = as.character(x)
@@ -239,25 +221,7 @@ find.meta.cols <- function(x) {
 remove.meta.data <- function(x) {
   x[,find.meta.cols(x), with=F]
 }
-# "[.ena.points" = function (x, i, j, value) {
-#   class(x) = class(x)[-1]
-#   x = remove.meta.data(x)
-#   as.matrix(x[i,])
-# }
-# "[.line.weights" = function (x, i, j, value, internal = F) {
-#   browser()
-#   orig.class = class(x)
-#   class(x) = class(x)[-1]
-#
-#   if(internal == F) {
-#   } else {
-#     x = remove.meta.data(x)
-#   }
-#
-#   m = x[i,]
-#   class(m) = orig.class #c(orig.class, class(m))
-#   m
-# }
+
 "$.line.weights" = function (x, i) {
   vals = x[[which(colnames(x) == i)]]
   unique.vals = unique(vals)
@@ -271,24 +235,6 @@ remove.meta.data <- function(x) {
   vals
 }
 
-# "[.metadata" = function(x, i, j = NULL, value = NULL) {
-#   browser();
-#   if(is.null(value) || is.null(j)) {
-#     parts = unlist(strsplit(x = as.character(sys.call())[2], split = "\\$"))[1:2]
-#
-#     if(is.null(value))
-#       set = get(parts[1], envir = sys.frame(-2))
-#   } else {
-#     set = value
-#   }
-#
-#   if(is.null(j))
-#     wh = set[[parts[2]]]
-#   else
-#     wh = set[[j]]
-#
-#   wh[x ==i,]
-# }
 "$.metadata" = function(x, i) {
   parts = unlist(strsplit(x = as.character(sys.call())[2], split = "\\$"))[1:2]
   set = get(parts[1], envir = sys.frame(-2))
@@ -309,24 +255,6 @@ remove.meta.data <- function(x) {
   unique(x)
 }
 
-# "[.metadata" = function(x, i, j = NULL, value = NULL) {
-#   browser();
-#   if(is.null(value) || is.null(j)) {
-#     parts = unlist(strsplit(x = as.character(sys.call())[2], split = "\\$"))[1:2]
-#
-#     if(is.null(value))
-#       set = get(parts[1], envir = sys.frame(-2))
-#   } else {
-#     set = value
-#   }
-#
-#   if(is.null(j))
-#     wh = set[[parts[2]]]
-#   else
-#     wh = set[[j]]
-#
-#   wh[x ==i,]
-# }
 "$.metadata" = function(x, i) {
   parts = unlist(strsplit(x = as.character(sys.call())[2], split = "\\$"))[1:2]
   set = get(parts[1], envir = sys.frame(-2))
