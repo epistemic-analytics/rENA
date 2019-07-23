@@ -91,7 +91,7 @@
 ena.plot.network = function(
   enaplot = NULL,
   network = NULL,
-  node.positions = enaplot$enaset$rotation$nodes,
+  node.positions = as.matrix(enaplot$enaset$rotation$nodes),
   adjacency.key = enaplot$enaset$rotation$adjacency.key, #namesToAdjacencyKey(rownames(node.positions)), #enaplot$enaset$enadata$adjacency.matrix,
   colors = c(pos=default.colors[1], default.colors[2]),
   edge_type = "line", #c("line", "dash", "dot"),
@@ -124,6 +124,7 @@ ena.plot.network = function(
   edge_type = match.arg(arg = edge_type, choices = c("line", "dash", "dot"));
 
   nodes = data.frame(node.positions);
+  colnames(nodes) = paste0("X", seq(colnames(nodes)))
   nodes$weight = rep(0, nrow(nodes))
   nodes$color = "black";
   node.rows = enaplot$enaset$rotation$codes; #rownames(node.positions) #labels; #rownames(enaplot$enaset$node.positions);
@@ -192,7 +193,7 @@ ena.plot.network = function(
     dim(colors.hsv) = c(3,2);
   }
 
-  mat = adjacency.key;
+  mat = as.matrix(adjacency.key);
   for (i in 1:length(network)) {
     v0 <- node.positions[node.rows==mat[1,i], ];
     v1 <- node.positions[node.rows==mat[2,i], ];
@@ -304,5 +305,6 @@ ena.plot.network = function(
       )
     }
   }
+
   enaplot
 }

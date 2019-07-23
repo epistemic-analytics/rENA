@@ -146,15 +146,14 @@ ena = function(
     group2.rows = metaNames[,groupCol] == group2
     group2.points = set$points[group2.rows,]
 
-    group1.lineweights = set$line.weights[group1.rows,] # code.cols] #, with = F]
+    group1.lineweights = set$line.weights[group1.rows,]
     group1.mean = colMeans(group1.lineweights)
 
-    group2.lineweights = set$line.weights[group2.rows,] #, with = F]
+    group2.lineweights = set$line.weights[group2.rows,]
     group2.mean = colMeans(group2.lineweights)
 
     subtracted.network = group1.mean - group2.mean
 
-    # browser()
     #plot group 1 mean network
     plot1 = ena.plot(set, title = paste0("Mean Network -- ",group1))
     plot1 = ena.plot.network(plot1, network = group1.mean)

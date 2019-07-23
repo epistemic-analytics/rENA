@@ -59,9 +59,9 @@ ENAplot = R6::R6Class("ENAplot",
         );
 
         # max.axis = max(abs(points))*1.2;
-        max.axis = max(abs(enaset$rotation$nodes))*1.2;
+        max.axis = max(abs(as.matrix(enaset$rotation$nodes)))*1.2;
         if(scale.to == "points") {
-          max.axis = max(abs(enaset$points[, code.cols, with = F]))*1.2
+          max.axis = max(abs(as.matrix(enaset$points)))*1.2
         };
         # network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T, range=c(-max.axis,max.axis));
         graph.axis <- list(
