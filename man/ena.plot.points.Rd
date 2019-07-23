@@ -11,7 +11,7 @@ ena.plot.points(enaplot, points = NULL, point.size = 5,
   colors = default.colors[1], confidence.interval.values = NULL,
   confidence.interval = c("none", "crosshairs", "box"),
   outlier.interval.values = NULL, outlier.interval = c("none",
-  "crosshairs", "box"), show.legend = T, ...)
+  "crosshairs", "box"), show.legend = T, legend.name = "Points", ...)
 }
 \arguments{
 \item{enaplot}{\code{\link{ENAplot}} object to use for plotting}

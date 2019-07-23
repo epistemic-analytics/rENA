@@ -11,13 +11,13 @@ ena.set <- function(x) {
 
   newset$meta.data = x$enadata$metadata
   for(i in seq(ncol(newset$meta.data)))
-    set(newset$meta.data, j = i, value = as.metadata(newset$meta.data[[i]]))
+    set(newset$meta.data, j = i, value = as.ena.metadata(newset$meta.data[[i]]))
 
   newset$connection.counts = x$enadata$adjacency.vectors;
   colnames(newset$connection.counts) = code.columns
 
   for(i in seq(ncol(newset$connection.counts)))
-    set(newset$connection.counts, j = i, value = as.co.occurrence(newset$connection.counts[[i]]))
+    set(newset$connection.counts, j = i, value = as.ena.co.occurrence(newset$connection.counts[[i]]))
 
   newset$connection.counts = cbind(x$enadata$metadata, newset$connection.counts)
   class(newset$connection.counts) <- c("ena.connections", class(newset$connection.counts))
@@ -40,11 +40,11 @@ ena.set <- function(x) {
   colnames(newset$model$row.connection.counts)[cols] = code.columns
 
   for(i in cols)
-    set(newset$model$row.connection.counts, j = i, value = as.co.occurrence(newset$model$row.connection.counts[[i]]))
+    set(newset$model$row.connection.counts, j = i, value = as.ena.co.occurrence(newset$model$row.connection.counts[[i]]))
   for(i in which(colnames(newset$model$row.connection.counts) %in% colnames(newset$meta.data)))
-    set(newset$model$row.connection.counts, j = i, value = as.metadata(newset$model$row.connection.counts[[i]]))
+    set(newset$model$row.connection.counts, j = i, value = as.ena.metadata(newset$model$row.connection.counts[[i]]))
   for(i in which(colnames(newset$model$row.connection.counts) %in% x$enadata$codes))
-    set(newset$model$row.connection.counts, j = i, value = as.code(newset$model$row.connection.counts[[i]]))
+    set(newset$model$row.connection.counts, j = i, value = as.ena.code(newset$model$row.connection.counts[[i]]))
   class(newset$model$row.connection.counts) = c("row.connections", class(newset$model$row.connection.counts))
 
   if(x.is.set) {
@@ -61,7 +61,7 @@ ena.set <- function(x) {
     codes = x$enadata$codes
   )
   for(i in seq(ncol(newset$rotation$adjacency.key)))
-    set(newset$rotation$adjacency.key, j = i, value = as.codes(newset$rotation$adjacency.key[[i]]))
+    set(newset$rotation$adjacency.key, j = i, value = as.ena.codes(newset$rotation$adjacency.key[[i]]))
 
   if(x.is.set) {
     newset$rotation$eigenvalues = x$rotation.set$eigenvalues

@@ -1,12 +1,9 @@
-
 find.meta.cols <- function(x) {
-  !sapply(x, is, class2="metadata")
+ !sapply(x, is, class2="ena.metadata")
 }
-
 remove.meta.data <- function(x) {
-  x[,find.meta.cols(x), with=F]
+ x[,find.meta.cols(x), with=F]
 }
-
 # "[.ena.connections" <- function(x, i, j, ...) { #square = F) {
 #   old.class = class(x)[1];
 #   class(x) = class(x)[-1]
@@ -24,63 +21,51 @@ remove.meta.data <- function(x) {
 #     rows
 #   }
 # }
-
-"$.metadata" = function(x, i) {
-  parts = unlist(strsplit(x = as.character(sys.call())[2], split = "\\$"))[1:2]
-  set = get(parts[1], envir = sys.frame(-2))
-  m = set[[parts[2]]][x == i,]
-
-  m
+"$.ena.metadata" = function(x, i) {
+ parts = unlist(strsplit(x = as.character(sys.call())[2], split = "\\$"))[1:2]
+ set = get(parts[1], envir = sys.frame(-2))
+ m = set[[parts[2]]][x == i,]
+ m
 }
 "$.line.weights" = function (x, i) {
-  vals = x[[which(colnames(x) == i)]]
-  unique.vals = unique(vals)
-  # attr(vals, "values") <- unique.vals
-  vals
+ vals = x[[which(colnames(x) == i)]]
+ unique.vals = unique(vals)
+ # attr(vals, "values") <- unique.vals
+ vals
 }
 "$.ena.points" = function (x, i) {
-  vals = x[[which(colnames(x) == i)]]
-  unique.vals = unique(vals)
-  # attr(vals, "values") <- unique.vals
-  vals
+ vals = x[[which(colnames(x) == i)]]
+ unique.vals = unique(vals)
+ # attr(vals, "values") <- unique.vals
+ vals
 }
 "$.ena.plots" <- function(x, i) {
-  browser()
+ browser()
 }
 "[[.ena.plots" <- function(x, i) {
-  browser()
+ browser()
 }
-
 #' @export
 .DollarNames.metadata = function(x, pattern="") {
-  unique(x)
+ unique(x)
 }
-
-
 #' @export
 summary.ena.set <- function(x) {
-  print_dims <- function(n = 2) {
-    cat("\t", paste("Dimension", 1:n, collapse = "\t"), "\n")
-  }
-  cat("Units: ", nrow(x$points), "\t\t")
-  cat("Codes: ", length(x$rotation$codes), "\n")
-  cat("Variance: \n")
-  print_dims()
-  cat("\t", paste(round(x$model$variance[1:2], 3), collapse="\t\t"), "\n\n")
-
-  cat("Eigenvalues: \n")
-  print_dims()
-  cat("\t", paste(round(x$rotation$eigenvalues[1:2], 3), collapse="\t\t"), "\n\n")
-
-  cat("Correlations: \n")
-  cors = ena.correlations(x)
-  rownames(cors) = paste("Dimension", 1:2)
-  print(cors)
-}
-
-
-cumsum.ena.connections <- function(x) {
-  browser()
+ print_dims <- function(n = 2) {
+   cat("\t", paste("Dimension", 1:n, collapse = "\t"), "\n")
+ }
+ cat("Units: ", nrow(x$points), "\t\t")
+ cat("Codes: ", length(x$rotation$codes), "\n")
+ cat("Variance: \n")
+ print_dims()
+ cat("\t", paste(round(x$model$variance[1:2], 3), collapse="\t\t"), "\n\n")
+ cat("Eigenvalues: \n")
+ print_dims()
+ cat("\t", paste(round(x$rotation$eigenvalues[1:2], 3), collapse="\t\t"), "\n\n")
+ cat("Correlations: \n")
+ cors = ena.correlations(x)
+ rownames(cors) = paste("Dimension", 1:2)
+ print(cors)
 }
 # as.data.frame.ena.connections <- function(x) {
 #   class(x) = class(x)[-1]

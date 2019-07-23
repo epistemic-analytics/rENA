@@ -1,36 +1,36 @@
 
-as.metadata <- function(x) {
+as.ena.metadata <- function(x) {
   if(is.factor(x)) {
     x = as.character(x)
   }
-  class(x) = c("metadata") #, class(x))
+  class(x) = c("ena.metadata") #, class(x))
   x
 }
-as.code <- function(x) {
+as.ena.code <- function(x) {
   if(is.factor(x)) {
     x = as.character(x)
   }
-  class(x) = c("code") #, class(x))
+  class(x) = c("ena.code") #, class(x))
   x
 }
-as.codes <- function(x) {
+as.ena.codes <- function(x) {
   if(is.factor(x)) {
     x = as.character(x)
   }
-  class(x) = c("codes") #, class(x))
+  class(x) = c("ena.codes") #, class(x))
   x
 }
-as.co.occurrence <- function(x) {
+as.ena.co.occurrence <- function(x) {
   if(is.factor(x)) {
     x = as.character(x)
   }
-  class(x) = c("co.occurrence") #, class(x))
+  class(x) = c("ena.co.occurrence") #, class(x))
   x
 }
-as.dimension <- function(x) {
+as.ena.dimension <- function(x) {
   if(is.factor(x)) {
     x = as.character(x)
   }
-  class(x) = c("dimension") #, class(x))
+  class(x) = c("ena.dimension") #, class(x))
   x
 }

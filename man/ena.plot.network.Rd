@@ -5,10 +5,10 @@
 \title{Plot an ENA network}
 \usage{
 ena.plot.network(enaplot = NULL, network = NULL,
-  node.positions = enaplot$enaset$rotation$nodes,
+  node.positions = as.matrix(enaplot$enaset$rotation$nodes),
   adjacency.key = enaplot$enaset$rotation$adjacency.key, colors = c(pos
-  = "red", "blue"), edge_type = "line", show.all.nodes = T,
-  threshold = c(0), thin.lines.in.front = T,
+  = default.colors[1], default.colors[2]), edge_type = "line",
+  show.all.nodes = T, threshold = c(0), thin.lines.in.front = T,
   thickness = c(min(abs(network)), max(abs(network))),
   opacity = thickness, saturation = thickness,
   scale.range = c(ifelse(min(network) == 0, 0, 0.1), 1),

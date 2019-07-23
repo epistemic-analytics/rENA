@@ -97,9 +97,9 @@ ena.make.set <- function(
 
     line.weights.dt = as.data.table(line.weights)
     for(i in seq(ncol(line.weights.dt)))
-      set(line.weights.dt, j = i, value = as.co.occurrence(line.weights.dt[[i]]))
+      set(line.weights.dt, j = i, value = as.ena.co.occurrence(line.weights.dt[[i]]))
     enadata$line.weights = cbind(enadata$meta.data, line.weights.dt)
-    class(enadata$line.weights) = c("line.weights", class(enadata$line.weights))
+    class(enadata$line.weights) = c("ena.line.weights", class(enadata$line.weights))
   #####
 
   ###
@@ -109,7 +109,7 @@ ena.make.set <- function(
     colnames(points.for.projection) = code_columns;
     enadata$model$points.for.projection = as.data.table(points.for.projection);
     for(i in seq(ncol(enadata$model$points.for.projection)))
-      set(enadata$model$points.for.projection, j = i, value = as.co.occurrence(enadata$model$points.for.projection[[i]]))
+      set(enadata$model$points.for.projection, j = i, value = as.ena.co.occurrence(enadata$model$points.for.projection[[i]]))
     enadata$model$points.for.projection = cbind(enadata$meta.data, enadata$model$points.for.projection)
   #####
 
@@ -122,8 +122,8 @@ ena.make.set <- function(
     rotation = do.call(rotation.by, list(enadata, rotation.params));
     enadata$rotation.matrix = as.data.table(rotation$rotation);
     for(i in seq(ncol(enadata$rotation.matrix)))
-      set(enadata$rotation.matrix, j = i, value = as.dimension(enadata$rotation.matrix[[i]]))
-    class(enadata$rotation.matrix) = c("rotation.matrix", class(enadata$rotation.matrix))
+      set(enadata$rotation.matrix, j = i, value = as.ena.dimension(enadata$rotation.matrix[[i]]))
+    class(enadata$rotation.matrix) = c("ena.rotation.matrix", class(enadata$rotation.matrix))
 
     # enadata$rotation$nodes = rotation$node.positions;
     enadata$rotation$eigenvalues = rotation$eigenvalues;
@@ -148,7 +148,7 @@ ena.make.set <- function(
     points = points.for.projection %*% as.matrix(enadata$rotation.matrix);
     points.dt = as.data.table(points)
     for(i in seq(ncol(points.dt)))
-      set(points.dt, j = i, value = as.dimension(points.dt[[i]]))
+      set(points.dt, j = i, value = as.ena.dimension(points.dt[[i]]))
 
     enadata$points = cbind(enadata$meta.data, points.dt)
     class(enadata$points) = c("ena.points", class(enadata$points))
@@ -167,13 +167,13 @@ ena.make.set <- function(
         rownames(enadata$rotation$nodes) = enadata$rotation$codes
 
         for(i in seq(ncol(enadata$rotation$nodes)))
-          set(enadata$rotation$nodes, j = i, value = as.dimension(enadata$rotation$nodes[[i]]))
+          set(enadata$rotation$nodes, j = i, value = as.ena.dimension(enadata$rotation$nodes[[i]]))
         enadata$rotation$nodes = data.table(code = structure(enadata$rotation$codes, class = "code"), enadata$rotation$nodes)
         class(enadata$rotation$nodes) = c("ena.nodes", class(enadata$rotation$nodes))
 
         enadata$model$centroids = as.data.table(positions$centroids)
         for(i in seq(ncol(enadata$model$centroids)))
-          set(enadata$model$centroids, j = i, value = as.dimension(enadata$model$centroids[[i]]))
+          set(enadata$model$centroids, j = i, value = as.ena.dimension(enadata$model$centroids[[i]]))
       } else {
         print("The node position method didn't return back the expected objects:")
         print("    Expected: c('node.positions','centroids')");
