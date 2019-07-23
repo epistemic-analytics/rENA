@@ -10,14 +10,17 @@ ena.set <- function(x) {
   code.columns = apply(x$enadata$adjacency.matrix, 2, paste, collapse = " & ")
 
   newset$meta.data = x$enadata$metadata
-  for(i in 1L:ncol(newset$meta.data))
+  for(i in seq(ncol(newset$meta.data)))
     set(newset$meta.data, j = i, value = as.metadata(newset$meta.data[[i]]))
-
-  class(newset$meta.data) = c("metadata", class(newset$meta.data))
 
   newset$connection.counts = x$enadata$adjacency.vectors;
   colnames(newset$connection.counts) = code.columns
-  class(newset$connection.counts) <- c("ena.connection", class(newset$connection.counts))
+
+  for(i in seq(ncol(newset$connection.counts)))
+    set(newset$connection.counts, j = i, value = as.co.occurrence(newset$connection.counts[[i]]))
+
+  newset$connection.counts = cbind(x$enadata$metadata, newset$connection.counts)
+  class(newset$connection.counts) <- c("ena.connections", class(newset$connection.counts))
 
   if(x.is.set) {
     newset$line.weights = as.data.table(cbind(x$enadata$metadata, x$line.weights))
@@ -33,6 +36,15 @@ ena.set <- function(x) {
     row.connection.counts = x$enadata$accumulated.adjacency.vectors[, unique(names(x$enadata$accumulated.adjacency.vectors)), with=F],
     unit.labels = x$enadata$unit.names
   )
+  cols = grep("adjacency.code", colnames(newset$model$row.connection.counts))
+  colnames(newset$model$row.connection.counts)[cols] = code.columns
+
+  for(i in cols)
+    set(newset$model$row.connection.counts, j = i, value = as.co.occurrence(newset$model$row.connection.counts[[i]]))
+  for(i in which(colnames(newset$model$row.connection.counts) %in% colnames(newset$meta.data)))
+    set(newset$model$row.connection.counts, j = i, value = as.metadata(newset$model$row.connection.counts[[i]]))
+  for(i in which(colnames(newset$model$row.connection.counts) %in% x$enadata$codes))
+    set(newset$model$row.connection.counts, j = i, value = as.code(newset$model$row.connection.counts[[i]]))
 
   if(x.is.set) {
     newset$model$centroids = x$centroids
@@ -44,9 +56,11 @@ ena.set <- function(x) {
   }
 
   newset$rotation = list(
-    adjacency.key = x$enadata$adjacency.matrix,
+    adjacency.key = as.data.table(x$enadata$adjacency.matrix),
     codes = x$enadata$codes
   )
+  for(i in seq(ncol(newset$rotation$adjacency.key)))
+    set(newset$rotation$adjacency.key, j = i, value = as.codes(newset$rotation$adjacency.key[[i]]))
 
   if(x.is.set) {
     newset$rotation$eigenvalues = x$rotation.set$eigenvalues
@@ -54,31 +68,28 @@ ena.set <- function(x) {
     newset$rotation$rotation.matrix = x$rotation.set$rotation
   }
 
-  conn.env = new.env(parent = globalenv())
-  class(conn.env) = 'pointer'
-
-  connection.matrices = vector(mode = "list", length = length(newset$model$unit.labels))
-  names(connection.matrices) = newset$model$unit.labels
-
-  conn.env = list2env(connection.matrices)
-  for(l in newset$model$unit.labels) {
-    delayedAssign(l, {
-      connection.matrix(newset$connection.counts, l)
-    }, assign.env = conn.env)
-  }
-
-  newset$connection.matrices = conn.env
-  class(connection.matrices) <- c("connection.matrix", class(connection.matrices))
+  # conn.env = new.env(parent = globalenv())
+  # class(conn.env) = 'pointer'
+  # connection.matrices = vector(mode = "list", length = length(newset$model$unit.labels))
+  # names(connection.matrices) = newset$model$unit.labels
+  #
+  # conn.env = list2env(connection.matrices)
+  # for(l in newset$model$unit.labels) {
+  #   delayedAssign(l, {
+  #     connection.matrix(newset$connection.counts, l)
+  #   }, assign.env = conn.env)
+  # }
+  #
+  # newset$connection.matrices = conn.env
+  # class(connection.matrices) <- c("connection.matrix", class(connection.matrices))
 
   return(newset);
 }
 
-
 as.matrix.ena.connection <- function(x, ...) {
   connection.matrix(x, ...)
 }
-
-as.matrix.line.weights <- function(x, square = F) {
+as.matrix.line.weights <- function(x, square = ifelse(nrow(x) > 1, F, T)) {
   class(x) = class(x)[-1]
 
   rows = x[,find.meta.cols(x), with = F]
@@ -98,11 +109,53 @@ as.matrix.line.weights <- function(x, square = F) {
     as.matrix(rows)
   }
 }
-
-as.matrix.ena.points <- function(x) {
+as.matrix.rotation.matrix = as.matrix.ena.points <- function(x) {
   class(x) = class(x)[-1]
   x = remove.meta.data(x)
   as.matrix(x)
+}
+as.matrix.ena.nodes <- function(x) {
+  class(x) = class(x)[-1]
+  as.matrix(x[,-c("code")])
+}
+
+#' ENA Connections as a matrix
+#'
+#' @param x ena.connections object
+#' @param square Logical. If TRUE, each row is converted to a square matrix
+#' @param names Ignored
+#'
+#' @return If square is FALSE (default), a matrix with all metadata columns removed, otherwise a list with square matrices
+#' @export
+as.matrix.ena.connections <- function(x, square = ifelse(nrow(x) > 1, F, T), names = NULL, simplify = ifelse(nrow(x) > 1, F, T)) {
+  class(x) = class(x)[-1]
+  x = remove.meta.data(x)
+
+  rows = x[,find.meta.cols(x), with = F]
+  if(square) {
+    upperTriSize = ncol(rows)
+    number = ( (ceiling(sqrt(2*upperTriSize)) ^ 2) ) - (2*upperTriSize)
+
+    cm = sapply(seq(nrow(rows)), function(unit) {
+      m = matrix(
+        rep(NA, number^2),
+        ncol =  number,
+        nrow =  number,
+        dimnames = list(codes, codes)
+      )
+      m[upper.tri(m)] = as.numeric(rows[unit,])
+      m
+    }, simplify = F)
+    if(simplify) {
+      cm = cm[[1]]
+    } else {
+      names(cm) = names
+    }
+  } else {
+    cm = as.matrix(rows)
+    rownames(cm) = names
+  }
+  cm
 }
 
 plot.ena.set <- function(x, ...) {
@@ -213,6 +266,34 @@ as.metadata <- function(x) {
   class(x) = c("metadata") #, class(x))
   x
 }
+as.code <- function(x) {
+  if(is.factor(x)) {
+    x = as.character(x)
+  }
+  class(x) = c("code") #, class(x))
+  x
+}
+as.codes <- function(x) {
+  if(is.factor(x)) {
+    x = as.character(x)
+  }
+  class(x) = c("codes") #, class(x))
+  x
+}
+as.co.occurrence <- function(x) {
+  if(is.factor(x)) {
+    x = as.character(x)
+  }
+  class(x) = c("co.occurrence") #, class(x))
+  x
+}
+as.dimension <- function(x) {
+  if(is.factor(x)) {
+    x = as.character(x)
+  }
+  class(x) = c("dimension") #, class(x))
+  x
+}
 
 find.meta.cols <- function(x) {
   !sapply(x, is, class2="metadata")
@@ -222,6 +303,31 @@ remove.meta.data <- function(x) {
   x[,find.meta.cols(x), with=F]
 }
 
+# "[.ena.connections" <- function(x, i, j, ...) { #square = F) {
+#   old.class = class(x)[1];
+#   class(x) = class(x)[-1]
+#
+#   args = list(...)
+#   browser()
+#   if(args$square) {
+#     rows = remove.meta.data(x)[i,]
+#     class(rows) <- c(old.class, class(rows))
+#     rows = as.matrix(rows, T)
+#     rows
+#   } else {
+#     rows = x[i,]
+#     class(rows) <- c(old.class, class(rows))
+#     rows
+#   }
+# }
+
+"$.metadata" = function(x, i) {
+  parts = unlist(strsplit(x = as.character(sys.call())[2], split = "\\$"))[1:2]
+  set = get(parts[1], envir = sys.frame(-2))
+  m = set[[parts[2]]][x == i,]
+
+  m
+}
 "$.line.weights" = function (x, i) {
   vals = x[[which(colnames(x) == i)]]
   unique.vals = unique(vals)
@@ -234,18 +340,10 @@ remove.meta.data <- function(x) {
   # attr(vals, "values") <- unique.vals
   vals
 }
-
-"$.metadata" = function(x, i) {
-  parts = unlist(strsplit(x = as.character(sys.call())[2], split = "\\$"))[1:2]
-  set = get(parts[1], envir = sys.frame(-2))
-  m = set[[parts[2]]][x == i,]
-
-  m
-}
-
 "$.ena.plots" <- function(x, i) {
   browser()
 }
+
 "[[.ena.plots" <- function(x, i) {
   browser()
 }
@@ -255,13 +353,6 @@ remove.meta.data <- function(x) {
   unique(x)
 }
 
-"$.metadata" = function(x, i) {
-  parts = unlist(strsplit(x = as.character(sys.call())[2], split = "\\$"))[1:2]
-  set = get(parts[1], envir = sys.frame(-2))
-  m = set[[parts[2]]][x == i,]
-
-  m
-}
 
 #' @export
 summary.ena.set <- function(x) {
@@ -283,4 +374,3 @@ summary.ena.set <- function(x) {
   rownames(cors) = paste("Dimension", 1:2)
   print(cors)
 }
-
