@@ -68,9 +68,9 @@ ena.set <- function(x) {
     newset$rotation$nodes = x$node.positions
     newset$rotation$rotation.matrix = x$rotation.set$rotation
   }
-  # browser()
+
   newset$`_function.call` = sys.calls()[[1]]
-  call.frame = sys.frames()[[3]]
+  call.frame = tail(sys.frames(),1)[[1]]
   newset$`_function.params` = mget(ls(envir = call.frame), envir = call.frame)
 
   # conn.env = new.env(parent = globalenv())
