@@ -105,5 +105,7 @@ ena.accumulate.data.file <- function(
   #   r6.to.json(data, o.class = output.class, o.fields = output.fields)
   # }
   #else
+
+  data = ena.set(data);
   data
 }

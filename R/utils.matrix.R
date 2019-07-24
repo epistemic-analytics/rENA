@@ -1,6 +1,8 @@
+#' @export
 as.matrix.ena.connection <- function(x, ...) {
   connection.matrix(x, ...)
 }
+#' @export
 as.matrix.ena.line.weights <- function(x, square = ifelse(nrow(x) > 1, F, T)) {
   class(x) = class(x)[-1]
   rows = x[,find.meta.cols(x), with = F]
@@ -19,16 +21,19 @@ as.matrix.ena.line.weights <- function(x, square = ifelse(nrow(x) > 1, F, T)) {
    as.matrix(rows)
   }
 }
+#' @export
 as.matrix.ena.rotation.matrix <- function(x) {
   class(x) = class(x)[-1]
   x = remove.meta.data(x)
   as.matrix(x)
 }
+#' @export
 as.matrix.ena.points <- function(x) {
   class(x) = class(x)[-1]
   x = remove.meta.data(x)
   as.matrix(x)
 }
+#' @export
 as.matrix.ena.nodes <- function(x) {
   class(x) = class(x)[-1]
   as.matrix(x[,-c("code")])

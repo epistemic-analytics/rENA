@@ -9,17 +9,19 @@ ena.set <- function(x) {
   }
   code.columns = apply(x$enadata$adjacency.matrix, 2, paste, collapse = " & ")
 
-  newset$meta.data = x$enadata$metadata
-  for(i in seq(ncol(newset$meta.data)))
-    set(newset$meta.data, j = i, value = as.ena.metadata(newset$meta.data[[i]]))
-
   newset$connection.counts = x$enadata$adjacency.vectors;
   colnames(newset$connection.counts) = code.columns
 
   for(i in seq(ncol(newset$connection.counts)))
     set(newset$connection.counts, j = i, value = as.ena.co.occurrence(newset$connection.counts[[i]]))
 
-  newset$connection.counts = cbind(x$enadata$metadata, newset$connection.counts)
+  newset$meta.data = x$enadata$metadata
+  if(!is.null(newset$meta.data) && ncol(newset$meta.data) > 0) {
+    for(i in seq(ncol(newset$meta.data))) {
+      set(newset$meta.data, j = i, value = as.ena.metadata(newset$meta.data[[i]]))
+    }
+    newset$connection.counts = cbind(x$enadata$metadata, newset$connection.counts)
+  }
   class(newset$connection.counts) <- c("ena.connections", class(newset$connection.counts))
 
   if(x.is.set) {
