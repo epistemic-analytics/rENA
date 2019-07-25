@@ -18,8 +18,9 @@ ena.correlations <- function(enaset, dims = c(1:2)) {
   point2 = pComb[2,]
 
   points = as.matrix(enaset$points)
+  centroids = as.matrix(enaset$model$centroids)
   svdDiff = matrix(points[point1, dims] - points[point2, dims], ncol=length(dims), nrow=length(point1))
-  optDiff = matrix(enaset$model$centroids[point1, dims] - enaset$model$centroids[point2, dims], ncol=length(dims), nrow=length(point1))
+  optDiff = matrix(centroids[point1, dims] - centroids[point2, dims], ncol=length(dims), nrow=length(point1))
 
   correlations = as.data.frame(mapply(function(method) {
     lapply(dims, function(dim) {
