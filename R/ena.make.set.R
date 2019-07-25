@@ -166,9 +166,13 @@ ena.make.set <- function(
         colnames(enadata$rotation$nodes) = colnames(points)
         rownames(enadata$rotation$nodes) = enadata$rotation$codes
 
-        for(i in seq(ncol(enadata$rotation$nodes)))
+        for(i in seq(ncol(enadata$rotation$nodes))) {
           set(enadata$rotation$nodes, j = i, value = as.ena.dimension(enadata$rotation$nodes[[i]]))
-        enadata$rotation$nodes = data.table(code = structure(enadata$rotation$codes, class = "code"), enadata$rotation$nodes)
+        }
+        enadata$rotation$nodes = data.table(
+          code = structure(enadata$rotation$codes, class = c("code", class(enadata$rotation$codes))),
+          enadata$rotation$nodes
+        )
         class(enadata$rotation$nodes) = c("ena.nodes", class(enadata$rotation$nodes))
 
         enadata$model$centroids = as.data.table(positions$centroids)
@@ -203,6 +207,8 @@ ena.make.set <- function(
 
   enadata$model$plots = list();
   class(enadata$model$plots) = c("ena.plots", class(enadata$model$plots))
+
+  enadata$`_function.params`$norm.by = norm.by
 
   return(enadata)
 }

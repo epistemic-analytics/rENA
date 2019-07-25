@@ -72,7 +72,7 @@ ena.set <- function(x) {
   }
 
   newset$`_function.call` = sys.calls()[[1]]
-  call.frame = tail(sys.frames(),1)[[1]]
+  call.frame = sys.frame(which(sapply(sys.frames(), function(f) { "window.size.back" %in% ls(envir = f) })))
   newset$`_function.params` = mget(ls(envir = call.frame), envir = call.frame)
 
   # conn.env = new.env(parent = globalenv())
