@@ -49,7 +49,7 @@ remove.meta.data <- function(x) {
  browser()
 }
 #' @export
-.DollarNames.metadata = function(x, pattern="") {
+.DollarNames.ena.metadata = function(x, pattern="") {
  unique(x)
 }
 #' @export
