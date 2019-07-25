@@ -18,7 +18,7 @@ as.matrix.ena.line.weights <- function(x, square = ifelse(nrow(x) > 1, F, T)) {
      m
    }, simplify = F);
   } else {
-   as.matrix(rows)
+   as.matrix(remove.meta.data(rows))
   }
 }
 #' @export

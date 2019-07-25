@@ -1,5 +1,8 @@
 find.meta.cols <- function(x) {
- !sapply(x, is, class2="ena.metadata")
+   !sapply(x, is, class2="ena.metadata")
+}
+find.code.cols <- function(x) {
+   sapply(x, is, class2="ena.co.occurrence")
 }
 remove.meta.data <- function(x) {
  x[,find.meta.cols(x), with=F]
