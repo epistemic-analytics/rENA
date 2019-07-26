@@ -25,7 +25,7 @@ ENAplot = R6::R6Class("ENAplot",
 
         title = "ENA Plot",
 
-        dimension.labels = c("X","Y"),
+        dimension.labels = c("",""),
 
         font.size = 14,
         font.color = "#000000",
@@ -63,6 +63,8 @@ ENAplot = R6::R6Class("ENAplot",
         if(scale.to == "points") {
           max.axis = max(abs(as.matrix(enaset$points)))*1.2
         };
+
+
         # network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T, range=c(-max.axis,max.axis));
         graph.axis <- list(
           titlefont = private$font,
@@ -86,7 +88,6 @@ ENAplot = R6::R6Class("ENAplot",
         # self$axes$max = max.axis;
         # self$axes$objects$x = graph.axis.x;
         # self$axes$objects$y = graph.axis.y;
-
         self$plot = plotly::layout(
           self$plot,
           title =  title,

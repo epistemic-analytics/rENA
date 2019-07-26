@@ -136,6 +136,11 @@ NumericMatrix c_cor(NumericMatrix mat) {
   return c_cor_helper(mat, 0, mat.nrow());
 }
 
+//' Sphere norm
+//' @title Sphere norm
+//' @description TBD
+//' @param dfM Dataframe
+//' @export
 // [[Rcpp::export]]
 NumericMatrix sphere_norm_c(DataFrame dfM) {
   NumericMatrix m = toNumericMatrix(dfM);
@@ -159,6 +164,12 @@ NumericMatrix sphere_norm_c(DataFrame dfM) {
   return output;
 }
 
+
+//' Non sphere norm
+//' @title Non sphere norm
+//' @description TBD
+//' @param dfM Dataframe
+//' @export
 // [[Rcpp::export]]
 NumericMatrix dont_sphere_norm_c(DataFrame dfM) {
   NumericMatrix m = toNumericMatrix(dfM);

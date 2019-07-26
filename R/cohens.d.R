@@ -1,4 +1,6 @@
 ##
+#' Cohen's d calculation
+#'
 #' @title Cohen's d
 #'
 #' @description Calculate Conhen's d
@@ -10,7 +12,6 @@
 #'
 #' @export
 #' @return numeric Cohen's d calculation
-##
 cohens.d <- function(x, y) {
   lx <- length(x)- 1
   ly <- length(y)- 1

@@ -1,6 +1,20 @@
+
+#' Find metadata columns
+#'
+#' @param data.table (or frame) to search for columns of class ena.metadata
+#'
+#' @return logical vector
+#' @export
 find.meta.cols <- function(x) {
    !sapply(x, is, class2="ena.metadata")
 }
+
+#' Find code columns
+#'
+#' @param data.table (or frame) to search for columns of class ena.co.occurrence
+#'
+#' @return logical vector
+#' @export
 find.code.cols <- function(x) {
    sapply(x, is, class2="ena.co.occurrence")
 }

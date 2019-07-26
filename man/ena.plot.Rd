@@ -4,7 +4,7 @@
 \alias{ena.plot}
 \title{Generate a plot of an ENAset}
 \usage{
-ena.plot(enaset, title = "ENA Plot", dimension.labels = c("X", "Y"),
+ena.plot(enaset, title = "ENA Plot", dimension.labels = c("", ""),
   font.size = 10, font.color = "#000000", font.family = c("Arial",
   "Courier New", "Times New Roman"), scale.to = c("network", "points"),
   ...)

@@ -52,7 +52,7 @@ ena.plot <- function(
 
   title = "ENA Plot",
 
-  dimension.labels = c("X","Y"),
+  dimension.labels = c("",""),
 
   font.size = 10,
   font.color = "#000000",
