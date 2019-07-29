@@ -1,4 +1,5 @@
 
+#' @export
 plot.ena.set <- function(x, ...) {
   ena.plot(x, ...)
 }
@@ -21,6 +22,7 @@ points <- function(x, wh = NULL, mean = F, labels = T, label.text = NULL, ...) {
   x
 }
 
+#' @export
 add_points <- function(x, wh = NULL, name = "plot", ...) {
   set = x
   # browser()

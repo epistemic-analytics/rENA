@@ -9,10 +9,20 @@ c_cor <- function(mat) {
     .Call('_rENA_c_cor', PACKAGE = 'rENA', mat)
 }
 
+#' Sphere norm
+#' @title Sphere norm
+#' @description TBD
+#' @param dfM Dataframe
+#' @export
 sphere_norm_c <- function(dfM) {
     .Call('_rENA_sphere_norm_c', PACKAGE = 'rENA', dfM)
 }
 
+#' Non sphere norm
+#' @title Non sphere norm
+#' @description TBD
+#' @param dfM Dataframe
+#' @export
 dont_sphere_norm_c <- function(dfM) {
     .Call('_rENA_dont_sphere_norm_c', PACKAGE = 'rENA', dfM)
 }
@@ -85,6 +95,13 @@ linderoth_pos_es <- function(adjMats, t, numDims) {
     .Call('_rENA_linderoth_pos_es', PACKAGE = 'rENA', adjMats, t, numDims)
 }
 
+#' Merge data frame columns
+#' @title Merge data frame columns
+#' @description TBD
+#' @param df Dataframe
+#' @param cols Vector
+#' @param sep Character seperator
+#' @export
 merge_columns_c <- function(df, cols, sep = ".") {
     .Call('_rENA_merge_columns_c', PACKAGE = 'rENA', df, cols, sep)
 }

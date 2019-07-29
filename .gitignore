@@ -2,8 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-RcppExports.R
-RcppExports.cpp
 *.out
 data/bigdata
 .DS_Store

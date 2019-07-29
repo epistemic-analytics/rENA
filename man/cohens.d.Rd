@@ -18,5 +18,7 @@ numeric Cohen's d calculation
 Calculate Conhen's d
 }
 \details{
+Cohen's d calculation
+
 [TBD]
 }
