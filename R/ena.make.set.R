@@ -64,13 +64,13 @@ ena.make.set <- function(
   rotation.set = NULL,
   endpoints.only = T,
   node.position.method = lws.positions.sq,
+  as.list = T,
   ...
 ) {
   if("ENAdata" %in% enadata) {
     warning("Usage of ENAdata object will be deprecated and potentially removed altogether in future versions. See ena.accumulate.data() or ena.set()");
     enadata = ena.set(enadata);
   }
-
   # set = ENAset$new(
   #   enadata = enadata,
   #   dimensions = dimensions,
@@ -98,6 +98,7 @@ ena.make.set <- function(
     line.weights.dt = as.data.table(line.weights)
     for(i in seq(ncol(line.weights.dt)))
       set(line.weights.dt, j = i, value = as.ena.co.occurrence(line.weights.dt[[i]]))
+
     enadata$line.weights = cbind(enadata$meta.data, line.weights.dt)
     class(enadata$line.weights) = c("ena.line.weights", class(enadata$line.weights))
   #####

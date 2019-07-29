@@ -62,6 +62,7 @@ ena.accumulate.data <- function(
   window.size.forward = 0,
   mask = NULL, #matrix (default - upper triangle of 1's)
   include.meta = T,
+  as.list = T,
   ...
 ) {
 
@@ -135,7 +136,11 @@ ena.accumulate.data <- function(
   # }
   #else
 
-  data = ena.set(data);
+  if(as.list) {
+    data = ena.set(data);
+  } else {
+    warning("R6 data objects will be deprecated in a future version. Consider upgrading to the new data object.")
+  }
   data
 }
 

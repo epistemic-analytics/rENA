@@ -9,7 +9,7 @@ ena.accumulate.data(units = NULL, conversation = NULL, codes = NULL,
   "SeparateTrajectory"), weight.by = "binary",
   window = c("MovingStanzaWindow", "Conversation"),
   window.size.back = 1, window.size.forward = 0, mask = NULL,
-  include.meta = T, ...)
+  include.meta = T, as.list = T, ...)
 }
 \arguments{
 \item{units}{A data frame where the columns are the properties by which units will be identified}

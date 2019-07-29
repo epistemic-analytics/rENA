@@ -1,4 +1,4 @@
-##
+#####
 #' @title Plot of ENA trajectories
 #'
 #' @description Function used to plot trajectories
@@ -82,8 +82,7 @@
 #' print(plot)
 #'
 #' @return The \code{\link{ENAplot}} provided to the function, with its plot updated to include the trajectories
-##
-
+#####
 ena.plot.trajectory = function(
   enaplot,
   points,
@@ -129,8 +128,17 @@ ena.plot.trajectory = function(
 
     tbl = data.table::data.table(points, labels = labels);
   }
-  dfDT.trajs = tbl[,{ data.table::data.table(lines = list(.SD))  }, by=by]
 
+  # if(is.logical(by)) {
+  # } else {}
+  if(!is.null(by)) {
+    if(is.character(by))
+      by = as.factor(by)
+
+    dfDT.trajs = tbl[,{ data.table::data.table(lines = list(.SD))  }, by=by]
+  } else {
+    dfDT.trajs = tbl[,{ data.table::data.table(lines = list(.SD))  }]
+  }
 
   valid.label.offsets = c("top left","top center","top right","middle left","middle center","middle right","bottom left","bottom center","bottom right");
   if(!all(label.offset %in% valid.label.offsets))
@@ -143,10 +151,13 @@ ena.plot.trajectory = function(
   }
 
   for(x in 1:nrow(dfDT.trajs)) {
+    d = remove.meta.data(dfDT.trajs[x,]$lines[[1]])
+    d.names = colnames(d)
     enaplot$plot = plotly::add_trace(
       enaplot$plot,
-      data = dfDT.trajs[x,]$lines[[1]],
-      x = ~V1, y = ~V2,
+      data = d,
+      x = as.formula(paste0("~",d.names[1])),
+      y = as.formula(paste0("~",d.names[2])),
       name = names[x], #as.character(names[x]), #dfDT.trajs[x]$lines[[1]]$labels,
       mode = mode,
       text = dfDT.trajs[x,]$lines[[1]]$labels,

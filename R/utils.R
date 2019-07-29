@@ -21,40 +21,46 @@ find.code.cols <- function(x) {
 remove.meta.data <- function(x) {
  x[,find.meta.cols(x), with=F]
 }
-# "[.ena.connections" <- function(x, i, j, ...) { #square = F) {
-#   old.class = class(x)[1];
-#   class(x) = class(x)[-1]
-#
-#   args = list(...)
-#   browser()
-#   if(args$square) {
-#     rows = remove.meta.data(x)[i,]
-#     class(rows) <- c(old.class, class(rows))
-#     rows = as.matrix(rows, T)
-#     rows
-#   } else {
-#     rows = x[i,]
-#     class(rows) <- c(old.class, class(rows))
-#     rows
-#   }
-# }
+
+#' Extract metadata easily
+#'
+#' @param x [TBD]
+#' @param i [TBD]
+#'
+#' @return [TBD]
+#' @export
 "$.ena.metadata" = function(x, i) {
- parts = unlist(strsplit(x = as.character(sys.call())[2], split = "\\$"))[1:2]
- set = get(parts[1], envir = sys.frame(-2))
- m = set[[parts[2]]][x == i,]
- m
+   parts = unlist(strsplit(x = as.character(sys.call())[2], split = "\\$"))[1:2]
+   set = get(parts[1], envir = sys.frame(-2))
+   m = set[[parts[2]]][x == i,]
+   m
 }
+
+#' Extract line.weignts easily
+#'
+#' @param x [TBD]
+#' @param i [TBD]
+#'
+#' @return [TBD]
+#' @export
 "$.line.weights" = function (x, i) {
- vals = x[[which(colnames(x) == i)]]
- unique.vals = unique(vals)
- # attr(vals, "values") <- unique.vals
- vals
+   vals = x[[which(colnames(x) == i)]]
+   unique.vals = unique(vals)
+   # attr(vals, "values") <- unique.vals
+   vals
 }
+#' Extract points easily
+#'
+#' @param x [TBD]
+#' @param i [TBD]
+#'
+#' @return [TBD]
+#' @export
 "$.ena.points" = function (x, i) {
- vals = x[[which(colnames(x) == i)]]
- unique.vals = unique(vals)
- # attr(vals, "values") <- unique.vals
- vals
+   vals = x[[which(colnames(x) == i)]]
+   unique.vals = unique(vals)
+   # attr(vals, "values") <- unique.vals
+   vals
 }
 "$.ena.plots" <- function(x, i) {
  browser()

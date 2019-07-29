@@ -2,7 +2,6 @@ ena.set <- function(x) {
   newset = list()
   class(newset) <- c("ena.set", class(newset))
   x.is.set = T
-
   if("ENAdata" %in% class(x)) {
     x = list(enadata = x);
     x.is.set = F
@@ -15,14 +14,23 @@ ena.set <- function(x) {
   for(i in seq(ncol(newset$connection.counts)))
     set(newset$connection.counts, j = i, value = as.ena.co.occurrence(newset$connection.counts[[i]]))
 
-  newset$meta.data = x$enadata$metadata
+  if(grepl(x = x$enadata$model, pattern = "Traj", ignore.case = T)) {
+    newset$meta.data = data.table::copy(x$enadata$trajectories$units)
+    newset$meta.data[, ENA_UNIT := apply(x$enadata$trajectories$units, 1, paste, collapse = ".")]
+
+    newset$trajectories = cbind(newset$meta.data, x$enadata$trajectories$step)
+    for(i in seq(ncol(newset$trajectories))) {
+      set(newset$trajectories, j = i, value = as.ena.metadata(newset$trajectories[[i]]))
+    }
+  } else {
+    newset$meta.data = x$enadata$metadata
+  }
+
   if(!is.null(newset$meta.data) && ncol(newset$meta.data) > 0) {
     for(i in seq(ncol(newset$meta.data))) {
       set(newset$meta.data, j = i, value = as.ena.metadata(newset$meta.data[[i]]))
     }
-    newset$connection.counts = cbind(x$enadata$metadata, newset$connection.counts)
   }
-  class(newset$connection.counts) <- c("ena.connections", class(newset$connection.counts))
 
   if(x.is.set) {
     newset$line.weights = as.data.table(cbind(x$enadata$metadata, x$line.weights))
@@ -30,7 +38,8 @@ ena.set <- function(x) {
     newset$rotation.matrix = x$rotation.set$rotation
   }
 
-  newset$trajectories = x$enadata$trajectories$step
+  newset$connection.counts = cbind(newset$meta.data, newset$connection.counts)
+  class(newset$connection.counts) <- c("ena.connections", class(newset$connection.counts))
 
   newset$model = list(
     model.type = x$enadata$model,

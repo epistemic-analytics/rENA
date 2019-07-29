@@ -30,12 +30,12 @@ ENAplot = R6::R6Class("ENAplot",
         font.size = 14,
         font.color = "#000000",
         font.family = "Arial",
-        scale.to = c("network", "points"),
+        scale.to = "network",
         ...
       ) {
         code.cols = !colnames(enaset$line.weights) %in% colnames(enaset$meta.data)
 
-        scale.to = match.arg(scale.to);
+        # scale.to = match.arg(scale.to);
 
         args = list(...);
         if(!is.null(args$multiplier)) {
@@ -58,12 +58,28 @@ ENAplot = R6::R6Class("ENAplot",
           type ="scatter"
         );
 
-        # max.axis = max(abs(points))*1.2;
-        max.axis = max(abs(as.matrix(enaset$rotation$nodes)))*1.2;
-        if(scale.to == "points") {
+        if (is.list(scale.to)) {
           max.axis = max(abs(as.matrix(enaset$points)))*1.2
-        };
-
+          if(is.null(scale.to$x)) {
+            axis.range.x = c(-max.axis, max.axis)
+          } else {
+            axis.range.x = scale.to$x
+          }
+          if(is.null(scale.to$y)) {
+            axis.range.y = c(-max.axis, max.axis)
+          } else {
+            axis.range.y = scale.to$y
+          }
+        } else {
+          if(scale.to == "points") {
+            max.axis = max(abs(as.matrix(enaset$points)))*1.2
+          } else if (is.numeric(scale.to)) {
+            max.axis = tail(scale.to, 1)
+          } else {
+            max.axis = max(abs(as.matrix(enaset$rotation$nodes)))*1.2;
+          }
+          axis.range.x = axis.range.y = c(-max.axis, max.axis)
+        }
 
         # network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T, range=c(-max.axis,max.axis));
         graph.axis <- list(
@@ -71,8 +87,8 @@ ENAplot = R6::R6Class("ENAplot",
           showgrid = F,
           zeroline = T,
           showticklabels = T,
-          showgrid = T,
-          range=c(-max.axis,max.axis)
+          showgrid = T
+          # range=c(-max.axis,max.axis)
         );
         if(!is.null(args$ticks)) {
           graph.axis$showticklabels = T;
@@ -82,8 +98,10 @@ ENAplot = R6::R6Class("ENAplot",
         }
         self$axes$x = graph.axis
         self$axes$x$title = dimension.labels[1];
+        self$axes$x$range = axis.range.x
         self$axes$y = graph.axis
         self$axes$y$title = dimension.labels[2];
+        self$axes$y$range = axis.range.y
 
         # self$axes$max = max.axis;
         # self$axes$objects$x = graph.axis.x;

@@ -43,6 +43,35 @@ add_points <- function(x, wh = NULL, name = "plot", ...) {
 }
 
 #' @export
+add_trajectory <- function(x, wh = NULL, name = "plot", ...) {
+  set = x$enaset
+
+  subbed = substitute(wh)
+  args = as.character(subbed)
+  points = set$points
+  if(!is.null(args)) {
+    if(length(args) > 1) {
+      # cc = call("$", set$points, args[[2]])
+      # part1 = eval(cc)
+      # points = part1[args[[3]], "points" ,set]
+      # name = args[[length(args)]]
+      # by =
+      points = points[eval(call(args[1], set$points[[args[2]]], subbed[[3]])), ]
+      by = "ENA_UNIT"
+    } else {
+      # cc = call("[[", set$points, args[[1]])
+      # by = eval(cc)
+      by = args[[1]]
+    }
+  } else {
+    by = "ENA_UNIT"
+  }
+  set$model$plots[[name]] = ena.plot.trajectory(x, points = points, by = by)
+
+  set
+}
+
+#' @export
 group <- function(x, wh = NULL,  ...) {
   set = x$enaset
   args = list(...)
