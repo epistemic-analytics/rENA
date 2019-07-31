@@ -2,7 +2,7 @@ as.ena.metadata <- function(x) {
   if(is.factor(x)) {
     x = as.character(x)
   }
-  class(x) = c("ena.metadata") # This fails in the $.ena.metadata if is extending character, class(x))
+  class(x) = c("ena.metadata", "character") # This fails in the $.ena.metadata if is extending character, class(x))
   x
 }
 as.ena.code <- function(x) {
