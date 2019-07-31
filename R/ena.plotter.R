@@ -3,20 +3,18 @@
 #'
 #' @description Set Plotting Wrapper. TODO: need to make a function for making subtraction plots...
 #'
-#' @param set
-#' @param groupVar
-#' @param groups
-#' @param points
-#' @param mean
-#' @param network
-#' @param networkMultiplier
-#' @param subtractionMultiplier
-#' @param unit
-#' @param showPlots
+#' @param set [TBD]
+#' @param groupVar [TBD]
+#' @param groups [TBD]
+#' @param points [TBD]
+#' @param mean [TBD]
+#' @param network [TBD]
+#' @param networkMultiplier [TBD]
+#' @param subtractionMultiplier [TBD]
+#' @param unit [TBD]
+#' @param showPlots [TBD]
 #'
-#' @return
-#' @export
-#'
+#' @return ena.set object
 #####
 ena.plotter = function(
   set,

@@ -20,7 +20,6 @@
 #' @param ... [TBD]
 #'
 #' @return ena.set object
-#' @export
 #####
 ena.set.creator = function(
   data,

@@ -22,10 +22,11 @@
 #' @param networkMultiplier [TBD]
 #' @param subtractionMultiplier [TBD]
 #' @param unit [TBD]
-#' @param showPlots [TBD]
+#' @param show.plots [TBD]
+#' @param include.plots [TBD]
 #' @param ... [TBD]
 #'
-#' @return
+#' @return ena.set object
 #' @export
 ena = function(
   data,
@@ -50,38 +51,46 @@ ena = function(
   networkMultiplier = 1,
   subtractionMultiplier = 1,
   unit = NULL,
-  showPlots = F,
+  show.plots = F,
+  include.plots = T,
   ...
 ) {
-  set = ena.set.creator(data = data,
-                        codes = codes,
-                        units = units,
-                        conversation = conversation,
-                        metadata = metadata,
-                        model = model,
-                        weight.by = weight.by,
-                        window = window,
-                        window.size.back = window.size.back,
-                        window.size.forward = window.size.forward,
-                        mask = mask,
-                        include.meta = include.meta,
-                        groupVar = groupVar,
-                        groups = groups,
-                        runTest = runTest,
-                        testType = testType,
-                        ...)
+  set = ena.set.creator(
+    data = data,
+    codes = codes,
+    units = units,
+    conversation = conversation,
+    metadata = metadata,
+    model = model,
+    weight.by = weight.by,
+    window = window,
+    window.size.back = window.size.back,
+    window.size.forward = window.size.forward,
+    mask = mask,
+    include.meta = include.meta,
+    groupVar = groupVar,
+    groups = groups,
+    runTest = runTest,
+    testType = testType,
+    ...
+  )
 
-  set = ena.plotter(set = set,
-                    groupVar = groupVar,
-                    groups = groups,
-                    points = points,
-                    mean = mean,
-                    network = network,
-                    networkMultiplier = networkMultiplier,
-                    subtractionMultiplier = subtractionMultiplier,
-                    unit = unit,
-                    showPlots = showPlots,
-                    ...)
+  if(include.plots) {
+    set = ena.plotter(
+      set = set,
+      groupVar = groupVar,
+      groups = groups,
+      points = points,
+      mean = mean,
+      network = network,
+      networkMultiplier = networkMultiplier,
+      subtractionMultiplier = subtractionMultiplier,
+      unit = unit,
+      showPlots = show.plots,
+      ...
+    )
+
+  }
 
   return(set)
 }

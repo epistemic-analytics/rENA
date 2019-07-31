@@ -1,13 +1,9 @@
-### ENA Wrapper Function ###
-
-##
-#' @title TBD
+#####
+#' @title ENA Wrapper Function
 #'
 #' @description TBD
 #'
 #' @details TBD
-#'
-#' @export
 #'
 #' @param data A data frame
 #' @param units Column names of data by which units will be identified
@@ -27,17 +23,12 @@
 #' @param group2 (optional) Value of groupCol that you wish to group and plot units by
 #' @param showPlots Logical indicating if the function should show plots in the Viewer pane immediately after running. Default is TRUE
 #'
-#'
-#'
 #' @keywords data, accumulate, set creation, plotting
 #'
 #' @seealso \code{\link{ENAdata}}, \code{\link{ena.make.set}}, \code{\link{ena.accumulate.data}}, \code{\link{ena.plot.group}}, \code{\link{ena.plot.network}}, \code{\link{ena.plot}}
 #'
 #' @return \code{\link{ENAset}} class object that can be further processed for analysis or plotting, The \code{\link{ENAplot}}s requested.
-#'
-#'
-##
-
+#####
 ena_old = function(
   data,
   codes,
