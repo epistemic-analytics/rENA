@@ -12,7 +12,7 @@ ena(data, codes, units, conversation, metadata = NULL,
   runTest = FALSE, testType = c("nonparametric", "parametric"),
   points = FALSE, mean = FALSE, network = TRUE,
   networkMultiplier = 1, subtractionMultiplier = 1, unit = NULL,
-  show.plots = F, include.plots = T, ...)
+  print.plots = F, include.plots = T, ...)
 }
 \arguments{
 \item{data}{[TBD]}
@@ -59,7 +59,7 @@ ena(data, codes, units, conversation, metadata = NULL,
 
 \item{unit}{[TBD]}
 
-\item{show.plots}{[TBD]}
+\item{print.plots}{[TBD]}
 
 \item{include.plots}{[TBD]}
 

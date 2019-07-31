@@ -34,7 +34,7 @@
 #' @param networkMultiplier [TBD]
 #' @param subtractionMultiplier [TBD]
 #' @param unit [TBD]
-#' @param show.plots [TBD]
+#' @param print.plots [TBD]
 #' @param include.plots [TBD]
 #' @param ... [TBD]
 #'
@@ -64,7 +64,7 @@ ena = function(
   networkMultiplier = 1,
   subtractionMultiplier = 1,
   unit = NULL,
-  show.plots = F,
+  print.plots = F,
   include.plots = T,
   ...
 ) {
@@ -99,7 +99,7 @@ ena = function(
       networkMultiplier = networkMultiplier,
       subtractionMultiplier = subtractionMultiplier,
       unit = unit,
-      showPlots = show.plots,
+      showPlots = print.plots,
       ...
     )
   }
