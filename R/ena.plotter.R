@@ -198,7 +198,6 @@ ena.plotter = function(
       stop(paste("Group column does not contain group value(s): ", groups[groups.missing]))
     }
 
-    browser()
     set = ena.plot.subtraction(
       set = set,
       groupVar = groupVar,
