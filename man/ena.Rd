@@ -2,7 +2,7 @@
 % Please edit documentation in R/ena.R
 \name{ena}
 \alias{ena}
-\title{ena wrapper function}
+\title{Generate ENA Set}
 \usage{
 ena(data, codes, units, conversation, metadata = NULL,
   model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),
@@ -69,5 +69,15 @@ ena(data, codes, units, conversation, metadata = NULL,
 ena.set object
 }
 \description{
-ena wrapper function
+Generates an ENA model by constructing a dimensional reduction
+of adjacency (co-occurrence) vectors as defined by the supplied
+conversations, units, and codes
+}
+\details{
+This function generates an ena.set object given a data.frame, units,
+conversations, and codes. After accumulating the adjacency (co-occurrence)
+vectors, computes a dimensional reduction (projection), and calculates node
+positions in the projected ENA space. Returns location of the units in the
+projected space, as well as locations for node positions, and normalized
+adjacency (co-occurrence) vectors to construct network graphs
 }

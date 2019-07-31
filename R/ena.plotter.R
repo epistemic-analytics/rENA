@@ -26,8 +26,11 @@ ena.plotter = function(
   networkMultiplier = 1,
   subtractionMultiplier = 1,
   unit = NULL,
-  showPlots = F
+  showPlots = F,
+  ...
 ) {
+  data = set$connection.counts;
+
   if(is.null(unit) == FALSE){
     plot = ena.plot(enaset = set,title = unit)
 
@@ -86,7 +89,7 @@ ena.plotter = function(
     return(set)
   }
   else if(is.null(groups) == TRUE) {
-    unique.groups = unique(data[,groupVar])
+    unique.groups = unique(data[[groupVar]])
 
     if(length(unique.groups) == 1){
       print("Warning: No groups specified and group variable only contains one unique value. Generating plot for one group.")
@@ -150,7 +153,7 @@ ena.plotter = function(
   else if(length(groups) == 1) {
     group = groups
 
-    if(any(data[,groupVar] == group) == FALSE){
+    if(any(data[[groupVar]] == group) == FALSE){
       stop("Group column does not contain group1 value!")
     }
 
@@ -185,58 +188,29 @@ ena.plotter = function(
 
     return(set)
   }
-  else if (length(groups) == 2) {
-    group1 = groups[1]
-    group2 = groups[2]
-
-    if(any(data[,groupVar] == group1) == FALSE){
-      stop("Group column does not contain group1 value!")
+  else if (length(groups) >= 2) {
+    if (length(groups) > 2) {
+      warning(paste0("More than two groups specified. Plotting the first two groups: ", groups))
     }
 
-    if(any(data[,groupVar] == group2) == FALSE){
-      stop("Group column does not contain group2 value!")
+    groups.missing = groups[which(!groups %in% data[[groupVar]])]
+    if(length(groups.missing) > 0) {
+      stop(paste("Group column does not contain group value(s): ", groups[groups.missing]))
     }
 
-    set = ena.plot.subtraction(set = set,
-                               groupVar = groupVar,
-                               group1 = group1,
-                               group2 = group2,
-                               points = points,
-                               mean = mean,
-                               network = network,
-                               networkMultiplier = networkMultiplier,
-                               subtractionMultiplier = subtractionMultiplier)
-
-    if(showPlots == TRUE) {
-      print(set$model$plots)
-    }
-
-
-    return(set)
-  }
-  else if (length(groups) > 2) {
-    group1 = groups[1]
-    group2 = groups[2]
-
-    warning(paste0("More than two groups specified. Plotting the first two groups: ",group1," and ",group2))
-
-    if(any(data[,groupVar] == group1) == FALSE){
-      stop("Group column does not contain group1 value!")
-    }
-
-    if(any(data[,groupVar] == group2) == FALSE){
-      stop("Group column does not contain group2 value!")
-    }
-
-    set = ena.plot.subtraction(set = set,
-                               groupVar = groupVar,
-                               group1 = group1,
-                               group2 = group2,
-                               points = points,
-                               mean = mean,
-                               network = network,
-                               networkMultiplier = networkMultiplier,
-                               subtractionMultiplier = subtractionMultiplier)
+    browser()
+    set = ena.plot.subtraction(
+      set = set,
+      groupVar = groupVar,
+      group1 = groups[1],
+      group2 = groups[2],
+      points = points,
+      mean = mean,
+      network = network,
+      networkMultiplier = networkMultiplier,
+      subtractionMultiplier = subtractionMultiplier,
+      ...
+    )
 
     if(showPlots == TRUE) {
       print(set$model$plots)

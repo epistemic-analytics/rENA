@@ -142,7 +142,7 @@ NumericMatrix c_cor(NumericMatrix mat) {
 //' @param dfM Dataframe
 //' @export
 // [[Rcpp::export]]
-NumericMatrix sphere_norm_c(DataFrame dfM) {
+NumericMatrix fun_sphere_norm(DataFrame dfM) {
   NumericMatrix m = toNumericMatrix(dfM);
 
   int rows = m.nrow();
@@ -166,12 +166,13 @@ NumericMatrix sphere_norm_c(DataFrame dfM) {
 
 
 //' Non sphere norm
+//'
 //' @title Non sphere norm
 //' @description TBD
 //' @param dfM Dataframe
 //' @export
 // [[Rcpp::export]]
-NumericMatrix dont_sphere_norm_c(DataFrame dfM) {
+NumericMatrix fun_skip_sphere_norm(DataFrame dfM) {
   NumericMatrix m = toNumericMatrix(dfM);
 
   int nrows = m.nrow();

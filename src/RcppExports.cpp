@@ -32,25 +32,25 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// sphere_norm_c
-NumericMatrix sphere_norm_c(DataFrame dfM);
-RcppExport SEXP _rENA_sphere_norm_c(SEXP dfMSEXP) {
+// fun_sphere_norm
+NumericMatrix fun_sphere_norm(DataFrame dfM);
+RcppExport SEXP _rENA_fun_sphere_norm(SEXP dfMSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< DataFrame >::type dfM(dfMSEXP);
-    rcpp_result_gen = Rcpp::wrap(sphere_norm_c(dfM));
+    rcpp_result_gen = Rcpp::wrap(fun_sphere_norm(dfM));
     return rcpp_result_gen;
 END_RCPP
 }
-// dont_sphere_norm_c
-NumericMatrix dont_sphere_norm_c(DataFrame dfM);
-RcppExport SEXP _rENA_dont_sphere_norm_c(SEXP dfMSEXP) {
+// fun_skip_sphere_norm
+NumericMatrix fun_skip_sphere_norm(DataFrame dfM);
+RcppExport SEXP _rENA_fun_skip_sphere_norm(SEXP dfMSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< DataFrame >::type dfM(dfMSEXP);
-    rcpp_result_gen = Rcpp::wrap(dont_sphere_norm_c(dfM));
+    rcpp_result_gen = Rcpp::wrap(fun_skip_sphere_norm(dfM));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -440,8 +440,8 @@ RcppExport SEXP _rENA_RcppExport_registerCCallable() {
 static const R_CallMethodDef CallEntries[] = {
     {"_rENA_rowSums_c", (DL_FUNC) &_rENA_rowSums_c, 1},
     {"_rENA_c_cor", (DL_FUNC) &_rENA_c_cor, 1},
-    {"_rENA_sphere_norm_c", (DL_FUNC) &_rENA_sphere_norm_c, 1},
-    {"_rENA_dont_sphere_norm_c", (DL_FUNC) &_rENA_dont_sphere_norm_c, 1},
+    {"_rENA_fun_sphere_norm", (DL_FUNC) &_rENA_fun_sphere_norm, 1},
+    {"_rENA_fun_skip_sphere_norm", (DL_FUNC) &_rENA_fun_skip_sphere_norm, 1},
     {"_rENA_pca_c", (DL_FUNC) &_rENA_pca_c, 2},
     {"_rENA_center_data_c", (DL_FUNC) &_rENA_center_data_c, 1},
     {"_rENA_triIndices", (DL_FUNC) &_rENA_triIndices, 2},

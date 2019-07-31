@@ -31,7 +31,7 @@ ENAset = R6::R6Class("ENAset",
        enadata,
        dimensions = 2,
 
-       norm.by = sphere_norm_c,
+       norm.by = fun_sphere_norm,
 
        rotation.by = ena.svd,
        rotation.params = NULL,
@@ -214,7 +214,7 @@ ENAset = R6::R6Class("ENAset",
 
        ###
        # Normalize the raw data using self$function.params$norm.by,
-       # which defaults to calling rENA::dont_sphere_norm_c
+       # which defaults to calling rENA::.sphere_norm
        ###
        self$line.weights = self$function.params$norm.by(self$points.raw);
 

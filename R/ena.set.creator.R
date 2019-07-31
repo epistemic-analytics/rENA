@@ -95,7 +95,6 @@ ena.set.creator = function(
     }
 
     else{
-
       group1 = unique.groups[1]
       group2 = unique.groups[2]
 
@@ -154,68 +153,17 @@ ena.set.creator = function(
 
     return(set)
   }
-  else if(length(groups) > 2) {
-    group1 = groups[1]
-    group2 = groups[2]
-
-    warning(paste0("Only two groups are allowed for means rotation. ENAset has been created using a means rotation on the first two groups given: ",group1," and ",group2))
-
-    if(any(data[,groupVar] == group1) == FALSE){
-      stop("Group column does not contain group1 value!")
-    }
-
-    if(any(data[,groupVar] == group2) == FALSE){
-      stop("Group column does not contain group2 value!")
-    }
-
-    set = ena.make.set(
-      enadata = accum,
-      rotation.by = ena.rotate.by.mean,
-      rotation.params = list(accum$meta.data[[groupVar]] == group1, accum$meta.data[[groupVar]] == group2)
-    )
-
-    if(runTest == TRUE) {
-      warning(paste0("More than two groups specified. Running test on the first two groups: ",group1," and ",group2))
-
-      group1.rows = set$points[[groupVar]] == group1
-      group2.rows = set$points[[groupVar]] == group2
-
-      group1.dim1 = as.matrix(set$points)[group1.rows,1]
-      group2.dim1 =  as.matrix(set$points)[group2.rows,1]
-
-      group1.dim2 = as.matrix(set$points)[group1.rows,2]
-      group2.dim2 = as.matrix(set$points)[group2.rows,2]
-
-      if(testType == "nonparametric") {
-        test.dim1 = wilcox.test(x = group1.dim1, y = group2.dim1)
-        test.dim2 = wilcox.test(x = group1.dim2, y = group2.dim2)
-      }
-      else {
-        test.dim1 = t.test(x = group1.dim1, y = group2.dim1)
-        test.dim2 = t.test(x = group1.dim2, y = group2.dim2)
-      }
-
-      set$model$tests = list(test.dim1,test.dim2)
-      return(set)
-    }
-    else {
-      set$model$tests = NULL
-
-      return(set)
-    }
-  }
-
-  ### make set if group column and two groups are specified
   else {
     group1 = groups[1]
     group2 = groups[2]
 
-    if(any(data[,groupVar] == group1) == FALSE){
-      stop("Group column does not contain group1 value!")
+    if(length(groups) > 2) {
+      warning(paste0("Only two groups are allowed for means rotation. ENAset has been created using a means rotation on the first two groups given: ",group1," and ",group2))
     }
 
-    if(any(data[,groupVar] == group2) == FALSE){
-      stop("Group column does not contain group2 value!")
+    groups.missing = groups[which(!groups %in% data[[groupVar]])]
+    if(length(groups.missing) > 0) {
+      stop(paste("Group column does not contain supplied group value(s): ", groups.missing))
     }
 
     set = ena.make.set(
@@ -225,11 +173,15 @@ ena.set.creator = function(
     )
 
     if(runTest == TRUE) {
+      if(length(groups) > 2) {
+        warning(paste0("More than two groups specified. Running test on the first two groups: ",group1," and ",group2))
+      }
+
       group1.rows = set$points[[groupVar]] == group1
       group2.rows = set$points[[groupVar]] == group2
 
       group1.dim1 = as.matrix(set$points)[group1.rows,1]
-      group2.dim1 =  as.matrix(set$points)[group2.rows,1]
+      group2.dim1 = as.matrix(set$points)[group2.rows,1]
 
       group1.dim2 = as.matrix(set$points)[group1.rows,2]
       group2.dim2 = as.matrix(set$points)[group2.rows,2]
@@ -244,12 +196,10 @@ ena.set.creator = function(
       }
 
       set$model$tests = list(test.dim1,test.dim2)
-      return(set)
     }
     else {
       set$model$tests = NULL
-
-      return(set)
     }
+    return(set)
   }
 }

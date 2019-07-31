@@ -1,4 +1,16 @@
-#' ena wrapper function
+#####
+#' @title Generate ENA Set
+#'
+#' @description Generates an ENA model by constructing a dimensional reduction
+#' of adjacency (co-occurrence) vectors as defined by the supplied
+#' conversations, units, and codes
+#'
+#' @details This function generates an ena.set object given a data.frame, units,
+#' conversations, and codes. After accumulating the adjacency (co-occurrence)
+#' vectors, computes a dimensional reduction (projection), and calculates node
+#' positions in the projected ENA space. Returns location of the units in the
+#' projected space, as well as locations for node positions, and normalized
+#' adjacency (co-occurrence) vectors to construct network graphs
 #'
 #' @param data [TBD]
 #' @param codes [TBD]
@@ -28,6 +40,7 @@
 #'
 #' @return ena.set object
 #' @export
+#####
 ena = function(
   data,
   codes,
@@ -89,7 +102,6 @@ ena = function(
       showPlots = show.plots,
       ...
     )
-
   }
 
   return(set)

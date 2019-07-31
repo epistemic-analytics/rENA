@@ -14,17 +14,18 @@ c_cor <- function(mat) {
 #' @description TBD
 #' @param dfM Dataframe
 #' @export
-sphere_norm_c <- function(dfM) {
-    .Call('_rENA_sphere_norm_c', PACKAGE = 'rENA', dfM)
+fun_sphere_norm <- function(dfM) {
+    .Call('_rENA_fun_sphere_norm', PACKAGE = 'rENA', dfM)
 }
 
 #' Non sphere norm
+#'
 #' @title Non sphere norm
 #' @description TBD
 #' @param dfM Dataframe
 #' @export
-dont_sphere_norm_c <- function(dfM) {
-    .Call('_rENA_dont_sphere_norm_c', PACKAGE = 'rENA', dfM)
+fun_skip_sphere_norm <- function(dfM) {
+    .Call('_rENA_fun_skip_sphere_norm', PACKAGE = 'rENA', dfM)
 }
 
 pca_c <- function(m, dims = 2L) {

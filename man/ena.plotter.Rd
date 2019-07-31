@@ -6,7 +6,7 @@
 \usage{
 ena.plotter(set, groupVar = NULL, groups = NULL, points = FALSE,
   mean = FALSE, network = TRUE, networkMultiplier = 1,
-  subtractionMultiplier = 1, unit = NULL, showPlots = F)
+  subtractionMultiplier = 1, unit = NULL, showPlots = F, ...)
 }
 \arguments{
 \item{set}{[TBD]}
