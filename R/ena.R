@@ -1,6 +1,32 @@
-### ena wrapper function ###
-
-
+#' ena wrapper function
+#'
+#' @param data [TBD]
+#' @param codes [TBD]
+#' @param units [TBD]
+#' @param conversation [TBD]
+#' @param metadata [TBD]
+#' @param model [TBD]
+#' @param weight.by [TBD]
+#' @param window [TBD]
+#' @param window.size.back [TBD]
+#' @param window.size.forward [TBD]
+#' @param mask [TBD]
+#' @param include.meta [TBD]
+#' @param groupVar [TBD]
+#' @param groups [TBD]
+#' @param runTest [TBD]
+#' @param testType [TBD]
+#' @param points [TBD]
+#' @param mean [TBD]
+#' @param network [TBD]
+#' @param networkMultiplier [TBD]
+#' @param subtractionMultiplier [TBD]
+#' @param unit [TBD]
+#' @param showPlots [TBD]
+#' @param ... [TBD]
+#'
+#' @return
+#' @export
 ena = function(
   data,
   codes,
@@ -26,8 +52,7 @@ ena = function(
   unit = NULL,
   showPlots = F,
   ...
-){
-
+) {
   set = ena.set.creator(data = data,
                         codes = codes,
                         units = units,
@@ -46,8 +71,6 @@ ena = function(
                         testType = testType,
                         ...)
 
-
-
   set = ena.plotter(set = set,
                     groupVar = groupVar,
                     groups = groups,
@@ -57,8 +80,8 @@ ena = function(
                     networkMultiplier = networkMultiplier,
                     subtractionMultiplier = subtractionMultiplier,
                     unit = unit,
-                    showPlots = showPlots)
+                    showPlots = showPlots,
+                    ...)
 
   return(set)
-
 }

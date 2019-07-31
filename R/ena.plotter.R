@@ -1,29 +1,40 @@
-### plotting wrapper
-
-### need to make a function for making subtraction plots...
-
-
-ena.plotter = function(set,
-                       groupVar = NULL,
-                       groups = NULL,
-                       points = FALSE,
-                       mean = FALSE,
-                       network = TRUE,
-                       networkMultiplier = 1,
-                       subtractionMultiplier = 1,
-                       unit = NULL,
-                       showPlots = F
-
-){
-
+#####
+#' Set Plotting Wrapper
+#'
+#' @description Set Plotting Wrapper. TODO: need to make a function for making subtraction plots...
+#'
+#' @param set
+#' @param groupVar
+#' @param groups
+#' @param points
+#' @param mean
+#' @param network
+#' @param networkMultiplier
+#' @param subtractionMultiplier
+#' @param unit
+#' @param showPlots
+#'
+#' @return
+#' @export
+#'
+#####
+ena.plotter = function(
+  set,
+  groupVar = NULL,
+  groups = NULL,
+  points = FALSE,
+  mean = FALSE,
+  network = TRUE,
+  networkMultiplier = 1,
+  subtractionMultiplier = 1,
+  unit = NULL,
+  showPlots = F
+) {
   if(is.null(unit) == FALSE){
-
     plot = ena.plot(enaset = set,title = unit)
 
     if(any(set$points$ENA_UNIT == unit) == FALSE){
-
       stop("Unit does not exist!")
-
     }
 
     point.row = set$points$ENA_UNIT == unit
@@ -35,65 +46,51 @@ ena.plotter = function(set,
 
     set$model$plots = plot
 
-    if(showPlots == TRUE){
-
+    if(showPlots == TRUE) {
       print(set$model$plots)
     }
 
     return(set)
-
   }
-  if(is.null(groupVar) == TRUE){
 
+  if(is.null(groupVar) == TRUE) {
     plot = ena.plot(enaset = set, title = "All Units")
 
-    if(network == TRUE){
-
-
+    if(network == TRUE) {
       lineweights = as.matrix(set$line.weights)
       mean.lineweights = colMeans(lineweights) * networkMultiplier
 
       plot = ena.plot.network(plot, network = mean.lineweights, colors = "black")
-
     }
 
-    if(points == TRUE){
-
+    if(points == TRUE) {
       points.for.plot = as.matrix(set$points)
 
       plot = ena.plot.points(enaplot = plot,points = points.for.plot,colors = "black")
     }
 
-    if(mean == TRUE){
-
+    if(mean == TRUE) {
       points.for.plot = as.matrix(set$points)
 
       plot = ena.plot.group(plot, points.for.plot, colors = "black", labels = "Mean",confidence.interval = "box")
-
     }
 
-    else if(TRUE %in% c(network,points, mean) == FALSE){
-
+    else if(TRUE %in% c(network,points, mean) == FALSE) {
       stop("You must set at least one of points, mean, or network to TRUE to obtain a plot.")
-
     }
 
     set$model$plots = plot
 
-    if(showPlots == TRUE){
-
+    if(showPlots == TRUE) {
       print(set$model$plots)
     }
 
     return(set)
-
   }
-  else if(is.null(groups) == TRUE){
-
+  else if(is.null(groups) == TRUE) {
     unique.groups = unique(data[,groupVar])
 
     if(length(unique.groups) == 1){
-
       print("Warning: No groups specified and group variable only contains one unique value. Generating plot for one group.")
 
       group = unique.groups
@@ -101,82 +98,58 @@ ena.plotter = function(set,
       group.rows = set$points[[groupVar]] == group
       g.plot = ena.plot(enaset = set, title = group)
 
-      if(network == TRUE){
-
-
+      if(network == TRUE) {
         g.lw = as.matrix(set$line.weights)[group.rows,]
         g.mean.lw = colMeans(g.lw) * networkMultiplier
-
-
         g.plot = ena.plot.network(g.plot, network = g.mean.lw, colors = "black")
-
-
       }
 
-      if(points == TRUE){
-
+      if(points == TRUE) {
         g.points.for.plot = as.matrix(set$points)[group.rows,]
-
         g.plot = ena.plot.points(enaplot = g.plot,points = g.points.for.plot,colors = "black")
-
       }
 
-      if(mean == TRUE){
-
+      if(mean == TRUE) {
         g.points.for.plot = as.matrix(set$points)[group.rows,]
-
         g.plot = ena.plot.group(g.plot, g.points.for.plot, colors = "black", labels = group,confidence.interval = "box")
-
-
       }
 
-      else if(TRUE %in% c(network,points, mean) == FALSE){
-
+      else if(TRUE %in% c(network,points, mean) == FALSE) {
         stop("You must set at least one of points, mean, or network to TRUE to obtain a plot.")
-
       }
       set$model$plots = g.plot
 
-
-      if(showPlots == TRUE){
-
+      if(showPlots == TRUE) {
         print(set$model$plots)
       }
 
       return(set)
-
     }
-
-    else{
-
+    else {
       group1 = unique.groups[1]
       group2 = unique.groups[2]
 
       print(paste0("Warning: No groups specified. Generating plots of first two unique values of group variable: ",group1," and ",group2))
 
       set = ena.plot.subtraction(set = set,
-                                 groupVar = groupVar,
-                                 group1 = group1,
-                                 group2 = group2,
-                                 points = points,
-                                 mean = mean,
-                                 network = network,
-                                 networkMultiplier = networkMultiplier,
-                                 subtractionMultiplier = subtractionMultiplier)
+               groupVar = groupVar,
+               group1 = group1,
+               group2 = group2,
+               points = points,
+               mean = mean,
+               network = network,
+               networkMultiplier = networkMultiplier,
+               subtractionMultiplier = subtractionMultiplier)
 
 
-      if(showPlots == TRUE){
-
+      if(showPlots == TRUE) {
         print(set$model$plots)
       }
 
        return(set)
-
     }
-
   }
-  else if(length(groups) == 1){
-
+  else if(length(groups) == 1) {
     group = groups
 
     if(any(data[,groupVar] == group) == FALSE){
@@ -186,54 +159,35 @@ ena.plotter = function(set,
     group.rows = set$points[[groupVar]] == group
     g.plot = ena.plot(enaset = set, title = group)
 
-    if(network == TRUE){
-
-
+    if(network == TRUE) {
       g.lw = as.matrix(set$line.weights)[group.rows,]
       g.mean.lw = colMeans(g.lw) * networkMultiplier
 
-
       g.plot = ena.plot.network(g.plot, network = g.mean.lw, colors = "black")
-
-
     }
 
-    if(points == TRUE){
-
+    if(points == TRUE) {
       g.points.for.plot = as.matrix(set$points)[group.rows,]
-
       g.plot = ena.plot.points(enaplot = g.plot,points = g.points.for.plot,colors = "black")
-
     }
 
-    if(mean == TRUE){
-
+    if(mean == TRUE) {
       g.points.for.plot = as.matrix(set$points)[group.rows,]
-
       g.plot = ena.plot.group(g.plot, g.points.for.plot, colors = "black", labels = group,confidence.interval = "box")
-
-
     }
 
-    else if(TRUE %in% c(network,points, mean) == FALSE){
-
+    else if(TRUE %in% c(network,points, mean) == FALSE) {
       stop("You must set at least one of points, mean, or network to TRUE to obtain a plot.")
-
     }
     set$model$plots = g.plot
 
-
-    if(showPlots == TRUE){
-
+    if(showPlots == TRUE) {
       print(set$model$plots)
     }
 
     return(set)
-
-
   }
-  else if (length(groups) == 2){
-
+  else if (length(groups) == 2) {
     group1 = groups[1]
     group2 = groups[2]
 
@@ -255,22 +209,18 @@ ena.plotter = function(set,
                                networkMultiplier = networkMultiplier,
                                subtractionMultiplier = subtractionMultiplier)
 
-    if(showPlots == TRUE){
-
+    if(showPlots == TRUE) {
       print(set$model$plots)
     }
 
 
     return(set)
-
-
   }
-  else if (length(groups) > 2){
-
+  else if (length(groups) > 2) {
     group1 = groups[1]
     group2 = groups[2]
 
-    print(paste0("Warning: More than two groups specified. Plotting the first two groups: ",group1," and ",group2))
+    warning(paste0("More than two groups specified. Plotting the first two groups: ",group1," and ",group2))
 
     if(any(data[,groupVar] == group1) == FALSE){
       stop("Group column does not contain group1 value!")
@@ -290,19 +240,11 @@ ena.plotter = function(set,
                                networkMultiplier = networkMultiplier,
                                subtractionMultiplier = subtractionMultiplier)
 
-    if(showPlots == TRUE){
-
+    if(showPlots == TRUE) {
       print(set$model$plots)
     }
 
     return(set)
-
   }
-
 }
-
-
-
-
-
 
