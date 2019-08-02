@@ -52,11 +52,11 @@ test_that("Accumulate using conversation model", {
   );
 
   # Check co-occurrences for unit `J` in conversation `1`
-  expected.sums = colSums(df[df$Name=="J"&df$Day==1,df.accum$codes]);
+  expected.sums = colSums(df[df$Name=="J"&df$Day==1, df.accum$rotation$codes]);
   expected.sums[expected.sums > 1] = 1
   expected = tcrossprod(expected.sums);
   expected.co = expected[upper.tri(expected)]
-  actual.co = as.numeric(df.accum$accumulated.adjacency.vectors[ENA_UNIT=="J"&Day==1,grep("^adj",colnames(df.accum$accumulated.adjacency.vectors)),with=F])
+  actual.co = as.numeric(as.matrix(df.accum$model$row.connection.counts[Day == 1 & Name == 'J']))
   testthat::expect_equal(
     label = "Verify the co-occurences for unit J in conversation 1",
     object=actual.co,
@@ -69,7 +69,7 @@ test_that("Accumulate weighted data.", {
   testmeta = data.frame(tr=1:4, unit=rep(1, 4))
   testdf = cbind(testmeta, testmat)
 
-  x = ena.accumulate.data.file(testdf,
+  x = rENA:::ena.accumulate.data.file(testdf,
                                units.by='unit',
                                conversations.by='tr',
                                #units='1',
@@ -78,7 +78,7 @@ test_that("Accumulate weighted data.", {
                                weight.by = "weighted")
 
   testthat::expect_true(all(
-    apply(x$adjacency.vectors[,grep("^adj",colnames(x$adjacency.vectors)), with=F], 2, is.double)
+    sapply(as.matrix(x$connection.counts), is.double)
   ))
 })
 test_that("Corrected adjacency.vectors equals manually corrected raw data (correction = log)", {
@@ -87,7 +87,7 @@ test_that("Corrected adjacency.vectors equals manually corrected raw data (corre
   testmeta = data.frame(tr=1:4, unit=rep(1, 4))
   testdf = cbind(testmeta, testmat)
 
-  x = ena.accumulate.data.file(testdf,
+  x = rENA:::ena.accumulate.data.file(testdf,
                                units.by='unit',
                                conversations.by='tr',
                                #units='1',
@@ -97,12 +97,12 @@ test_that("Corrected adjacency.vectors equals manually corrected raw data (corre
   #binary=F,
   #correction = log)
 
-  xtest = x$adjacency.vectors.raw;
+  xtest = data.table::copy(x$model$row.connection.counts);
 
-  cols = colnames(xtest)[grep("adjacency.code", colnames(xtest))];
+  cols = colnames(xtest)[find.code.cols(xtest)]; #colnames(xtest)[grep("adjacency.code", colnames(xtest))];
   xtest[, (cols) := lapply(.SD, log), .SDcols = cols];
 
-  all.equal(x$adjacency.vectors, xtest[,grep("^adjacency", colnames(xtest)), with=F]);
+  all.equal(x$connection.counts, xtest[, find.code.cols(xtest), with=F]);
 })
 test_that("Simple forwarded metadata", {
   fake.codes.len = 10;
