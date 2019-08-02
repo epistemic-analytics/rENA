@@ -10,28 +10,6 @@
 
 using namespace Rcpp;
 
-// rowSums_c
-NumericVector rowSums_c(NumericMatrix x);
-RcppExport SEXP _rENA_rowSums_c(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(rowSums_c(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// c_cor
-NumericMatrix c_cor(NumericMatrix mat);
-RcppExport SEXP _rENA_c_cor(SEXP matSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type mat(matSEXP);
-    rcpp_result_gen = Rcpp::wrap(c_cor(mat));
-    return rcpp_result_gen;
-END_RCPP
-}
 // fun_sphere_norm
 NumericMatrix fun_sphere_norm(DataFrame dfM);
 RcppExport SEXP _rENA_fun_sphere_norm(SEXP dfMSEXP) {
@@ -51,18 +29,6 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< DataFrame >::type dfM(dfMSEXP);
     rcpp_result_gen = Rcpp::wrap(fun_skip_sphere_norm(dfM));
-    return rcpp_result_gen;
-END_RCPP
-}
-// pca_c
-List pca_c(arma::mat m, int dims);
-RcppExport SEXP _rENA_pca_c(SEXP mSEXP, SEXP dimsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type m(mSEXP);
-    Rcpp::traits::input_parameter< int >::type dims(dimsSEXP);
-    rcpp_result_gen = Rcpp::wrap(pca_c(m, dims));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -89,24 +55,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// getcor
-double getcor(arma::mat dists, arma::mat normed, arma::mat x, arma::uvec NtriOne, arma::uvec NtriTwo, arma::uvec KtriOne, arma::uvec KtriTwo, int dim);
-RcppExport SEXP _rENA_getcor(SEXP distsSEXP, SEXP normedSEXP, SEXP xSEXP, SEXP NtriOneSEXP, SEXP NtriTwoSEXP, SEXP KtriOneSEXP, SEXP KtriTwoSEXP, SEXP dimSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type dists(distsSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type normed(normedSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
-    Rcpp::traits::input_parameter< arma::uvec >::type NtriOne(NtriOneSEXP);
-    Rcpp::traits::input_parameter< arma::uvec >::type NtriTwo(NtriTwoSEXP);
-    Rcpp::traits::input_parameter< arma::uvec >::type KtriOne(KtriOneSEXP);
-    Rcpp::traits::input_parameter< arma::uvec >::type KtriTwo(KtriTwoSEXP);
-    Rcpp::traits::input_parameter< int >::type dim(dimSEXP);
-    rcpp_result_gen = Rcpp::wrap(getcor(dists, normed, x, NtriOne, NtriTwo, KtriOne, KtriTwo, dim));
-    return rcpp_result_gen;
-END_RCPP
-}
 // getN
 int getN(arma::mat normed);
 RcppExport SEXP _rENA_getN(SEXP normedSEXP) {
@@ -115,133 +63,6 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type normed(normedSEXP);
     rcpp_result_gen = Rcpp::wrap(getN(normed));
-    return rcpp_result_gen;
-END_RCPP
-}
-// getK
-int getK(arma::mat normed);
-RcppExport SEXP _rENA_getK(SEXP normedSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type normed(normedSEXP);
-    rcpp_result_gen = Rcpp::wrap(getK(normed));
-    return rcpp_result_gen;
-END_RCPP
-}
-// getRotationDistances_c
-arma::mat getRotationDistances_c(arma::mat rotated);
-RcppExport SEXP _rENA_getRotationDistances_c(SEXP rotatedSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type rotated(rotatedSEXP);
-    rcpp_result_gen = Rcpp::wrap(getRotationDistances_c(rotated));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_optimized_node_pos_c
-Rcpp::List get_optimized_node_pos_c(arma::mat normedFiltered, NumericMatrix opted, int num_dims, int num_samples, int max_iter, bool return_all);
-RcppExport SEXP _rENA_get_optimized_node_pos_c(SEXP normedFilteredSEXP, SEXP optedSEXP, SEXP num_dimsSEXP, SEXP num_samplesSEXP, SEXP max_iterSEXP, SEXP return_allSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type normedFiltered(normedFilteredSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type opted(optedSEXP);
-    Rcpp::traits::input_parameter< int >::type num_dims(num_dimsSEXP);
-    Rcpp::traits::input_parameter< int >::type num_samples(num_samplesSEXP);
-    Rcpp::traits::input_parameter< int >::type max_iter(max_iterSEXP);
-    Rcpp::traits::input_parameter< bool >::type return_all(return_allSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_optimized_node_pos_c(normedFiltered, opted, num_dims, num_samples, max_iter, return_all));
-    return rcpp_result_gen;
-END_RCPP
-}
-// lm_
-List lm_(NumericMatrix x);
-RcppExport SEXP _rENA_lm_(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(lm_(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// full_opt_c
-Rcpp::List full_opt_c(arma::mat normed, arma::mat rotated, Rcpp::List optim_nodes, int dims, int num_samples, bool checkUnique);
-RcppExport SEXP _rENA_full_opt_c(SEXP normedSEXP, SEXP rotatedSEXP, SEXP optim_nodesSEXP, SEXP dimsSEXP, SEXP num_samplesSEXP, SEXP checkUniqueSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type normed(normedSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type rotated(rotatedSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List >::type optim_nodes(optim_nodesSEXP);
-    Rcpp::traits::input_parameter< int >::type dims(dimsSEXP);
-    Rcpp::traits::input_parameter< int >::type num_samples(num_samplesSEXP);
-    Rcpp::traits::input_parameter< bool >::type checkUnique(checkUniqueSEXP);
-    rcpp_result_gen = Rcpp::wrap(full_opt_c(normed, rotated, optim_nodes, dims, num_samples, checkUnique));
-    return rcpp_result_gen;
-END_RCPP
-}
-// calc_cor
-double calc_cor(arma::vec x, List set, int dim);
-RcppExport SEXP _rENA_calc_cor(SEXP xSEXP, SEXP setSEXP, SEXP dimSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
-    Rcpp::traits::input_parameter< List >::type set(setSEXP);
-    Rcpp::traits::input_parameter< int >::type dim(dimSEXP);
-    rcpp_result_gen = Rcpp::wrap(calc_cor(x, set, dim));
-    return rcpp_result_gen;
-END_RCPP
-}
-// soln_MPS
-arma::vec soln_MPS(arma::mat x);
-RcppExport SEXP _rENA_soln_MPS(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(soln_MPS(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// soln_calc_c
-double soln_calc_c(arma::vec coeff, arma::vec xi, arma::vec ti, arma::mat w, int dim);
-RcppExport SEXP _rENA_soln_calc_c(SEXP coeffSEXP, SEXP xiSEXP, SEXP tiSEXP, SEXP wSEXP, SEXP dimSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type coeff(coeffSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type xi(xiSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type ti(tiSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type w(wSEXP);
-    Rcpp::traits::input_parameter< int >::type dim(dimSEXP);
-    rcpp_result_gen = Rcpp::wrap(soln_calc_c(coeff, xi, ti, w, dim));
-    return rcpp_result_gen;
-END_RCPP
-}
-// remove_zero_rows_c
-arma::mat remove_zero_rows_c(arma::mat toFilter);
-RcppExport SEXP _rENA_remove_zero_rows_c(SEXP toFilterSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type toFilter(toFilterSEXP);
-    rcpp_result_gen = Rcpp::wrap(remove_zero_rows_c(toFilter));
-    return rcpp_result_gen;
-END_RCPP
-}
-// remove_zero_rows_by_c
-arma::mat remove_zero_rows_by_c(arma::mat toFilter, arma::mat indices);
-RcppExport SEXP _rENA_remove_zero_rows_by_c(SEXP toFilterSEXP, SEXP indicesSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type toFilter(toFilterSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type indices(indicesSEXP);
-    rcpp_result_gen = Rcpp::wrap(remove_zero_rows_by_c(toFilter, indices));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -438,25 +259,11 @@ RcppExport SEXP _rENA_RcppExport_registerCCallable() {
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_rENA_rowSums_c", (DL_FUNC) &_rENA_rowSums_c, 1},
-    {"_rENA_c_cor", (DL_FUNC) &_rENA_c_cor, 1},
     {"_rENA_fun_sphere_norm", (DL_FUNC) &_rENA_fun_sphere_norm, 1},
     {"_rENA_fun_skip_sphere_norm", (DL_FUNC) &_rENA_fun_skip_sphere_norm, 1},
-    {"_rENA_pca_c", (DL_FUNC) &_rENA_pca_c, 2},
     {"_rENA_center_data_c", (DL_FUNC) &_rENA_center_data_c, 1},
     {"_rENA_triIndices", (DL_FUNC) &_rENA_triIndices, 2},
-    {"_rENA_getcor", (DL_FUNC) &_rENA_getcor, 8},
     {"_rENA_getN", (DL_FUNC) &_rENA_getN, 1},
-    {"_rENA_getK", (DL_FUNC) &_rENA_getK, 1},
-    {"_rENA_getRotationDistances_c", (DL_FUNC) &_rENA_getRotationDistances_c, 1},
-    {"_rENA_get_optimized_node_pos_c", (DL_FUNC) &_rENA_get_optimized_node_pos_c, 6},
-    {"_rENA_lm_", (DL_FUNC) &_rENA_lm_, 1},
-    {"_rENA_full_opt_c", (DL_FUNC) &_rENA_full_opt_c, 6},
-    {"_rENA_calc_cor", (DL_FUNC) &_rENA_calc_cor, 3},
-    {"_rENA_soln_MPS", (DL_FUNC) &_rENA_soln_MPS, 1},
-    {"_rENA_soln_calc_c", (DL_FUNC) &_rENA_soln_calc_c, 5},
-    {"_rENA_remove_zero_rows_c", (DL_FUNC) &_rENA_remove_zero_rows_c, 1},
-    {"_rENA_remove_zero_rows_by_c", (DL_FUNC) &_rENA_remove_zero_rows_by_c, 2},
     {"_rENA_lws_lsq_positions", (DL_FUNC) &_rENA_lws_lsq_positions, 3},
     {"_rENA_linderoth_pos_es", (DL_FUNC) &_rENA_linderoth_pos_es, 3},
     {"_rENA_merge_columns_c", (DL_FUNC) &_rENA_merge_columns_c, 3},
