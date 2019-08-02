@@ -38,6 +38,12 @@ as.matrix.ena.nodes <- function(x) {
   class(x) = class(x)[-1]
   as.matrix(x[,-c("code")])
 }
+#' @export
+as.matrix.row.connections <- function(x) {
+  class(x) = class(x)[-1]
+  as.matrix(x[, sapply(x, is, class2="ena.co.occurrence"), with = F])
+}
+
 
 #' ENA Connections as a matrix
 #'
@@ -47,7 +53,7 @@ as.matrix.ena.nodes <- function(x) {
 #'
 #' @return If square is FALSE (default), a matrix with all metadata columns removed, otherwise a list with square matrices
 #' @export
-as.matrix.ena.connections <- function(x, square = ifelse(nrow(x) > 1, F, T), names = NULL, simplify = ifelse(nrow(x) > 1, F, T)) {
+as.matrix.ena.connections <- function(x, square = F, names = NULL, simplify = ifelse(nrow(x) > 1, F, T)) {
   class(x) = class(x)[-1]
   x = remove.meta.data(x)
   rows = x[,find.meta.cols(x), with = F]

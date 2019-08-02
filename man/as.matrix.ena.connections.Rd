@@ -4,8 +4,8 @@
 \alias{as.matrix.ena.connections}
 \title{ENA Connections as a matrix}
 \usage{
-\method{as.matrix}{ena.connections}(x, square = ifelse(nrow(x) > 1, F,
-  T), names = NULL, simplify = ifelse(nrow(x) > 1, F, T))
+\method{as.matrix}{ena.connections}(x, square = F, names = NULL,
+  simplify = ifelse(nrow(x) > 1, F, T))
 }
 \arguments{
 \item{x}{ena.connections object}
