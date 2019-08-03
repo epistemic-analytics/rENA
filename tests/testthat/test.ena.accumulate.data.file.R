@@ -97,12 +97,12 @@ test_that("Corrected adjacency.vectors equals manually corrected raw data (corre
   #binary=F,
   #correction = log)
 
-  xtest = data.table::copy(x$model$row.connection.counts);
+  xtest = data.table::copy(x$model$unweighted.connection.counts);
 
   cols = colnames(xtest)[find.code.cols(xtest)]; #colnames(xtest)[grep("adjacency.code", colnames(xtest))];
   xtest[, (cols) := lapply(.SD, log), .SDcols = cols];
 
-  all.equal(x$connection.counts, xtest[, find.code.cols(xtest), with=F]);
+  testthat::expect_true(all(as.matrix(x$connection.counts) == as.matrix(xtest)))
 })
 test_that("Simple forwarded metadata", {
   fake.codes.len = 10;
@@ -120,10 +120,10 @@ test_that("Simple forwarded metadata", {
     m2=c(1,2,3,4)
   );
 
-  df.accum = ena.accumulate.data.file(df, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"));
+  df.accum = rENA:::ena.accumulate.data.file(df, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"));
 
-  testthat::expect_true("m1" %in% colnames(df.accum$metadata));
-});
+  testthat::expect_true("m1" %in% colnames(df.accum$meta.data));
+2});
 test_that("Test trajectories", {
   fake.codes.len = 10;
   fake.codes <- function(x) sample(0:1,fake.codes.len, replace=T)
@@ -139,31 +139,44 @@ test_that("Test trajectories", {
     c3=c(0,0,1,0,1,0,1,0,0,0,1,0)
   );
 
-  df.accum = ena.accumulate.data.file(
+  df.accum = rENA:::ena.accumulate.data.file(
     df, units.by = c("Name"), conversations.by = c("Day", "ActivityNumber"), codes = c("c1","c2","c3"),
     model = "AccumulatedTrajectory"
   );
-  df.non.accum = ena.accumulate.data.file(
+  df.non.accum = rENA:::ena.accumulate.data.file(
     df, units.by = c("Name"), conversations.by = c("Day", "ActivityNumber"), codes = c("c1","c2","c3"),
     model = "SeparateTrajectory"
   );
 
   # Test for expected accumulated value
-  testthat::expect_equal(df.accum$adjacency.vectors[df.accum$units$Name == "J" & df.accum$units$ActivityNumber == 3, adjacency.code.1],df.accum$accumulated.adjacency.vectors[Name == "J", sum(adjacency.code.1)]);
+  testthat::expect_equal(
+    as.numeric(df.accum$connection.counts[df.accum$trajectories$ENA_UNIT == "J" & df.accum$trajectories$ActivityNumber == 1, "c1 & c2"]),
+    df.accum$model$row.connection.counts[Name == "J" & ActivityNumber == 1, sum(.SD), .SDcols = c("c1 & c2")]
+  );
 
   # Test for a value of 1 in the first accumulation of the trajectory of code 1
-  testthat::expect_true(sum(df.accum$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 1, adjacency.code.1]) == 1);
+  testthat::expect_true(sum(df.accum$model$row.connection.counts[Name == "Z" & ActivityNumber == 1,  c("c1 & c2"), ]) == 1);
+
   # Test for a value of 0 in the second accumulation of the trajectory of code 1
-  testthat::expect_true(all(df.accum$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 2, adjacency.code.1] == 0));
+  testthat::expect_true(all(df.accum$model$row.connection.counts[Name == "Z" & ActivityNumber == 2, c("c1 & c2")] == 0));
 
   # Test that the first summed trajectory is 1
-  testthat::expect_equal(df.accum$adjacency.vectors[df.accum$units$Name == "Z" & df.accum$units$ActivityNumber == 1, adjacency.code.1], 1);
+  testthat::expect_equal(
+    as.numeric(df.accum$connection.counts[df.accum$trajectories$ENA_UNIT == "Z" & df.accum$trajectories$ActivityNumber == 1, c("c1 & c2")])
+    ,1
+  );
 
   # Test that the second summed trajectory is 1, even thought it had a zero accumulation for it's conversations
-  testthat::expect_true(all(df.accum$adjacency.vectors[df.accum$units$Name == "J" & df.accum$units$ActivityNumber==3,] == c(2,2,1)));
+  testthat::expect_true(all(
+    as.matrix(df.accum$connection.counts[df.accum$trajectories$ENA_UNIT == "J" & df.accum$trajectories$ActivityNumber==3,]) == c(2,2,1)
+  ));
 
-  # Test that non-accumulation is properly leaving second trajectory group 0 (different than the previous test)
-  testthat::expect_true(all(df.non.accum$adjacency.vectors[df.non.accum$units$Name == "J" & df.non.accum$units$ActivityNumber==3,] == c(0,0,0)));
+
+# Test that non-accumulation is properly leaving second trajectory group 0 (different than the previous test)
+  testthat::expect_true(all(
+    as.matrix(df.non.accum$connection.counts[df.non.accum$trajectories$Name == "J" & df.non.accum$trajectories$ActivityNumber==3,])
+      == c(0,0,0)
+  ));
 })
 test_that("Test accumulation with data.frame and matrix", {
   # #df.file <- system.file("extdata", "rs.data.csv", package="rENA")

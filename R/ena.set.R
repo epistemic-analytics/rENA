@@ -10,9 +10,9 @@ ena.set <- function(x) {
 
   newset$connection.counts = x$enadata$adjacency.vectors;
   colnames(newset$connection.counts) = code.columns
-
-  for(i in seq(ncol(newset$connection.counts)))
+  for(i in seq(ncol(newset$connection.counts))) {
     set(newset$connection.counts, j = i, value = as.ena.co.occurrence(newset$connection.counts[[i]]))
+  }
 
   if(grepl(x = x$enadata$model, pattern = "Traj", ignore.case = T)) {
     newset$meta.data = data.table::copy(x$enadata$trajectories$units)
@@ -22,7 +22,8 @@ ena.set <- function(x) {
     for(i in seq(ncol(newset$trajectories))) {
       set(newset$trajectories, j = i, value = as.ena.metadata(newset$trajectories[[i]]))
     }
-  } else {
+  }
+  else {
     newset$meta.data = x$enadata$metadata
   }
 
@@ -47,9 +48,22 @@ ena.set <- function(x) {
     row.connection.counts = x$enadata$accumulated.adjacency.vectors[, unique(names(x$enadata$accumulated.adjacency.vectors)), with=F],
     unit.labels = x$enadata$unit.names
   )
+
+  if(quote(x$enadata$function.params$weight.by) != "binary") {
+    newset$model$unweighted.connection.counts = x$enadata$adjacency.vectors.raw
+    class(newset$model$unweighted.connection.counts) <- c("ena.connections", class(newset$model$unweighted.connection.counts))
+    are.codes = find.code.cols(newset$model$unweighted.connection.counts)
+    for(i in seq(are.codes)) {
+      if(are.codes[i]) {
+        set(newset$model$unweighted.connection.counts, j = i, value = as.ena.co.occurrence(newset$model$unweighted.connection.counts[[i]]))
+      } else {
+        set(newset$model$unweighted.connection.counts, j = i, value = as.ena.metadata(newset$model$unweighted.connection.counts[[i]]))
+      }
+    }
+  }
+
   cols = grep("adjacency.code", colnames(newset$model$row.connection.counts))
   colnames(newset$model$row.connection.counts)[cols] = code.columns
-
   for(i in cols)
     set(newset$model$row.connection.counts, j = i, value = as.ena.co.occurrence(newset$model$row.connection.counts[[i]]))
   for(i in which(colnames(newset$model$row.connection.counts) %in% colnames(newset$meta.data)))
@@ -71,6 +85,8 @@ ena.set <- function(x) {
     adjacency.key = as.data.table(x$enadata$adjacency.matrix),
     codes = x$enadata$codes
   )
+  class(newset$rotation) = c("ena.rotation.set", class(newset$rotation))
+
   for(i in seq(ncol(newset$rotation$adjacency.key)))
     set(newset$rotation$adjacency.key, j = i, value = as.ena.codes(newset$rotation$adjacency.key[[i]]))
 

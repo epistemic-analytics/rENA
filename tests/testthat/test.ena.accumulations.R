@@ -91,7 +91,7 @@ test_that("Simple forwarded metadata", {
   df.accum.sep = ena.accumulate.data(units = df.units, conversation = df.conversation, codes = df.codes, metadata = df.meta)
 
   # expect_true("m1" %in% colnames(df.accum$metadata));
-  expect_true("m1" %in% colnames(df.accum.sep$metadata));
+  expect_true("m1" %in% colnames(df.accum.sep$meta.data));
   # expect_equal(df.accum$metadata, df.accum.sep$metadata);
 });
 
@@ -136,35 +136,36 @@ test_that("Test trajectories", {
     codes = df.codes, model = "SeparateTrajectory"
   );
 
+  adjacency.code.1 = c("c1 & c2")
   # Test for expected accumulated value
-  testthat::expect_equal(
-    df.accum$adjacency.vectors[df.accum$units$Name=="J" & df.accum$units$ActivityNumber == 3, adjacency.code.1],
-    df.accum$accumulated.adjacency.vectors[Name == "J", sum(adjacency.code.1)]
+  testthat::expect_true(
+    as.matrix(df.accum$connection.counts[df.accum$trajectories$Name =="J" & df.accum$trajectories$ActivityNumber == 3, ..adjacency.code.1]) ==
+    as.matrix(df.accum$model$row.connection.counts[Name == "J", sum(.SD), .SDcols = adjacency.code.1])
   );
-  testthat::expect_equal(
-    df.accum.sep$adjacency.vectors[df.accum$units$Name=="J" & df.accum$units$ActivityNumber == 3, adjacency.code.1],
-    df.accum.sep$accumulated.adjacency.vectors[Name == "J", sum(adjacency.code.1)]
+  testthat::expect_true(
+    as.matrix(df.accum.sep$connection.counts[df.accum.sep$trajectories$Name=="J" & df.accum.sep$trajectories$ActivityNumber == 3, ..adjacency.code.1]) ==
+    as.matrix(df.accum.sep$model$row.connection.counts[Name == "J", sum(.SD), .SDcols = adjacency.code.1])
   );
 
   # Test for a value of 1 in the first accumulation of the trajectory of code 1
-  testthat::expect_true(sum(df.accum$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 1, adjacency.code.1]) == 1);
-  testthat::expect_true(sum(df.accum.sep$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 1, adjacency.code.1]) == 1);
+  testthat::expect_true(sum(df.accum$model$row.connection.counts[Name == "Z" & ActivityNumber == 1, ..adjacency.code.1]) == 1);
+  testthat::expect_true(sum(df.accum.sep$model$row.connection.counts[Name == "Z" & ActivityNumber == 1, ..adjacency.code.1]) == 1);
 
   # Test for a value of 0 in the second accumulation of the trajectory of code 1
-  testthat::expect_true(all(df.accum$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 2, adjacency.code.1] == 0));
-  testthat::expect_true(all(df.accum.sep$accumulated.adjacency.vectors[Name == "Z" & ActivityNumber == 2, adjacency.code.1] == 0));
+  testthat::expect_true(all(df.accum$model$row.connection.counts[Name == "Z" & ActivityNumber == 2, ..adjacency.code.1] == 0));
+  testthat::expect_true(all(df.accum.sep$model$row.connection.counts[Name == "Z" & ActivityNumber == 2, ..adjacency.code.1] == 0));
 
   # Test that the first summed trajectory is 1
-  testthat::expect_equal(df.accum$adjacency.vectors[df.accum$units$Name=="Z" & df.accum$units$ActivityNumber == 1, adjacency.code.1], 1);
-  testthat::expect_equal(df.accum.sep$adjacency.vectors[df.accum$units$Name=="Z" & df.accum$units$ActivityNumber == 1, adjacency.code.1], 1);
+  testthat::expect_equal(as.numeric(df.accum$connection.counts[df.accum$trajectories$Name=="Z" & df.accum$trajectories$ActivityNumber == 1, ..adjacency.code.1]), 1);
+  testthat::expect_equal(as.numeric(df.accum.sep$connection.counts[df.accum$trajectories$Name=="Z" & df.accum$trajectories$ActivityNumber == 1, ..adjacency.code.1]), 1);
 
   # Test that the second summed trajectory is 1, even thought it had a zero accumulation for it's conversations
-  testthat::expect_equal(df.accum$adjacency.vectors[df.accum$units$Name == "Z" & df.accum$units$ActivityNumber == 2 & df.accum$units$Day == 1, adjacency.code.1], 1);
-  testthat::expect_equal(df.accum.sep$adjacency.vectors[df.accum$units$Name == "Z" & df.accum$units$ActivityNumber == 2 & df.accum$units$Day == 1, adjacency.code.1], 1);
+  testthat::expect_equal(as.numeric(df.accum$connection.counts[df.accum$trajectories$Name == "Z" & df.accum$trajectories$ActivityNumber == 2 & df.accum$trajectories$Day == 1, ..adjacency.code.1]), 1);
+  testthat::expect_equal(as.numeric(df.accum.sep$connection.counts[df.accum$trajectories$Name == "Z" & df.accum$trajectories$ActivityNumber == 2 & df.accum$trajectories$Day == 1, ..adjacency.code.1]), 1);
 
   # Test that non-accumulation is properly leaving second trajectory group 0 (different than the previous test)
-  testthat::expect_identical(c(1,0,0,1), df.non.accum$adjacency.vectors[df.non.accum$units$Name == "Z", adjacency.code.1]);
-  testthat::expect_identical(c(1,0,0,1), df.non.accum.sep$adjacency.vectors[df.non.accum$units$Name == "Z", adjacency.code.1]);
+  testthat::expect_identical(c(1,0,0,1), as.numeric(as.matrix(df.non.accum$connection.counts[df.non.accum$trajectories$Name == "Z", ..adjacency.code.1])));
+  testthat::expect_identical(c(1,0,0,1), as.numeric(as.matrix(df.non.accum.sep$connection.counts[df.non.accum$trajectories$Name == "Z", ..adjacency.code.1])));
 })
 
 
@@ -247,9 +248,9 @@ test_that("Test accumulation with infinite windows", {
   df.accum.inf2 = ena.accumulate.data(units = df.units, conversation = df.conversation, codes = df.codes, window.size.back = "Inf");
   df.accum.inf3 = ena.accumulate.data(units = df.units, conversation = df.conversation, codes = df.codes, window.size.back = "INF");
 
-  codeCols = sapply(1:choose(ncol(df.codes),2), function(x) { paste("adjacency.code.",x,sep="") })
-  expect_false(all(df.accum.sep$accumulated.adjacency.vectors[,codeCols,with=F] == df.accum.inf$accumulated.adjacency.vectors[,codeCols,with=F]))
-  expect_true(all(df.accum.inf$accumulated.adjacency.vectors[,codeCols,with=F] == df.accum.inf2$accumulated.adjacency.vectors[,codeCols,with=F]))
+  codeCols = find.code.cols(df.accum.sep$model$row.connection.counts)
+  expect_false(all(as.matrix(df.accum.sep$model$row.connection.counts) == as.matrix(df.accum.inf$model$row.connection.counts)))
+  expect_true(all(as.matrix(df.accum.inf$model$row.connection.counts) == as.matrix(df.accum.inf2$model$row.connection.counts)))
 })
 
 test_that("Test function params", {
@@ -283,5 +284,5 @@ test_that("Test function params", {
   );
 
   accum = ena.accumulate.data(units = df.units, conversation = df.conversation, codes = df.codes);
-  expect_equal("EndPoint",accum$function.params$model)
+  expect_equal("EndPoint",accum$`_function.params`$model)
 })

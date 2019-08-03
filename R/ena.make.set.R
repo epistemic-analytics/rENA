@@ -118,30 +118,32 @@ ena.make.set <- function(
 
   ###
   # Generate and Assign the rotation set
-  ###
-  if(!is.null(rotation.by) && is.null(rotation.set)) {
-    rotation = do.call(rotation.by, list(enadata, rotation.params));
-    enadata$rotation.matrix = as.data.table(rotation$rotation);
-    for(i in seq(ncol(enadata$rotation.matrix)))
-      set(enadata$rotation.matrix, j = i, value = as.ena.dimension(enadata$rotation.matrix[[i]]))
-    class(enadata$rotation.matrix) = c("ena.rotation.matrix", class(enadata$rotation.matrix))
+  #####
+    if(!is.null(rotation.by) && is.null(rotation.set)) {
+      rotation = do.call(rotation.by, list(enadata, rotation.params));
 
-    # enadata$rotation$nodes = rotation$node.positions;
-    enadata$rotation$eigenvalues = rotation$eigenvalues;
-  } else if (!is.null(rotation.set)) {
-    if(is(rotation.set, "ENARotationSet")) {
-      print("Using custom rotation.set.")
+      enadata$rotation.matrix = as.data.table(rotation$rotation);
+      for(i in seq(ncol(enadata$rotation.matrix))) {
+        set(enadata$rotation.matrix, j = i, value = as.ena.dimension(enadata$rotation.matrix[[i]]))
+      }
+      class(enadata$rotation.matrix) = c("ena.rotation.matrix", class(enadata$rotation.matrix))
 
-      enadata$rotation.matrix = rotation.set$rotation;
-      enadata$rotation$nodes = rotation.set$node.positions;
-      enadata$rotation$eigenvalues = rotation.set$eigenvalues
+      enadata$rotation$rotation.matrix = enadata$rotation.matrix
+      # enadata$rotation$nodes = rotation$node.positions;
+      enadata$rotation$eigenvalues = rotation$eigenvalues;
+    } else if (!is.null(rotation.set)) {
+      if(is(rotation.set, "ena.rotation.set")) {
+        print("Using custom rotation.set.")
+        enadata$rotation.matrix = enadata$rotation$rotation.matrix = rotation.set$rotation.matrix;
+        enadata$rotation$nodes = rotation.set$nodes;
+        enadata$rotation$eigenvalues = rotation.set$eigenvalues
+      } else {
+        stop("Supplied rotation.set is not an instance of ENARotationSet")
+      }
     } else {
-      stop("Supplied rotation.set is not an instance of ENARotationSet")
+      stop("Unable to find or create a rotation set")
     }
-  } else {
-    stop("Unable to find or create a rotation set")
-  }
-  ###
+  #####
 
   ###
   # Generated the rotated points
@@ -159,8 +161,8 @@ ena.make.set <- function(
   # Calculate node positions
   #  - The supplied methoed is responsible is expected to return a list
   #    with two keys, "node.positions" and "centroids"
-  #####
-    if(!is.null(rotation) && is.null(rotation.set)) {
+  #####2
+    if(exists("rotation") && !is.null(rotation) && is.null(rotation.set)) {
       positions = node.position.method(enadata);
       if(all(names(positions) %in% c("node.positions","centroids"))) {
         enadata$rotation$nodes = as.data.table(positions$node.positions)
@@ -185,7 +187,7 @@ ena.make.set <- function(
         print(paste("    Received: ",names(positions),sep=""));
       }
     } else if (!is.null(rotation.set)) {
-      self$node.positions = rotation.set$nodes
+      enadata$rotation$nodes = rotation.set$nodes
     } else {
       stop("Unable to determine the node positions either by calculating
                   them using `node.position.method` or using a supplied

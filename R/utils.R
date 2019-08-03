@@ -16,7 +16,9 @@ find.meta.cols <- function(x) {
 #' @return logical vector
 #' @export
 find.code.cols <- function(x) {
-   sapply(x, is, class2="ena.co.occurrence")
+   grepl("adjacency.code", x = names(x)) | sapply(x, function(col) {
+     is(col, class2="ena.co.occurrence")
+   })
 }
 remove.meta.data <- function(x) {
  x[,find.meta.cols(x), with=F]
