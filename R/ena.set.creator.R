@@ -45,9 +45,9 @@ ena.set.creator = function(
   testType = match.arg(testType)
 
   accum = ena.accumulate.data(
-    units = data[,units],
-    conversation = data[,conversation],
-    metadata = data[,metadata],
+    units = data[,units, drop = F],
+    conversation = data[,conversation, drop = F],
+    metadata = data[,metadata, drop = F],
     codes = data[,codes],
     window = window,
     window.size.back = window.size.back,

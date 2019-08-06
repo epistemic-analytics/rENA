@@ -39,6 +39,7 @@
 #' @param window.size.forward (optional) A positive integer, Inf, or character (INF or Infinite), default: 0. Determines, for each line in the data frame, the number of subsequent lines in a conversation to include in the stanza window, which defines how co-occurrences are modeled
 #' @param ... additional parameters addressed in inner function
 #' @param include.meta Locigal indicating if unit metadata should be attached to the resulting ENAdata object, default is TRUE
+#' @param as.list R6 objects will be deprecated, but if this is TRUE, the original R6 object will be returned, otherwise a list with class `ena.set`
 #'
 #' @keywords data, accumulate
 #'

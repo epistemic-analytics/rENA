@@ -28,6 +28,8 @@ ena.plotter(set, groupVar = NULL, groups = NULL, points = FALSE,
 \item{unit}{[TBD]}
 
 \item{showPlots}{[TBD]}
+
+\item{...}{Parameters passed along to other plotting function}
 }
 \value{
 ena.set object

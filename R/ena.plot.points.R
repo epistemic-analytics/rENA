@@ -21,6 +21,7 @@
 #' @param label.font.color A character which determines the color of label font, default: enaplot$font.color
 #' @param label.font.family	A character which determines label font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
 #' @param show.legend Logical indicating whether to show the point labels in the in legend
+#' @param legend.name Character indicating the name to show above the plot legend
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords ENA, plot, points
@@ -45,15 +46,15 @@
 #'   enadata = accum,
 #'   rotation.by = ena.rotate.by.mean,
 #'   rotation.params = list(
-#'       accum$metadata$Condition=="FirstGame",
-#'       accum$metadata$Condition=="SecondGame"
+#'       accum$meta.data$Condition=="FirstGame",
+#'       accum$meta.data$Condition=="SecondGame"
 #'   )
 #' )
 #'
 #' plot = ena.plot(set)
 #'
-#' group1.points = set$points.rotated[set$enadata$units$Condition == "FirstGame",]
-#' group2.points = set$points.rotated[set$enadata$units$Condition == "SecondGame",]
+#' group1.points = set$points[set$meta.data$Condition == "FirstGame",]
+#' group2.points = set$points[set$meta.data$Condition == "SecondGame",]
 #' plot = ena.plot.points(plot, points = group1.points);
 #' plot = ena.plot.points(plot, points = group2.points);
 #' print(plot);
@@ -98,11 +99,17 @@ ena.plot.points = function(
       # stop("Must provide points to plot.")
       points = as.matrix(enaplot$enaset$points)
     }
+
+
     if(is(points, "numeric")){
       points = matrix(points);
       dim(points) = c(1,nrow(points))
+      points.layout = data.table::data.table(points);
+    } else if (is.data.table(points)) {
+      points.layout = remove.meta.data(points)
+    } else {
+      points.layout = data.table::data.table(points);
     }
-    points.layout = data.table::data.table(points);
 
     if(!is.character(label.font.family)) {
       label.font.family = enaplot$get("font.family");

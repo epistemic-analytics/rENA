@@ -20,6 +20,7 @@
 #' @param rotation.set A previously-constructed  ENARotationSet object to use for the dimensional reduction
 #' @param endpoints.only A logical variable which determines whether to only show endpoints for trajectory models
 #' @param node.position.method A function to be used to determine node positions based on the dimensional reduction, default: lws.position.es()
+#' @param as.list R6 objects will be deprecated, but if this is TRUE, the original R6 object will be returned, otherwise a list with class `ena.set`
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords ENA, generate, set
@@ -46,8 +47,8 @@
 #'   enadata = accum,
 #'   rotation.by = ena.rotate.by.mean,
 #'   rotation.params = list(
-#'       accum$metadata$Condition=="FirstGame",
-#'       accum$metadata$Condition=="SecondGame"
+#'       accum$meta.data$Condition=="FirstGame",
+#'       accum$meta.data$Condition=="SecondGame"
 #'   )
 #' )
 #'

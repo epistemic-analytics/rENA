@@ -39,6 +39,8 @@ ena.plot.group(enaplot, points = NULL, method = "mean",
 
 \item{show.legend}{Logical indicating whether to show the point labels in the in legend}
 
+\item{legend.name}{Character indicating the name to show above the plot legend}
+
 \item{...}{Additional parameters}
 }
 \value{
@@ -68,8 +70,8 @@ set = ena.make.set(
   enadata = accum,
   rotation.by = ena.rotate.by.mean,
   rotation.params = list(
-      accum$metadata$Condition=="FirstGame",
-      accum$metadata$Condition=="SecondGame"
+      accum$meta.data$Condition=="FirstGame",
+      accum$meta.data$Condition=="SecondGame"
   )
 )
 
@@ -77,16 +79,12 @@ plot = ena.plot(set)
 
 unitNames = set$enadata$units
 
-### Subset rotated points and plot Condition 1 Group Mean
-first.game = unitNames$Condition == "FirstGame"
-first.game.points = set$points.rotated[first.game,]
-plot = ena.plot.group(plot, first.game.points, labels = "FirstGame",
+### Plot Condition 1 Group Mean
+plot = ena.plot.group(plot, as.matrix(set$points$Condition$FirstGame), labels = "FirstGame",
     colors = "red", confidence.interval = "box")
 
-### Subset rotated points and plot Condition 2 Group Mean
-second.game = unitNames$Condition == "SecondGame"
-second.game.points = set$points.rotated[second.game,]
-plot = ena.plot.group(plot, second.game.points, labels = "SecondGame",
+### plot Condition 2 Group Mean
+plot = ena.plot.group(plot, as.matrix(set$points$Condition$SecondGame), labels = "SecondGame",
     colors  = "blue", confidence.interval = "box")
 
 print(plot);

@@ -93,32 +93,30 @@ set = ena.make.set(
   enadata = accum,
   rotation.by = ena.rotate.by.mean,
   rotation.params = list(
-      accum$metadata$Condition=="FirstGame",
-      accum$metadata$Condition=="SecondGame"
+    accum$meta.data$Condition=="FirstGame",
+    accum$meta.data$Condition=="SecondGame"
   )
 )
 
 plot = ena.plot(set)
 
-unitNames = set$enadata$units
-
 ### Subset rotated points and plot Condition 1 Group Mean
-first.game = unitNames$Condition == "FirstGame"
-first.game.points = set$points.rotated[first.game,]
+as.matrix(set$points$Condition$FirstGame)
+
+first.game.points = as.matrix(set$points$Condition$FirstGame)
 plot = ena.plot.group(plot, first.game.points, labels = "FirstGame",
     colors = "red", confidence.interval = "box")
 
 ### Subset rotated points and plot Condition 2 Group Mean
-second.game = unitNames$Condition == "SecondGame"
-second.game.points = set$points.rotated[second.game,]
+second.game.points = as.matrix(set$points$Condition$SecondGame)
 plot = ena.plot.group(plot, second.game.points, labels = "SecondGame",
     colors  = "blue", confidence.interval = "box")
 
 ### get mean network plots
-first.game.lineweights = set$line.weights[first.game,]
+first.game.lineweights = as.matrix(set$line.weights$Condition$FirstGame)
 first.game.mean = colMeans(first.game.lineweights)
 
-second.game.lineweights = set$line.weights[second.game,]
+second.game.lineweights = as.matrix(set$line.weights$Condition$SecondGame)
 second.game.mean = colMeans(second.game.lineweights)
 
 subtracted.network = first.game.mean - second.game.mean

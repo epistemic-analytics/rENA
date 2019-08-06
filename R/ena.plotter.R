@@ -13,6 +13,7 @@
 #' @param subtractionMultiplier [TBD]
 #' @param unit [TBD]
 #' @param showPlots [TBD]
+#' @param ... Parameters passed along to other plotting function
 #'
 #' @return ena.set object
 #####

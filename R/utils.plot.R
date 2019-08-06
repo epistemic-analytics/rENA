@@ -3,55 +3,82 @@
 #' Plot an ena.set object
 #'
 #' @param x ena.set to plot
+#' @param y ignored
 #' @param ... Additional parameters passed along to ena.plot functions
 #'
-#' @return ena.set object with updated plots
+#' @examples
+#' library(magrittr)
+#'
+#' data(RS.data)
+#'
+#' codeNames = c('Data','Technical.Constraints','Performance.Parameters',
+#'   'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
+#'
+#' accum = ena.accumulate.data(
+#'   units = RS.data[,c("UserName","Condition")],
+#'   conversation = RS.data[,c("Condition","GroupName")],
+#'   metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
+#'   codes = RS.data[,codeNames],
+#'   window.size.back = 4
+#' )
+#'
+#' set = ena.make.set(
+#'   enadata = accum
+#' )
+#'
+#' plot(set) %>%
+#'   add_points(Condition$FirstGame, colors = "blue", mean = T) %>%
+#'   add_points(Condition$SecondGame, colors = "red", mean = T)
+#'
+#' plot(set) %>%
+#'   add_network(Condition$FirstGame - Condition$SecondGame)
+#'
+#' @return ena.plot.object
 #' @export
 #####
-plot.ena.set <- function(x, ...) {
+plot.ena.set <- function(x, y, ...) {
   ena.plot(x, ...)
 }
 
-# points <- function(x, wh = NULL, mean = F, labels = T, label.text = NULL, ...) {
-#   set = x$enaset
-#   parts = as.character(substitute(wh))
-#   points = set$points[set$points[[parts[2]]] == parts[3],]
-#
-#
-#   if(labels && is.null(label.text)) {
-#     label.values = as.character(points$ENA_UNIT);
-#   }
-#
-#   if(mean == T) {
-#     x = group(x, points = colMeans(points), labels = parts[3], legend.name = parts[3], ...)
-#   }
-#   x = ena.plot.points(x, points = as.matrix(points), labels = label.values, legend.name = paste0(parts[3],".","points"), ...)
-#
-#   x
-# }
 
+#' Plot points on an ena.plot
+#'
+#' @param x ena.plot to add point on
+#' @param wh which points to plot
+#' @param name name to give the plot
+#' @param ... additional parameters to pass along
+#'
+#' @return ena.plot.object
 #' @export
-plot_points <- function(x, wh = NULL, name = "plot", ...) {
-  set = x
-  # browser()
+add_points <- function(x, wh = NULL, name = "plot", ...) {
+  set = x$enaset
+
   args = as.character(substitute(wh))
   if(!is.null(args) && length(args) > 1) {
     cc = call("$", set$points, args[[2]])
     part1 = eval(cc)
-    points = part1[args[[3]], "points" ,set]
-    name = args[[length(args)]]
+    points = as.matrix(set$points)[part1 == args[[3]],] # part1[args[[3]], "points" ,set]
+    name = tail(args, 1)
   } else {
     points = as.matrix(set$points)
     name = "all.points"
   }
 
-  set$model$plots[[name]] = ena.plot.points(x$model$plots[[name]], points = points, ...)
+  x = ena.plot.points(x, points = points, ...)
 
-  set
+  x
 }
 
+#' Plot a trajectory on an ena.plot
+#'
+#' @param x ena.plot object to plot on
+#' @param wh which points to plot as the trajectory
+#' @param name Name, as a character vector, to give the plot
+#' @param ... additional parameters to pass along
+#'
+#' @return ena.plot.object
 #' @export
-plot_trajectory <- function(x, wh = NULL, name = "plot", ...) {
+add_trajectory <- function(x, wh = NULL, name = "plot", ...) {
   set = x$enaset
 
   subbed = substitute(wh)
@@ -79,8 +106,15 @@ plot_trajectory <- function(x, wh = NULL, name = "plot", ...) {
   set
 }
 
+#' Add a group mean to an ena.plot
+#'
+#' @param x ena.plot object to plot on
+#' @param wh which points to plot as the trajectory
+#' @param ... additional parameters to pass along
+#'
+#' @return ena.plot.object
 #' @export
-plot_group <- function(x, wh = NULL,  ...) {
+add_group <- function(x, wh = NULL,  ...) {
   set = x$enaset
   args = list(...)
   wh.clean = substitute(wh)
@@ -102,8 +136,16 @@ plot_group <- function(x, wh = NULL,  ...) {
   x
 }
 
+#' Add a network to an ENA plot
+#'
+#' @param x ena.plot object to plot wtih
+#' @param wh network to plot
+#' @param with.mean Logical value, if TRUE plots the mean for the points in the network
+#' @param ... Additional parametesr to pass along
+#'
+#' @return ena.plot.object
 #' @export
-plot_network <- function(x, wh = NULL, with.mean = T, ...) {
+add_network <- function(x, wh = NULL, with.mean = T, ...) {
   set = x$enaset
   wh.clean = substitute(wh)
   args = list(...)
@@ -111,7 +153,7 @@ plot_network <- function(x, wh = NULL, with.mean = T, ...) {
   if(is.null(wh.clean)) { #, "ena.points")) {
     x = ena.plot.network(x, network = colMeans(x$enaset$line.weights), points = x$enaset$rotation$nodes[,1:2] ,...)
     if(with.mean) {
-      x = group(x, ...)
+      x = add_group(x, ...)
     }
   } else {
     parts = as.character(wh.clean)
@@ -120,7 +162,7 @@ plot_network <- function(x, wh = NULL, with.mean = T, ...) {
         parts = as.character(y)
 
         if(with.mean)
-          x = plot_group(x, y, colors = default.colors[length(attr(x, "means"))+1], ...)
+          x = add_group(x, y, colors = default.colors[length(attr(x, "means"))+1], ...)
 
         colMeans(set$line.weights[set$line.weights[[parts[2]]] == parts[3],])
       })
@@ -131,7 +173,7 @@ plot_network <- function(x, wh = NULL, with.mean = T, ...) {
 
       browser()
       if(with.mean)
-        x = plot_group(x, wh.clean, ...)
+        x = add_group(x, wh.clean, ...)
     }
 
     x = ena.plot.network(x, network = group.means, points = as.matrix(x$enaset$rotation$nodes)[,1:2], ...)

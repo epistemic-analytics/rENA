@@ -4,15 +4,12 @@
 \alias{as.matrix.ena.connections}
 \title{ENA Connections as a matrix}
 \usage{
-\method{as.matrix}{ena.connections}(x, square = F, names = NULL,
-  simplify = ifelse(nrow(x) > 1, F, T))
+\method{as.matrix}{ena.connections}(x, ...)
 }
 \arguments{
 \item{x}{ena.connections object}
 
-\item{square}{Logical. If TRUE, each row is converted to a square matrix}
-
-\item{names}{Ignored}
+\item{...}{additional arguments to be passed to or from methods}
 }
 \value{
 If square is FALSE (default), a matrix with all metadata columns removed, otherwise a list with square matrices

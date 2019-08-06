@@ -7,7 +7,7 @@
 find.meta.cols(x)
 }
 \arguments{
-\item{data.table}{(or frame) to search for columns of class ena.metadata}
+\item{x}{data.table (or frame) to search for columns of class ena.metadata}
 }
 \value{
 logical vector

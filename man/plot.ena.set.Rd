@@ -4,16 +4,46 @@
 \alias{plot.ena.set}
 \title{Plot an ena.set object}
 \usage{
-\method{plot}{ena.set}(x, ...)
+\method{plot}{ena.set}(x, y, ...)
 }
 \arguments{
 \item{x}{ena.set to plot}
 
+\item{y}{ignored}
+
 \item{...}{Additional parameters passed along to ena.plot functions}
 }
 \value{
-ena.set object with updated plots
+ena.plot.object
 }
 \description{
 Plot an ena.set object
+}
+\examples{
+library(magrittr)
+
+data(RS.data)
+
+codeNames = c('Data','Technical.Constraints','Performance.Parameters',
+  'Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
+
+accum = ena.accumulate.data(
+  units = RS.data[,c("UserName","Condition")],
+  conversation = RS.data[,c("Condition","GroupName")],
+  metadata = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post")],
+  codes = RS.data[,codeNames],
+  window.size.back = 4
+)
+
+set = ena.make.set(
+  enadata = accum
+)
+
+plot(set) \%>\%
+  add_points(Condition$FirstGame, colors = "blue", mean = T) \%>\%
+  add_points(Condition$SecondGame, colors = "red", mean = T)
+
+plot(set) \%>\%
+  add_network(Condition$FirstGame - Condition$SecondGame)
+
 }

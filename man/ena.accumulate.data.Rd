@@ -34,6 +34,8 @@ ena.accumulate.data(units = NULL, conversation = NULL, codes = NULL,
 
 \item{include.meta}{Locigal indicating if unit metadata should be attached to the resulting ENAdata object, default is TRUE}
 
+\item{as.list}{R6 objects will be deprecated, but if this is TRUE, the original R6 object will be returned, otherwise a list with class `ena.set`}
+
 \item{...}{additional parameters addressed in inner function}
 }
 \value{

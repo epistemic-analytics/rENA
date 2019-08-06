@@ -7,7 +7,7 @@
 find.code.cols(x)
 }
 \arguments{
-\item{data.table}{(or frame) to search for columns of class ena.co.occurrence}
+\item{x}{data.table (or frame) to search for columns of class ena.co.occurrence}
 }
 \value{
 logical vector

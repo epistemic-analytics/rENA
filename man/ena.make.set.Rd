@@ -26,6 +26,8 @@ ena.make.set(enadata, dimensions = 2, norm.by = rENA::fun_sphere_norm,
 
 \item{node.position.method}{A function to be used to determine node positions based on the dimensional reduction, default: lws.position.es()}
 
+\item{as.list}{R6 objects will be deprecated, but if this is TRUE, the original R6 object will be returned, otherwise a list with class `ena.set`}
+
 \item{...}{additional parameters addressed in inner function}
 }
 \value{
@@ -64,8 +66,8 @@ set.means.rotated = ena.make.set(
   enadata = accum,
   rotation.by = ena.rotate.by.mean,
   rotation.params = list(
-      accum$metadata$Condition=="FirstGame",
-      accum$metadata$Condition=="SecondGame"
+      accum$meta.data$Condition=="FirstGame",
+      accum$meta.data$Condition=="SecondGame"
   )
 )
 

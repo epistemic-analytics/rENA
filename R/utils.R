@@ -1,7 +1,7 @@
 
 #' Find metadata columns
 #'
-#' @param data.table (or frame) to search for columns of class ena.metadata
+#' @param x data.table (or frame) to search for columns of class ena.metadata
 #'
 #' @return logical vector
 #' @export
@@ -11,7 +11,7 @@ find.meta.cols <- function(x) {
 
 #' Find code columns
 #'
-#' @param data.table (or frame) to search for columns of class ena.co.occurrence
+#' @param x data.table (or frame) to search for columns of class ena.co.occurrence
 #'
 #' @return logical vector
 #' @export
@@ -20,6 +20,13 @@ find.code.cols <- function(x) {
      is(col, class2="ena.co.occurrence")
    })
 }
+
+#' Remove meta columns from data.table
+#'
+#' @param x [TBD]
+#'
+#' @return data.table withe columns of class ena.meta.data removed
+#' @export
 remove.meta.data <- function(x) {
  x[,find.meta.cols(x), with=F]
 }
@@ -75,22 +82,23 @@ remove.meta.data <- function(x) {
  unique(x)
 }
 #' @export
-summary.ena.set <- function(x) {
- print_dims <- function(n = 2) {
+summary.ena.set <- function(object, ...) {
+   x = object
+   print_dims <- function(n = 2) {
    cat("\t", paste("Dimension", 1:n, collapse = "\t"), "\n")
- }
- cat("Units: ", nrow(x$points), "\t\t")
- cat("Codes: ", length(x$rotation$codes), "\n")
- cat("Variance: \n")
- print_dims()
- cat("\t", paste(round(x$model$variance[1:2], 3), collapse="\t\t"), "\n\n")
- cat("Eigenvalues: \n")
- print_dims()
- cat("\t", paste(round(x$rotation$eigenvalues[1:2], 3), collapse="\t\t"), "\n\n")
- cat("Correlations: \n")
- cors = ena.correlations(x)
- rownames(cors) = paste("Dimension", 1:2)
- print(cors)
+   }
+   cat("Units: ", nrow(x$points), "\t\t")
+   cat("Codes: ", length(x$rotation$codes), "\n")
+   cat("Variance: \n")
+   print_dims()
+   cat("\t", paste(round(x$model$variance[1:2], 3), collapse="\t\t"), "\n\n")
+   cat("Eigenvalues: \n")
+   print_dims()
+   cat("\t", paste(round(x$rotation$eigenvalues[1:2], 3), collapse="\t\t"), "\n\n")
+   cat("Correlations: \n")
+   cors = ena.correlations(x)
+   rownames(cors) = paste("Dimension", 1:2)
+   print(cors)
 }
 # as.data.frame.ena.connections <- function(x) {
 #   class(x) = class(x)[-1]

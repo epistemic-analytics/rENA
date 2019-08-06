@@ -46,6 +46,8 @@ ena.plot.points(enaplot, points = NULL, point.size = 5,
 
 \item{show.legend}{Logical indicating whether to show the point labels in the in legend}
 
+\item{legend.name}{Character indicating the name to show above the plot legend}
+
 \item{...}{additional parameters addressed in inner function}
 }
 \value{
@@ -72,15 +74,15 @@ set = ena.make.set(
   enadata = accum,
   rotation.by = ena.rotate.by.mean,
   rotation.params = list(
-      accum$metadata$Condition=="FirstGame",
-      accum$metadata$Condition=="SecondGame"
+      accum$meta.data$Condition=="FirstGame",
+      accum$meta.data$Condition=="SecondGame"
   )
 )
 
 plot = ena.plot(set)
 
-group1.points = set$points.rotated[set$enadata$units$Condition == "FirstGame",]
-group2.points = set$points.rotated[set$enadata$units$Condition == "SecondGame",]
+group1.points = set$points[set$meta.data$Condition == "FirstGame",]
+group2.points = set$points[set$meta.data$Condition == "SecondGame",]
 plot = ena.plot.points(plot, points = group1.points);
 plot = ena.plot.points(plot, points = group2.points);
 print(plot);
