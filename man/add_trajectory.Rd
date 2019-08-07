@@ -4,16 +4,16 @@
 \alias{add_trajectory}
 \title{Plot a trajectory on an ena.plot}
 \usage{
-add_trajectory(x, wh = NULL, name = "plot", ...)
+add_trajectory(x, wh = NULL, ..., name = "plot")
 }
 \arguments{
 \item{x}{ena.plot object to plot on}
 
 \item{wh}{which points to plot as the trajectory}
 
-\item{name}{Name, as a character vector, to give the plot}
-
 \item{...}{additional parameters to pass along}
+
+\item{name}{Name, as a character vector, to give the plot}
 }
 \value{
 ena.plot.object

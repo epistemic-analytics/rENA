@@ -4,16 +4,16 @@
 \alias{add_network}
 \title{Add a network to an ENA plot}
 \usage{
-add_network(x, wh = NULL, with.mean = T, ...)
+add_network(x, wh = NULL, ..., with.mean = F)
 }
 \arguments{
 \item{x}{ena.plot object to plot wtih}
 
 \item{wh}{network to plot}
 
-\item{with.mean}{Logical value, if TRUE plots the mean for the points in the network}
-
 \item{...}{Additional parametesr to pass along}
+
+\item{with.mean}{Logical value, if TRUE plots the mean for the points in the network}
 }
 \value{
 ena.plot.object

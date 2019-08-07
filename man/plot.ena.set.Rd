@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{ena.set to plot}
 
-\item{y}{ignored}
+\item{y}{ignored.}
 
 \item{...}{Additional parameters passed along to ena.plot functions}
 }
@@ -40,8 +40,8 @@ set = ena.make.set(
 )
 
 plot(set) \%>\%
-  add_points(Condition$FirstGame, colors = "blue", mean = T) \%>\%
-  add_points(Condition$SecondGame, colors = "red", mean = T)
+  add_points(Condition$FirstGame, colors = "blue", with.mean = TRUE) \%>\%
+  add_points(Condition$SecondGame, colors = "red", with.mean = TRUE)
 
 plot(set) \%>\%
   add_network(Condition$FirstGame - Condition$SecondGame)

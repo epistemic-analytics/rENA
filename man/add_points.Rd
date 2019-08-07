@@ -4,16 +4,16 @@
 \alias{add_points}
 \title{Plot points on an ena.plot}
 \usage{
-add_points(x, wh = NULL, name = "plot", ...)
+add_points(x, wh = NULL, ..., name = "plot", mean = NULL)
 }
 \arguments{
 \item{x}{ena.plot to add point on}
 
 \item{wh}{which points to plot}
 
-\item{name}{name to give the plot}
-
 \item{...}{additional parameters to pass along}
+
+\item{name}{name to give the plot}
 }
 \value{
 ena.plot.object

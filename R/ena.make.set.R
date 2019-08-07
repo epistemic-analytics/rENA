@@ -155,7 +155,8 @@ ena.make.set <- function(
       set(points.dt, j = i, value = as.ena.dimension(points.dt[[i]]))
 
     enadata$points = cbind(enadata$meta.data, points.dt)
-    class(enadata$points) = c("ena.points", class(enadata$points))
+
+    enadata$points = as.ena.matrix(enadata$points, "ena.points")
   #####
 
   ###

@@ -58,6 +58,7 @@ remove.meta.data <- function(x) {
    # attr(vals, "values") <- unique.vals
    vals
 }
+
 #' Extract points easily
 #'
 #' @param x [TBD]
@@ -81,6 +82,17 @@ remove.meta.data <- function(x) {
 .DollarNames.ena.metadata = function(x, pattern="") {
  unique(x)
 }
+
+# "[.ena.matrix" = function(x, ...)
+# {
+#    browser()
+#    original.class = class(x)[1]
+#    class(x) = class(x)[-1]
+#    x = x[...]
+#
+# #   y = as.data.frame(x)
+# }
+
 #' @export
 summary.ena.set <- function(object, ...) {
    x = object

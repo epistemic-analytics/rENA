@@ -27,8 +27,8 @@
 #' )
 #'
 #' plot(set) %>%
-#'   add_points(Condition$FirstGame, colors = "blue", with.mean = T) %>%
-#'   add_points(Condition$SecondGame, colors = "red", with.mean = T)
+#'   add_points(Condition$FirstGame, colors = "blue", with.mean = TRUE) %>%
+#'   add_points(Condition$SecondGame, colors = "red", with.mean = TRUE)
 #'
 #' plot(set) %>%
 #'   add_network(Condition$FirstGame - Condition$SecondGame)
