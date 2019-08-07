@@ -55,7 +55,7 @@ test_that("Old sets are the same as the new ones", {
           units = RS.data[, units.by],
           conversation = RS.data[, conv.by],
           metadata = RS.data[, codeNames],
-          codes = RS.data[,codes],
+          codes = RS.data[,codeNames],
           model = "EndPoint",
           window.size.back = 4
         ) %>%
