@@ -61,6 +61,6 @@ test_that("Old sets are the same as the new ones", {
         ) %>%
           ena.make.set()
 
-  testthat::expect_equivalent(df.set$points.rotated[1,], as.matrix(new.set$points[1,]))
-  testthat::expect_equivalent(df.set$line.weights[1,], as.matrix(new.set$line.weights[1,]))
+  testthat::expect_equivalent(df.set$points.rotated[1,], as.matrix(new.set$points)[1,])
+  testthat::expect_equivalent(df.set$line.weights[1,], as.matrix(new.set$line.weights)[1,])
 })
