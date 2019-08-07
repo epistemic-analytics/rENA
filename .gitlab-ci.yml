@@ -8,7 +8,9 @@ variables:
   VERSION: "0.1.6.1"
   PKG: "rENA"
   PKGL: "rena"
-  REG_URL: "registry.doit.wisc.edu/epistemic-analytics/qe-packages/rena"
+  REG_URL: "${CI_REGISTRY}/epistemic-analytics/qe-packages/rena"
+  DOCKER_HOST: tcp://localhost:2375/
+  DOCKER_DRIVER: overlay2  
 
 # Templates
 .build_definition: &build_template
@@ -89,8 +91,9 @@ release:cran:
 
 .docker_definition: &docker_template
   stage: docker
-  tags:
-    - shell
+  image: docker:19.03.1
+  services:
+    - docker:19.03.1-dind
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
@@ -106,14 +109,20 @@ docker:release:
   variables:
     TAG: "release"
     FILE: "release"
+    DOCKER_HOST: tcp://localhost:2375/
+    DOCKER_DRIVER: overlay2
   <<: *docker_template
 docker:old-release:
   variables:
     TAG: "old-release"
     FILE: "oldrelease"
+    DOCKER_HOST: tcp://localhost:2375/
+    DOCKER_DRIVER: overlay2
   <<: *docker_template
 docker:devel:
   variables:
     TAG: "devel"
     FILE: "devel"
+    DOCKER_HOST: tcp://localhost:2375/
+    DOCKER_DRIVER: overlay2
   <<: *docker_template
