@@ -78,11 +78,11 @@ ena.make.set <- function(
     set = ENAset$new(
       enadata = enadata,
       dimensions = dimensions,
-      rotation.by = ifelse(identical(rotation.by, rENA::ena.svd), rENA:::ena.svd.R6, rotation.by),
+      rotation.by = ifelse(identical(rotation.by, ena.svd), ena.svd.R6, rotation.by),
       rotation.params = rotation.params,
       rotation.set = rotation.set,
       norm.by = norm.by,
-      node.position.method = ifelse(identical(node.position.method, rENA:::lws.positions.sq), rENA:::lws.positions.sq.R6, node.position.method),
+      node.position.method = ifelse(identical(node.position.method, lws.positions.sq), lws.positions.sq.R6, node.position.method),
       endpoints.only = endpoints.only,
       ...
     )
