@@ -8,7 +8,7 @@ variables:
   VERSION: "0.1.6.1"
   PKG: "rENA"
   PKGL: "rena"
-  REG_URL: "registry.doit.wisc.edu/epistemic-analytics/qe-packages/rena"
+  REG_URL: "${CI_REGISTRY}/epistemic-analytics/qe-packages/rena"
 
 # Templates
 .build_definition: &build_template
