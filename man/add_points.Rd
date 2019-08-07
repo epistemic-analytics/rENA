@@ -14,6 +14,8 @@ add_points(x, wh = NULL, ..., name = "plot", mean = NULL)
 \item{...}{additional parameters to pass along}
 
 \item{name}{name to give the plot}
+
+\item{mean}{include a mean point for the provided points}
 }
 \value{
 ena.plot.object
