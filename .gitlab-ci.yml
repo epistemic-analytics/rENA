@@ -94,6 +94,12 @@ release:cran:
   script:
     - docker build -t $REG_URL/$TAG:current -f inst/docker/${PKG}-$FILE inst/docker/
     - docker push $REG_URL/$TAG:current
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_HOST: tcp://localhost:2375/
+    DOCKER_DRIVER: overlay2    
+  services:
+    - docker:18.09-dind
   only:
     refs:
       - develop
