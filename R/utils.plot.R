@@ -45,8 +45,9 @@ plot.ena.set <- function(x, y, ...) {
 #'
 #' @param x ena.plot to add point on
 #' @param wh which points to plot
-#' @param name name to give the plot
 #' @param ... additional parameters to pass along
+#' @param name name to give the plot
+#' @param mean include a mean point for the provided points
 #'
 #' @return ena.plot.object
 #' @export
