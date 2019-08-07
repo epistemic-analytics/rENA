@@ -97,8 +97,13 @@ ena.set <- function(x) {
   }
 
   newset$`_function.call` = sys.calls()[[1]]
-  call.frame = sys.frame(which(sapply(sys.frames(), function(f) { "window.size.back" %in% ls(envir = f) })))
-  newset$`_function.params` = mget(ls(envir = call.frame), envir = call.frame)
+  back.frame = sapply(sys.frames(), function(f) { "window.size.back" %in% ls(envir = f) })
+  if(any(back.frame)) {
+    call.frame = sys.frame(which(back.frame))
+    newset$`_function.params` = mget(ls(envir = call.frame), envir = call.frame)
+  } else {
+    newset$`_function.params` = list()
+  }
 
   # conn.env = new.env(parent = globalenv())
   # class(conn.env) = 'pointer'

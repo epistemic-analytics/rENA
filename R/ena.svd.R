@@ -34,3 +34,17 @@ ena.svd <- function(enaset, ...) {
   )
   return(rotationSet)
 }
+
+ena.svd.R6 <- function(enaset, ...) {
+  pcaResults = prcomp(enaset$points.normed.centered, retx=FALSE,scale=FALSE,center=FALSE, tol=0)
+
+  colnames(pcaResults$rotation) = c(
+    paste('SVD',as.character(1:ncol(pcaResults$rotation)), sep='')
+  );
+
+  rotationSet = ENARotationSet$new(
+    rotation = pcaResults$rotation, codes = enaset$codes,
+    node.positions = NULL, eigenvalues = pcaResults$sdev^2
+  )
+  return(rotationSet)
+}

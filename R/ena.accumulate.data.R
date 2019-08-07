@@ -140,7 +140,7 @@ ena.accumulate.data <- function(
   if(as.list) {
     data = ena.set(data);
   } else {
-    warning("R6 data objects will be deprecated in a future version. Consider upgrading to the new data object.")
+    warning("Usage of R6 data objects is deprecated and may be removed entirely in a future version. Consider upgrading to the new data object.")
   }
   data
 }

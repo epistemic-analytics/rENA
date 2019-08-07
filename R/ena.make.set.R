@@ -65,155 +65,166 @@ ena.make.set <- function(
   rotation.set = NULL,
   endpoints.only = T,
   node.position.method = lws.positions.sq,
-  as.list = T,
+  as.list = TRUE,
   ...
 ) {
-  if("ENAdata" %in% enadata) {
-    warning("Usage of ENAdata object will be deprecated and potentially removed altogether in future versions. See ena.accumulate.data() or ena.set()");
-    enadata = ena.set(enadata);
-  }
-  # set = ENAset$new(
-  #   enadata = enadata,
-  #   dimensions = dimensions,
-  #   rotation.by = rotation.by,
-  #   rotation.params = rotation.params,
-  #   rotation.set = rotation.set,
-  #   norm.by = norm.by,
-  #   node.position.method = node.position.method,
-  #   endpoints.only = endpoints.only,
-  #   ...
-  # )$process();
+  if(as.list == F) {
+    warning("Usage of ENAdata and ENAset objects will be deprecated and potentially removed altogether in future versions.");
 
-  ###
-  # Convert the string vector of code names to their corresponding co-occurence names
-  #####
-    code_columns = svector_to_ut(enadata$rotation$codes);
-
-  ###
-  # Normalize the raw data using self$function.params$norm.by,
-  # which defaults to calling rENA::dont_sphere_norm_c
-  #####
-    line.weights = norm.by(as.matrix(enadata$connection.counts));
-    colnames(line.weights) = code_columns;
-
-    line.weights.dt = as.data.table(line.weights)
-    for(i in seq(ncol(line.weights.dt)))
-      set(line.weights.dt, j = i, value = as.ena.co.occurrence(line.weights.dt[[i]]))
-
-    enadata$line.weights = cbind(enadata$meta.data, line.weights.dt)
-    class(enadata$line.weights) = c("ena.line.weights", class(enadata$line.weights))
-  #####
-
-  ###
-  # Center the normed data
-  #####
-    points.for.projection = center_data_c(line.weights);
-    colnames(points.for.projection) = code_columns;
-    enadata$model$points.for.projection = as.data.table(points.for.projection);
-    for(i in seq(ncol(enadata$model$points.for.projection)))
-      set(enadata$model$points.for.projection, j = i, value = as.ena.co.occurrence(enadata$model$points.for.projection[[i]]))
-    enadata$model$points.for.projection = cbind(enadata$meta.data, enadata$model$points.for.projection)
-  #####
-
-  ###
-
-  ###
-  # Generate and Assign the rotation set
-  #####
-    if(!is.null(rotation.by) && is.null(rotation.set)) {
-      rotation = do.call(rotation.by, list(enadata, rotation.params));
-
-      enadata$rotation.matrix = as.data.table(rotation$rotation);
-      for(i in seq(ncol(enadata$rotation.matrix))) {
-        set(enadata$rotation.matrix, j = i, value = as.ena.dimension(enadata$rotation.matrix[[i]]))
-      }
-      class(enadata$rotation.matrix) = c("ena.rotation.matrix", class(enadata$rotation.matrix))
-
-      enadata$rotation$rotation.matrix = enadata$rotation.matrix
-      # enadata$rotation$nodes = rotation$node.positions;
-      enadata$rotation$eigenvalues = rotation$eigenvalues;
-    } else if (!is.null(rotation.set)) {
-      if(is(rotation.set, "ena.rotation.set")) {
-        print("Using custom rotation.set.")
-        enadata$rotation.matrix = enadata$rotation$rotation.matrix = rotation.set$rotation.matrix;
-        enadata$rotation$nodes = rotation.set$nodes;
-        enadata$rotation$eigenvalues = rotation.set$eigenvalues
-      } else {
-        stop("Supplied rotation.set is not an instance of ENARotationSet")
-      }
-    } else {
-      stop("Unable to find or create a rotation set")
+    if(!is(enadata, "ENAdata")) {
+      stop("Use of ena.make.set with as.list=FALSE requires `enadata` be an ENAdata object. Re-run the accumulation with as.list=FALSE")
     }
-  #####
 
-  ###
-  # Generated the rotated points
-  #####
-    points = points.for.projection %*% as.matrix(enadata$rotation.matrix);
-    points.dt = as.data.table(points)
-    for(i in seq(ncol(points.dt)))
-      set(points.dt, j = i, value = as.ena.dimension(points.dt[[i]]))
+    set = ENAset$new(
+      enadata = enadata,
+      dimensions = dimensions,
+      rotation.by = ifelse(identical(rotation.by, rENA::ena.svd), rENA:::ena.svd.R6, rotation.by),
+      rotation.params = rotation.params,
+      rotation.set = rotation.set,
+      norm.by = norm.by,
+      node.position.method = ifelse(identical(node.position.method, rENA:::lws.positions.sq), rENA:::lws.positions.sq.R6, node.position.method),
+      endpoints.only = endpoints.only,
+      ...
+    )
+    
+    return(set$process());
+  } else {
+    if("ENAdata" %in% enadata) {
+      warning("Usage of ENAdata objects will be deprecated and potentially removed altogether in future versions. See ena.accumulate.data() or ena.set().");
+      enadata = ena.set(enadata);
+    }
 
-    enadata$points = cbind(enadata$meta.data, points.dt)
+    ###
+    # Convert the string vector of code names to their corresponding co-occurence names
+    #####
+      code_columns = svector_to_ut(enadata$rotation$codes);
 
-    enadata$points = as.ena.matrix(enadata$points, "ena.points")
-  #####
+    ###
+    # Normalize the raw data using self$function.params$norm.by,
+    # which defaults to calling rENA::dont_sphere_norm_c
+    #####
+      line.weights = norm.by(as.matrix(enadata$connection.counts));
+      colnames(line.weights) = code_columns;
 
-  ###
-  # Calculate node positions
-  #  - The supplied methoed is responsible is expected to return a list
-  #    with two keys, "node.positions" and "centroids"
-  #####2
-    if(exists("rotation") && !is.null(rotation) && is.null(rotation.set)) {
-      positions = node.position.method(enadata);
-      if(all(names(positions) %in% c("node.positions","centroids"))) {
-        enadata$rotation$nodes = as.data.table(positions$node.positions)
-        colnames(enadata$rotation$nodes) = colnames(points)
-        rownames(enadata$rotation$nodes) = enadata$rotation$codes
+      line.weights.dt = as.data.table(line.weights)
+      for(i in seq(ncol(line.weights.dt)))
+        set(line.weights.dt, j = i, value = as.ena.co.occurrence(line.weights.dt[[i]]))
 
-        for(i in seq(ncol(enadata$rotation$nodes))) {
-          set(enadata$rotation$nodes, j = i, value = as.ena.dimension(enadata$rotation$nodes[[i]]))
+      enadata$line.weights = cbind(enadata$meta.data, line.weights.dt)
+      class(enadata$line.weights) = c("ena.line.weights", class(enadata$line.weights))
+    #####
+
+    ###
+    # Center the normed data
+    #####
+      points.for.projection = center_data_c(line.weights);
+      colnames(points.for.projection) = code_columns;
+      enadata$model$points.for.projection = as.data.table(points.for.projection);
+      for(i in seq(ncol(enadata$model$points.for.projection)))
+        set(enadata$model$points.for.projection, j = i, value = as.ena.co.occurrence(enadata$model$points.for.projection[[i]]))
+      enadata$model$points.for.projection = cbind(enadata$meta.data, enadata$model$points.for.projection)
+    #####
+
+    ###
+
+    ###
+    # Generate and Assign the rotation set
+    #####
+      if(!is.null(rotation.by) && is.null(rotation.set)) {
+        rotation = do.call(rotation.by, list(enadata, rotation.params));
+
+        enadata$rotation.matrix = as.data.table(rotation$rotation);
+        for(i in seq(ncol(enadata$rotation.matrix))) {
+          set(enadata$rotation.matrix, j = i, value = as.ena.dimension(enadata$rotation.matrix[[i]]))
         }
-        enadata$rotation$nodes = data.table(
-          code = structure(enadata$rotation$codes, class = c("code", class(enadata$rotation$codes))),
-          enadata$rotation$nodes
-        )
-        class(enadata$rotation$nodes) = c("ena.nodes", class(enadata$rotation$nodes))
+        class(enadata$rotation.matrix) = c("ena.rotation.matrix", class(enadata$rotation.matrix))
 
-        enadata$model$centroids = as.data.table(positions$centroids)
-        for(i in seq(ncol(enadata$model$centroids)))
-          set(enadata$model$centroids, j = i, value = as.ena.dimension(enadata$model$centroids[[i]]))
+        enadata$rotation$rotation.matrix = enadata$rotation.matrix
+        # enadata$rotation$nodes = rotation$node.positions;
+        enadata$rotation$eigenvalues = rotation$eigenvalues;
+      } else if (!is.null(rotation.set)) {
+        if(is(rotation.set, "ena.rotation.set")) {
+          print("Using custom rotation.set.")
+          enadata$rotation.matrix = enadata$rotation$rotation.matrix = rotation.set$rotation.matrix;
+          enadata$rotation$nodes = rotation.set$nodes;
+          enadata$rotation$eigenvalues = rotation.set$eigenvalues
+        } else {
+          stop("Supplied rotation.set is not an instance of ENARotationSet")
+        }
       } else {
-        print("The node position method didn't return back the expected objects:")
-        print("    Expected: c('node.positions','centroids')");
-        print(paste("    Received: ",names(positions),sep=""));
+        stop("Unable to find or create a rotation set")
       }
-    } else if (!is.null(rotation.set)) {
-      enadata$rotation$nodes = rotation.set$nodes
-    } else {
-      stop("Unable to determine the node positions either by calculating
-                  them using `node.position.method` or using a supplied
-                  `rotation.set`");
-    }
-  #####
+    #####
 
-  ###
-  # Variance
-  #####
-    variance.of.rotated.data = var(points)
-    diagonal.of.variance.of.rotated.data = as.vector(diag(variance.of.rotated.data))
-    enadata$model$variance = diagonal.of.variance.of.rotated.data/sum(diagonal.of.variance.of.rotated.data)
-  #####
+    ###
+    # Generated the rotated points
+    #####
+      points = points.for.projection %*% as.matrix(enadata$rotation.matrix);
+      points.dt = as.data.table(points)
+      for(i in seq(ncol(points.dt)))
+        set(points.dt, j = i, value = as.ena.dimension(points.dt[[i]]))
+
+      enadata$points = cbind(enadata$meta.data, points.dt)
+
+      enadata$points = as.ena.matrix(enadata$points, "ena.points")
+    #####
+
+    ###
+    # Calculate node positions
+    #  - The supplied methoed is responsible is expected to return a list
+    #    with two keys, "node.positions" and "centroids"
+    #####2
+      if(exists("rotation") && !is.null(rotation) && is.null(rotation.set)) {
+        positions = node.position.method(enadata);
+        if(all(names(positions) %in% c("node.positions","centroids"))) {
+          enadata$rotation$nodes = as.data.table(positions$node.positions)
+          colnames(enadata$rotation$nodes) = colnames(points)
+          rownames(enadata$rotation$nodes) = enadata$rotation$codes
+
+          for(i in seq(ncol(enadata$rotation$nodes))) {
+            set(enadata$rotation$nodes, j = i, value = as.ena.dimension(enadata$rotation$nodes[[i]]))
+          }
+          enadata$rotation$nodes = data.table(
+            code = structure(enadata$rotation$codes, class = c("code", class(enadata$rotation$codes))),
+            enadata$rotation$nodes
+          )
+          class(enadata$rotation$nodes) = c("ena.nodes", class(enadata$rotation$nodes))
+
+          enadata$model$centroids = as.data.table(positions$centroids)
+          for(i in seq(ncol(enadata$model$centroids)))
+            set(enadata$model$centroids, j = i, value = as.ena.dimension(enadata$model$centroids[[i]]))
+        } else {
+          print("The node position method didn't return back the expected objects:")
+          print("    Expected: c('node.positions','centroids')");
+          print(paste("    Received: ",names(positions),sep=""));
+        }
+      } else if (!is.null(rotation.set)) {
+        enadata$rotation$nodes = rotation.set$nodes
+      } else {
+        stop("Unable to determine the node positions either by calculating
+                    them using `node.position.method` or using a supplied
+                    `rotation.set`");
+      }
+    #####
+
+    ###
+    # Variance
+    #####
+      variance.of.rotated.data = var(points)
+      diagonal.of.variance.of.rotated.data = as.vector(diag(variance.of.rotated.data))
+      enadata$model$variance = diagonal.of.variance.of.rotated.data/sum(diagonal.of.variance.of.rotated.data)
+    #####
 
 
-  # set$function.call = sys.call();
+    # set$function.call = sys.call();
 
-  # set = ena.set(set)
+    # set = ena.set(set)
 
-  enadata$model$plots = list();
-  class(enadata$model$plots) = c("ena.plots", class(enadata$model$plots))
+    enadata$model$plots = list();
+    class(enadata$model$plots) = c("ena.plots", class(enadata$model$plots))
 
-  enadata$`_function.params`$norm.by = norm.by
+    enadata$`_function.params`$norm.by = norm.by
 
-  return(enadata)
+    return(enadata)
+  }
 }

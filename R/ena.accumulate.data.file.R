@@ -61,6 +61,7 @@ ena.accumulate.data.file <- function(
   binary.stanzas = F,
   mask = NULL,
   include.meta = T,
+  as.list = T,
   ...
 ) {
   #print(file);
@@ -106,6 +107,10 @@ ena.accumulate.data.file <- function(
   # }
   #else
 
-  data = ena.set(data);
+  if(as.list) {
+    data = ena.set(data);
+  } else {
+    warning("Usage of R6 data objects is deprecated and may be removed entirely in a future version. Consider upgrading to the new data object.")
+  }
   data
 }
