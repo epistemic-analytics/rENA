@@ -89,8 +89,6 @@ release:cran:
 
 .docker_definition: &docker_template
   stage: docker
-  tags:
-    - shell
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
