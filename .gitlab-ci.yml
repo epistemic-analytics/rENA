@@ -109,20 +109,20 @@ docker:release:
   variables:
     TAG: "release"
     FILE: "release"
-    DOCKER_HOST: $DOCKER_HOST
-    DOCKER_DRIVER: $DOCKER_DRIVER    
+    DOCKER_HOST: tcp://localhost:2375/
+    DOCKER_DRIVER: overlay2
   <<: *docker_template
 docker:old-release:
   variables:
     TAG: "old-release"
     FILE: "oldrelease"
-    DOCKER_HOST: $DOCKER_HOST
-    DOCKER_DRIVER: $DOCKER_DRIVER
+    DOCKER_HOST: tcp://localhost:2375/
+    DOCKER_DRIVER: overlay2
   <<: *docker_template
 docker:devel:
   variables:
     TAG: "devel"
     FILE: "devel"
-    DOCKER_HOST: $DOCKER_HOST
-    DOCKER_DRIVER: $DOCKER_DRIVER
+    DOCKER_HOST: tcp://localhost:2375/
+    DOCKER_DRIVER: overlay2
   <<: *docker_template
