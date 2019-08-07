@@ -86,6 +86,7 @@ release:cran:
     - docker
   allow_failure: false
 
+
 .docker_definition: &docker_template
   stage: docker
   tags:
