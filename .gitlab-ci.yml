@@ -1,6 +1,7 @@
 stages:
  - docker
  - check
+ - test
  - checkWindows
  - release
 
@@ -71,6 +72,12 @@ check:r-winbuilder:
   tags:
     - docker
   allow_failure: false
+
+test:r-release:
+  stage: test
+  script: Rscript -e "covr::codecov()"
+  dependencies:
+    - check:r-release
 
 release:cran:
   stage: release
