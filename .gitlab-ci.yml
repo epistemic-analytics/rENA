@@ -76,6 +76,8 @@ check:r-winbuilder:
 test:r-release:
   stage: test
   image: $REG_URL/release:current
+  before_script:
+    - Rscript -e 'install.packages(c("covr"), repos="http://cran.rstudio.com")'
   script:
     - Rscript -e "covr::codecov()"
   dependencies:
