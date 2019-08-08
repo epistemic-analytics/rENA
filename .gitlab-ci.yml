@@ -11,7 +11,7 @@ variables:
   PKGL: "rena"
   REG_URL: "${CI_REGISTRY}/epistemic-analytics/qe-packages/rena"
   DOCKER_HOST: tcp://localhost:2375/
-  DOCKER_DRIVER: overlay2  
+  DOCKER_DRIVER: overlay2
 
 # Templates
 .build_definition: &build_template
@@ -75,7 +75,9 @@ check:r-winbuilder:
 
 test:r-release:
   stage: test
-  script: Rscript -e "covr::codecov()"
+  image: $REG_URL/release:current
+  script:
+    - Rscript -e "covr::codecov()"
   dependencies:
     - check:r-release
 
