@@ -95,26 +95,26 @@ ena.plot.trajectory = function(
   if(!is.character(label.font.family)) {
     label.font.size = enaplot$get("font.family");
   }
-  labels.show = match.arg(labels.show);
-  shape = match.arg(shape);
+  labels.show <- match.arg(labels.show);
+  shape <- match.arg(shape);
 
   if(is.null(by)) {
-    by = list(all = rep(T, nrow(points)));
+    by <- list(all = rep(T, nrow(points)));
   }
   if(!is(points, "data.table")) {
-    points = data.table::as.data.table(points);
+    points <- data.table::as.data.table(points);
   }
   if(length(colors) == 1)
-    colors = rep(colors, length(names))
+    colors <- rep(colors, length(names))
 
-  mode="lines+markers+text";
-  hoverinfo = "x+y";
-  tbl = data.table::data.table(points);
-  if(!is.null(labels)) {
-    if(labels.show %in% c("Always","Both"))
-      mode=paste0(mode,"+text");
-    if(labels.show %in% c("Hover","Both"))
-      hoverinfo=paste0(hoverinfo,"+text");
+  mode <- "lines+markers+text";
+  hoverinfo <- "x+y";
+  tbl <- data.table::data.table(points);
+  if (!is.null(labels)) {
+    if (labels.show %in% c("Always","Both"))
+      mode <- paste0(mode,"+text");
+    if (labels.show %in% c("Hover","Both"))
+      hoverinfo <- paste0(hoverinfo,"+text");
 
     tbl = data.table::data.table(points, labels = labels);
   }
@@ -122,36 +122,42 @@ ena.plot.trajectory = function(
   # if(is.logical(by)) {
   # } else {}
   if(!is.null(by)) {
-    # if(is.character(by))
-    #   by = as.factor(by)
+    if(is.character(by) && length(by) == nrow(tbl))
+        by <- as.factor(by)
 
-    dfDT.trajs = tbl[,{ data.table::data.table(lines = list(.SD))  }, by=by]
+    dfdt_trajs <- tbl[,{ data.table::data.table(lines = list(.SD))  }, by = by]
   } else {
-    dfDT.trajs = tbl[,{ data.table::data.table(lines = list(.SD))  }]
+    dfdt_trajs <- tbl[,{ data.table::data.table(lines = list(.SD))  }]
   }
 
-  valid.label.offsets = c("top left","top center","top right","middle left","middle center","middle right","bottom left","bottom center","bottom right");
-  if(!all(label.offset %in% valid.label.offsets))
-    stop(sprintf( "Unrecognized label.offsets: %s", paste(unique(label.offset[!(label.offset %in% valid.label.offsets)]), collapse = ", ") ))
-  if(length(label.offset) == 1)
-    label.offset = rep(label.offset, nrow(dfDT.trajs))
+  valid_label_offsets = c("top left","top center","top right","middle left",
+              "middle center","middle right","bottom left","bottom center",
+              "bottom right")
+  if(!all(label.offset %in% valid_label_offsets))
+    stop(sprintf( "Unrecognized label.offsets: %s", 
+      paste(unique(label.offset[!(label.offset %in% valid_label_offsets)]), 
+      collapse = ", ") ))
 
-  if (!is.null(colors) && length(colors) > 1 && length(colors) != length(names)) {
+  if(length(label.offset) == 1)
+    label.offset = rep(label.offset, nrow(dfdt_trajs))
+
+  if (!is.null(colors) && 
+      length(colors) > 1 && length(colors) != length(names)
+  ) {
     stop("Length of the colors must be 1 or the same length as by")
   }
 
-  for(x in 1:nrow(dfDT.trajs)) {
-    d = remove.meta.data(dfDT.trajs[x,]$lines[[1]])
-    d.names = colnames(d)
+  for (x in 1:nrow(dfdt_trajs)) {
+    d <- remove.meta.data(dfdt_trajs[x,]$lines[[1]])
+    d.names <- colnames(d)
     enaplot$plot = plotly::add_trace(
       enaplot$plot,
       data = d,
-      x = as.formula(paste0("~",d.names[1])),
-      y = as.formula(paste0("~",d.names[2])),
-      name = names[x], #as.character(names[x]), #dfDT.trajs[x]$lines[[1]]$labels,
+      x = as.formula(paste0("~", d.names[1])),
+      y = as.formula(paste0("~", d.names[2])),
+      name = names[x],
       mode = mode,
-      text = dfDT.trajs[x,]$lines[[1]]$labels,
-      # textposition = 'middle right',
+      text = dfdt_trajs[x,]$lines[[1]]$labels,
       textposition = label.offset[x],
       hoverinfo = hoverinfo,
       showlegend = T,
@@ -173,7 +179,7 @@ ena.plot.trajectory = function(
 
   enaplot$plotted$trajectories[[
     length(enaplot$plotted$trajectories) + 1
-  ]] = dfDT.trajs
+  ]] <- dfdt_trajs
 
   return(enaplot);
 }
