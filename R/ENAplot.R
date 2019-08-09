@@ -81,7 +81,6 @@ ENAplot = R6::R6Class("ENAplot",
           axis.range.x = axis.range.y = c(-max.axis, max.axis)
         }
 
-        # network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T, range=c(-max.axis,max.axis));
         graph.axis <- list(
           titlefont = private$font,
           showgrid = F,
@@ -103,9 +102,6 @@ ENAplot = R6::R6Class("ENAplot",
         self$axes$y$title = dimension.labels[2];
         self$axes$y$range = axis.range.y
 
-        # self$axes$max = max.axis;
-        # self$axes$objects$x = graph.axis.x;
-        # self$axes$objects$y = graph.axis.y;
         self$plot = plotly::layout(
           self$plot,
           title =  title,
@@ -129,6 +125,10 @@ ENAplot = R6::R6Class("ENAplot",
       plot = NULL,
       axes = list(
         x = NULL, y = NULL
+      ),
+      plotted = list(
+        points = list(), networks = list(),
+        trajectories = list()
       ),
     ####
     ## END: Public Properties

@@ -52,38 +52,38 @@ plot.ena.set <- function(x, y, ...) {
 #' @return ena.plot.object
 #' @export
 add_points <- function(x, wh = NULL, ..., name = "plot", mean = NULL) {
-  set = x$enaset
+  set <- x$enaset
 
-  args = as.character(substitute(wh))
-  if(!is.null(args)) {
-    if(length(args) > 1 && args[[2]] %in% colnames(set$points)) {
-      cc = call("$", set$points, args[[2]])
-      part1 = eval(cc)
-      points = as.matrix(set$points)[part1 == args[[3]],] # part1[args[[3]], "points" ,set]
-      name = tail(args, 1)
+  wh_subbed <- as.character(substitute(wh))
+  if (!is.null(wh_subbed) && length(wh_subbed) > 0) {
+    if (length(wh_subbed) > 1 && wh_subbed[[2]] %in% colnames(set$points)) {
+      cc <- call(wh_subbed[[1]], set$points, wh_subbed[[2]])
+      part1 <- eval(cc)
+      points <- as.matrix(set$points)[part1 == wh_subbed[[3]], ]
+      name <- tail(wh_subbed, 1)
     } else {
-      points = wh
+      points <- wh
     }
   } else {
-    points = as.matrix(set$points)
-    name = "all.points"
+    points <- as.matrix(set$points)
+    name <- "all.points"
   }
 
-  x = ena.plot.points(x, points = points, ...)
+  x <- ena.plot.points(x, points = points, ...)
+  if(!is.null(mean) && (is.list(mean) || mean == T)) {
+    more.args <- list(...)
 
-  if(!is.null(mean) && (is.list(mean) || mean == T)) { #x = add_group(x, y, colors = default.colors[length(attr(x, "means"))+1], ...)
-    more.args = list(...)
-    if(is.list(mean)) {
-      more.args = c(mean, more.args[!names(more.args) %in% names(mean)])
+    if (is.list(mean)) {
+      more.args <- c(mean, more.args[!names(more.args) %in% names(mean)])
     }
-    more.args$enaplot = x
-    more.args$points = points
-    more.args$labels = name
+    more.args$enaplot <- x
+    more.args$points <- points
+    more.args$labels <- name
 
-    x = do.call(ena.plot.group, more.args)
+    x <- do.call(ena.plot.group, more.args)
   }
 
-  x
+  return(x)
 }
 
 #' Plot a trajectory on an ena.plot
@@ -96,31 +96,35 @@ add_points <- function(x, wh = NULL, ..., name = "plot", mean = NULL) {
 #' @return ena.plot.object
 #' @export
 add_trajectory <- function(x, wh = NULL, ..., name = "plot") {
-  set = x$enaset
+  set <- x$enaset
 
-  subbed = substitute(wh)
-  args = as.character(subbed)
-  points = set$points
-  if(!is.null(args)) {
-    if(length(args) > 1) {
-      # cc = call("$", set$points, args[[2]])
-      # part1 = eval(cc)
-      # points = part1[args[[3]], "points" ,set]
-      # name = args[[length(args)]]
-      # by =
-      points = points[eval(call(args[1], set$points[[args[2]]], subbed[[3]])), ]
-      by = "ENA_UNIT"
+  subbed <- substitute(wh)
+  args_list <- as.character(subbed)
+  points <- set$points
+
+  if (!is.null(args_list) && !is.null(subbed)) {
+    if (length(args_list) > 1) {
+      # points <- points[eval(call(
+      #             args_list[1], 
+      #             set$points[[args_list[2]]],
+      #             as.character(subbed[[3]])
+      #           )), ]
+
+      wh_subbed <- as.character(substitute(wh))
+      cc <- call(wh_subbed[[1]], set$points, wh_subbed[[2]])
+      part1 <- eval(cc)
+      points <- set$points[part1 == wh_subbed[[3]], ]
+
+      by <- "ENA_UNIT"
     } else {
-      # cc = call("[[", set$points, args[[1]])
-      # by = eval(cc)
-      by = args[[1]]
+      by <- args_list[[1]]
     }
   } else {
-    by = "ENA_UNIT"
+    by <- "ENA_UNIT"
   }
-  set$model$plots[[name]] = ena.plot.trajectory(x, points = points, by = by)
+  x <- ena.plot.trajectory(x, points = points, by = by)
 
-  set
+  x
 }
 
 #' Add a group mean to an ena.plot
@@ -132,30 +136,38 @@ add_trajectory <- function(x, wh = NULL, ..., name = "plot") {
 #' @return ena.plot.object
 #' @export
 add_group <- function(x, wh = NULL, ...) {
-  set = x$enaset
-  args = list(...)
-  wh.clean = substitute(wh)
+  set <- x$enaset
+  arg_list <- list(...)
+  wh.clean <- substitute(wh)
 
-  if(identical(as.character(wh.clean), "wh.clean") || identical(as.character(wh.clean), "y")) {
-    wh.clean = wh;
+  if (
+    identical(as.character(wh.clean), "wh.clean") ||
+    identical(as.character(wh.clean), "y")
+  ) {
+    wh.clean <- wh;
   }
 
-  if(is.null(wh.clean)) { #, "ena.points")) {
-    x = ena.plot.group(x, ...)
+  if (is.null(wh.clean)) { #, "ena.points")) {
+    x <- ena.plot.group(x, ...)
   } else {
-    parts = as.character(wh.clean)
+    parts <- as.character(wh.clean)
 
-    if(parts[2] %in% colnames(set$line.weights)) {
-      label = parts[3]
-      group.means = colMeans(set$points[set$points[[parts[2]]] == parts[3],])
-
-      x = ena.plot.group(x, points = group.means, labels = label, ...)
+    if (parts[2] %in% colnames(set$line.weights)) {
+      label <- parts[3]
+      group.rows <- set$points[set$points[[parts[2]]] == parts[3], ]
+      if(nrow(group.rows) > 0) {
+        group.means <- colMeans(group.rows)
+      
+        x <- ena.plot.group(x, points = group.means, labels = label, ...)
+      } else {
+        warning("No points in the group")
+      } 
     } else {
       warning("Unable to plot group")
     }
   }
 
-  x
+  return(x)
 }
 
 #' Add a network to an ENA plot
@@ -168,44 +180,57 @@ add_group <- function(x, wh = NULL, ...) {
 #' @return ena.plot.object
 #' @export
 add_network <- function(x, wh = NULL, ..., with.mean = F) {
-  set = x$enaset
-  wh.clean = substitute(wh)
-  args = list(...)
+  set <- x$enaset
+  wh.clean <- substitute(wh)
+  arg_list <- list(...)
 
   if(is.null(wh.clean)) { #, "ena.points")) {
-    x = ena.plot.network(x, network = colMeans(x$enaset$line.weights), points = x$enaset$rotation$nodes[,1:2] ,...)
-    if(with.mean) {
-      x = add_group(x, ...)
+    x <- ena.plot.network(
+      x,
+      network = colMeans(x$enaset$line.weights),
+      points = x$enaset$rotation$nodes[, 1:2],
+      ...
+    )
+
+    if (with.mean) {
+      x <- add_group(x, points = set$points, ...)
     }
   } else {
-    parts = as.character(wh.clean)
-    if(is.call(wh.clean[[2]])) {
-      means = sapply(c(wh.clean[[2]], wh.clean[[3]]), function(y) {
-        parts = as.character(y)
+    parts <- as.character(wh.clean)
 
-        if(with.mean)
-          x = add_group(x, y, colors = default.colors[length(attr(x, "means"))+1], ...)
-
-        colMeans(set$line.weights[set$line.weights[[parts[2]]] == parts[3],])
-      })
-
-      group.means = means[,1] - means[,2]
-    } else {
-
-      if(parts[2] %in% colnames(set$line.weights)) {
-        group.means = colMeans(set$line.weights[set$line.weights[[parts[2]]] == parts[3],])
+    if (length(wh.clean) > 1 && is.call(wh.clean[[2]])) {
+      means <- sapply(c(wh.clean[[2]], wh.clean[[3]]), function(y) {
+        parts <- as.character(y)
 
         if(with.mean) {
-          x = add_group(x, wh.clean, ...)
+          x <- add_group(x, y,
+                colors = default.colors[length(attr(x, "means")) + 1], ...)
+        }
+
+        colMeans(set$line.weights[set$line.weights[[parts[2]]] == parts[3], ])
+      })
+
+      group.means <- means[, 1] - means[, 2]
+    } else {
+      if (parts[2] %in% colnames(set$line.weights)) {
+        group.means <- colMeans(
+          set$line.weights[set$line.weights[[parts[2]]] == parts[3], ]
+        )
+
+        if (with.mean) {
+          x <- add_group(x, wh.clean, ...)
         }
       } else {
-        group.means = eval(wh.clean)
-        if(with.mean) warning("Not able to determine mean automatically")
+        wgts <- get(as.character(wh.clean), envir = parent.frame())
+        group.means <- colMeans(wgts)
+        if (with.mean) warning("Not able to determine mean automatically")
       }
     }
 
-    x = ena.plot.network(x, network = group.means, points = as.matrix(x$enaset$rotation$nodes)[,1:2], ...)
+    x <- ena.plot.network(x,
+          network = group.means,
+          points = as.matrix(x$enaset$rotation$nodes)[, 1:2], ...)
   }
 
-  x
+  return(x)
 }

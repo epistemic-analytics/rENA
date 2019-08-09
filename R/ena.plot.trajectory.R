@@ -122,8 +122,8 @@ ena.plot.trajectory = function(
   # if(is.logical(by)) {
   # } else {}
   if(!is.null(by)) {
-    if(is.character(by))
-      by = as.factor(by)
+    # if(is.character(by))
+    #   by = as.factor(by)
 
     dfDT.trajs = tbl[,{ data.table::data.table(lines = list(.SD))  }, by=by]
   } else {
@@ -170,6 +170,10 @@ ena.plot.trajectory = function(
       visible = ifelse(default.hidden, "legendonly", T)
     );
   }
+
+  enaplot$plotted$trajectories[[
+    length(enaplot$plotted$trajectories) + 1
+  ]] = dfDT.trajs
 
   return(enaplot);
 }

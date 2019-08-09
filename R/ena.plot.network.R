@@ -277,8 +277,10 @@ ena.plot.network = function(
     hoverinfo = 'none'
   );
 
-  if(length(network.edges.shapes) > 0 ) {
-    for(n in 1:length(network.edges.shapes)) {
+  if (length(network.edges.shapes) > 0 ) {
+    enaplot$plotted$networks[[length(enaplot$plotted$networks) + 1]] <- network.edges.shapes
+
+    for (n in 1:length(network.edges.shapes)) {
       e = network.edges.shapes[[n]];
 
       name = NULL;

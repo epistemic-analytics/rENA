@@ -214,6 +214,8 @@ ena.plot.points = function(
       )
     }
 
+    enaplot$plotted$points[[length(enaplot$plotted$points) + 1]] <- points.layout
+
     if(!is.null(box.values)) {
       boxv = data.frame(
         X1 = c(box.values[1,1], box.values[2,1], box.values[2,1], box.values[1,1] ,box.values[1,1]),

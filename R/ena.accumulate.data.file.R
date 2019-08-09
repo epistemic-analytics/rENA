@@ -64,9 +64,8 @@ ena.accumulate.data.file <- function(
   as.list = T,
   ...
 ) {
-  #print(file);
   if(is.null(file) || is.null(units.by) || is.null(conversations.by) || is.null(codes)) {
-    print("ACCUMULATION FROM FILE REQUIRES: file, units.by, conversations.by, and codes");
+    stop("ACCUMULATION FROM FILE REQUIRES: file, units.by, conversations.by, and codes");
   }
 
   units = NULL;    #will be populated once csv is read
