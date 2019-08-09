@@ -85,7 +85,7 @@ ena.set <- function(x) {
     adjacency.key = as.data.table(x$enadata$adjacency.matrix),
     codes = x$enadata$codes
   )
-  class(newset$rotation) = c("ena.rotation.set", class(newset$rotation))
+  class(newset$rotation) = c("ena.rotation.matrix", class(newset$rotation))
 
   for(i in seq(ncol(newset$rotation$adjacency.key)))
     set(newset$rotation$adjacency.key, j = i, value = as.ena.codes(newset$rotation$adjacency.key[[i]]))

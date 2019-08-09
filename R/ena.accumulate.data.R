@@ -50,68 +50,61 @@
 ##
 
 ena.accumulate.data <- function(
-
-  ##### NOTE: units, conversations, codes, and metadata must be data frames with the same number of rows
-  units = NULL,   # data frame containing units
-  conversation = NULL,    # df containing conversation lines
-  codes = NULL,   # df containing codes
-  metadata = NULL,   #optional - df containing metadata
-  model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),   #use match arg and list?
+  units = NULL,
+  conversation = NULL,
+  codes = NULL,
+  metadata = NULL,
+  model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),
   weight.by = "binary",
   window = c("MovingStanzaWindow", "Conversation"),
   window.size.back = 1,
   window.size.forward = 0,
-  mask = NULL, #matrix (default - upper triangle of 1's)
+  mask = NULL,
   include.meta = T,
   as.list = T,
   ...
 ) {
-
-  if(is.null(units) || is.null(conversation) || is.null(codes)) {
-    print("ACCUMULATION FROM DATA FRAMES REQUIRES: units, conversation, and codes");
+  if (is.null(units) || is.null(conversation) || is.null(codes)) {
+    stop("Accumulation requires: units, conversation, and codes");
   }
-  if(nrow(units) != nrow(conversation) || nrow(conversation) != nrow(codes)) {
-    print("Data Frames do not have the same number of rows!");
-    ### throw error
+  if (nrow(units) != nrow(conversation) || nrow(conversation) != nrow(codes)) {
+    stop("Data Frames do not have the same number of rows");
   }
 
-  ## DOOPT - inefficient cbinds
   df <- cbind(units, conversation);
   df <- cbind(df, codes);
 
-  metadata = data.table::as.data.table(metadata)
-  if(!is.null(metadata) && nrow(metadata) == nrow(df)) {
+  metadata <- data.table::as.data.table(metadata)
+  if (!is.null(metadata) && nrow(metadata) == nrow(df)) {
     df <- cbind(df, metadata);
   }
 
-  model = match.arg(model)
-  window = match.arg(window)
+  model <- match.arg(model)
+  window <- match.arg(window)
 
-  units.by = colnames(units);   #accumulating by all unit columns provided in units df
-  conversations.by = colnames(conversation); #accumulating by all columns provided in conversation df
-  if(identical(window, "Conversation")) {
-    conversations.by = c(conversations.by, units.by);
-    window.size.back = window;
+  units.by <- colnames(units);
+  conversations.by <- colnames(conversation);
+  if (identical(window, "Conversation")) {
+    conversations.by <- c(conversations.by, units.by);
+    window.size.back <- window;
   } else if (identical(window, "MovingStanzaWindow")) {
-    # infCheck = c("Inf", "Infinite")
-    # if(any(window.size.back %in% infCheck)) {
-    if(grepl(pattern = "inf",x = window.size.back, ignore.case=T)) {
-      window.size.back = Inf
+    if( grepl(pattern = "inf", x = window.size.back, ignore.case = T)) {
+      window.size.back <- Inf
     }
     # if(any(window.size.forward %in% infCheck)) {
-    if(grepl(pattern = "inf",x = window.size.forward, ignore.case=T)) {
-      window.size.forward = Inf
+    if(grepl(pattern = "inf", x = window.size.forward, ignore.case = T)) {
+      window.size.forward <- Inf
     }
   }
 
-  units.used = NULL;   # when accumulating from data frames, all units are used
+  units.used <- NULL;
 
-  data = ENAdata$new(
+  data <- ENAdata$new(
     file = df,
-    units = units,    #data frame of unit columns (including values)
+    units = units,
     units.used = units.used,
-    units.by = units.by,    # KEEP- automatically uses all units for accumulation from separate data frames
-    conversations.by = conversations.by,    #column names of conversation df, automatically accumulating by all cols for accum from dfs
+    units.by = units.by,
+    conversations.by = conversations.by,
     codes = codes,
     window.size.back = window.size.back,
     window.size.forward = window.size.forward,
@@ -123,24 +116,14 @@ ena.accumulate.data <- function(
   );
   data$process();
 
-  data$function.call = sys.call();
-
-  # output = match.arg(output);
-  # if(output == "json") {
-  #   output.class = get(class(data))
-  #
-  #   if(is.null(output.fields)) {
-  #     output.fields = names(output.class$public_fields)
-  #   }
-  #
-  #   r6.to.json(data, o.class = output.class, o.fields = output.fields)
-  # }
-  #else
+  data$function.call <- sys.call();
 
   if(as.list) {
-    data = ena.set(data);
+    data <- ena.set(data);
   } else {
-    warning("Usage of R6 data objects is deprecated and may be removed entirely in a future version. Consider upgrading to the new data object.")
+    warning("Usage of R6 data objects is deprecated and may be removed " +
+      "entirely in a future version. Consider upgrading to the new data " +
+      " object.")
   }
   data
 }

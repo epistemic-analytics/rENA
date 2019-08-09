@@ -48,12 +48,14 @@
 ##
 ena.accumulate.data.file <- function(
   file,
-  units.used = NULL,   #subset of actual unit values to use for accumulation - all used if not specified
+  units.used = NULL,
   conversations.used = NULL,
-  units.by,    #unit columns to merge on to create ENA_UNIT --- MUST BE SUPPLIED
-  conversations.by,    #conversation columns to accumulate by --- MUST BE SUPPLIED
+  units.by,
+  conversations.by,
   codes = NULL,
-  model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),
+  model = c("EndPoint",
+            "AccumulatedTrajectory", 
+            "SeparateTrajectory"),
   window = c("Moving Stanza", "Conversation"),
   window.size.back = 1,
   window.size.forward = 0,
@@ -64,15 +66,18 @@ ena.accumulate.data.file <- function(
   as.list = T,
   ...
 ) {
-  if(is.null(file) || is.null(units.by) || is.null(conversations.by) || is.null(codes)) {
-    stop("ACCUMULATION FROM FILE REQUIRES: file, units.by, conversations.by, and codes");
+  if(is.null(file) ||
+     is.null(units.by) ||
+     is.null(conversations.by) || is.null(codes)
+  ) {
+    stop("Accumulation: file, units.by, conversations.by, and codes")
   }
 
-  units = NULL;    #will be populated once csv is read
+  units <- NULL;
+  model <- match.arg(model);
+  window <- match.arg(window);
 
-  model = match.arg(model);
-  window = match.arg(window);
-  if(identical(window, "Conversation")) {
+  if (identical(window, "Conversation")) {
     conversations.by = c(conversations.by, units.by);
     window.size.back = window;
   }

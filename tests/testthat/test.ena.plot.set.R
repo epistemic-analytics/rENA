@@ -86,8 +86,10 @@ test_that("Plot a group", {
 
   testthat::expect_equal(nrow(newplot$plotted$points[[1]]), 1)
 
-  noplot = testthat::expect_warning(plot(newset) %>% add_group(Condition$NoGame))
-  noplot = testthat::expect_warning(plot(newset) %>% add_group(Condition2$FirstGame))
+  noplot = testthat::expect_warning(plot(newset) %>%
+                          add_group(Condition$NoGame))
+  noplot = testthat::expect_warning(plot(newset) %>%
+                          add_group(Condition2$FirstGame))
 })
 
 test_that("Plot a network", {
