@@ -79,7 +79,7 @@ test:r-release:
   before_script:
     - Rscript -e 'install.packages(c("covr"), repos="http://cran.rstudio.com")'
   script:
-    - Rscript -e "covr::codecov()"
+    - Rscript -e "covr::coveralls()"
   dependencies:
     - check:r-release
 
