@@ -80,6 +80,12 @@ test:r-release:
     - Rscript -e 'install.packages(c("covr"), repos="http://cran.rstudio.com")'
   script:
     - Rscript -e "covr::coveralls()"
+    #- cov <- covr::package_coverage( type = "tests" )
+    #- rep <- covr::report(cov, file = "inst/coverage/rENA.html")
+  artifacts:
+    paths:
+      - inst/coverage/
+    expire_in: 10 years
   dependencies:
     - check:r-release
 
