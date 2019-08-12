@@ -90,7 +90,7 @@ test:r-release:
     STRINGTOSIGN: "PUT\r\n\r\ntext/json\r\nMon, 12 Aug 2019 11:41:13 GMT\r\nqe-package-coverage/inst/coverage/covr.json"
     #SIGNATURE=`echo -en ${STRINGTOSIGN} | openssl sha1 -hmac ${AWS_S3_SECRET} -binary | base64`
   before_script:
-    - Rscript -e 'install.packages(c("covr"), repos="http://cran.rstudio.com")'
+    - Rscript -e 'install.packages(c("covr", "DT"), repos="http://cran.rstudio.com")'
     - Rscript -e 'install.packages(c("aws.s3","aws.signature"), repos="http://cran.rstudio.com")'
   script:
     # - 'RScript -e "cov <- covr::package_coverage( type = "tests" )
