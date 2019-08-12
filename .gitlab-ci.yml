@@ -79,8 +79,8 @@ test:r-release:
   stage: test
   image: $REG_URL/release:current
   variables: 
-    FILE: "$PKG/inst/coverage/covr.json"
-    FILE2: "${PKG}/inst/coverage/covr.json"
+    FILE: "/$PKG/inst/coverage/covr.json"
+    FILE2: "/${PKG}/inst/coverage/covr.json"
     S3BUCKET: "qe-package-coverage"
   before_script:
     - Rscript -e 'install.packages(c("covr"), repos="http://cran.rstudio.com")'
