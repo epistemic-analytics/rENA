@@ -60,6 +60,8 @@ check:r-oldrelease:
   <<: *check_template
 check:r-release:
   image: $REG_URL/release:current
+  only:
+    - master
   <<: *check_template
 check:r-winbuilder:
   stage: checkWindows
@@ -83,7 +85,7 @@ test:r-release:
     AWSREGION: "s3-us-west-2"
     CONTENTTYPE: "text/json"
     RESOURCE: "${S3BUCKET}/${FILE}"
-    DATEVALUE: "Mon, 12 Aug 2019 12:30:13 GMT"
+    DATEVALUE: "Mon, 12 Aug 2019 12:37:13 GMT"
     STRINGTOSIGN: "PUT\n\n${CONTENTTYPE}\n${DATEVALUE}\n${RESOURCE}"
     #SIGNATURE=`echo -en ${STRINGTOSIGN} | openssl sha1 -hmac ${AWS_S3_SECRET} -binary | base64`
   before_script:
