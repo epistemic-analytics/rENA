@@ -80,11 +80,14 @@ test:r-release:
   image: $REG_URL/release:current
   variables: 
     FILE: "$PKG/inst/coverage/covr.json"
+    FILE2: "${PKG}/inst/coverage/covr.json"
     S3BUCKET: "qe-package-coverage"
   before_script:
     - Rscript -e 'install.packages(c("covr"), repos="http://cran.rstudio.com")'
     - Rscript -e 'install.packages(c("aws.s3","aws.signature"), repos="http://cran.rstudio.com")'
   script:
+    - echo "$FILE"
+    - echo "$FILE2"
     #- Rscript -e "covr::coveralls()"
     #- cov <- covr::package_coverage( type = "tests" )
     #- rep <- covr::report(cov, file = "inst/coverage/rENA.html")
