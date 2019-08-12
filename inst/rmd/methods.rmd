@@ -10,7 +10,7 @@ output: rENA:::methods_report
 `r codes = enaset$rotation$codes`
 `r wb = enaset[["_function.params"]]$window.size.back`
 `r wgt = enaset[["_function.params"]]$weight.by`
-`r normed = identical(enaset[["_function.params"]]$norm.by, rENA:::sphere_norm_c)`
+`r normed = identical(enaset[["_function.params"]]$norm.by, rENA:::fun_sphere_norm)`
 `r corr = ena.correlations(enaset)`
 `r corrRnd = apply(apply(matrix(corr), 1, unlist), c(1,2), round, sig.dig)`
 `r if(theory == T) paste0("ENA Theory")`
