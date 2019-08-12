@@ -80,6 +80,7 @@ test:r-release:
   image: $REG_URL/release:current
   variables: 
     FILE: "inst/coverage/covr.json"
+    FILE_HTML: "inst/coverage/rENA.html"
     S3BUCKET: "qe-package-coverage"
     S3STORAGETYPE: "STANDARD"
     AWSREGION: "s3-us-west-2"
@@ -92,13 +93,10 @@ test:r-release:
     - Rscript -e 'install.packages(c("covr"), repos="http://cran.rstudio.com")'
     - Rscript -e 'install.packages(c("aws.s3","aws.signature"), repos="http://cran.rstudio.com")'
   script:
-    #- 'echo ${STRINGTOSIGN}'
-    #- 'echo ${AWS_S3_SECRET}'
-    #- 'echo -en ${STRINGTOSIGN} | openssl sha1 -hmac ${AWS_S3_SECRET} -binary | base64'
-    #- 'curl -X PUT -T "${FILE}" -H "Host: ${S3BUCKET}.s3.amazonaws.com"  -H "Date: ${DATEVALUE}" -H "Content-Type: ${CONTENTTYPE}" -H "Authorization: AWS ${AWS_S3_KEY}:`echo -en ${STRINGTOSIGN} | openssl sha1 -hmac ${AWS_S3_SECRET} -binary | base64`" https://${S3BUCKET}.s3.amazonaws.com/${FILE}'
-    - 'Rscript -e "aws.s3::put_object(bucket = \"${S3BUCKET}\", file = \"${FILE}\", object = \"rENA/covr.json\")"'
+    # - 'RScript -e "cov <- covr::package_coverage( type = "tests" )
+    - 'Rscript -e "covr::report(file = \"${FILE_HTML}\")"'
+    - 'Rscript -e "aws.s3::put_object(bucket = \"${S3BUCKET}\", file = \"${FILE_HTML}\", object = \"rENA/coverage.html\")"'
     #- Rscript -e "covr::coveralls()"
-    #- cov <- covr::package_coverage( type = "tests" )
     #- rep <- covr::report(cov, file = "inst/coverage/rENA.html")
   artifacts:
     paths:
