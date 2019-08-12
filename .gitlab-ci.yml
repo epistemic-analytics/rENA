@@ -96,7 +96,7 @@ test:r-release:
     #- 'echo ${AWS_S3_SECRET}'
     #- 'echo -en ${STRINGTOSIGN} | openssl sha1 -hmac ${AWS_S3_SECRET} -binary | base64'
     #- 'curl -X PUT -T "${FILE}" -H "Host: ${S3BUCKET}.s3.amazonaws.com"  -H "Date: ${DATEVALUE}" -H "Content-Type: ${CONTENTTYPE}" -H "Authorization: AWS ${AWS_S3_KEY}:`echo -en ${STRINGTOSIGN} | openssl sha1 -hmac ${AWS_S3_SECRET} -binary | base64`" https://${S3BUCKET}.s3.amazonaws.com/${FILE}'
-    - 'Rscript -e "getwd()"'
+    - 'Rscript -e "aws.s3::put_object(bucket = \"${S3BUCKET}\", file = \"${FILE}\")"'
     #- Rscript -e "covr::coveralls()"
     #- cov <- covr::package_coverage( type = "tests" )
     #- rep <- covr::report(cov, file = "inst/coverage/rENA.html")
