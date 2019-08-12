@@ -14,5 +14,3 @@ src/symbols\.rds
 inst/doc
 doc
 Meta
-
-inst/coverage/lib/
