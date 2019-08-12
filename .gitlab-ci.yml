@@ -84,9 +84,9 @@ test:r-release:
     S3STORAGETYPE: "STANDARD"
     AWSREGION: "s3-us-west-2"
     CONTENTTYPE: "text/json"
-    RESOURCE: "${S3BUCKET}/${FILE}"
+    RESOURCE: "qe-package-coverage/inst/coverage/covr.json"
     DATEVALUE: "Mon, 12 Aug 2019 11:41:13 GMT"
-    STRINGTOSIGN: "PUT\n\n${CONTENTTYPE}\n${DATEVALUE}\n${RESOURCE}"
+    STRINGTOSIGN: "PUT\n\ntext/json\nMon, 12 Aug 2019 11:41:13 GMT\nqe-package-coverage/inst/coverage/covr.json"
     #SIGNATURE=`echo -en ${STRINGTOSIGN} | openssl sha1 -hmac ${AWS_S3_SECRET} -binary | base64`
   before_script:
     - Rscript -e 'install.packages(c("covr"), repos="http://cran.rstudio.com")'
