@@ -77,19 +77,19 @@ test:r-release:
   stage: test
   image: $REG_URL/release:current
   variables: 
-    FILE="inst/coverage/covr.json"
-    S3BUCKET="qe-package-coverage"
-    S3STORAGETYPE="STANDARD"
-    AWSREGION="s3-us-west-2"
-    CONTENTTYPE="text/json"
-    RESOURCE="${S3BUCKET}/${FILE}"
-    DATEVALUE=`date -R`
-    STRINGTOSIGN="PUT\n\n${CONTENTTYPE}\n${DATEVALUE}\n${RESOURCE}"
+    FILE: "inst/coverage/covr.json"
+    S3BUCKET: "qe-package-coverage"
+    S3STORAGETYPE: "STANDARD"
+    AWSREGION: "s3-us-west-2"
+    CONTENTTYPE: "text/json"
+    RESOURCE: "${S3BUCKET}/${FILE}"
+    DATEVALUE: "Mon, 12 Aug 2019 12:30:13 GMT"
+    STRINGTOSIGN: "PUT\n\n${CONTENTTYPE}\n${DATEVALUE}\n${RESOURCE}"
+    #SIGNATURE=`echo -en ${STRINGTOSIGN} | openssl sha1 -hmac ${AWS_S3_SECRET} -binary | base64`
   before_script:
     - Rscript -e 'install.packages(c("covr"), repos="http://cran.rstudio.com")'
-    - SIGNATURE=`echo -en ${STRINGTOSIGN} | openssl sha1 -hmac ${AWS_S3_SECRET} -binary | base64`
   script:
-    - curl -X PUT -T "${FILE}" -H "Host: ${S3BUCKET}.s3.amazonaws.com"  -H "Date: ${DATEVALUE}" -H "Content-Type: ${CONTENTTYPE}" -H "Authorization: AWS ${AWS_S3_KEY}:${SIGNATURE}" https://${S3BUCKET}.s3.amazonaws.com/${FILE}
+    - 'curl -X PUT -T "${FILE}" -H "Host: ${S3BUCKET}.s3.amazonaws.com"  -H "Date: ${DATEVALUE}" -H "Content-Type: ${CONTENTTYPE}" -H "Authorization: AWS ${AWS_S3_KEY}:`echo -en ${STRINGTOSIGN} | openssl sha1 -hmac ${AWS_S3_SECRET} -binary | base64`" https://${S3BUCKET}.s3.amazonaws.com/${FILE}'
     - Rscript -e "getwd()"
     #- Rscript -e "covr::coveralls()"
     #- cov <- covr::package_coverage( type = "tests" )
