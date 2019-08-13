@@ -95,8 +95,8 @@ test:r-release:
   script:
     #- 'RScript -e "cov <- covr::package_coverage( type = "tests" )
     #- 'Rscript -e "covr::report(file = \"${FILE_HTML}\")"'
-    - 'Rscript -e "aws.s3::put_object(bucket = \"${S3BUCKET}\", file = \"${FILE_HTML}\", object = \"rENA/coverage.html\", acl = \"public\")"'
-    - 'Rscript -e "setwd(\"inst/coverage\"); lapply(dir(\".\", full.names = TRUE, recursive = TRUE), function(filename) { aws.s3::put_object(file = filename, object = paste0(\"rENA/\",filename), bucket = \"${S3BUCKET}\", acl = \"public-read\")
+    - 'Rscript -e "aws.s3::put_object(bucket = \"${S3BUCKET}\", file = \"${FILE_HTML}\", object = \"rENA/coverage.html\", acl = \"public-read\")"'
+    - 'Rscript -e "setwd(\"inst/coverage\"); res <- lapply(dir(\".\", full.names = TRUE, recursive = TRUE), function(filename) { aws.s3::put_object(file = filename, object = paste0(\"rENA/\",filename), bucket = \"${S3BUCKET}\", acl = \"public-read\")
 })"'
   artifacts:
     paths:
