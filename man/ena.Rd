@@ -2,64 +2,82 @@
 % Please edit documentation in R/ena.R
 \name{ena}
 \alias{ena}
-\title{TBD}
+\title{Generate ENA Set}
 \usage{
 ena(data, codes, units, conversation, metadata = NULL,
   model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),
   weight.by = "binary", window = c("MovingStanzaWindow",
   "Conversation"), window.size.back = 1, window.size.forward = 0,
-  mask = NULL, include.meta = TRUE, groupCol = NULL, group1 = NULL,
-  group2 = NULL, showPlots = TRUE, ...)
+  mask = NULL, include.meta = TRUE, groupVar = NULL, groups = NULL,
+  runTest = FALSE, testType = c("nonparametric", "parametric"),
+  points = FALSE, mean = FALSE, network = TRUE,
+  networkMultiplier = 1, subtractionMultiplier = 1, unit = NULL,
+  print.plots = F, include.plots = T, ...)
 }
 \arguments{
-\item{data}{A data frame}
+\item{data}{[TBD]}
 
-\item{codes}{Column names of data by which codes will be identified}
+\item{codes}{[TBD]}
 
-\item{units}{Column names of data by which units will be identified}
+\item{units}{[TBD]}
 
-\item{conversation}{Column names of data by which conversations will be identified}
+\item{conversation}{[TBD]}
 
-\item{metadata}{(optional) Column names of data identifying metadata to be associated with each unit in the data}
+\item{metadata}{[TBD]}
 
-\item{model}{A character, choices: EndPoint (or E), AccumulatedTrajectory (or A), or SeparateTrajectory (or S); default: EndPoint. Determines the ENA model to be constructed}
+\item{model}{[TBD]}
 
-\item{weight.by}{(optional) A function to apply to values after accumulation}
+\item{weight.by}{[TBD]}
 
-\item{window}{A character, choices are Conversation (or C), MovingStanzaWindow (MSW, MS); default MovingStanzaWindow. Determines how stanzas are constructed, which defines how co-occurrences are modeled}
+\item{window}{[TBD]}
 
-\item{window.size.back}{A positive integer, Inf, or character (INF or Infinite), default: 1. Determines, for each line in the data frame, the number of previous lines in a conversation to include in the stanza window, which defines how co-occurrences are modeled}
+\item{window.size.back}{[TBD]}
 
-\item{window.size.forward}{(optional) A positive integer, Inf, or character (INF or Infinite), default: 0. Determines, for each line in the data frame, the number of subsequent lines in a conversation to include in the stanza window, which defines how co-occurrences are modeled}
+\item{window.size.forward}{[TBD]}
 
-\item{mask}{(optional) A binary matrix of size ncol(codes) x ncol(codes). 0s in the mask matrix row i column j indicates that co-occurrence will not be modeled between code i and code j}
+\item{mask}{[TBD]}
 
-\item{include.meta}{Locigal indicating if unit metadata should be attached to the resulting ENAdata object, default is TRUE}
+\item{include.meta}{[TBD]}
 
-\item{groupCol}{(optional) Column name of data that includes values you wish to group and plot units by. Default is to plot a mean network for all units.}
+\item{groupVar}{[TBD]}
 
-\item{group1}{(optional) Value of groupCol that you wish to group and plot units by}
+\item{groups}{[TBD]}
 
-\item{group2}{(optional) Value of groupCol that you wish to group and plot units by}
+\item{runTest}{[TBD]}
 
-\item{showPlots}{Logical indicating if the function should show plots in the Viewer pane immediately after running. Default is TRUE}
+\item{testType}{[TBD]}
 
-\item{...}{additional parameters addressed in inner function}
+\item{points}{[TBD]}
+
+\item{mean}{[TBD]}
+
+\item{network}{[TBD]}
+
+\item{networkMultiplier}{[TBD]}
+
+\item{subtractionMultiplier}{[TBD]}
+
+\item{unit}{[TBD]}
+
+\item{print.plots}{[TBD]}
+
+\item{include.plots}{[TBD]}
+
+\item{...}{[TBD]}
 }
 \value{
-\code{\link{ENAset}} class object that can be further processed for analysis or plotting, The \code{\link{ENAplot}}s requested.
+ena.set object
 }
 \description{
-TBD
+Generates an ENA model by constructing a dimensional reduction
+of adjacency (co-occurrence) vectors as defined by the supplied
+conversations, units, and codes
 }
 \details{
-TBD
+This function generates an ena.set object given a data.frame, units,
+conversations, and codes. After accumulating the adjacency (co-occurrence)
+vectors, computes a dimensional reduction (projection), and calculates node
+positions in the projected ENA space. Returns location of the units in the
+projected space, as well as locations for node positions, and normalized
+adjacency (co-occurrence) vectors to construct network graphs
 }
-\seealso{
-\code{\link{ENAdata}}, \code{\link{ena.make.set}}, \code{\link{ena.accumulate.data}}, \code{\link{ena.plot.group}}, \code{\link{ena.plot.network}}, \code{\link{ena.plot}}
-}
-\keyword{accumulate,}
-\keyword{creation,}
-\keyword{data,}
-\keyword{plotting}
-\keyword{set}

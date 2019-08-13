@@ -54,32 +54,30 @@
 #'   enadata = accum,
 #'   rotation.by = ena.rotate.by.mean,
 #'   rotation.params = list(
-#'       accum$metadata$Condition=="FirstGame",
-#'       accum$metadata$Condition=="SecondGame"
+#'     accum$meta.data$Condition=="FirstGame",
+#'     accum$meta.data$Condition=="SecondGame"
 #'   )
 #' )
 #'
 #' plot = ena.plot(set)
 #'
-#' unitNames = set$enadata$units
-#'
 #' ### Subset rotated points and plot Condition 1 Group Mean
-#' first.game = unitNames$Condition == "FirstGame"
-#' first.game.points = set$points.rotated[first.game,]
+#' as.matrix(set$points$Condition$FirstGame)
+#'
+#' first.game.points = as.matrix(set$points$Condition$FirstGame)
 #' plot = ena.plot.group(plot, first.game.points, labels = "FirstGame",
 #'     colors = "red", confidence.interval = "box")
 #'
 #' ### Subset rotated points and plot Condition 2 Group Mean
-#' second.game = unitNames$Condition == "SecondGame"
-#' second.game.points = set$points.rotated[second.game,]
+#' second.game.points = as.matrix(set$points$Condition$SecondGame)
 #' plot = ena.plot.group(plot, second.game.points, labels = "SecondGame",
 #'     colors  = "blue", confidence.interval = "box")
 #'
 #' ### get mean network plots
-#' first.game.lineweights = set$line.weights[first.game,]
+#' first.game.lineweights = as.matrix(set$line.weights$Condition$FirstGame)
 #' first.game.mean = colMeans(first.game.lineweights)
 #'
-#' second.game.lineweights = set$line.weights[second.game,]
+#' second.game.lineweights = as.matrix(set$line.weights$Condition$SecondGame)
 #' second.game.mean = colMeans(second.game.lineweights)
 #'
 #' subtracted.network = first.game.mean - second.game.mean
@@ -91,9 +89,9 @@
 ena.plot.network = function(
   enaplot = NULL,
   network = NULL,
-  node.positions = enaplot$enaset$node.positions,
-  adjacency.key = namesToAdjacencyKey(rownames(node.positions)), #enaplot$enaset$enadata$adjacency.matrix,
-  colors = c(pos="red", "blue"),
+  node.positions = as.matrix(enaplot$enaset$rotation$nodes),
+  adjacency.key = enaplot$enaset$rotation$adjacency.key, #namesToAdjacencyKey(rownames(node.positions)), #enaplot$enaset$enadata$adjacency.matrix,
+  colors = c(pos=default.colors[1], default.colors[2]),
   edge_type = "line", #c("line", "dash", "dot"),
   show.all.nodes = T,
   threshold = c(0),
@@ -106,7 +104,7 @@ ena.plot.network = function(
 
   node.size = c(3,10),
 
-  labels = rownames(node.positions),
+  labels = enaplot$enaset$rotation$codes,
   label.offset = "middle right",
   label.font.size = enaplot$get("font.size"),
   label.font.color = enaplot$get("font.color"),
@@ -124,9 +122,10 @@ ena.plot.network = function(
   edge_type = match.arg(arg = edge_type, choices = c("line", "dash", "dot"));
 
   nodes = data.frame(node.positions);
+  colnames(nodes) = paste0("X", seq(colnames(nodes)))
   nodes$weight = rep(0, nrow(nodes))
   nodes$color = "black";
-  node.rows = rownames(node.positions) #labels; #rownames(enaplot$enaset$node.positions);
+  node.rows = enaplot$enaset$rotation$codes; #rownames(node.positions) #labels; #rownames(enaplot$enaset$node.positions);
 
   # Handle label parameters
   if(length(label.offset) == 1) {
@@ -191,7 +190,8 @@ ena.plot.network = function(
     colors.hsv[[6]] = colors.hsv[3];
     dim(colors.hsv) = c(3,2);
   }
-  mat = adjacency.key;
+
+  mat = as.matrix(adjacency.key);
   for (i in 1:length(network)) {
     v0 <- node.positions[node.rows==mat[1,i], ];
     v1 <- node.positions[node.rows==mat[2,i], ];
@@ -277,8 +277,10 @@ ena.plot.network = function(
     hoverinfo = 'none'
   );
 
-  if(length(network.edges.shapes) > 0 ) {
-    for(n in 1:length(network.edges.shapes)) {
+  if (length(network.edges.shapes) > 0 ) {
+    enaplot$plotted$networks[[length(enaplot$plotted$networks) + 1]] <- network.edges.shapes
+
+    for (n in 1:length(network.edges.shapes)) {
       e = network.edges.shapes[[n]];
 
       name = NULL;
@@ -303,5 +305,6 @@ ena.plot.network = function(
       )
     }
   }
+
   enaplot
 }

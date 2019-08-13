@@ -20,6 +20,7 @@
 #' @param label.font.color A character which determines the color of label, default: enaplot\$font.color
 #' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot\$font.family
 #' @param show.legend Logical indicating whether to show the point labels in the in legend
+#' @param legend.name Character indicating the name to show above the plot legend
 #' @param ... Additional parameters
 #'
 #' @import magrittr
@@ -45,8 +46,8 @@
 #'   enadata = accum,
 #'   rotation.by = ena.rotate.by.mean,
 #'   rotation.params = list(
-#'       accum$metadata$Condition=="FirstGame",
-#'       accum$metadata$Condition=="SecondGame"
+#'       accum$meta.data$Condition=="FirstGame",
+#'       accum$meta.data$Condition=="SecondGame"
 #'   )
 #' )
 #'
@@ -54,16 +55,12 @@
 #'
 #' unitNames = set$enadata$units
 #'
-#' ### Subset rotated points and plot Condition 1 Group Mean
-#' first.game = unitNames$Condition == "FirstGame"
-#' first.game.points = set$points.rotated[first.game,]
-#' plot = ena.plot.group(plot, first.game.points, labels = "FirstGame",
+#' ### Plot Condition 1 Group Mean
+#' plot = ena.plot.group(plot, as.matrix(set$points$Condition$FirstGame), labels = "FirstGame",
 #'     colors = "red", confidence.interval = "box")
 #'
-#' ### Subset rotated points and plot Condition 2 Group Mean
-#' second.game = unitNames$Condition == "SecondGame"
-#' second.game.points = set$points.rotated[second.game,]
-#' plot = ena.plot.group(plot, second.game.points, labels = "SecondGame",
+#' ### plot Condition 2 Group Mean
+#' plot = ena.plot.group(plot, as.matrix(set$points$Condition$SecondGame), labels = "SecondGame",
 #'     colors  = "blue", confidence.interval = "box")
 #'
 #' print(plot);
@@ -75,7 +72,7 @@ ena.plot.group <- function(
   points = NULL,
   method = "mean",
   labels = NULL,
-  colors = "black",
+  colors = default.colors[1],
   shape = c("square", "triangle-up", "diamond", "circle"),
   confidence.interval = c("none", "crosshairs", "box"),
   outlier.interval = c("none", "crosshairs", "box"),
@@ -84,6 +81,7 @@ ena.plot.group <- function(
   label.font.color = NULL,
   label.font.family = NULL,
   show.legend = T,
+  legend.name = NULL,
   ...
 ) {
   shape = match.arg(shape);
@@ -92,6 +90,8 @@ ena.plot.group <- function(
 
   if(is.null(points)) {
     stop("Points must be provided.");
+  } else if(is(points, "ena.points")) {
+    points = remove.meta.data(points)
   }
 
   ### problem if outlier and confidence intervals selected for crosshair
@@ -128,6 +128,7 @@ ena.plot.group <- function(
     }
   }
 
+  attr(enaplot, "means") <- length(attr(enaplot, "means")) + 1
   enaplot %<>% ena.plot.points(
     points = points,
     labels = labels,
@@ -142,6 +143,7 @@ ena.plot.group <- function(
     label.font.color = label.font.color,
     label.font.family = label.font.family,
     show.legend = show.legend,
+    legend.name = legend.name,
     ...
   )
   return(enaplot)

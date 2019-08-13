@@ -26,27 +26,6 @@ namespace rENA {
         }
     }
 
-    inline std::vector<std::string> merge_columns_c(DataFrame df, CharacterVector cols, std::string sep = ".") {
-        typedef SEXP(*Ptr_merge_columns_c)(SEXP,SEXP,SEXP);
-        static Ptr_merge_columns_c p_merge_columns_c = NULL;
-        if (p_merge_columns_c == NULL) {
-            validateSignature("std::vector<std::string>(*merge_columns_c)(DataFrame,CharacterVector,std::string)");
-            p_merge_columns_c = (Ptr_merge_columns_c)R_GetCCallable("rENA", "_rENA_merge_columns_c");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_merge_columns_c(Shield<SEXP>(Rcpp::wrap(df)), Shield<SEXP>(Rcpp::wrap(cols)), Shield<SEXP>(Rcpp::wrap(sep)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
-            throw Rcpp::LongjumpException(rcpp_result_gen);
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<std::vector<std::string> >(rcpp_result_gen);
-    }
-
     inline arma::mat rows_to_co_occurrences(DataFrame df, bool binary = true) {
         typedef SEXP(*Ptr_rows_to_co_occurrences)(SEXP,SEXP);
         static Ptr_rows_to_co_occurrences p_rows_to_co_occurrences = NULL;

@@ -25,15 +25,17 @@ ENAplot = R6::R6Class("ENAplot",
 
         title = "ENA Plot",
 
-        dimension.labels = c("X","Y"),
+        dimension.labels = c("",""),
 
         font.size = 14,
         font.color = "#000000",
         font.family = "Arial",
-        scale.to = c("network", "points"),
+        scale.to = "network",
         ...
       ) {
-        scale.to = match.arg(scale.to);
+        code.cols = !colnames(enaset$line.weights) %in% colnames(enaset$meta.data)
+
+        # scale.to = match.arg(scale.to);
 
         args = list(...);
         if(!is.null(args$multiplier)) {
@@ -56,21 +58,36 @@ ENAplot = R6::R6Class("ENAplot",
           type ="scatter"
         );
 
+        if (is.list(scale.to)) {
+          max.axis = max(abs(as.matrix(enaset$points)))*1.2
+          if(is.null(scale.to$x)) {
+            axis.range.x = c(-max.axis, max.axis)
+          } else {
+            axis.range.x = scale.to$x
+          }
+          if(is.null(scale.to$y)) {
+            axis.range.y = c(-max.axis, max.axis)
+          } else {
+            axis.range.y = scale.to$y
+          }
+        } else {
+          if(scale.to == "points") {
+            max.axis = max(abs(as.matrix(enaset$points)))*1.2
+          } else if (is.numeric(scale.to)) {
+            max.axis = tail(scale.to, 1)
+          } else {
+            max.axis = max(abs(as.matrix(enaset$rotation$nodes)))*1.2;
+          }
+          axis.range.x = axis.range.y = c(-max.axis, max.axis)
+        }
 
-        # browser()
-        # max.axis = max(abs(points))*1.2;
-        max.axis = max(abs(enaset$node.positions))*1.2;
-        if(scale.to == "points") {
-          max.axis = max(abs(enaset$points.rotated))*1.2;
-        };
-        # network.graph.axis <- list(title = "", showgrid = T, showticklabels = T, zeroline = T, range=c(-max.axis,max.axis));
         graph.axis <- list(
           titlefont = private$font,
           showgrid = F,
           zeroline = T,
           showticklabels = T,
-          showgrid = T,
-          range=c(-max.axis,max.axis)
+          showgrid = T
+          # range=c(-max.axis,max.axis)
         );
         if(!is.null(args$ticks)) {
           graph.axis$showticklabels = T;
@@ -80,12 +97,10 @@ ENAplot = R6::R6Class("ENAplot",
         }
         self$axes$x = graph.axis
         self$axes$x$title = dimension.labels[1];
+        self$axes$x$range = axis.range.x
         self$axes$y = graph.axis
         self$axes$y$title = dimension.labels[2];
-
-        # self$axes$max = max.axis;
-        # self$axes$objects$x = graph.axis.x;
-        # self$axes$objects$y = graph.axis.y;
+        self$axes$y$range = axis.range.y
 
         self$plot = plotly::layout(
           self$plot,
@@ -110,6 +125,10 @@ ENAplot = R6::R6Class("ENAplot",
       plot = NULL,
       axes = list(
         x = NULL, y = NULL
+      ),
+      plotted = list(
+        points = list(), networks = list(),
+        trajectories = list()
       ),
     ####
     ## END: Public Properties
