@@ -137,7 +137,6 @@ release:cran:
       - develop
     changes:
       - "inst/docker/rENA-$FILE"
-      - ".gitlab-ci.yml"
 docker:release:
   variables:
     TAG: "release"
