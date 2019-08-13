@@ -320,102 +320,35 @@ test_that("Test accumulation with infinite windows", {
 })
 
 test_that("Test function params", {
-  fake_codes_len <- 10;
+  fake_codes_len = 10;
   fake.codes <- function(x) sample(0:1,fake_codes_len, replace=T)
 
   codes = paste("Codes",LETTERS[1:fake_codes_len],sep="-");
 
-  df.units <- data.frame(
-    Name = rep(c("J", "Z"), 6)
+  ###NOTE - commented out values not accumulated by in test below (from file)
+  df.units = data.frame(
+    Name=rep(c("J","Z"), 6)
+    #Group=c(1,1,1,1,2,2,2,3,3,3,4,4)
   );
-  df.conversation <- data.frame(
-    Day <- c(1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2)
-  )
-  df.codes <- data.frame(
-    c1 = c(1 ,1 ,1 ,1, 1, 0, 0, 1, 1, 0, 0, 1),
-    c2 = c(1 ,1 ,1 ,0, 0, 1, 0, 1, 0, 1, 0, 0),
-    c3 = c(0 ,0 ,1 ,0, 1, 0, 1, 0, 0, 0, 1, 0)
-  )
-  df.whole <- data.frame(
-    Name = c("J", "Z"),
-    Day = c(1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2),
-    c1 = c(1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1),
-    c2 = c(1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0),
-    c3 = c(0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0),
-    c4 = c(1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0)
-  )
+  df.conversation = data.frame(
+    Day=c(1,1,1,1,1,1,2,2,2,2,2,2)#,
+    #ActivityNumber=c(1,1,1,1,2,2,2,2,3,3,3,3)
+  );
+  df.codes = data.frame(
+    c1=c(1,1,1,1,1,0,0,1,1,0,0,1),
+    c2=c(1,1,1,0,0,1,0,1,0,1,0,0),
+    c3=c(0,0,1,0,1,0,1,0,0,0,1,0)#,
+    #c4=c(1,1,1,0,0,1,0,1,0,1,0,0)
+  );
+  df.whole = data.frame(
+    Name=c("J","Z"),
+    Day=c(1,1,1,1,1,1,2,2,2,2,2,2),
+    c1=c(1,1,1,1,1,0,0,1,1,0,0,1),
+    c2=c(1,1,1,0,0,1,0,1,0,1,0,0),
+    c3=c(0,0,1,0,1,0,1,0,0,0,1,0),
+    c4=c(1,1,1,0,0,1,0,1,0,1,0,0)
+  );
 
   accum = ena.accumulate.data(units = df.units, conversation = df.conversation, codes = df.codes);
   expect_equal("EndPoint",accum$`_function.params`$model)
-})
-
-
-test_that("Test null model values", {
-  fake_codes_len <- 10;
-  fake.codes <- function(x) sample(0:1,fake_codes_len, replace=T)
-
-  codes = paste("Codes",LETTERS[1:fake_codes_len],sep="-");
-
-  df.units <- data.frame(
-    Name = rep(c("J", "Z"), 6)
-  );
-  df.conversation <- data.frame(
-    Day <- c(1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2)
-  )
-  df.codes <- data.frame(
-    c1 = c(1 ,1 ,1 ,1, 1, 0, 0, 1, 1, 0, 0, 1),
-    c2 = c(1 ,1 ,1 ,0, 0, 1, 0, 1, 0, 1, 0, 0),
-    c3 = c(0 ,0 ,1 ,0, 1, 0, 1, 0, 0, 0, 1, 0)
-  )
-  df.whole <- data.frame(
-    Name = c("J", "Z"),
-    Day = c(1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2),
-    c1 = c(1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1),
-    c2 = c(1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0),
-    c3 = c(0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0),
-    c4 = c(1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0)
-  )
-
-  testthat::expect_error(rENA::ena.accumulate.data(units = NULL,
-      conversation = df.conversation, codes = df.codes),
-      regexp = "requires: units")
-  testthat::expect_error(rENA::ena.accumulate.data(units = df.units,
-      conversation = NULL, codes = df.codes),
-      regexp = "requires:.*?conversation")
-  testthat::expect_error(rENA::ena.accumulate.data(units = df.units,
-      conversation = df.conversation, codes = NULL),
-      regexp = "requires:.*?codes")
-})
-
-test_that("Test different model row lengths", {
-  fake_codes_len <- 10;
-  fake.codes <- function(x) sample(0:1,fake_codes_len, replace=T)
-
-  codes = paste("Codes",LETTERS[1:fake_codes_len],sep="-");
-
-  df.units <- data.frame(
-    Name = rep(c("J", "Z"), 6)
-  );
-  df.conversation <- data.frame(
-    Day <- c(1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2)
-  )
-  df.codes <- data.frame(
-    c1 = c(1 ,1 ,1 ,1, 1, 0, 0, 1, 1, 0, 0, 1),
-    c2 = c(1 ,1 ,1 ,0, 0, 1, 0, 1, 0, 1, 0, 0),
-    c3 = c(0 ,0 ,1 ,0, 1, 0, 1, 0, 0, 0, 1, 0)
-  )
-  df.whole <- data.frame(
-    Name = c("J", "Z"),
-    Day = c(1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2),
-    c1 = c(1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1),
-    c2 = c(1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0),
-    c3 = c(0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0),
-    c4 = c(1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0)
-  )
-
-  testthat::expect_error(
-    rENA::ena.accumulate.data(units = df.units[1:5,, drop = F],
-            conversation = df.conversation[1:6,,drop = F], codes = df.codes),
-    regexp = "same number of rows"
-  )
 })
