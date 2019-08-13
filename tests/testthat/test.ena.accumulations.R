@@ -1,6 +1,36 @@
 suppressMessages(library(rENA, quietly = T, verbose = F))
 context("Test functions accumulating data")
 
+fake_codes_len <- 10;
+fake.codes <- function(x) sample(0:1,fake_codes_len, replace=T)
+
+codes <- paste("Codes",LETTERS[1:fake_codes_len],sep="-");
+
+df.units <- data.frame(
+  Name = rep(c("J", "Z"), 6)
+);
+df.conversation <- data.frame(
+  Day <- c(1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2)
+)
+df.codes <- data.frame(
+  c1 = c(1 ,1 ,1 ,1, 1, 0, 0, 1, 1, 0, 0, 1),
+  c2 = c(1 ,1 ,1 ,0, 0, 1, 0, 1, 0, 1, 0, 0),
+  c3 = c(0 ,0 ,1 ,0, 1, 0, 1, 0, 0, 0, 1, 0)
+)
+df.meta <- data.frame(
+  m1 = c(1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2),
+  m2 = c(1, 2, 3, 4, 9, 9, 9, 9, 9, 9, 9, 9)
+)
+df.whole <- data.frame(
+  Name = c("J", "Z"),
+  Day = c(1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2),
+  c1 = c(1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1),
+  c2 = c(1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0),
+  c3 = c(0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0),
+  c4 = c(1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0)
+)
+
+
 test_that("Null data errors", {
   df.whole <- data.frame(
     Name = c("J", "Z"),
@@ -53,31 +83,6 @@ test_that("Null data errors", {
 })
 
 test_that("Accumulation from separate data.frames VS from single data frame", {
-  fake_codes_len <- 10;
-  fake.codes <- function(x) sample(0:1, fake_codes_len, replace = T)
-
-  codes <- paste("Codes", LETTERS[1:fake_codes_len], sep = "-");
-
-  df.units <- data.frame(
-    Name = rep(c("J", "Z"), 6)
-  )
-  df.conversation <- data.frame(
-    Day = c(1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2)
-  )
-  df.codes <- data.frame(
-    c1 = c(1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1),
-    c2 = c(1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0),
-    c3 = c(0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0)
-  )
-  df.whole <- data.frame(
-    Name = c("J", "Z"),
-    Day = c(1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2),
-    c1  = c(1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1),
-    c2  = c(1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0),
-    c3  = c(0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0),
-    c4  = c(1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0)
-  )
-
   df.accum.sep <- ena.accumulate.data(
     units = df.units, conversation = df.conversation, codes = df.codes
   )
@@ -105,65 +110,30 @@ test_that("Accumulation from separate data.frames VS from single data frame", {
 })
 
 test_that("Simple forwarded metadata", {
-  fake_codes_len = 10;
-  fake.codes <- function(x) sample(0:1,fake_codes_len, replace=T)
+  df.accum.sep = ena.accumulate.data(units = df.units, 
+          conversation = df.conversation, codes = df.codes, metadata = df.meta)
 
-  codes = paste("Codes",LETTERS[1:fake_codes_len],sep="-");
-
-  df.units = data.frame(
-    Name=rep(c("J","Z"), 6)
-    #Group=c(1,1,1,1,2,2,2,3,3,3,4,4)
-  );
-  df.conversation = data.frame(
-    Day=c(1,1,1,1,1,1,2,2,2,2,2,2)#,
-    #ActivityNumber=c(1,1,1,1,2,2,2,2,3,3,3,3)
-  );
-  df.codes = data.frame(
-    c1=c(1,1,1,1,1,0,0,1,1,0,0,1),
-    c2=c(1,1,1,0,0,1,0,1,0,1,0,0),
-    c3=c(0,0,1,0,1,0,1,0,0,0,1,0)#,
-    #c4=c(1,1,1,0,0,1,0,1,0,1,0,0)
-  );
-  df.meta = data.frame(
-    m1=c(1,2,1,2,1,2,1,2,1,2,1,2),
-    m2=c(1,2,3,4,9,9,9,9,9,9,9,9)
-  )
-  df = data.frame(
-    Name=c("J","Z"),
-    Day=c(1,1,1,1,1,1,2,2,2,2,2,2),
-    c1=c(1,1,1,1,1,0,0,1,1,0,0,1),
-    c2=c(1,1,1,0,0,1,0,1,0,1,0,0),
-    c3=c(0,0,1,0,1,0,1,0,0,0,1,0),
-    m1=c(1,2,1,2,1,2,1,2,1,2,1,2),
-    m2=c(1,2,3,4,9,9,9,9,9,9,9,9)
-  );
-
-  # df.accum = ena.accumulate.data.file(df, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"));
-  df.accum.sep = ena.accumulate.data(units = df.units, conversation = df.conversation, codes = df.codes, metadata = df.meta)
-
-  # expect_true("m1" %in% colnames(df.accum$metadata));
-  expect_true("m1" %in% colnames(df.accum.sep$meta.data));
-  # expect_equal(df.accum$metadata, df.accum.sep$metadata);
-});
+  expect_true("m1" %in% colnames(df.accum.sep$meta.data))
+})
 
 test_that("Test trajectories", {
-  fake_codes_len = 10;
-  fake.codes <- function(x) sample(0:1,fake_codes_len, replace=T)
+  fake_codes_len <- 10
+  fake.codes <- function(x) sample(0:1, fake_codes_len, replace = T)
 
-  codes = paste("Codes",LETTERS[1:fake_codes_len],sep="-");
+  codes <- paste("Codes", LETTERS[1:fake_codes_len], sep = "-");
 
-  df.units = data.frame(
-    Name=rep(c("J","Z"), 6)
+  df.units <- data.frame(
+    Name = rep(c("J", "Z"), 6)
   );
-  df.conversation = data.frame(
-    Day=c(1,1,1,1,1,1,2,2,2,2,2,2),
-    ActivityNumber=c(1,1,1,1,2,2,2,2,3,3,3,3)
-  );
-  df.codes = data.frame(
-    c1=c(1,1,1,1,1,0,0,1,1,0,0,1),
-    c2=c(1,1,1,0,0,1,0,0,0,0,0,1),
-    c3=c(0,0,1,0,1,0,1,0,0,0,1,0)
-  );
+  df.conversation <- data.frame(
+    Day = c(1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2),
+    ActivityNumber = c(1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3)
+  )
+  df.codes <- data.frame(
+    c1 = c(1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1),
+    c2 = c(1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1),
+    c3 = c(0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0)
+  )
   df <- data.frame(
     Name = c("J", "Z"),
     Day = c(1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2),
@@ -171,26 +141,29 @@ test_that("Test trajectories", {
     c1 = c(1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1),
     c2 = c(1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1),
     c3 = c(0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0)
-  );
+  )
 
-  df.accum = ena.accumulate.data.file(
-    df, units.by = c("Name"), conversations.by = c("Day", "ActivityNumber"),
+  df.accum <- ena.accumulate.data.file(
+    df, units.by = c("Name"), 
+    conversations.by = c("Day", "ActivityNumber"),
     codes = c("c1","c2","c3"), model = "AccumulatedTrajectory"
-  );
-  df.non.accum = ena.accumulate.data.file(
-    df, units.by = c("Name"), conversations.by = c("Day", "ActivityNumber"),
+  )
+  df.non.accum <- ena.accumulate.data.file(
+    df, units.by = c("Name"), 
+    conversations.by = c("Day", "ActivityNumber"),
     codes = c("c1","c2","c3"), model = "SeparateTrajectory"
-  );
-  df.accum.sep = ena.accumulate.data(
+  )
+  df.accum.sep <- ena.accumulate.data(
     units = df.units, conversation = df.conversation,
     codes = df.codes, model = "AccumulatedTrajectory"
-  );
-  df.non.accum.sep = ena.accumulate.data(
+  )
+  df.non.accum.sep <- ena.accumulate.data(
     units = df.units, conversation = df.conversation,
     codes = df.codes, model = "SeparateTrajectory"
-  );
+  )
 
-  adjacency.code.1 = c("c1 & c2")
+  adjacency.code.1 <- c("c1 & c2")
+
   # Test for expected accumulated value
   testthat::expect_true(
     as.matrix(df.accum$connection.counts[df.accum$trajectories$Name =="J" & df.accum$trajectories$ActivityNumber == 3, ..adjacency.code.1]) ==
@@ -320,35 +293,27 @@ test_that("Test accumulation with infinite windows", {
 })
 
 test_that("Test function params", {
-  fake_codes_len = 10;
-  fake.codes <- function(x) sample(0:1,fake_codes_len, replace=T)
-
-  codes = paste("Codes",LETTERS[1:fake_codes_len],sep="-");
-
-  ###NOTE - commented out values not accumulated by in test below (from file)
-  df.units = data.frame(
-    Name=rep(c("J","Z"), 6)
-    #Group=c(1,1,1,1,2,2,2,3,3,3,4,4)
-  );
-  df.conversation = data.frame(
-    Day=c(1,1,1,1,1,1,2,2,2,2,2,2)#,
-    #ActivityNumber=c(1,1,1,1,2,2,2,2,3,3,3,3)
-  );
-  df.codes = data.frame(
-    c1=c(1,1,1,1,1,0,0,1,1,0,0,1),
-    c2=c(1,1,1,0,0,1,0,1,0,1,0,0),
-    c3=c(0,0,1,0,1,0,1,0,0,0,1,0)#,
-    #c4=c(1,1,1,0,0,1,0,1,0,1,0,0)
-  );
-  df.whole = data.frame(
-    Name=c("J","Z"),
-    Day=c(1,1,1,1,1,1,2,2,2,2,2,2),
-    c1=c(1,1,1,1,1,0,0,1,1,0,0,1),
-    c2=c(1,1,1,0,0,1,0,1,0,1,0,0),
-    c3=c(0,0,1,0,1,0,1,0,0,0,1,0),
-    c4=c(1,1,1,0,0,1,0,1,0,1,0,0)
-  );
-
   accum = ena.accumulate.data(units = df.units, conversation = df.conversation, codes = df.codes);
   expect_equal("EndPoint",accum$`_function.params`$model)
+})
+
+
+test_that("Test null model values", {
+  testthat::expect_error(rENA::ena.accumulate.data(units = NULL,
+      conversation = df.conversation, codes = df.codes),
+      regexp = "requires: units")
+  testthat::expect_error(rENA::ena.accumulate.data(units = df.units,
+      conversation = NULL, codes = df.codes),
+      regexp = "requires:.*?conversation")
+  testthat::expect_error(rENA::ena.accumulate.data(units = df.units,
+      conversation = df.conversation, codes = NULL),
+      regexp = "requires:.*?codes")
+})
+
+test_that("Test different model row lengths", {
+  testthat::expect_error(
+    rENA::ena.accumulate.data(units = df.units[1:5,, drop = F],
+            conversation = df.conversation[1:6,,drop = F], codes = df.codes),
+    regexp = "same number of rows"
+  )
 })
