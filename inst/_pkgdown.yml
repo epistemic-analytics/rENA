@@ -1,0 +1,13 @@
+navbar:
+  title: "sparklyr"
+  type: inverse
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "Extensions"
+      href: articles/extensions.html
+    - text: "Reference"
+      href: "reference/"
+  right:
+    - icon: fa-gitlab
+      href: https://git.doit.wisc.edu/epistemic-analytics/qe-packages/rena/

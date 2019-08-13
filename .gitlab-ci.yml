@@ -46,7 +46,6 @@ variables:
     - docker
   allow_failure: false
 
-# Check Steps
 check:r-devel:
   image: $REG_URL/devel:current
   only:
@@ -82,13 +81,20 @@ test:r-release:
     - 'Rscript -e "rep <- covr::report(file = \"inst/coverage/index.html\")"'
     - 'Rscript -e "setwd(\"inst/coverage\"); res = lapply(dir(\".\", full.names = F, recursive = T), function(f) { aws.s3::put_object(file = f, object = paste0(\"coverage/\", f), bucket = \"rena.qe-libs.org\", acl = \"public-read\") })"'
     - 'Rscript --vanilla demo/backup/coverage-report.R ${CI_COMMIT_REF_NAME}'
-  artifacts:
-    paths:
-      - inst/coverage/
-    expire_in: 10 years
   dependencies:
     - check:r-release
 
+test:build-site:
+  stage: test
+  image: $REG_URL/release:current
+  before_script:
+    - Rscript -e 'install.packages(c("pkgdown"), repos="http://cran.rstudio.com")'
+    - Rscript -e 'install.packages(c("aws.s3","aws.signature"), repos="http://cran.rstudio.com")'
+  script:
+    - 'Rscript -e "pkgdown::build_site(preview = FALSE)"'
+    - 'Rscript -e "setwd(\"docs\"); res = lapply(dir(\".\", full.names = F, recursive = T), function(f) { aws.s3::put_object(file = f, object = f, bucket = \"rena.qe-libs.org\", acl = \"public-read\") })"'
+  dependencies:
+    - test:r-release
 
 release:cran:
   stage: release
@@ -106,7 +112,6 @@ release:cran:
   tags:
     - docker
   allow_failure: false
-
 
 .docker_definition: &docker_template
   stage: docker
