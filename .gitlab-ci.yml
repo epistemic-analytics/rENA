@@ -37,7 +37,6 @@ variables:
     expire_in: 1 week
   <<: *build_template
   script:
-    # - R -e "devtools::test('./rENA')"
     - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_$VERSION.tar.gz --as-cran --no-manual
     - mv ./rENA-00build.log rENA/archive/ || true
     - mv ./rENA.Rcheck/00check.log rENA/archive/ || true
@@ -76,30 +75,20 @@ check:r-winbuilder:
 test:r-release:
   stage: test
   image: $REG_URL/release:current
-  variables: 
-    FILE: "inst/coverage/covr.json"
-    FILE_HTML: "inst/coverage/rENA.html"
-    S3BUCKET: "qe-package-coverage"
-    S3STORAGETYPE: "STANDARD"
-    AWSREGION: "s3-us-west-2"
-    CONTENTTYPE: "text/json"
-    RESOURCE: "qe-package-coverage/inst/coverage/covr.json"
-    DATEVALUE: "Mon, 12 Aug 2019 11:41:13 GMT"
-    STRINGTOSIGN: "PUT\r\n\r\ntext/json\r\nMon, 12 Aug 2019 11:41:13 GMT\r\nqe-package-coverage/inst/coverage/covr.json"
-    #SIGNATURE=`echo -en ${STRINGTOSIGN} | openssl sha1 -hmac ${AWS_S3_SECRET} -binary | base64`
   before_script:
     - Rscript -e 'install.packages(c("covr", "DT"), repos="http://cran.rstudio.com")'
     - Rscript -e 'install.packages(c("aws.s3","aws.signature"), repos="http://cran.rstudio.com")'
   script:
     - 'Rscript -e "rep <- covr::report(file = \"inst/coverage/index.html\")"'
     - 'Rscript -e "setwd(\"inst/coverage\"); res = lapply(dir(\".\", full.names = F, recursive = T), function(f) { aws.s3::put_object(file = f, object = paste0(\"coverage/\", f), bucket = \"rena.qe-libs.org\", acl = \"public-read\") })"'
-    - 'Rscript --vanilla demo/backup/coverage-report.R develop'
+    - 'Rscript --vanilla demo/backup/coverage-report.R ${CI_COMMIT_REF_NAME}'
   artifacts:
     paths:
       - inst/coverage/
     expire_in: 10 years
   dependencies:
     - check:r-release
+
 
 release:cran:
   stage: release
