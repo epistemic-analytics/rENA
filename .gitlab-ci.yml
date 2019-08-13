@@ -93,13 +93,10 @@ test:r-release:
     - Rscript -e 'install.packages(c("covr", "DT"), repos="http://cran.rstudio.com")'
     - Rscript -e 'install.packages(c("aws.s3","aws.signature"), repos="http://cran.rstudio.com")'
   script:
-    # - 'RScript -e "cov <- covr::package_coverage( type = "tests" )
-    - 'Rscript -e "covr::report(file = \"${FILE_HTML}\")"'
-    #- 'Rscript -e "aws.s3::put_object(bucket = \"${S3BUCKET}\", file = \"${FILE_HTML}\", object = \"rENA/coverage.html\", acl = \"public\")"'
+    #- 'RScript -e "cov <- covr::package_coverage( type = "tests" )
+    #- 'Rscript -e "covr::report(file = \"${FILE_HTML}\")"'
     - 'Rscript -e "lapply(dir(\"inst/coverage\", full.names = TRUE, recursive = TRUE), function(filename) { aws.s3::put_object(file = filename, object = paste0(\"rENA/\",filename), bucket = \"${S3BUCKET}\", acl = \"public-read\")
 })"'
-    #- Rscript -e "covr::coveralls()"
-    #- rep <- covr::report(cov, file = "inst/coverage/rENA.html")
   artifacts:
     paths:
       - inst/coverage/
