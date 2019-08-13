@@ -48,7 +48,6 @@
 #' @return \code{\link{ENAdata}} object with data [adjacency (co-occurrence) vectors] accumulated from the provided data frames.
 #'
 ##
-
 ena.accumulate.data <- function(
   units = NULL,
   conversation = NULL,

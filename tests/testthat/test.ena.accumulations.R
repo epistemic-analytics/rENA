@@ -82,35 +82,8 @@ test_that("Null data errors", {
   )
 })
 
-test_that("Accumulation from separate data.frames VS from single data frame", {
-  df.accum.sep <- ena.accumulate.data(
-    units = df.units, conversation = df.conversation, codes = df.codes
-  )
-  df.accum.weighted.sep <- ena.accumulate.data(
-    units = df.units, conversation = df.conversation, codes = df.codes
-  )
-
-  # df.accum.whole = ena.accumulate.data.file(df.whole, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"));
-  # df.accum.weighted.whole = ena.accumulate.data.file(df.whole, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"), weight.by = "weighted");
-
-  ### expect results equivalent from each version
-  # expect_equal(df.accum.sep$adjacency.vectors,df.accum.whole$adjacency.vectors)
-  # expect_equal(df.accum.weighted.sep$adjacency.vectors, df.accum.weighted.whole$adjacency.vectors);
-
-  # expect_true(all(
-  #   as.matrix(df.accum.sep$adjacency.vectors[, attr(df.accum.sep$adjacency.vectors,"adjacency.codes"), with=F])
-  #   ==
-  #     matrix(c(c(2,2,2), c(0,1,0)), nrow=2)
-  # ));
-  # expect_true(all(
-  #   as.matrix(df.accum.whole$adjacency.vectors[, attr(df.accum.whole$adjacency.vectors,"adjacency.codes"), with=F])
-  #   ==
-  #     matrix(c(c(2,2,2), c(0,1,0)), nrow=2)
-  # ));
-})
-
 test_that("Simple forwarded metadata", {
-  df.accum.sep = ena.accumulate.data(units = df.units, 
+  df.accum.sep <- ena.accumulate.data(units = df.units, 
           conversation = df.conversation, codes = df.codes, metadata = df.meta)
 
   expect_true("m1" %in% colnames(df.accum.sep$meta.data))
@@ -282,9 +255,14 @@ test_that("Test accumulation with infinite windows", {
     c4=c(1,1,1,0,0,1,0,1,0,1,0,0)
   );
 
-  df.accum.sep = ena.accumulate.data(units = df.units, conversation = df.conversation, codes = df.codes);
-  df.accum.inf = ena.accumulate.data(units = df.units, conversation = df.conversation, codes = df.codes, window.size.back = Inf);
-  df.accum.inf2 = ena.accumulate.data(units = df.units, conversation = df.conversation, codes = df.codes, window.size.back = "Inf");
+  df.accum.sep = ena.accumulate.data(units = df.units,
+                            conversation = df.conversation, codes = df.codes)
+  df.accum.inf = ena.accumulate.data(units = df.units,
+                            conversation = df.conversation, codes = df.codes,
+                            window.size.back = Inf);
+  df.accum.inf2 = ena.accumulate.data(units = df.units, 
+                      conversation = df.conversation, codes = df.codes, 
+                      window.size.back = "Inf")
   df.accum.inf3 = ena.accumulate.data(units = df.units, conversation = df.conversation, codes = df.codes, window.size.back = "INF");
 
   codeCols = find.code.cols(df.accum.sep$model$row.connection.counts)
