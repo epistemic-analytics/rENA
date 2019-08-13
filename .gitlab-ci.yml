@@ -59,6 +59,8 @@ check:r-oldrelease:
   <<: *check_template
 check:r-release:
   image: $REG_URL/release:current
+  only:
+    - master
   <<: *check_template
 check:r-winbuilder:
   stage: checkWindows

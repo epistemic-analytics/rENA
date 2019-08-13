@@ -17,3 +17,6 @@ Meta
 
 inst/coverage/
 docs/
+
+R/RcppExports.R
+src/RcppExports.cpp
