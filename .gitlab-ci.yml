@@ -98,8 +98,8 @@ docs:build-site:
     - Rscript -e 'install.packages(c("pkgdown"), repos="http://cran.rstudio.com")'
     - Rscript -e 'install.packages(c("aws.s3","aws.signature"), repos="http://cran.rstudio.com")'
   script:
-    - rm src/RcppExports*
-    - rm R/RcppExports*
+    - rm -rf src/RcppExports*
+    - rm -rf R/RcppExports*
     - 'Rscript -e "Rcpp::compileAttributes()"'
     #- 'Rscript -e "devtools::install(\".\", quick = T, build = T, dependencies = F, upgrade = F)"'
     - 'Rscript -e "pkgdown::build_site(preview = FALSE)"'
