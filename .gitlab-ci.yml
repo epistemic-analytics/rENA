@@ -101,7 +101,7 @@ docs:build-site:
     - rm -rf src/RcppExports*
     - rm -rf R/RcppExports*
     - 'Rscript -e "Rcpp::compileAttributes()"'
-    #- 'Rscript -e "devtools::install(\".\", quick = T, build = T, dependencies = F, upgrade = F)"'
+    - 'Rscript -e "devtools::install(\".\", quick = T, build = T, dependencies = F, upgrade = F)"'
     - 'Rscript -e "pkgdown::build_site(preview = F, document = F, lazy = T, new_process = T)"'
     - 'Rscript -e "setwd(\"docs\"); res = lapply(dir(\".\", full.names = F, recursive = T), function(f) { aws.s3::put_object(file = f, object = f, bucket = \"${PKGL}.qe-libs.org\", acl = \"public-read\") })"'
   dependencies:
