@@ -148,8 +148,6 @@ test_that("Simple data.frame to accumulate and make set", {
 
 })
 
-
-
 test_that("Test bad position method", {
   codenames <- c("Data", "Technical.Constraints", "Performance.Parameters",
     "Client.and.Consultant.Requests", "Design.Reasoning", "Collaboration");

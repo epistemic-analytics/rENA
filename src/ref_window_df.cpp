@@ -98,9 +98,7 @@ DataFrame ref_window_df(
 
   for (int i=0; i<dfCols;i++) {
     df_AsMatrix2.col(i) = Rcpp::as<arma::vec>(df[i]);
-    // df_asNumericMatrix(_,i)=NumericVector(df[i]);
   }
-
 
   for(int row = 0; row < dfRows; row++) {
     /**
@@ -112,7 +110,11 @@ DataFrame ref_window_df(
 
     if (windowSize == std::numeric_limits<double>::infinity()) {
       earliestRow = 0;
-    } else if ( row - (windowSize-1) >= 0 ) {
+    }
+    else if (windowSize == 0) {
+      earliestRow = row;
+    } 
+    else if ( row - (windowSize-1) >= 0 ) {
       earliestRow = row - (windowSize - 1);
     }
 
@@ -125,7 +127,6 @@ DataFrame ref_window_df(
     arma::mat currRows2 = df_AsMatrix2( span( earliestRow, lastRow ), span::all );
     arma::mat currRowsSummed = arma::sum(currRows2);
     arma::rowvec toUT = vector_to_ut(currRowsSummed);
-
     if(windowSize > 1 && row-1>=0) {
       int headRows = currRows2.n_rows - 1 - windowForward;
       if(headRows < 0) {
@@ -137,8 +138,10 @@ DataFrame ref_window_df(
       arma::rowvec toUT_refs = vector_to_ut(currRow_refsSummed);
       toUT = toUT - toUT_refs;
     }
-    if(windowForward > 0 && row+windowForward <= (dfRows-1)) {
-      arma::mat currRows2_refs = currRows2.tail_rows(windowForward);
+
+    if(windowForward > 0 && lastRow <= (dfRows-1)) {
+      arma::mat currRows2_refs = currRows2.tail_rows(lastRow - row);
+
       arma::mat currRow_refsSummed = arma::sum(currRows2_refs);
       arma::rowvec toUT_refs = vector_to_ut(currRow_refsSummed);
       toUT = toUT - toUT_refs;
@@ -195,6 +198,8 @@ DataFrame ref_window_lag(
 /***R
 RcppParallel::setThreadOptions(numThreads = 4)
 df = data.frame(a = c(1,2,3,4), b = c(0,0,1,0), c = c(1,1,1,1), d = c(0,1,0,0))
-# try_one(rbind(df, df, df, df, df, df), 2)
-try_one(df, 2)
+
+#print(df)
+#ref_window_df(df[,2:4], windowSize = 0, windowForward = Inf)
+ref_window_df(df.whole[Day == 1, 3:5], windowForward=Inf, windowSize=0)
 */

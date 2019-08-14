@@ -56,7 +56,7 @@ ENAdata <- R6::R6Class("ENAdata", public = list(
       "forward" = window.size.forward
     );
 
-    for(p in c("units", "units.used", "units.by",
+    for (p in c("units", "units.used", "units.by",
                "conversations.by", "codes", "model", "weight.by",
                "window.size.back", "window.size.forward", "mask",
                "in.par", "grainSize", "include.meta")
@@ -263,28 +263,39 @@ ENAdata <- R6::R6Class("ENAdata", public = list(
                           ncol = length(self$codes),
                           dimnames = list(self$codes, self$codes))
       }
-      self$adjacency.vectors[,c(adjCols)] =
-        self$adjacency.vectors[,c(adjCols),with=F] *
-        rep(private$mask[upper.tri(private$mask)], rep(nrow(self$adjacency.vectors),length(adjCols)))
 
-      if(is.function(private$weight.by)) {
-        cols = colnames(self$adjacency.vectors)[grep("adjacency.code", colnames(self$adjacency.vectors))];
-        # self$adjacency.vectors[, (cols) := lapply(.SD, private$weight.by), .SDcols = cols];
-        # self$adjacency.vectors[, (cols) := lapply(.SD, private$weight.by), .SDcols = cols, by=c("ENA_ROW_IDX")];
-        # browser()
-        # self$adjacency.vectors = self$adjacency.vectors[,lapply(.SD, private$weight.by),.SDcols=cols,by=c("ENA_ROW_IDX")];
-        self$adjacency.vectors = self$adjacency.vectors[,lapply(.SD, private$weight.by),.SDcols=cols,by=1:nrow(self$adjacency.vectors)]
+      self$adjacency.vectors[, c(adjCols)] <-
+        self$adjacency.vectors[, c(adjCols), with = F] *
+          rep(
+            private$mask[upper.tri(private$mask)],
+            rep(nrow(self$adjacency.vectors), length(adjCols))
+          )
+
+      if( is.function(private$weight.by) ) {
+        cols <- colnames(self$adjacency.vectors)[
+                  grep("adjacency.code", colnames(self$adjacency.vectors))
+                ]
+        self$adjacency.vectors <- self$adjacency.vectors[, 
+                                    lapply(
+                                      .SD,
+                                      private$weight.by
+                                    ),
+                                    .SDcols = cols,
+                                    by = 1:nrow(self$adjacency.vectors)
+                                  ]
       }
 
       if( self$function.params$include.meta == T) {
-        self$metadata = self$add.metadata(merge = F);
+        self$metadata <- self$add.metadata(merge = F);
       } else {
-        self$metadata = data.frame();
+        self$metadata <- data.frame();
       }
 
-      ### remove non-adjacency vector columns from adj.vecs
-      ####### idea: if those cols are needed later - use adjacency.vectors.raw
-      self$adjacency.vectors = self$adjacency.vectors[,grep("adjacency.code", colnames(self$adjacency.vectors)), with=F]
+      self$adjacency.vectors <- self$adjacency.vectors[,
+                                  grep("adjacency.code",
+                                    colnames(self$adjacency.vectors)),
+                                  with = F
+                                ]
 
       return(self);
     }

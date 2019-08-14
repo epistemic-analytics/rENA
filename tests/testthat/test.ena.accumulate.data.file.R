@@ -2,9 +2,9 @@ suppressMessages(library(rENA, quietly = T, verbose = F))
 context("Test accumulating data file");
 
 test_that("NULL sent to accumulate", {
-  df.accum = testthat::expect_error(rENA:::ena.accumulate.data.file(
-    NULL, units.by = c("Name"), conversations.by = c("Day"), 
-    codes = c("c1","c2","c3")))
+  df.accum <- expect_error(rENA:::ena.accumulate.data.file(
+    NULL, units.by = c("Name"), conversations.by = c("Day"),
+    codes = c("c1", "c2", "c3")))
 })
 
 test_that("Simple data.frame to accumulate", {

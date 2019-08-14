@@ -86,12 +86,12 @@ ena.accumulate.data <- function(
   if (identical(window, "Conversation")) {
     conversations.by <- c(conversations.by, units.by);
     window.size.back <- window;
-  } else if (identical(window, "MovingStanzaWindow")) {
+  }
+  else if (identical(window, "MovingStanzaWindow")) {
     if( grepl(pattern = "inf", x = window.size.back, ignore.case = T)) {
       window.size.back <- Inf
     }
-    # if(any(window.size.forward %in% infCheck)) {
-    if(grepl(pattern = "inf", x = window.size.forward, ignore.case = T)) {
+    if( grepl(pattern = "inf", x = window.size.forward, ignore.case = T)) {
       window.size.forward <- Inf
     }
   }
@@ -113,17 +113,17 @@ ena.accumulate.data <- function(
     include.meta = include.meta,
     ...
   );
-  data$process();
+  data$process()
 
-  data$function.call <- sys.call();
+  data$function.call <- sys.call()
 
   if(as.list) {
-    data <- ena.set(data);
+    data <- ena.set(data)
   } else {
-    warning("Usage of R6 data objects is deprecated and may be removed " +
-      "entirely in a future version. Consider upgrading to the new data " +
-      " object.")
+    warning(paste0("Usage of R6 data objects is deprecated and may be removed ",
+      "entirely in a future version. Consider upgrading to the new data ",
+      "object."))
   }
+
   data
 }
-

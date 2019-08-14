@@ -73,7 +73,7 @@ accumulate.data <- function(enadata) {
   #        keep a separate to lookup the results for the co-occurred
   #        values later on.
   ##
-  if (window$back == 1) {
+  if (window$back == 1 && window$forward == 0) {
     dfDT.co.occurrences <- dfDT_codes[,{
         ocs <- data.table::as.data.table(
                 rows_to_co_occurrences(
@@ -138,49 +138,33 @@ accumulate.data <- function(enadata) {
     #
     # } else {
       dfDT.co.occurrences <- dfDT_codes[,
-                             (codedTriNames) := ref_window_df(
-                               .SD[, .SD, .SDcols = just_codes],
-                               windowSize = window$back,
-                               windowForward = window$forward,
-                               binary = binary,
-                               binaryStanzas = binaryStanzas
-                             ),
-                             by = conversations.by,
-                             .SDcols = initial_cols,
-                             with = T
-                          ];
+          (codedTriNames) := ref_window_df(
+            .SD[, .SD, .SDcols = just_codes],
+            windowSize = window$back,
+            windowForward = window$forward,
+            binary = binary,
+            binaryStanzas = binaryStanzas
+          ),
+          by = conversations.by,
+          .SDcols = initial_cols,
+          with = T
+      ];
     # }
-    # dfDT.co.occurrences = dfDT_codes[,{
-    #     ocs = ref_window_df(.SD, windowSize=window$back, windowForward=window$forward, binary = binary, binaryStanzas = binaryStanzas);
-    #
-    #     # Return value from data.table back to dfDT.co.occurrences
-    #     data.table::data.table(.SD,ocs)
-    #   },
-    #   by=conversations.by,
-    #   .SDcols=codes,
-    #   with=T
-    # ];
-
-    ### Generate the ENA_UNIT column
-    # dfDT.co.occurrences$ENA_UNIT = dfDT_codes$ENA_UNIT;
-
-    ### Keep original columns used for units
-    #dfDT.co.occurrences[, (units.by) := dfDT_codes[,.SD,.SDcols=units.by]];
   }
 
   ###
   # Convert the generic `V` names to corresponding `adjacency.vector` names
   ###
-  colnames(dfDT.co.occurrences)[
-    grep("V\\d+", colnames(dfDT.co.occurrences))
-  ] <- codedTriNames
+    colnames(dfDT.co.occurrences)[
+      grep("V\\d+", colnames(dfDT.co.occurrences))
+    ] <- codedTriNames
 
   ##
   # If units aren't supplied, use all available
-  ## --- MAY BE ABLE TO REMOVE THIS SECTION - should have already been
-  if(is.null(units.used)) {
-    units.used <- dfDT_codes$ENA_UNIT
-  }
+  ##
+    if (is.null(units.used)) {
+      units.used <- dfDT_codes$ENA_UNIT
+    }
 
 
   ###
