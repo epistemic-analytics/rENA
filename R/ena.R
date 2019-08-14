@@ -1,5 +1,5 @@
 #####
-#' @title Generate ENA Set
+#' @title Wrapper to generate, and optionally plot, an ENA model
 #'
 #' @description Generates an ENA model by constructing a dimensional reduction
 #' of adjacency (co-occurrence) vectors as defined by the supplied
@@ -34,14 +34,33 @@
 #' @param networkMultiplier [TBD]
 #' @param subtractionMultiplier [TBD]
 #' @param unit [TBD]
+#' @param include.plots If TRUE, will generate plots based on the generated model
 #' @param print.plots [TBD]
-#' @param include.plots [TBD]
 #' @param ... [TBD]
+#'
+#' @examples
+#' data(RS.data)
+#' 
+#' rs = ena(
+#'   data = RS.data,
+#'   units = c("UserName","Condition", "GroupName"),
+#'   conversation = c("Condition","GroupName"),
+#'   codes = c('Data',
+#'             'Technical.Constraints',
+#'             'Performance.Parameters',
+#'             'Client.and.Consultant.Requests',
+#'             'Design.Reasoning',
+#'             'Collaboration'),
+#'   window.size.back = 4,
+#'   print.plots = F,
+#'   groupVar = "Condition",
+#'   groups = c("FirstGame", "SecondGame")
+#' )
 #'
 #' @return ena.set object
 #' @export
 #####
-ena = function(
+ena <- function(
   data,
   codes,
   units,
@@ -64,11 +83,11 @@ ena = function(
   networkMultiplier = 1,
   subtractionMultiplier = 1,
   unit = NULL,
-  print.plots = F,
-  include.plots = T,
+  include.plots = F,
+  print.plots = T,
   ...
 ) {
-  set = ena.set.creator(
+  set <- ena.set.creator(
     data = data,
     codes = codes,
     units = units,
@@ -88,8 +107,8 @@ ena = function(
     ...
   )
 
-  if(include.plots) {
-    set = ena.plotter(
+  if (include.plots) {
+    set <- ena.plotter(
       set = set,
       groupVar = groupVar,
       groups = groups,

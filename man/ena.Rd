@@ -12,7 +12,7 @@ ena(data, codes, units, conversation, metadata = NULL,
   runTest = FALSE, testType = c("nonparametric", "parametric"),
   points = FALSE, mean = FALSE, network = TRUE,
   networkMultiplier = 1, subtractionMultiplier = 1, unit = NULL,
-  print.plots = F, include.plots = T, ...)
+  include.plots = F, print.plots = T, ...)
 }
 \arguments{
 \item{data}{[TBD]}
@@ -59,9 +59,9 @@ ena(data, codes, units, conversation, metadata = NULL,
 
 \item{unit}{[TBD]}
 
-\item{print.plots}{[TBD]}
+\item{include.plots}{If TRUE, will generate plots based on parame}
 
-\item{include.plots}{[TBD]}
+\item{print.plots}{[TBD]}
 
 \item{...}{[TBD]}
 }
@@ -80,4 +80,24 @@ vectors, computes a dimensional reduction (projection), and calculates node
 positions in the projected ENA space. Returns location of the units in the
 projected space, as well as locations for node positions, and normalized
 adjacency (co-occurrence) vectors to construct network graphs
+}
+\examples{
+data(RS.data)
+
+rs = ena(
+  data = RS.data,
+  units = c("UserName","Condition", "GroupName"),
+  conversation = c("Condition","GroupName"),
+  codes = c('Data',
+            'Technical.Constraints',
+            'Performance.Parameters',
+            'Client.and.Consultant.Requests',
+            'Design.Reasoning',
+            'Collaboration'),
+  window.size.back = 4,
+  print.plots = F,
+  groupVar = "Condition",
+  groups = c("FirstGame", "SecondGame")
+)
+
 }
