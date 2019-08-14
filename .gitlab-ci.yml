@@ -82,7 +82,7 @@ test:r-release:
     - Rscript -e 'install.packages(c("aws.s3","aws.signature"), repos="http://cran.rstudio.com")'
   script:
     - 'Rscript -e "Rcpp::compileAttributes()"'
-    - 'Rscript -e "rep <- covr::report( x = covr::package_coverage(quiet = F), file = \"inst/coverage/index.html\" )"'
+    - 'Rscript -e "rep <- covr::report( x = covr::package_coverage(quiet = T), file = \"inst/coverage/${CI_COMMIT_REF_NAME}/index.html\" )"'
     - 'Rscript -e "setwd(\"inst/coverage\"); res = lapply(dir(\".\", full.names = F, recursive = T), function(f) { aws.s3::put_object(file = f, object = paste0(\"coverage/\", f), bucket = \"${PKGL}.qe-libs.org\", acl = \"public-read\") })"'
     - 'Rscript --vanilla demo/backup/coverage-report.R ${CI_COMMIT_REF_NAME}'
   dependencies:
