@@ -9,7 +9,7 @@ navbar:
     - text: "Reference"
       href: "reference/index.html"
     - text: "Coverage"
-      href: "coverage/index.html"
+      href: "coverage/master/index.html"
   right:
     - icon: fa-gitlab
       href: https://git.doit.wisc.edu/epistemic-analytics/qe-packages/rena/
