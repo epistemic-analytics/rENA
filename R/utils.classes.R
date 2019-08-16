@@ -10,6 +10,14 @@ as.ena.matrix <- function(x, new.class = NULL) {
   class(x) = c(new.class, "ena.matrix", class(x))
   x
 }
+
+#' Re-class matrix as ena.metadata
+#'
+#' @param x data.frame, data.table, or matrix to extend
+#' @param new.class Additional class to extend the matrix with, default: NULL
+#'
+#' @return Object of same st
+#' @export
 as.ena.metadata <- function(x) {
   if(is.factor(x)) {
     x = as.character(x)

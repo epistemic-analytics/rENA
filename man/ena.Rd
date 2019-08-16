@@ -2,7 +2,7 @@
 % Please edit documentation in R/ena.R
 \name{ena}
 \alias{ena}
-\title{Generate ENA Set}
+\title{Wrapper to generate, and optionally plot, an ENA model}
 \usage{
 ena(data, codes, units, conversation, metadata = NULL,
   model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),
@@ -59,7 +59,7 @@ ena(data, codes, units, conversation, metadata = NULL,
 
 \item{unit}{[TBD]}
 
-\item{include.plots}{If TRUE, will generate plots based on parame}
+\item{include.plots}{If TRUE, will generate plots based on the generated model}
 
 \item{print.plots}{[TBD]}
 

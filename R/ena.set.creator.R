@@ -169,7 +169,8 @@ ena.set.creator = function(
     set = ena.make.set(
       enadata = accum,
       rotation.by = ena.rotate.by.mean,
-      rotation.params = list(accum$meta.data[[groupVar]] == group1, accum$meta.data[[groupVar]] == group2)
+      rotation.params = list(accum$meta.data[[groupVar]] == group1, accum$meta.data[[groupVar]] == group2),
+      ...
     )
 
     if(runTest == TRUE) {
