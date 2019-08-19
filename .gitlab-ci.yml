@@ -79,7 +79,7 @@ test:r-release:
   image: registry.doit.wisc.edu/epistemic-analytics/qe-packages/rena/release-test:current
   script:
     - 'Rscript -e "Rcpp::compileAttributes()"'
-    - 'Rscript -e "library(\"rvest\")"'
+    #- 'Rscript -e "library(\"rvest\")"'
     - 'Rscript -e "rep <- covr::report( x = covr::package_coverage(quiet = T), file = \"inst/coverage/${CI_COMMIT_REF_NAME}/index.html\" )"'
     - 'Rscript -e "setwd(\"inst/coverage/${CI_COMMIT_REF_NAME}\"); res = lapply(dir(\".\", full.names = F, recursive = T), function(f) { aws.s3::put_object(file = f, object = paste0(\"coverage/${CI_COMMIT_REF_NAME}/\", f), bucket = \"${PKGL}.qe-libs.org\", acl = \"public-read\") })"'
     - 'Rscript --vanilla demo/backup/coverage-report.R ${CI_COMMIT_REF_NAME}'

@@ -15,18 +15,19 @@ Researchers have used ENA to analyze and visualize a wide range of phenomena, in
 ## Installation
 
 ### Install release version from CRAN
-[![cran status](https://www.r-pkg.org/badges/version-ago/rENA)](https://cran.r-project.org/web/packages/rENA/index.html) 
-[![cran downloads](https://cranlogs.r-pkg.org/badges/grand-total/rENA)](https://cranlogs.r-pkg.org/badges/grand-total/rENA) 
 [![build status](https://git.doit.wisc.edu/epistemic-analytics/qe-packages/rENA/badges/master/build.svg)](https://git.doit.wisc.edu/epistemic-analytics/qe-packages/rENA/commits/master)
 [![coverage](https://s3-us-west-2.amazonaws.com/rena.qe-libs.org/coverage-master.svg)](http://rena.qe-libs.org/coverage/master/index.html)
+
+[![cran status](https://www.r-pkg.org/badges/version-ago/rENA)](https://cran.r-project.org/web/packages/rENA/index.html) 
+[![cran downloads](https://cranlogs.r-pkg.org/badges/grand-total/rENA)](https://cranlogs.r-pkg.org/badges/grand-total/rENA) 
 
 ```
 install.packages("rENA")
 ```
 
 ### Install development version
-[![coverage](https://s3-us-west-2.amazonaws.com/rena.qe-libs.org/coverage-develop.svg)](http://rena.qe-libs.org/coverage/develop/index.html)
 [![build status](https://git.doit.wisc.edu/clmarquart/rENA/badges/develop/build.svg)](https://git.doit.wisc.edu/clmarquart/rENA/commits/develop)
+[![coverage](https://s3-us-west-2.amazonaws.com/rena.qe-libs.org/coverage-develop.svg)](http://rena.qe-libs.org/coverage/develop/index.html)
 
 ```
 devtools::install_git(url = "https://git.doit.wisc.edu/epistemic-analytics/qe-packages/rENA", ref="develop")
