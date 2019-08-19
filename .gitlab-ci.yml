@@ -77,9 +77,6 @@ check:r-winbuilder:
 test:r-release:
   stage: test
   image: $REG_URL/release-test:current
-  before_script:
-    - Rscript -e 'install.packages(c("covr", "DT"), repos="http://cran.rstudio.com")'
-    - Rscript -e 'install.packages(c("aws.s3","aws.signature"), repos="http://cran.rstudio.com")'
   script:
     - 'Rscript -e "Rcpp::compileAttributes()"'
     - 'Rscript -e "rep <- covr::report( x = covr::package_coverage(quiet = T), file = \"inst/coverage/${CI_COMMIT_REF_NAME}/index.html\" )"'
@@ -91,9 +88,6 @@ test:r-release:
 docs:build-site:
   stage: docs
   image: $REG_URL/release-test:current
-  before_script:
-    - Rscript -e 'install.packages(c("pkgdown"), repos="http://cran.rstudio.com")'
-    - Rscript -e 'install.packages(c("aws.s3","aws.signature"), repos="http://cran.rstudio.com")'
   script:
     - rm -rf src/RcppExports*
     - rm -rf R/RcppExports*
@@ -153,7 +147,6 @@ docker:release-test:
     refs:
       - develop
     changes:
-      - ".gitlab-ci.yml"
       - "inst/docker/rENA-$FILE"
   <<: *docker_template
 
