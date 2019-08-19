@@ -147,7 +147,7 @@ docker:release-test:
     refs:
       - develop
     changes:
-      - "inst/docker/rENA-$FILE"
+      - "inst/docker/rENA-release-test"
   <<: *docker_template
 
 docker:old-release:
