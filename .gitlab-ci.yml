@@ -156,6 +156,7 @@ docker:release-test:
       - ".gitlab-ci.yml"
       - "inst/docker/rENA-$FILE"
   <<: *docker_template
+
 docker:old-release:
   variables:
     TAG: "old-release"
