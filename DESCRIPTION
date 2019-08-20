@@ -11,7 +11,7 @@ Depends:
     R (>= 3.0.0)
 License: GPL-3 | file LICENSE
 LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppEigen
-BugReports: https://gitlab.com/epistemic-analytics/qe-packages/rena/issues
+BugReports: https://github.com/epistemic-analytics/rENA/issues
 Imports:
     data.table,
     Rcpp,
