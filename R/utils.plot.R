@@ -39,7 +39,7 @@
 plot.ena.set <- function(x, y, ...) {
   p = ena.plot(x, ...)
   # p
-  p$enaset = NULL
+  # p$enaset = NULL
   x$model$plot = p
   x
 }
@@ -57,6 +57,7 @@ plot.ena.set <- function(x, y, ...) {
 add_points <- function(x, wh = NULL, ..., name = "plot", mean = NULL) {
   set <- x
   plot <- set$model$plot
+  more.args <- list(...)
 
   wh_subbed <- as.character(substitute(wh))
   if (!is.null(wh_subbed) && length(wh_subbed) > 0) {
@@ -65,20 +66,24 @@ add_points <- function(x, wh = NULL, ..., name = "plot", mean = NULL) {
       part1 <- eval(cc)
       points <- as.matrix(set$points)[part1 == wh_subbed[[3]], ]
       name <- tail(wh_subbed, 1)
+
+      colors = plot$palette[length(plot$plotted$points) + 1]
     } else if (length(wh_subbed) == 1 && wh_subbed[[1]] %in% colnames(set$points)) {
       points = as.matrix(set$points)
       colors = plot$palette[as.numeric(as.factor(set$points[[wh_subbed]])) + length(plot$plotted$points)]
     } else {
       points <- wh
+      colors = plot$palette[length(plot$plotted$points) + 1]
     }
   } else {
     points <- as.matrix(set$points)
     name <- "all.points"
+    colors = plot$palette[length(plot$plotted$points) + 1]
   }
 
-  more.args <- list(...)
   more.args$enaplot = plot
   more.args$points = points
+
   if(!is.null(colors)) {
     more.args$colors = colors
   }
@@ -200,20 +205,23 @@ add_group <- function(x, wh = NULL, ...) {
 #' @return ena.plot.object
 #' @export
 add_network <- function(x, wh = NULL, ..., with.mean = F) {
-  set <- x$enaset
+  set <- x
+  plot <- set$model$plot
+
   wh.clean <- substitute(wh)
   arg_list <- list(...)
 
   if(is.null(wh.clean)) { #, "ena.points")) {
-    x <- ena.plot.network(
-      x,
-      network = colMeans(x$enaset$line.weights),
-      points = x$enaset$rotation$nodes[, 1:2],
+    plot <- ena.plot.network(
+      plot,
+      network = colMeans(set$line.weights),
+      points = set$rotation$nodes[, 1:2],
       ...
     )
 
     if (with.mean) {
-      x <- add_group(x, points = set$points, ...)
+      set <- add_group(set, points = set$points, ...)
+      plot <- set$model$plot
     }
   } else {
     parts <- as.character(wh.clean)
@@ -223,8 +231,9 @@ add_network <- function(x, wh = NULL, ..., with.mean = F) {
         parts <- as.character(y)
 
         if(with.mean) {
-          x <- add_group(x, y,
-                colors = default.colors[length(attr(x, "means")) + 1], ...)
+          set <- add_group(set, y,
+                colors = default.colors[length(attr(plot, "means")) + 1], ...)
+          plot <- set$model$plot
         }
 
         colMeans(set$line.weights[set$line.weights[[parts[2]]] == parts[3], ])
@@ -234,11 +243,12 @@ add_network <- function(x, wh = NULL, ..., with.mean = F) {
     } else {
       if (parts[2] %in% colnames(set$line.weights)) {
         group.means <- colMeans(
-          set$line.weights[set$line.weights[[parts[2]]] == parts[3], ]
+          as.matrix(set$line.weights[set$line.weights[[parts[2]]] == parts[3], ])
         )
 
         if (with.mean) {
-          x <- add_group(x, wh.clean, ...)
+          set <- add_group(set, wh.clean, ...)
+          plot <- set$model$plot
         }
       } else {
         wgts <- get(as.character(wh.clean), envir = parent.frame())
@@ -247,12 +257,13 @@ add_network <- function(x, wh = NULL, ..., with.mean = F) {
       }
     }
 
-    x <- ena.plot.network(x,
+    plot <- ena.plot.network(plot,
           network = group.means,
-          points = as.matrix(x$enaset$rotation$nodes)[, 1:2], ...)
+          node.positions = as.matrix(set$rotation$nodes)[, 1:2], ...)
   }
 
-  return(x)
+  set$model$plot <- plot
+  set
 }
 
 #' Title
