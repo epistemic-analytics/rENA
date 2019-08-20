@@ -35,11 +35,12 @@ ENAplot = R6::R6Class("ENAplot",
       ) {
         code.cols = !colnames(enaset$line.weights) %in% colnames(enaset$meta.data)
 
-        # scale.to = match.arg(scale.to);
-
         args = list(...);
         if(!is.null(args$multiplier)) {
           private$multiplier = args$multiplier
+        }
+        if(!is.null(args$point.size)) {
+          self$point$size = args$point.size
         }
         self$enaset <- enaset;
 
@@ -126,6 +127,11 @@ ENAplot = R6::R6Class("ENAplot",
       axes = list(
         x = NULL, y = NULL
       ),
+      point = list(
+        size = 5
+      ),
+      palette = c("#386CB0", "#F0027F", "#7FC97F", "#BEAED4",
+                  "#FDC086","#FFFF99", "#BF5B17"),
       plotted = list(
         points = list(), networks = list(),
         trajectories = list()

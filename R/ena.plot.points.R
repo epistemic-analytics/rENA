@@ -65,7 +65,7 @@ ena.plot.points = function(
   enaplot,
 
   points = NULL,    #vector of unit names or row indices
-  point.size = 5,
+  point.size = enaplot$point$size,
   labels = NULL, #unique(enaplot$enaset$enadata$unit.names),
   label.offset = "top left",
   label.group = NULL,
@@ -75,7 +75,7 @@ ena.plot.points = function(
   label.font.family = NULL, #enaplot$get("font.family"),
 
   shape = "circle",
-  colors = default.colors[1], # c("blue"), #rep(I("black"), nrow(points)),
+  colors = NULL, # c("blue"), #rep(I("black"), nrow(points)),
 
   confidence.interval.values = NULL,
   confidence.interval = c("none", "crosshairs", "box"),
@@ -139,8 +139,12 @@ ena.plot.points = function(
 
     colnames(points.layout) = paste0("X", rep(1:ncol(points.layout)));
 
-    if(length(colors) == 1)
+    if(is.null(colors)) {
+      colors = enaplot$palette[length(enaplot$plotted$points) + 1]
+    }
+    if(length(colors) == 1) {
       colors = rep(colors, nrow(points.layout))
+    }
     if(length(point.size) == 1)
       point.size = rep(point.size, nrow(points.layout))
     if(is.null(labels))
@@ -156,7 +160,8 @@ ena.plot.points = function(
     int.values = NULL;
     if(grepl("^c", confidence.interval) && !is.null(confidence.interval.values)) {
       int.values = confidence.interval.values;
-    } else if(grepl("^c", outlier.interval) && !is.null(outlier.interval.values)) {
+    }
+    else if(grepl("^c", outlier.interval) && !is.null(outlier.interval.values)) {
       int.values = outlier.interval.values;
     }
     error$x$array = int.values[,1];
@@ -214,7 +219,12 @@ ena.plot.points = function(
       )
     }
 
-    enaplot$plotted$points[[length(enaplot$plotted$points) + 1]] <- points.layout
+    for(color in unique(colors)) {
+      enaplot$plotted$points[[length(enaplot$plotted$points) + 1]] <- list(
+        points = points.layout[color == colors,],
+        color = color
+      )
+    }
 
     if(!is.null(box.values)) {
       boxv = data.frame(

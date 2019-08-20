@@ -107,7 +107,7 @@ ena.make.set <- function(
     }
 
     ###
-    # Convert the string vector of code names to their corresponding 
+    # Convert the string vector of code names to their corresponding
     # co-occurence names
     #####
       code_columns <- svector_to_ut(enadata$rotation$codes)
@@ -137,7 +137,7 @@ ena.make.set <- function(
       enadata$model$points.for.projection = as.data.table(points.for.projection)
       for (i in seq(ncol(enadata$model$points.for.projection))) {
         set(
-          enadata$model$points.for.projection, 
+          enadata$model$points.for.projection,
           j = i,
           value = as.ena.co.occurrence(enadata$model$points.for.projection[[i]])
         )
@@ -219,7 +219,7 @@ ena.make.set <- function(
                   value = as.ena.dimension(enadata$rotation$nodes[[i]]))
           }
           enadata$rotation$nodes <- data.table(
-            code = structure(enadata$rotation$codes, 
+            code = structure(enadata$rotation$codes,
                       class = c("code", class(enadata$rotation$codes))),
             enadata$rotation$nodes
           )
@@ -257,8 +257,8 @@ ena.make.set <- function(
       enadata$model$variance <- diagonal_variance / sum(diagonal_variance)
     #####
 
-    enadata$model$plots <- list();
-    class(enadata$model$plots) <- c("ena.plots", class(enadata$model$plots))
+    enadata$model$plot <- ena.plot(enadata, ...)
+    # class(enadata$model$plot) <- c("ena.plot", class(enadata$model$plot))
 
     enadata$`_function.params`$norm.by <- norm.by
 
