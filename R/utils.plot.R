@@ -37,9 +37,12 @@
 #' @export
 #####
 plot.ena.set <- function(x, y, ...) {
-  ena.plot(x, ...)
+  p = ena.plot(x, ...)
+  # p
+  p$enaset = NULL
+  x$model$plot = p
+  x
 }
-
 
 #' Plot points on an ena.plot
 #'
@@ -52,7 +55,8 @@ plot.ena.set <- function(x, y, ...) {
 #' @return ena.plot.object
 #' @export
 add_points <- function(x, wh = NULL, ..., name = "plot", mean = NULL) {
-  set <- x$enaset
+  set <- x
+  plot <- set$model$plot
 
   wh_subbed <- as.character(substitute(wh))
   if (!is.null(wh_subbed) && length(wh_subbed) > 0) {
@@ -61,6 +65,9 @@ add_points <- function(x, wh = NULL, ..., name = "plot", mean = NULL) {
       part1 <- eval(cc)
       points <- as.matrix(set$points)[part1 == wh_subbed[[3]], ]
       name <- tail(wh_subbed, 1)
+    } else if (length(wh_subbed) == 1 && wh_subbed[[1]] %in% colnames(set$points)) {
+      points = as.matrix(set$points)
+      colors = plot$palette[as.numeric(as.factor(set$points[[wh_subbed]])) + length(plot$plotted$points)]
     } else {
       points <- wh
     }
@@ -69,21 +76,28 @@ add_points <- function(x, wh = NULL, ..., name = "plot", mean = NULL) {
     name <- "all.points"
   }
 
-  x <- ena.plot.points(x, points = points, ...)
+  more.args <- list(...)
+  more.args$enaplot = plot
+  more.args$points = points
+  if(!is.null(colors)) {
+    more.args$colors = colors
+  }
+  plot <- do.call(ena.plot.points, more.args)
+
   if(!is.null(mean) && (is.list(mean) || mean == T)) {
-    more.args <- list(...)
 
     if (is.list(mean)) {
       more.args <- c(mean, more.args[!names(more.args) %in% names(mean)])
     }
-    more.args$enaplot <- x
+    more.args$enaplot <- plot
     more.args$points <- points
     more.args$labels <- name
 
-    x <- do.call(ena.plot.group, more.args)
+    plot <- do.call(ena.plot.group, more.args)
   }
 
-  return(x)
+  set$model$plot <- plot
+  return(set)
 }
 
 #' Plot a trajectory on an ena.plot
@@ -96,7 +110,8 @@ add_points <- function(x, wh = NULL, ..., name = "plot", mean = NULL) {
 #' @return ena.plot.object
 #' @export
 add_trajectory <- function(x, wh = NULL, ..., name = "plot") {
-  set <- x$enaset
+  set <- x
+  plot <- set$model$plot
 
   subbed <- substitute(wh)
   args_list <- as.character(subbed)
@@ -115,9 +130,10 @@ add_trajectory <- function(x, wh = NULL, ..., name = "plot") {
   } else {
     by <- "ENA_UNIT"
   }
-  x <- ena.plot.trajectory(x, points = points, by = by)
+  plot <- ena.plot.trajectory(plot, points = points, by = by)
 
-  x
+  set$model$plot <- plot
+  set
 }
 
 #' Add a group mean to an ena.plot
@@ -129,7 +145,9 @@ add_trajectory <- function(x, wh = NULL, ..., name = "plot") {
 #' @return ena.plot.object
 #' @export
 add_group <- function(x, wh = NULL, ...) {
-  set <- x$enaset
+  set <- x
+  plot <- set$model$plot
+
   arg_list <- list(...)
   wh.clean <- substitute(wh)
 
@@ -140,8 +158,14 @@ add_group <- function(x, wh = NULL, ...) {
     wh.clean <- wh;
   }
 
-  if (is.null(wh.clean)) { #, "ena.points")) {
-    x <- ena.plot.group(x, ...)
+  more_args = list(...)
+  more_args$enaplot <- plot
+  if(is.null(more_args$color)) {
+    more_args$colors = plot$palette[length(plot$plotted$points) + 1]
+  }
+
+  if (is.null(wh.clean)) {
+    plot <- do.call(ena.plot.group, more_args)
   } else {
     parts <- as.character(wh.clean)
 
@@ -151,7 +175,9 @@ add_group <- function(x, wh = NULL, ...) {
       if(nrow(group.rows) > 0) {
         group.means <- colMeans(group.rows)
 
-        x <- ena.plot.group(x, points = group.means, labels = label, ...)
+        more_args$points <- group.means
+        more_args$labels <- label
+        plot <- do.call(ena.plot.group, more_args)
       } else {
         warning("No points in the group")
       }
@@ -160,7 +186,8 @@ add_group <- function(x, wh = NULL, ...) {
     }
   }
 
-  return(x)
+  set$model$plot <- plot
+  set
 }
 
 #' Add a network to an ENA plot
@@ -237,11 +264,14 @@ add_network <- function(x, wh = NULL, ..., with.mean = F) {
 #' @return
 #' @export
 with_trajcetory <- function(
-  x, by, ...,
+  x, ...,
+  by = x$enaset$`_function.params`$conversation[1],
   add_jitter = TRUE,
   frame = 1100,
   transition = 1000,
-  easing = "circle-in-out"
+  easing = "circle-in-out",
+  group_var = x$enaset$`_function.params`$groupVar,
+  groups = x$enaset$`_function.params`$groups
 ) {
   set = x$enaset
   args = list(...)
@@ -251,13 +281,12 @@ with_trajcetory <- function(
   setkey(clean_data, ENA_UNIT)
   setkey(meta_data, ENA_UNIT)
   clean_data = meta_data[clean_data]
-  group_var = set$`_function.params`$groupVar
   setkeyv(clean_data, by)
 
+  if (is.null(group_var)) {
+    # group_var =
+  }
 
-  # if (!is.null(group_var)) {
-  #   clean_data$color = clean_data[[group_var]]
-  # }
   size = ifelse(is.null(args$size), 10, args$size)
   opacity = ifelse(is.null(args$opacity), 1, args$opacity)
 
@@ -363,4 +392,22 @@ clean_trajectory_data <- function(
 
   },  by = c("ENA_UNIT", by)]
   return(filled_data)
+}
+
+#' Title
+#'
+#' @param x
+#'
+#' @return
+#' @export
+add_means <- function(x) {
+  set <- x
+  plot <- set$model$plot
+
+  for(point_group in plot$plotted$points) {
+    plot <- ena.plot.group(plot, point_group$points, colors = point_group$color[1])
+  }
+
+  set$model$plot <- plot
+  set
 }

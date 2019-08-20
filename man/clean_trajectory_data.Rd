@@ -4,7 +4,8 @@
 \alias{clean_trajectory_data}
 \title{Title}
 \usage{
-clean_trajectory_data(x)
+clean_trajectory_data(x, by = x$`_function.params`$conversation[1],
+  rotation_matrix = x$rotation.matrix)
 }
 \arguments{
 \item{x}{}

@@ -4,7 +4,11 @@
 \alias{with_trajcetory}
 \title{Title}
 \usage{
-with_trajcetory(x, by, ...)
+with_trajcetory(x, ..., by = x$enaset$`_function.params`$conversation[1],
+  add_jitter = TRUE, frame = 1100, transition = 1000,
+  easing = "circle-in-out",
+  group_var = x$enaset$`_function.params`$groupVar,
+  groups = x$enaset$`_function.params`$groups)
 }
 \arguments{
 \item{...}{}

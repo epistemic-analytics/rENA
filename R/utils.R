@@ -74,12 +74,12 @@ remove.meta.data <- function(x) {
 
    vals
 }
-"$.ena.plots" <- function(x, i) {
- browser()
-}
-"[[.ena.plots" <- function(x, i) {
- browser()
-}
+# "$.ena.plot" <- function(x, i) {
+#  browser()
+# }
+# "[[.ena.plot" <- function(x, i) {
+#  browser()
+# }
 #' @export
 .DollarNames.ena.metadata <- function(x, pattern = "") {
    unique(x)
