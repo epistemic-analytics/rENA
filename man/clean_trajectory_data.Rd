@@ -4,11 +4,16 @@
 \alias{clean_trajectory_data}
 \title{Title}
 \usage{
-clean_trajectory_data(x, by = x$`_function.params`$conversation[1],
-  rotation_matrix = x$rotation.matrix)
+clean_trajectory_data(x = NULL,
+  by = x$`_function.params`$conversation[1],
+  rotation_matrix = x$rotation.matrix, points = NULL, units = points,
+  units_by = x$`_function.params`$units, steps = NULL)
 }
 \arguments{
-\item{x}{}
+\item{x}{[TBD]}
+}
+\value{
+[TBD]
 }
 \description{
 Title

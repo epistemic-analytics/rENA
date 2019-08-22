@@ -7,7 +7,10 @@
 add_means(x)
 }
 \arguments{
-\item{x}{}
+\item{x}{[TBD]}
+}
+\value{
+[TBD]
 }
 \description{
 Title

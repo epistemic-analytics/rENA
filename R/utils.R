@@ -21,6 +21,16 @@ find.code.cols <- function(x) {
    })
 }
 
+#' Find dimension columns
+#'
+#' @param x data.table (or frame) to search for columns of class ena.dimension
+#'
+#' @return logical vector
+#' @export
+find.dimension.cols <- function(x) {
+   sapply(x, is, class2 = "ena.dimension")
+}
+
 #' Remove meta columns from data.table
 #'
 #' @param x [TBD]

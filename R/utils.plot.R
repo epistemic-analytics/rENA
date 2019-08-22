@@ -64,33 +64,40 @@ add_points <- function(x, wh = NULL, ..., name = "plot", mean = NULL) {
     if (length(wh_subbed) > 1 && wh_subbed[[2]] %in% colnames(set$points)) {
       cc <- call(wh_subbed[[1]], set$points, wh_subbed[[2]])
       part1 <- eval(cc)
-      points <- as.matrix(set$points)[part1 == wh_subbed[[3]], ]
-      name <- tail(wh_subbed, 1)
+      # points <- as.matrix(set$points)[part1 == wh_subbed[[3]], ]
+
+
+      name <- paste(wh_subbed[-1], collapse = "$")
+      if(grepl(set$model$model.type, pattern="Trajectory")) {
+        points <- set$points[part1 == wh_subbed[[3]], ]
+        more.args$points = points[, .SD[nrow(.SD)], by = ENA_UNIT]
+      } else {
+        more.args$points = points <- set$points[part1 == wh_subbed[[3]], ]
+      }
 
       colors = plot$palette[length(plot$plotted$points) + 1]
     } else if (length(wh_subbed) == 1 && wh_subbed[[1]] %in% colnames(set$points)) {
-      points = as.matrix(set$points)
+      more.args$points = points = as.matrix(set$points)
       colors = plot$palette[as.numeric(as.factor(set$points[[wh_subbed]])) + length(plot$plotted$points)]
     } else {
-      points <- wh
+      more.args$points = points <- wh
       colors = plot$palette[length(plot$plotted$points) + 1]
     }
   } else {
-    points <- as.matrix(set$points)
+    more.args$points = points = as.matrix(set$points)
     name <- "all.points"
     colors = plot$palette[length(plot$plotted$points) + 1]
   }
 
   more.args$enaplot = plot
-  more.args$points = points
-
+  more.args$legend.name = name
   if(!is.null(colors)) {
     more.args$colors = colors
   }
   plot <- do.call(ena.plot.points, more.args)
+  plot$plotted$points[[name]]$data <- points
 
   if(!is.null(mean) && (is.list(mean) || mean == T)) {
-
     if (is.list(mean)) {
       more.args <- c(mean, more.args[!names(more.args) %in% names(mean)])
     }
@@ -268,23 +275,24 @@ add_network <- function(x, wh = NULL, ..., with.mean = F) {
 
 #' Title
 #'
-#' @param x
-#' @param wh
-#' @param ...
+#' @param x [TBD]
+#' @param wh [TBD]
+#' @param ... [TBD]
 #'
-#' @return
+#' @return [TBD]
 #' @export
 with_trajcetory <- function(
   x, ...,
-  by = x$enaset$`_function.params`$conversation[1],
+  by = x$`_function.params`$conversation[1],
   add_jitter = TRUE,
   frame = 1100,
   transition = 1000,
   easing = "circle-in-out",
-  group_var = x$enaset$`_function.params`$groupVar,
-  groups = x$enaset$`_function.params`$groups
+  group_var = x$`_function.params`$groupVar,
+  groups = x$`_function.params`$groups
 ) {
-  set = x$enaset
+  set = x
+  plot = set$model$plot
   args = list(...)
 
   clean_data = clean_trajectory_data(set)
@@ -320,66 +328,93 @@ with_trajcetory <- function(
     showticklabels = FALSE, showgrid = FALSE
   )
 
-  # browser()
-  thisPlot <- clean_data %>%
-    plot_ly(
-      x = dims[,1], y = dims[,2],
-      text = ~ENA_UNIT,
-      frame = as.formula(paste0("~", by)),
-      type = 'scatter',
-      mode = 'markers',
-      marker = list(
-        size = size,
-        opacity = opacity,
-        hoverinfo = "text",
-        color = as.numeric(as.factor(clean_data[[group_var]]))
-        # color = as.formula(paste0("~", group_var))
+  #####
+  ### Add to the plot
+  #####
+    thisPlot <- clean_data %>%
+      plotly::plot_ly(
+        x = dims[,1], y = dims[,2],
+        text = ~ENA_UNIT,
+        frame = as.formula(paste0("~", by)),
+        type = 'scatter',
+        mode = 'markers',
+        marker = list(
+          size = size,
+          opacity = opacity,
+          hoverinfo = "text",
+          color = as.numeric(as.factor(clean_data[[group_var]]))
+          # color = as.formula(paste0("~", group_var))
+        )
+      ) %>%
+      plotly::layout(
+        xaxis = ax,
+        yaxis = ax,
+        showlegend = T
+      ) %>%
+      plotly::animation_opts(
+        frame = frame,
+        transition = transition,
+        easing = easing,
+        redraw = T
       )
-    ) %>%
-    layout(
-      xaxis = ax,
-      yaxis = ax,
-      showlegend = T
-    ) %>%
-    animation_opts(
-      frame = frame,
-      transition = transition,
-      easing = easing,
-      redraw = T
-    )
+  #####
 
   return(thisPlot)
 }
 
 #' Title
 #'
-#' @param x
+#' @param x [TBD]
 #'
-#' @return
+#' @return [TBD]
 #' @export
 clean_trajectory_data <- function(
-  x,
+  x = NULL,
   by = x$`_function.params`$conversation[1],
-  rotation_matrix = x$rotation.matrix
+  rotation_matrix = x$rotation.matrix,
+  points = NULL,
+  units = points,
+  units_by = x$`_function.params`$units,
+  steps = NULL
 ) {
-  points = x$points
-  rotation_matrix = as.matrix(rotation_matrix)
-  units <- x$trajectories #points[, !find.meta.cols(points), with = FALSE]
-  unique_unit_values <- unique(units[, c(x$`_function.params`$units, "ENA_UNIT"), with = FALSE])
-  full_data <- cbind(units, as.matrix(points) %*% rotation_matrix)
+  if(is(x, "ena.set")) {
+    if(is.null(points))
+      points <- x$points
+    if(is.null(units))
+      units <- x$trajectories #points[, !find.meta.cols(points), with = FALSE]
+  }
+
+  unique_unit_values <- unique(units[, c(units_by, "ENA_UNIT"), with = FALSE])
+
+  if(!is.null(rotation_matrix)) {
+    rotation_matrix = as.matrix(rotation_matrix)
+    full_data <- cbind(units, as.matrix(points) %*% rotation_matrix)
+  } else {
+    full_data <- cbind(units, as.matrix(points))
+  }
   full_data <- full_data[, unique(names(full_data)), with = FALSE]
 
-  all_steps_w_zero <- data.table(rbind(
-    rep(0, length(by)),
-    expand.grid(
-      sapply(by, function(b) sort(unique(x$trajectories[[b]]))),
-      stringsAsFactors = F
-    )
-  ))
-  colnames(all_steps_w_zero) <- by
+  if(is.null(steps)) {
+    all_steps_w_zero <- data.table(rbind(
+      rep(0, length(by)),
+      expand.grid(
+        sapply(by, function(b) sort(unique(units[[b]]))),
+        stringsAsFactors = F
+      )
+    ))
+    colnames(all_steps_w_zero) <- by
+  } else {
+    all_steps_w_zero <- steps
+  }
   all_step_data <- CJ(all_steps_w_zero[[by]], unique_unit_values$ENA_UNIT)
   colnames(all_step_data) <- c(by, "ENA_UNIT")
-  all_step_data[, colnames(rotation_matrix) := 0]
+
+  dimension_col_names = colnames(points)[
+                          which(sapply(points, function(col) {
+                            is(col, "ena.dimension")
+                          }))
+                        ]
+  all_step_data[, c(dimension_col_names) := 0]
   all_step_data[[by]] = as.ena.metadata(all_step_data[[by]])
   all_step_data = merge(unique_unit_values, all_step_data, by = "ENA_UNIT")
   setkey(all_step_data, "ENA_UNIT")
@@ -391,25 +426,28 @@ clean_trajectory_data <- function(
       })
       existing_row = which(rowSums(user_rows * 1) == 2)
       if(length(existing_row) > 0) {
-        full_data[existing_row, colnames(rotation_matrix), with = FALSE]
+        full_data[existing_row, c(dimension_col_names), with = FALSE]
       } else {
         prev_row = tail(full_data[ENA_UNIT == .BY$ENA_UNIT & full_data[[by]] < .BY[[by]],], 1)
         if(nrow(prev_row) == 0) {
-          data.table(matrix(rep(0, ncol(rotation_matrix)), nrow = 1, dimnames = list(NULL, colnames(rotation_matrix))))
+          data.table(matrix(rep(0, length(dimension_col_names)), nrow = 1, dimnames = list(NULL, c(dimension_col_names))))
         } else {
-          prev_row[, colnames(rotation_matrix), with = FALSE]
+          prev_row[, c(dimension_col_names), with = FALSE]
         }
       }
 
   },  by = c("ENA_UNIT", by)]
+  for(col in dimension_col_names) {
+    set(filled_data, j = col, value = as.ena.dimension(filled_data[[col]]))
+  }
   return(filled_data)
 }
 
 #' Title
 #'
-#' @param x
+#' @param x [TBD]
 #'
-#' @return
+#' @return [TBD]
 #' @export
 add_means <- function(x) {
   set <- x
@@ -421,4 +459,130 @@ add_means <- function(x) {
 
   set$model$plot <- plot
   set
+}
+
+#' Title
+#'
+#' @param x [TBD]
+#' @param ... [TBD]
+#' @param by [TBD]
+#' @param add_jitter [TBD]
+#' @param frame [TBD]
+#' @param transition [TBD]
+#' @param easing [TBD]
+#' @param group_var [TBD]
+#' @param groups [TBD]
+#'
+#' @return [TBD]
+#' @export
+as_trajectory <- function(
+  x, ...,
+  by = x$`_function.params`$conversation[1],
+  add_jitter = TRUE,
+  frame = 1100,
+  transition = 1000,
+  easing = "circle-in-out"
+) {
+  args = list(...)
+
+  # points <- rbindlist(lapply(
+  #             x$model$plot$plotted$points,
+  #             function(ps) { ps$data }
+  #           ), idcol = "TRAJ_GROUP")
+  # set(
+  #   points,
+  #   j = which(colnames(points) == "TRAJ_GROUP"),
+  #   value = as.ena.metadata(points$TRAJ_GROUP)
+  # )
+  # class(points) <- class(x$points)
+  # points_cleaned <- clean_trajectory_data(
+  #   points = points,
+  #   by = x$`_function.params`$conversation[1],
+  #   units = x$trajectories,
+  #   units_by = x$`_function.params`$units
+  # )
+
+  all_steps_w_zero <- data.table(rbind(
+    rep(0, length(by)),
+    expand.grid(
+      sapply(by, function(b) sort(unique(x$points[[b]]))),
+      stringsAsFactors = F
+    )
+  ))
+  colnames(all_steps_w_zero) <- by
+  point_group_names <- names(x$model$plot$plotted$points)
+  points_cleaned <- lapply(point_group_names, function(n) {
+      clean_trajectory_data(
+          points = x$model$plot$plotted$points[[n]]$data,
+          by = by,
+          units = x$model$plot$plotted$points[[n]]$data,
+          units_by = x$`_function.params`$units,
+          steps = all_steps_w_zero
+      )
+  })
+  names(points_cleaned) <- sapply(x$model$plot$plotted$points, "[[", "color") #x$model$plot$plotted$points
+  points_cleaned <- rbindlist(points_cleaned, idcol = "color")
+
+  meta_data = unique(x$meta.data)
+  setkey(points_cleaned, ENA_UNIT)
+  setkey(meta_data, ENA_UNIT)
+  points_cleaned = meta_data[points_cleaned]
+  setkeyv(points_cleaned, by)
+
+  size = ifelse(is.null(args$size), 10, args$size)
+  opacity = ifelse(is.null(args$opacity), 1, args$opacity)
+
+  dims = as.matrix(points_cleaned[,find.dimension.cols(points_cleaned), with = F])[, 1:2]
+  if(add_jitter) {
+    dims[, 1] = jitter(dims[, 1])
+    dims[, 2] = jitter(dims[, 2])
+  }
+
+  if(is.null(args$scale)) {
+    max_abs = max(abs(dims))
+    scale = c(-1*max_abs, max_abs)
+  } else {
+    scale = args$scale
+  }
+
+  ax <- list(
+    range = scale, title = "",
+    zeroline = TRUE, showline = FALSE,
+    showticklabels = FALSE, showgrid = FALSE
+  )
+
+  #####
+  ### Add to the plot
+  #####
+    thisPlot <- plotly::plot_ly(
+        data = points_cleaned,
+        x = dims[,1], y = dims[,2],
+        text = ~ENA_UNIT,
+        frame = as.formula(paste0("~", by)),
+        type = 'scatter',
+        mode = 'markers',
+        marker = list(
+          size = size,
+          opacity = opacity,
+          hoverinfo = "text",
+          color = as.numeric(as.factor(points_cleaned[["color"]]))
+          # color = as.formula(paste0("~", group_var))
+        )
+      ) %>%
+      plotly::layout(
+        xaxis = ax,
+        yaxis = ax,
+        showlegend = T
+      ) %>%
+      plotly::animation_opts(
+        frame = frame,
+        transition = transition,
+        easing = easing,
+        redraw = T
+      )
+  #####
+
+
+  x$model$plot <- thisPlot
+  return(x)
 }

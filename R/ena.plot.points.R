@@ -97,7 +97,7 @@ ena.plot.points = function(
 
     if(is.null(points)) {
       # stop("Must provide points to plot.")
-      points = as.matrix(enaplot$enaset$points)
+      points = enaplot$enaset$points
     }
 
 
@@ -106,7 +106,8 @@ ena.plot.points = function(
       dim(points) = c(1,nrow(points))
       points.layout = data.table::data.table(points);
     } else if (is.data.table(points)) {
-      points.layout = remove.meta.data(points)
+      # points.layout = remove.meta.data(points)
+      points.layout = data.table::copy(points)
     } else {
       points.layout = data.table::data.table(points);
     }
@@ -137,7 +138,6 @@ ena.plot.points = function(
       outlier.interval = "box";
     }
 
-    colnames(points.layout) = paste0("X", rep(1:ncol(points.layout)));
 
     if(is.null(colors)) {
       colors = enaplot$palette[length(enaplot$plotted$points) + 1]
@@ -189,11 +189,13 @@ ena.plot.points = function(
   ###
   # Plot
   #####
-    this.max = max(points.layout);
-    for(m in 1:nrow(points.layout)) {
+    points.matrix = remove.meta.data(points.layout)
+    colnames(points.matrix) = paste0("X", rep(1:ncol(points.matrix)));
+    this.max = max(points.matrix);
+    for(m in 1:nrow(points.matrix)) {
       enaplot$plot = plotly::add_trace(
         p = enaplot$plot,
-        data = points.layout[m,],
+        data = points.matrix[m,],
         type ="scatter",
         x = ~X1, y = ~X2,
         mode = "markers+text",
@@ -221,9 +223,10 @@ ena.plot.points = function(
 
     for(color in unique(colors)) {
       enaplot$plotted$points[[length(enaplot$plotted$points) + 1]] <- list(
-        points = points.layout[color == colors,],
+        data = points.layout[color == colors,],
         color = color
       )
+      names(enaplot$plotted$points)[length(enaplot$plotted$points)] = legend.name
     }
 
     if(!is.null(box.values)) {
