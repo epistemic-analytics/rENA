@@ -164,6 +164,7 @@ print.ena.set <- function(x, ..., plot = F, set = T) {
 #' @return [TBD]
 #' @export
 show <- function(x, ...) {
+   x$model$plots <- lapply(x$model$plots, check_range)
    print(x, ..., plot = T, set = F)
 
    invisible(x)
