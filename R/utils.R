@@ -1,4 +1,3 @@
-
 #' Find metadata columns
 #'
 #' @param x data.table (or frame) to search for columns of class ena.metadata
@@ -166,6 +165,77 @@ print.ena.set <- function(x, ..., plot = F, set = T) {
 show <- function(x, ...) {
    x$model$plots <- lapply(x$model$plots, check_range)
    print(x, ..., plot = T, set = F)
+
+   invisible(x)
+}
+
+#' Title
+#'
+#' @param x [TBD]
+#' @param by [TBD]
+#'
+#' @return [TBD]
+#' @export
+as_trajectory <- function(x,
+   by = x$`_function.params`$conversation[1],
+   model = c("AccumulatedTrajectory", "SeperateTrajectory"),
+   ...
+) {
+   model = match.arg(model)
+   orig_args = x$`_function.params`
+   orig_args$model = model
+
+   more_args <- list(...)
+   for(arg in names(more_args)) {
+      orig_args[[arg]] <- more_args[[arg]]
+   }
+   #c(mean, more.args[!names(more.args) %in% names(mean)])
+
+   do.call(ena, orig_args)
+}
+
+#' Title
+#'
+#' @param x
+#' @param by
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+project_in <- function(x, by = NULL, ...) {
+   if(is.null(by)) {
+      stop("A second parameter (ena.set or rotation.matrix) is required")
+   }
+
+   rotation.set <- NULL
+   if(is(by, "ena.set")) {
+      rotation.set <- by$rotation
+   } else if(is(by, "ena.rotation.matrix")) {
+      rotation.set <- by
+   }
+
+   if(!all(x$rotation$adjacency.key == by$rotation$adjacency.key)) {
+      stop("Rotation sets must have identical adjacency keys")
+   }
+
+   x$rotation.matrix <- rotation.set$rotation.matrix
+   x$rotation$rotation.matrix <- rotation.set$rotation.matrix
+   x$rotation$nodes <- rotation.set$nodes;
+   x$rotation$eigenvalues <- rotation.set$eigenvalues
+
+   points <- as.matrix(x$model$points.for.projection) %*% as.matrix(x$rotation.matrix)
+   points.dt <- as.data.table(points)
+   for (i in seq(ncol(points.dt))) {
+    set(points.dt, j = i, value = as.ena.dimension(points.dt[[i]]))
+   }
+   if(grepl(x = x$model$model.type, pattern = "Trajectory")) {
+    x$points <- cbind(x$trajectories, points.dt)
+   } else {
+    x$points <- cbind(x$meta.data, points.dt)
+   }
+   x$points <- as.ena.matrix(x$points, "ena.points")
 
    invisible(x)
 }
