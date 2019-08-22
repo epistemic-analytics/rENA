@@ -45,7 +45,7 @@ plot.ena.set <- function(x, y, ...) {
   if(!is.null(args$title)) {
     names(x$model$plots)[length(x$model$plots)] = args$title
   }
-  x
+  invisible(x)
 }
 
 #' Plot points on an ena.plot
@@ -80,7 +80,9 @@ add_points <- function(x, wh = NULL, ..., name = "plot", mean = NULL, colors = N
         more.args$points = points <- set$points[part1 == wh_subbed[[3]], ]
       }
 
-      colors = ifelse(is.null(colors), plot$palette[length(plot$plotted$points) + 1], colors)
+      if(is.null(colors)) {
+        colors = plot$palette[length(plot$plotted$points) + 1]
+      }
     }
     else if (length(wh_subbed) == 1 && wh_subbed[[1]] %in% colnames(set$points)) {
       more.args$points = points = set$points
@@ -98,7 +100,7 @@ add_points <- function(x, wh = NULL, ..., name = "plot", mean = NULL, colors = N
     }
   }
   else {
-    more.args$points = points = as.matrix(set$points)
+    more.args$points = points = set$points
     name <- "all.points"
     # colors = plot$palette[length(plot$plotted$points) + 1]
     colors = ifelse(is.null(colors), plot$palette[length(plot$plotted$points) + 1], colors)
@@ -137,7 +139,7 @@ add_points <- function(x, wh = NULL, ..., name = "plot", mean = NULL, colors = N
 
   # set$model$plot <- plot
   set$model$plots[[length(set$model$plots)]] <- plot
-  return(set)
+  invisible(set)
 }
 
 #' Plot a trajectory on an ena.plot
@@ -177,7 +179,7 @@ add_trajectory <- function(x, wh = NULL, ..., name = "plot") {
 
   # set$model$plot <- plot
   set$model$plots[[length(x$model$plots)]] <- plot
-  set
+  invisible(set)
 }
 
 #' Add a group mean to an ena.plot
@@ -234,10 +236,9 @@ add_group <- function(x, wh = NULL, ...) {
     }
   }
 
-  browser()
   # set$model$plot <- plot
   set$model$plots[[length(set$model$plots)]] <- plot
-  set
+  invisible(set)
 }
 
 #' Add a network to an ENA plot
@@ -279,7 +280,7 @@ add_network <- function(x, wh = NULL, ..., with.mean = F) {
 
         if(with.mean) {
           set <- add_group(set, y,
-                colors = default.colors[length(attr(plot, "means")) + 1], ...)
+                colors = plot$palette[length(attr(plot, "means")) + 1], ...)
           plot <- set$model$plot
         }
 
@@ -313,7 +314,7 @@ add_network <- function(x, wh = NULL, ..., with.mean = F) {
 
   # set$model$plot <- plot
   set$model$plots[[length(set$model$plots)]] <- plot
-  set
+  invisible(set)
 }
 
 #' Title
@@ -338,7 +339,7 @@ with_means <- function(x) {
 
   # set$model$plot <- plot
   set$model$plots[[length(set$model$plots)]] <- plot
-  set
+  invisible(set)
 }
 
 #' Title
@@ -355,7 +356,7 @@ with_means <- function(x) {
 #'
 #' @return [TBD]
 #' @export
-as_trajectory <- function(
+with_trajectory <- function(
   x, ...,
   by = x$`_function.params`$conversation[1],
   add_jitter = TRUE,
@@ -454,7 +455,7 @@ as_trajectory <- function(
 
   # set$model$plot <- plot
   set$model$plots[[length(set$model$plots) + 1]] <- thisPlot
-  set
+  invisible(set)
 }
 
 
@@ -537,4 +538,41 @@ prepare_trajectory_data <- function(
     set(filled_data, j = col, value = as.ena.dimension(filled_data[[col]]))
   }
   return(filled_data)
+}
+
+
+#' Title
+#'
+#' @param x
+#'
+#' @return
+#' @export
+clear <- function(x, wh = seq(x$model$plots)) {
+  x$model$plots[[wh]] <- NULL
+  invisible(x)
+}
+
+check_range <- function(x) {
+  curr_max = max(sapply(x$plotted$points, function(p) max(as.matrix(p$data))));
+  if(curr_max*1.2 > max(x$axes$y$range)) {
+    this.max = curr_max * 1.2
+    x$axes$x$range = c(-this.max, this.max)
+    x$axes$y$range = c(-this.max, this.max)
+    x$plot = plotly::layout(
+      x$plot,
+      xaxis = x$axes$x,
+      yaxis = x$axes$y
+    );
+  } else if (curr_max < max(x$axes$y$range*0.5)) {
+    this.max = curr_max * 1.2
+    x$axes$x$range = c(-this.max, this.max)
+    x$axes$y$range = c(-this.max, this.max)
+    x$plot = plotly::layout(
+      x$plot,
+      xaxis = x$axes$x,
+      yaxis = x$axes$y
+    );
+  }
+
+  x
 }
