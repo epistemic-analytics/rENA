@@ -138,10 +138,6 @@ ena.plot.points = function(
       outlier.interval = "box";
     }
 
-
-    if(is.null(colors)) {
-      colors = enaplot$palette[length(enaplot$plotted$points) + 1]
-    }
     if(length(colors) == 1) {
       colors = rep(colors, nrow(points.layout))
     }
@@ -219,14 +215,6 @@ ena.plot.points = function(
         textposition = label.offset[m],
         hoverinfo = "x+y+name"
       )
-    }
-
-    for(color in unique(colors)) {
-      enaplot$plotted$points[[length(enaplot$plotted$points) + 1]] <- list(
-        data = points.layout[color == colors,],
-        color = color
-      )
-      names(enaplot$plotted$points)[length(enaplot$plotted$points)] = legend.name
     }
 
     if(!is.null(box.values)) {

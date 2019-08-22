@@ -260,7 +260,7 @@ ena.make.set <- function(
       enadata$model$variance <- diagonal_variance / sum(diagonal_variance)
     #####
 
-    enadata$model$plot <- ena.plot(enadata, ...)
+    enadata$model$plots <- list(default = ena.plot(enadata, ...))
     # class(enadata$model$plot) <- c("ena.plot", class(enadata$model$plot))
 
     enadata$`_function.params`$norm.by <- norm.by

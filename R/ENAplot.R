@@ -134,7 +134,7 @@ ENAplot = R6::R6Class("ENAplot",
                   "#FDC086","#FFFF99", "#BF5B17"),
       plotted = list(
         points = list(), networks = list(),
-        trajectories = list()
+        trajectories = list(), means = list()
       ),
     ####
     ## END: Public Properties

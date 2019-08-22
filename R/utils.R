@@ -137,3 +137,34 @@ summary.ena.set <- function(object, ...) {
 #   y = as.character(x)
 #   format(y, justify = justify)
 # }
+
+#' Title
+#'
+#' @param x [TBD]
+#' @param ... [TBD]
+#'
+#' @return [TBD]
+#' @export
+print.ena.set <- function(x, ..., plot = F, set = T) {
+   x.unclass <- unclass(x)
+   if(plot == F) {
+      x.unclass$model$plots <- NULL
+   }
+   if(set == F) {
+      x.unclass <- x.unclass$model$plots
+   }
+   base::print(x.unclass)
+}
+
+#' Title
+#'
+#' @param x [TBD]
+#' @param ... [TBD]
+#'
+#' @return [TBD]
+#' @export
+show <- function(x, ...) {
+   print(x, ..., plot = T, set = F)
+
+   invisible(x)
+}
