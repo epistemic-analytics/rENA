@@ -142,10 +142,10 @@ ena.make.set <- function(
           value = as.ena.co.occurrence(enadata$model$points.for.projection[[i]])
         )
       }
-      enadata$model$points.for.projection <- cbind(
+      enadata$model$points.for.projection <- as.ena.matrix(cbind(
         enadata$meta.data,
         enadata$model$points.for.projection
-      )
+      ), "ena.points")
     #####
 
     ###
