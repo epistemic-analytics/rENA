@@ -192,8 +192,11 @@ ena.make.set <- function(
         for (i in seq(ncol(points.dt))) {
           set(points.dt, j = i, value = as.ena.dimension(points.dt[[i]]))
         }
-        enadata$points <- cbind(enadata$meta.data, points.dt)
-
+        if(grepl(x = enadata$model$model.type, pattern = "Trajectory")) {
+          enadata$points <- cbind(enadata$trajectories, points.dt)
+        } else {
+          enadata$points <- cbind(enadata$meta.data, points.dt)
+        }
         enadata$points <- as.ena.matrix(enadata$points, "ena.points")
       } else {
         stop(paste0("There is no rotation matrix, if you supplied a custom ",
