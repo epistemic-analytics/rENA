@@ -41,6 +41,10 @@ plot.ena.set <- function(x, y, ...) {
   # p
   # p$enaset = NULL
   x$model$plots[[length(x$model$plots) + 1]] = p
+  args = list(...)
+  if(!is.null(args$title)) {
+    names(x$model$plots)[length(x$model$plots)] = args$title
+  }
   x
 }
 
