@@ -12,7 +12,7 @@ ena.plot.points(enaplot, points = NULL,
   confidence.interval.values = NULL, confidence.interval = c("none",
   "crosshairs", "box"), outlier.interval.values = NULL,
   outlier.interval = c("none", "crosshairs", "box"), show.legend = T,
-  legend.name = "Points", ...)
+  legend.name = "Points", texts = NULL, ...)
 }
 \arguments{
 \item{enaplot}{\code{\link{ENAplot}} object to use for plotting}

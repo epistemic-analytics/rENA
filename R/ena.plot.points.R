@@ -84,13 +84,14 @@ ena.plot.points = function(
   outlier.interval = c("none", "crosshairs", "box"),
   show.legend = T,
   legend.name = "Points",
+  texts = NULL,
   ...
 ) {
   ###
   # Parameter Checking and Cleaning
   ###
     env = environment();
-    for(n in c("font.size", "font.color", "font.family")){
+    for(n in c("font.size", "font.color", "font.family")) {
       if(is.null(get(paste0("label.",n))))
         env[[paste0("label.",n)]] = enaplot$get(n);
     }
@@ -100,15 +101,16 @@ ena.plot.points = function(
       points = enaplot$enaset$points
     }
 
-
     if(is(points, "numeric")){
       points = matrix(points);
       dim(points) = c(1,nrow(points))
       points.layout = data.table::data.table(points);
-    } else if (is.data.table(points)) {
+    }
+    else if (is.data.table(points)) {
       # points.layout = remove.meta.data(points)
       points.layout = data.table::copy(points)
-    } else {
+    }
+    else {
       points.layout = data.table::data.table(points);
     }
 
@@ -205,7 +207,7 @@ ena.plot.points = function(
         # legendgroup = label.group,
         # legendgroup = ifelse(!is.null(box.label), labels[1], NULL),
         name = labels[m],
-        text = NULL, #labels[m],
+        text = texts[m], #labels[m],
         textfont = list(
           family = label.font.family,
           size = label.font.size,

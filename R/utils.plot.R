@@ -58,9 +58,14 @@ plot.ena.set <- function(x, y, ...) {
 #'
 #' @return ena.plot.object
 #' @export
-add_points <- function(x, wh = NULL, ..., name = "plot", mean = NULL, colors = NULL) {
+add_points <- function(
+  x,
+  wh = NULL, ...,
+  name = "plot",
+  mean = NULL,
+  colors = NULL
+) {
   set <- x
-  # plot <- set$model$plot
   plot <- set$model$plots[[length(set$model$plots)]]
   more.args <- list(...)
 
@@ -69,7 +74,6 @@ add_points <- function(x, wh = NULL, ..., name = "plot", mean = NULL, colors = N
     if (length(wh_subbed) > 1 && wh_subbed[[2]] %in% colnames(set$points)) {
       cc <- call(wh_subbed[[1]], set$points, wh_subbed[[2]])
       part1 <- eval(cc)
-      # points <- as.matrix(set$points)[part1 == wh_subbed[[3]], ]
 
       name <- paste(wh_subbed[-1], collapse = "$")
       if(grepl(set$model$model.type, pattern="Trajectory")) {
@@ -95,14 +99,12 @@ add_points <- function(x, wh = NULL, ..., name = "plot", mean = NULL, colors = N
     }
     else {
       more.args$points = points <- wh
-      # colors = plot$palette[length(plot$plotted$points) + 1]
       colors = ifelse(is.null(colors), plot$palette[length(plot$plotted$points) + 1], colors)
     }
   }
   else {
     more.args$points = points = set$points
     name <- "all.points"
-    # colors = plot$palette[length(plot$plotted$points) + 1]
     colors = ifelse(is.null(colors), plot$palette[length(plot$plotted$points) + 1], colors)
   }
 
@@ -115,7 +117,6 @@ add_points <- function(x, wh = NULL, ..., name = "plot", mean = NULL, colors = N
   }
   plot <- do.call(ena.plot.points, more.args)
 
-  # more.args$points[, color := more.args$colors]
   for(color in unique(more.args$colors)) {
     plot$plotted$points[[length(plot$plotted$points) + 1]] <- list(
       data = more.args$points[color == more.args$colors,],
@@ -137,7 +138,6 @@ add_points <- function(x, wh = NULL, ..., name = "plot", mean = NULL, colors = N
     plot <- do.call(ena.plot.group, more.args)
   }
 
-  # set$model$plot <- plot
   set$model$plots[[length(set$model$plots)]] <- plot
   invisible(set)
 }
@@ -313,6 +313,29 @@ add_network <- function(x, wh = NULL, ..., with.mean = F) {
   }
 
   # set$model$plot <- plot
+  set$model$plots[[length(set$model$plots)]] <- plot
+  invisible(set)
+}
+
+#' Title
+#'
+#' @param x [TBD]
+#' @param ... [TBD]
+#'
+#' @return [TBD]
+#' @export
+add_nodes <- function(x, ...) {
+  set <- x
+  plot <- set$model$plots[[length(set$model$plots)]]
+
+  nodes <- set$rotation$nodes
+  plot <- ena.plot.points(plot, points = as.matrix(nodes), texts = as.character(nodes$code))
+
+  plot$plotted$networks[[length(plot$plotted$networks) + 1]] <- list(
+    nodes = nodes,
+    data = NULL,
+    color = NULL
+  )
   set$model$plots[[length(set$model$plots)]] <- plot
   invisible(set)
 }
@@ -543,17 +566,63 @@ prepare_trajectory_data <- function(
 
 #' Title
 #'
-#' @param x
+#' @param x [TBD]
 #'
-#' @return
+#' @return [TBD]
 #' @export
 clear <- function(x, wh = seq(x$model$plots)) {
   x$model$plots[[wh]] <- NULL
   invisible(x)
 }
 
+#' Title
+#'
+#' @param x [TBD]
+#' @param center Ignored.
+#' @param scale [TBD]
+#'
+#' @return [TBD]
+#' @export
+scale.ena.set <- function(x, center = TRUE, scale = TRUE) {
+  set <- x
+  plot <- set$model$plots[[length(set$model$plots)]]
+
+  dims <- 1:2
+  point_range <- range(sapply(plot$plotted$points, function(d) range(as.matrix(d$data)[,dims])))
+  network_range <-range(sapply(plot$plotted$networks, function(n) range(as.matrix(n$nodes)[,dims])))
+
+  scale_factor <- min(abs(network_range) / abs(point_range))
+
+  for( points in plot$plotted$points) {
+    dim_cols = colnames(points$data)[find.dimension.cols(points$data)]
+    points$data[, c(dim_cols) := lapply(.SD, function(x) x * scale_factor), .SDcols = c(dim_cols)]
+    more_args = list()
+    more_args$enaplot <- plot
+    more_args$points <- points$data
+    more_args$colors <- points$color
+    plot <- do.call(ena.plot.points, more_args)
+  }
+  for(means in plot$plotted$means) {
+    more_args <- list()
+    more_args$enaplot <- plot
+    more_args$points <- means$data * scale_factor
+    more_args$colors <- means$color
+    plot <- do.call(ena.plot.group, more_args)
+  }
+
+  set$model$plots[[length(set$model$plots)]] <- plot
+  invisible(set)
+}
+
 check_range <- function(x) {
-  curr_max = max(sapply(x$plotted$points, function(p) max(as.matrix(p$data))));
+  numbers <- as.numeric(sapply(x$plotted$points, function(p) max(as.matrix(p$data))))
+  network <- as.numeric(sapply(x$plotted$network, function(p) max(as.matrix(p$nodes))))
+
+  if(length(numbers) == 0) {
+    return(x)
+  }
+
+  curr_max = max(c(numbers, network))
   if(curr_max*1.2 > max(x$axes$y$range)) {
     this.max = curr_max * 1.2
     x$axes$x$range = c(-this.max, this.max)

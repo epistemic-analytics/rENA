@@ -196,14 +196,12 @@ as_trajectory <- function(x,
 
 #' Title
 #'
-#' @param x
-#' @param by
-#' @param ...
+#' @param x [TBD]
+#' @param by [TBD]
+#' @param ... [TBD]
 #'
-#' @return
+#' @return [TBD]
 #' @export
-#'
-#' @examples
 project_in <- function(x, by = NULL, ...) {
    if(is.null(by)) {
       stop("A second parameter (ena.set or rotation.matrix) is required")

@@ -7,7 +7,14 @@
 project_in(x, by = NULL, ...)
 }
 \arguments{
-\item{...}{}
+\item{x}{[TBD]}
+
+\item{by}{[TBD]}
+
+\item{...}{[TBD]}
+}
+\value{
+[TBD]
 }
 \description{
 Title
