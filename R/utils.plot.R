@@ -236,7 +236,11 @@ add_group <- function(x, wh = NULL, ...) {
     }
   }
 
-  # set$model$plot <- plot
+  plot$plotted$means[[length(plot$plotted$means) + 1]] = list(
+    data = more_args$points,
+    color = more_args$colors
+  )
+
   set$model$plots[[length(set$model$plots)]] <- plot
   invisible(set)
 }
@@ -268,7 +272,7 @@ add_network <- function(x, wh = NULL, ..., with.mean = F) {
 
     if (with.mean) {
       set <- add_group(set, points = set$points, ...)
-      plot <- set$model$plot
+      plot <- set$model$plots[[length(set$model$plots)]]
     }
   }
   else {
@@ -297,7 +301,7 @@ add_network <- function(x, wh = NULL, ..., with.mean = F) {
 
         if (with.mean) {
           set <- add_group(set, wh.clean, ...)
-          plot <- set$model$plot
+          plot <- set$model$plots[[length(set$model$plots)]]
         }
       }
       else {
@@ -329,7 +333,11 @@ add_nodes <- function(x, ...) {
   plot <- set$model$plots[[length(set$model$plots)]]
 
   nodes <- set$rotation$nodes
-  plot <- ena.plot.points(plot, points = as.matrix(nodes), texts = as.character(nodes$code))
+  plot <- ena.plot.points(plot,
+            points = as.matrix(nodes),
+            texts = as.character(nodes$code),
+            ...
+          )
 
   plot$plotted$networks[[length(plot$plotted$networks) + 1]] <- list(
     nodes = nodes,
@@ -571,7 +579,9 @@ prepare_trajectory_data <- function(
 #' @return [TBD]
 #' @export
 clear <- function(x, wh = seq(x$model$plots)) {
-  x$model$plots[[wh]] <- NULL
+  if(length(wh) > 0) {
+    x$model$plots[[wh]] <- NULL
+  }
   invisible(x)
 }
 
@@ -586,7 +596,7 @@ clear <- function(x, wh = seq(x$model$plots)) {
 scale.ena.set <- function(x, center = TRUE, scale = TRUE) {
   set <- x
   plot <- set$model$plots[[length(set$model$plots)]]
-
+  browser()
   dims <- 1:2
   point_range <- range(sapply(plot$plotted$points, function(d) range(as.matrix(d$data)[,dims])))
   network_range <-range(sapply(plot$plotted$networks, function(n) range(as.matrix(n$nodes)[,dims])))
@@ -611,18 +621,23 @@ scale.ena.set <- function(x, center = TRUE, scale = TRUE) {
   }
 
   set$model$plots[[length(set$model$plots)]] <- plot
+
   invisible(set)
 }
 
 check_range <- function(x) {
   numbers <- as.numeric(sapply(x$plotted$points, function(p) max(as.matrix(p$data))))
   network <- as.numeric(sapply(x$plotted$network, function(p) max(as.matrix(p$nodes))))
+  means <- as.numeric(sapply(x$plotted$means, function(p) max(as.matrix(p$data))))
 
-  if(length(numbers) == 0) {
+  if(
+    length(numbers) == 0 &&
+    length(means) == 0
+  ) {
     return(x)
   }
 
-  curr_max = max(c(numbers, network))
+  curr_max = max(c(numbers, network, means))
   if(curr_max*1.2 > max(x$axes$y$range)) {
     this.max = curr_max * 1.2
     x$axes$x$range = c(-this.max, this.max)

@@ -97,7 +97,8 @@ ena.make.set <- function(
       ...
     )
     return(set$process());
-  } else {
+  }
+  else {
     if ("ENAdata" %in% class(enadata)) {
       warning(paste0("Usage of ENAdata objects will be deprecated and ",
         "potentially removed altogether in future versions. See ",
@@ -184,7 +185,7 @@ ena.make.set <- function(
     #####
 
     ###
-    # Generated the rotated points
+    # Generate the rotated points
     #####
       if (!is.null(enadata$rotation.matrix)) {
         points <- points.for.projection %*% as.matrix(enadata$rotation.matrix)
@@ -194,11 +195,13 @@ ena.make.set <- function(
         }
         if(grepl(x = enadata$model$model.type, pattern = "Trajectory")) {
           enadata$points <- cbind(enadata$trajectories, points.dt)
-        } else {
+        }
+        else {
           enadata$points <- cbind(enadata$meta.data, points.dt)
         }
         enadata$points <- as.ena.matrix(enadata$points, "ena.points")
-      } else {
+      }
+      else {
         stop(paste0("There is no rotation matrix, if you supplied a custom ",
           "rotation.set, be sure it contains a rotation.matrix"))
       }

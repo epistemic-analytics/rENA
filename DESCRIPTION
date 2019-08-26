@@ -10,7 +10,7 @@ LazyData: TRUE
 Depends:
     R (>= 3.0.0)
 License: GPL-3 | file LICENSE
-LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppEigen
+LinkingTo: Rcpp, RcppArmadillo, RcppParallel
 BugReports: https://github.com/epistemic-analytics/rENA/issues
 Imports:
     data.table,

@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{[TBD]}
 
-\item{center}{[TBD]}
+\item{center}{Ignored.}
 
 \item{scale}{[TBD]}
 }
