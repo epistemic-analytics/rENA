@@ -146,13 +146,16 @@ summary.ena.set <- function(object, ...) {
 #' @export
 print.ena.set <- function(x, ..., plot = F, set = T) {
    x.unclass <- unclass(x)
-   if(plot == F) {
-      x.unclass$model$plots <- NULL
+
+   if(
+      !is.null(x.unclass$`_plot_op`) &&
+      x$`_plot_op` == T
+   ) {
+      base::print(x.unclass$model$plots)
    }
-   if(set == F) {
-      x.unclass <- x.unclass$model$plots
+   else {
+      base::print(x.unclass)
    }
-   base::print(x.unclass)
 }
 
 #' Title
@@ -213,7 +216,7 @@ project_in <- function(x, by = NULL, ...) {
       rotation.set <- by
    }
 
-   if(!all(x$rotation$adjacency.key == by$rotation$adjacency.key)) {
+   if(!identical(x$rotation$adjacency.key, rotation.set$adjacency.key)) {
       stop("Rotation sets must have identical adjacency keys")
    }
 
@@ -234,7 +237,7 @@ project_in <- function(x, by = NULL, ...) {
    }
    x$points <- as.ena.matrix(x$points, "ena.points")
 
-   invisible(x)
+   .return(x, invisible = T)
 }
 
 #' Title
@@ -244,24 +247,45 @@ project_in <- function(x, by = NULL, ...) {
 #' @return [TBD]
 #' @export
 means_rotate <- function(x, on = NULL) {
+   groupVar = NULL
+   groups = NULL
    if(is.null(on)) {
       col_counts = as.numeric(x$model$raw.input[, lapply(.SD, function(s) {
                   length(unique(s))
                }),
                .SDcols = c(x$`_function.params`$units)
             ])
-      on = x$`_function.params`$units[order(col_counts) == 1]
-      on_vals = levels(unique(x$model$raw.input[[on]]))[1:2]
+      groupVar = x$`_function.params`$units[order(col_counts) == 1]
+      groups = levels(unique(x$model$raw.input[[groupVar]]))[1:2]
       # on_grps = list()
       # on_grps[[on]] = sapply(on_vals, function(v) {
       #    x$meta.data[[on]] == v
       # }, simplify = F)
+   } else if(!is.null(names(on))) {
+      groupVar = names(on)
+      groups = on[[groupVar]]
    }
+   if(is.null(groupVar) || is.null(groups))
+      stop("Unable to determine groups for rotation.")
 
    orig_args <- x$`_function.params`
-   orig_args$groupVar = on
-   orig_args$groups = on_vals
+   orig_args$groupVar = groupVar
+   orig_args$groups = groups
    new_set <- do.call(ena, orig_args)
    new_set$model$plots <- x$model$plots
    invisible(new_set)
+}
+
+.return <- function(x, invisible = T, from_plot = F) {
+   # browser()
+   x$`_plot_op` = from_plot
+# if() {
+#       print(x$model$plots)
+#    }
+
+   if(invisible == T) {
+      invisible(x)
+   } else {
+      return(x)
+   }
 }

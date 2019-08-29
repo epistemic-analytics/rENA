@@ -95,7 +95,7 @@ rs = ena(
             'Design.Reasoning',
             'Collaboration'),
   window.size.back = 4,
-  print.plots = F,
+  print.plots = FALSE,
   groupVar = "Condition",
   groups = c("FirstGame", "SecondGame")
 )

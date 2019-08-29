@@ -40,7 +40,7 @@
 #'
 #' @examples
 #' data(RS.data)
-#' 
+#'
 #' rs = ena(
 #'   data = RS.data,
 #'   units = c("UserName","Condition", "GroupName"),
@@ -52,7 +52,7 @@
 #'             'Design.Reasoning',
 #'             'Collaboration'),
 #'   window.size.back = 4,
-#'   print.plots = F,
+#'   print.plots = FALSE,
 #'   groupVar = "Condition",
 #'   groups = c("FirstGame", "SecondGame")
 #' )

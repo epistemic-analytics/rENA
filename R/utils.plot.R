@@ -45,7 +45,8 @@ plot.ena.set <- function(x, y, ...) {
   if(!is.null(args$title)) {
     names(x$model$plots)[length(x$model$plots)] = args$title
   }
-  invisible(x)
+
+  .return(x, from_plot = T, invisible = F)
 }
 
 #' Plot points on an ena.plot
