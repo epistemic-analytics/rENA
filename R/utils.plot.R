@@ -509,7 +509,7 @@ prepare_trajectory_data <- function(
     if(is.null(points))
       points <- x$points
     if(is.null(units))
-      units <- x$trajectories #points[, !find.meta.cols(points), with = FALSE]
+      units <- x$trajectories #points[, find_meta_cols(points), with = FALSE]
   }
 
   unique_unit_values <- unique(units[, c(units_by, "ENA_UNIT"), with = FALSE])

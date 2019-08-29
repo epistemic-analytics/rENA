@@ -27,7 +27,7 @@ as.matrix.ena.line.weights <- function(x, ...) {
     square = args$square
 
   class(x) = class(x)[-1]
-  rows = x[,find.meta.cols(x), with = F]
+  rows = x[, !find_meta_cols(x), with = F]
 
   if(square) {
     upperTriSize = ncol(rows)
@@ -45,7 +45,7 @@ as.matrix.ena.line.weights <- function(x, ...) {
    }, simplify = F);
   }
   else {
-   as.matrix(remove.meta.data(rows), ...)
+   as.matrix(remove_meta_data(rows), ...)
   }
 }
 
@@ -58,7 +58,7 @@ as.matrix.ena.line.weights <- function(x, ...) {
 #' @export
 as.matrix.ena.rotation.matrix <- function(x, ...) {
   class(x) = class(x)[-1]
-  x = remove.meta.data(x)
+  x = remove_meta_data(x)
   as.matrix(x, ...)
 }
 
@@ -71,7 +71,7 @@ as.matrix.ena.rotation.matrix <- function(x, ...) {
 #' @export
 as.matrix.ena.points <- function(x, ...) {
   class(x) = class(x)[-1]
-  x = remove.meta.data(x)
+  x = remove_meta_data(x)
   as.matrix(x, ...)
 }
 
@@ -112,8 +112,8 @@ as.matrix.row.connections <- function(x, ...) {
 #' @export
 as.matrix.ena.connections <- function(x, ...) {
   class(x) = class(x)[-1]
-  xx = remove.meta.data(x)
-  rows = x[,find.meta.cols(x), with = F]
+  xx = remove_meta_data(x)
+  rows = as.data.frame(x)[, !find_meta_cols(x), drop = F]
 
   args = list(...)
   if(is.null(args$square))

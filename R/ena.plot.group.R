@@ -91,7 +91,7 @@ ena.plot.group <- function(
   if(is.null(points)) {
     stop("Points must be provided.");
   } else if(is(points, "ena.points")) {
-    points = remove.meta.data(points)
+    points = remove_meta_data(points)
   }
 
   ### problem if outlier and confidence intervals selected for crosshair

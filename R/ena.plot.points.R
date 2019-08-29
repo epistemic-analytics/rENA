@@ -107,7 +107,7 @@ ena.plot.points = function(
       points.layout = data.table::data.table(points);
     }
     else if (is.data.table(points)) {
-      # points.layout = remove.meta.data(points)
+      # points.layout = remove_meta_data(points)
       points.layout = data.table::copy(points)
     }
     else {
@@ -187,7 +187,7 @@ ena.plot.points = function(
   ###
   # Plot
   #####
-    points.matrix = remove.meta.data(points.layout)
+    points.matrix = remove_meta_data(points.layout)
     colnames(points.matrix) = paste0("X", rep(1:ncol(points.matrix)));
     this.max = max(points.matrix);
     for(m in 1:nrow(points.matrix)) {

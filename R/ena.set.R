@@ -22,7 +22,7 @@ ena.set <- function(x) {
 
     newset$trajectories <- cbind(newset$meta.data, x$enadata$trajectories$step)
     for (i in seq(ncol(newset$trajectories))) {
-      set(newset$trajectories, j = i, 
+      set(newset$trajectories, j = i,
           value = as.ena.metadata(newset$trajectories[[i]]))
     }
   }
@@ -61,7 +61,7 @@ ena.set <- function(x) {
     newset$model$unweighted.connection.counts <- x$enadata$adjacency.vectors.raw
     class(newset$model$unweighted.connection.counts) <- c("ena.connections",
                               class(newset$model$unweighted.connection.counts))
-    are.codes <- find.code.cols(newset$model$unweighted.connection.counts)
+    are.codes <- find_code_cols(newset$model$unweighted.connection.counts)
     for (i in seq(are.codes)) {
       if (are.codes[i]) {
         set(newset$model$unweighted.connection.counts, j = i,
@@ -85,8 +85,8 @@ ena.set <- function(x) {
     set(newset$model$row.connection.counts, j = i,
         value = as.ena.co.occurrence(newset$model$row.connection.counts[[i]]))
   }
-  for (i in which(colnames(newset$model$row.connection.counts) 
-      %in% colnames(newset$meta.data)) 
+  for (i in which(colnames(newset$model$row.connection.counts)
+      %in% colnames(newset$meta.data))
   ) {
     set(newset$model$row.connection.counts, j = i,
           value = as.ena.metadata(newset$model$row.connection.counts[[i]]))
@@ -117,7 +117,7 @@ ena.set <- function(x) {
   class(newset$rotation) <- c("ena.rotation.matrix", class(newset$rotation))
 
   for (i in seq(ncol(newset$rotation$adjacency.key))) {
-    set(newset$rotation$adjacency.key, j = i, 
+    set(newset$rotation$adjacency.key, j = i,
           value = as.ena.codes(newset$rotation$adjacency.key[[i]]))
   }
 
@@ -128,7 +128,7 @@ ena.set <- function(x) {
   }
 
   newset$`_function.call` <- sys.calls()[[1]]
-  back.frame <- sapply(sys.frames(), function(f) { 
+  back.frame <- sapply(sys.frames(), function(f) {
                                   "window.size.back" %in% ls(envir = f) })
   if (any(back.frame)) {
     call.frame <- sys.frame(which(back.frame))

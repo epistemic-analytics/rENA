@@ -134,21 +134,21 @@ ena.plot.trajectory = function(
               "middle center","middle right","bottom left","bottom center",
               "bottom right")
   if(!all(label.offset %in% valid_label_offsets))
-    stop(sprintf( "Unrecognized label.offsets: %s", 
-      paste(unique(label.offset[!(label.offset %in% valid_label_offsets)]), 
+    stop(sprintf( "Unrecognized label.offsets: %s",
+      paste(unique(label.offset[!(label.offset %in% valid_label_offsets)]),
       collapse = ", ") ))
 
   if(length(label.offset) == 1)
     label.offset = rep(label.offset, nrow(dfdt_trajs))
 
-  if (!is.null(colors) && 
+  if (!is.null(colors) &&
       length(colors) > 1 && length(colors) != length(names)
   ) {
     stop("Length of the colors must be 1 or the same length as by")
   }
 
   for (x in 1:nrow(dfdt_trajs)) {
-    d <- remove.meta.data(dfdt_trajs[x,]$lines[[1]])
+    d <- remove_meta_data(dfdt_trajs[x,]$lines[[1]])
     d.names <- colnames(d)
     enaplot$plot = plotly::add_trace(
       enaplot$plot,

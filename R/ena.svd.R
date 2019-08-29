@@ -15,7 +15,7 @@ ena.svd <- function(enaset, ...) {
   # pcaResults = pca_c(enaset$points.normed.centered, dims = enaset$get("dimensions"));
 
   # pts = enaset$model$points.for.projection[,!colnames(enaset$model$points.for.projection) %in% colnames(enaset$meta.data), with=F]
-  pts = as.matrix(remove.meta.data(enaset$model$points.for.projection))
+  pts = as.matrix(enaset$model$points.for.projection)
   pcaResults = prcomp(pts, retx=FALSE, scale=FALSE, center=FALSE, tol=0)
 
   ### used to be  enaset$data$centered$pca

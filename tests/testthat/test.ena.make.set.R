@@ -122,7 +122,7 @@ test_that("Test rotation with table for weights", {
     df_accum_usrs$meta.data$Condition == "SecondGame"
   )
   set.svd <- ena.make.set(df_accum_usrs)
-  set.svd$line.weights <- remove.meta.data(set.svd$line.weights)
+  set.svd$line.weights <- remove_meta_data(set.svd$line.weights)
 
   testthat::expect_message(
     rENA:::orthogonal_svd(

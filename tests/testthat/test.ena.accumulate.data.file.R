@@ -97,7 +97,7 @@ test_that("Corrected adjacency.vectors equals manually corrected raw data (corre
 
   xtest = data.table::copy(x$model$unweighted.connection.counts);
 
-  cols = colnames(xtest)[find.code.cols(xtest)]; #colnames(xtest)[grep("adjacency.code", colnames(xtest))];
+  cols = colnames(xtest)[find_code_cols(xtest)]; #colnames(xtest)[grep("adjacency.code", colnames(xtest))];
   xtest[, (cols) := lapply(.SD, log), .SDcols = cols];
 
   testthat::expect_true(all(as.matrix(x$connection.counts) == as.matrix(xtest)))

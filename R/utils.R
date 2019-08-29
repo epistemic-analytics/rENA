@@ -4,8 +4,8 @@
 #'
 #' @return logical vector
 #' @export
-find.meta.cols <- function(x) {
-   !sapply(x, is, class2 = "ena.metadata")
+find_meta_cols <- function(x) {
+   sapply(x, is, class2 = "ena.metadata")
 }
 
 #' Find code columns
@@ -14,7 +14,7 @@ find.meta.cols <- function(x) {
 #'
 #' @return logical vector
 #' @export
-find.code.cols <- function(x) {
+find_code_cols <- function(x) {
    grepl("adjacency.code", x = names(x)) | sapply(x, function(col) {
      is(col, class2 = "ena.co.occurrence")
    })
@@ -26,7 +26,7 @@ find.code.cols <- function(x) {
 #'
 #' @return logical vector
 #' @export
-find.dimension.cols <- function(x) {
+find_dimension_cols <- function(x) {
    sapply(x, is, class2 = "ena.dimension")
 }
 
@@ -36,8 +36,8 @@ find.dimension.cols <- function(x) {
 #'
 #' @return data.table withe columns of class ena.meta.data removed
 #' @export
-remove.meta.data <- function(x) {
- x[, find.meta.cols(x), with = F]
+remove_meta_data <- function(x) {
+   as.data.frame(x)[, !find_meta_cols(x), drop = F]
 }
 
 #' Extract metadata easily
