@@ -4,7 +4,7 @@
 \alias{print.ena.set}
 \title{Title}
 \usage{
-\method{print}{ena.set}(x, ..., plot = F, set = T)
+\method{print}{ena.set}(x, ..., plot = FALSE, set = TRUE)
 }
 \arguments{
 \item{x}{[TBD]}

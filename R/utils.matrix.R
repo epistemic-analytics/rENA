@@ -1,30 +1,28 @@
 
-#' ENA connections as matrix
-#'
-#' @param x ena.connection data.table to convert to matrix
-#' @param ... Additional parameters to pass along to other functions
-#'
-#' @return matrix
-#' @export
-as.matrix.ena.connection <- function(x, ...) {
-  connection.matrix(x, ...)
-}
+# ENA connections as matrix
+#
+# @param x ena.connection data.table to convert to matrix
+# @param ... Additional parameters to pass along to other functions
+#
+# @return matrix
+# @export
+#as.matrix.ena.connection <- function(x, ...) {
+#  connection.matrix(x, ...)
+#}
 
 #' ENA line weights as matrix
 #'
 #' @param x ena.line.weights data.table to covert to matrix
 #' @param ... additional arguments to be passed to or from methods
-# @param square [TBD]
+#' @param square [TBD]
 #'
 #' @return matrix
 #' @export
-as.matrix.ena.line.weights <- function(x, ...) {
+as.matrix.ena.line.weights <- function(x, ..., square = FALSE) {
   args = list(...)
 
-  if(is.null(args$square))
-    square = ifelse(nrow(x) > 1, F, T)
-  else
-    square = args$square
+  # if(!is.null(args$square))
+  #   square = args$square
 
   class(x) = class(x)[-1]
   rows = x[, !find_meta_cols(x), with = F]
@@ -32,17 +30,13 @@ as.matrix.ena.line.weights <- function(x, ...) {
   if(square) {
     upperTriSize = ncol(rows)
     number = ( (ceiling(sqrt(2*upperTriSize)) ^ 2) ) - (2*upperTriSize)
-    codes = colnames(x)
+    codes = unique(unlist(sapply(colnames(rows), strsplit, split = " & ")))
     cm = sapply(seq(nrow(rows)), function(unit) {
-    m = matrix(
-       rep(NA, number^2),
-       ncol =  number,
-       nrow =  number,
-       dimnames = list(codes, codes)
-     )
-     m[upper.tri(m)] = as.numeric(rows[unit,])
-     m
-   }, simplify = F);
+      m = matrix(NA, number,  number, dimnames = list(codes, codes))
+      m[upper.tri(m)] = as.numeric(rows[unit,])
+      m
+    }, simplify = F);
+    return(cm)
   }
   else {
    as.matrix(remove_meta_data(rows), ...)
@@ -131,14 +125,9 @@ as.matrix.ena.connections <- function(x, ...) {
   if(square) {
     upperTriSize = ncol(rows)
     number = ( (ceiling(sqrt(2*upperTriSize)) ^ 2) ) - (2*upperTriSize)
-    codes = colnames(x)
+    codes = unique(unlist(sapply(colnames(rows), strsplit, split = " & ")))
     cm = sapply(seq(nrow(rows)), function(unit) {
-      m = matrix(
-        rep(NA, number^2),
-        ncol =  number,
-        nrow =  number,
-        dimnames = list(codes, codes)
-      )
+      m = matrix(NA, number, number, dimnames = list(codes, codes))
       m[upper.tri(m)] = as.numeric(rows[unit,])
       m
     }, simplify = F)

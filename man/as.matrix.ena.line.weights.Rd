@@ -4,12 +4,14 @@
 \alias{as.matrix.ena.line.weights}
 \title{ENA line weights as matrix}
 \usage{
-\method{as.matrix}{ena.line.weights}(x, ...)
+\method{as.matrix}{ena.line.weights}(x, ..., square = FALSE)
 }
 \arguments{
 \item{x}{ena.line.weights data.table to covert to matrix}
 
 \item{...}{additional arguments to be passed to or from methods}
+
+\item{square}{[TBD]}
 }
 \value{
 matrix

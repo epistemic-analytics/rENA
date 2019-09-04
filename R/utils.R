@@ -144,16 +144,19 @@ summary.ena.set <- function(object, ...) {
 #'
 #' @return [TBD]
 #' @export
-print.ena.set <- function(x, ..., plot = F, set = T) {
+print.ena.set <- function(x, ..., plot = FALSE, set = TRUE) {
    x.unclass <- unclass(x)
 
    if(
       !is.null(x.unclass$`_plot_op`) &&
-      x$`_plot_op` == T
+      x.unclass$`_plot_op` == T
    ) {
       base::print(x.unclass$model$plots)
    }
    else {
+      if(plot == FALSE) {
+         x.unclass$model$plots <- NULL
+      }
       base::print(x.unclass)
    }
 }

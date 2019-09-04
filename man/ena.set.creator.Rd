@@ -7,9 +7,8 @@
 ena.set.creator(data, codes, units, conversation, metadata = NULL,
   model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),
   weight.by = "binary", window = c("MovingStanzaWindow",
-  "Conversation"), window.size.back = 1, window.size.forward = 0,
-  mask = NULL, include.meta = TRUE, groupVar = NULL, groups = NULL,
-  runTest = FALSE, testType = c("nonparametric", "parametric"), ...)
+  "Conversation"), window.size.back = 1, include.meta = TRUE,
+  groupVar = NULL, groups = NULL, runTest = FALSE, ...)
 }
 \arguments{
 \item{data}{[TBD]}
@@ -30,10 +29,6 @@ ena.set.creator(data, codes, units, conversation, metadata = NULL,
 
 \item{window.size.back}{[TBD]}
 
-\item{window.size.forward}{[TBD]}
-
-\item{mask}{[TBD]}
-
 \item{include.meta}{[TBD]}
 
 \item{groupVar}{[TBD]}
@@ -42,9 +37,9 @@ ena.set.creator(data, codes, units, conversation, metadata = NULL,
 
 \item{runTest}{[TBD]}
 
-\item{testType}{[TBD]}
-
 \item{...}{[TBD]}
+
+\item{window.size.forward}{[TBD]}
 }
 \value{
 ena.set object

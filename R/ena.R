@@ -12,31 +12,28 @@
 #' projected space, as well as locations for node positions, and normalized
 #' adjacency (co-occurrence) vectors to construct network graphs
 #'
-#' @param data [TBD]
-#' @param codes [TBD]
-#' @param units [TBD]
-#' @param conversation [TBD]
-#' @param metadata [TBD]
-#' @param model [TBD]
-#' @param weight.by [TBD]
-#' @param window [TBD]
-#' @param window.size.back [TBD]
-#' @param window.size.forward [TBD]
-#' @param mask [TBD]
+#' @param data data.frame with containing metadata and coded columns
+#' @param codes vector, numeric or character, of columns with codes
+#' @param units vector, numeric or character, of columns representing units
+#' @param conversation  vector, numeric or character, of columns to segment conversations by
+#' @param metadata  vector, numeric or character, of columns with additional meta information for units
+#' @param model character: EndPoint (default), AccumulatedTrajectory, SeparateTrajectory
+#' @param weight.by "binary" is default, can supply a function to call (e.g. sum)
+#' @param window MovingStanzaWindow (default) or Conversation
+#' @param window.size.back Number of lines in the stanza window. Default: 1
 #' @param include.meta [TBD]
 #' @param groupVar [TBD]
 #' @param groups [TBD]
 #' @param runTest [TBD]
-#' @param testType [TBD]
-#' @param points [TBD]
-#' @param mean [TBD]
-#' @param network [TBD]
+#' @param points logical, TRUE will plot points (default: FALSE)
+#' @param mean logical, TRUE will plot means (default: FALSE)
+#' @param network logical, TRUE will plot points (default: TRUE)
 #' @param networkMultiplier [TBD]
 #' @param subtractionMultiplier [TBD]
 #' @param unit [TBD]
 #' @param include.plots If TRUE, will generate plots based on the generated model
 #' @param print.plots [TBD]
-#' @param ... [TBD]
+#' @param ... Additional parameters passed to set creation and plotting functions
 #'
 #' @examples
 #' data(RS.data)
@@ -70,13 +67,10 @@ ena <- function(
   weight.by = "binary",
   window = c("MovingStanzaWindow", "Conversation"),
   window.size.back = 1,
-  window.size.forward = 0,
-  mask = NULL,
   include.meta = TRUE,
   groupVar = NULL,
   groups = NULL,
   runTest = FALSE,
-  testType = c("nonparametric","parametric"),
   points = FALSE,
   mean = FALSE,
   network = TRUE,
@@ -97,13 +91,11 @@ ena <- function(
     weight.by = weight.by,
     window = window,
     window.size.back = window.size.back,
-    window.size.forward = window.size.forward,
-    mask = mask,
     include.meta = include.meta,
     groupVar = groupVar,
     groups = groups,
     runTest = runTest,
-    testType = testType,
+    # testType = testType,
     ...
   )
 

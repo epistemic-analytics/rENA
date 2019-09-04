@@ -7,35 +7,30 @@
 ena(data, codes, units, conversation, metadata = NULL,
   model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),
   weight.by = "binary", window = c("MovingStanzaWindow",
-  "Conversation"), window.size.back = 1, window.size.forward = 0,
-  mask = NULL, include.meta = TRUE, groupVar = NULL, groups = NULL,
-  runTest = FALSE, testType = c("nonparametric", "parametric"),
-  points = FALSE, mean = FALSE, network = TRUE,
-  networkMultiplier = 1, subtractionMultiplier = 1, unit = NULL,
-  include.plots = F, print.plots = T, ...)
+  "Conversation"), window.size.back = 1, include.meta = TRUE,
+  groupVar = NULL, groups = NULL, runTest = FALSE, points = FALSE,
+  mean = FALSE, network = TRUE, networkMultiplier = 1,
+  subtractionMultiplier = 1, unit = NULL, include.plots = F,
+  print.plots = T, ...)
 }
 \arguments{
-\item{data}{[TBD]}
+\item{data}{data.frame with containing metadata and coded columns}
 
-\item{codes}{[TBD]}
+\item{codes}{vector, numeric or character, of columns with codes}
 
-\item{units}{[TBD]}
+\item{units}{vector, numeric or character, of columns representing units}
 
-\item{conversation}{[TBD]}
+\item{conversation}{vector, numeric or character, of columns to segment conversations by}
 
-\item{metadata}{[TBD]}
+\item{metadata}{vector, numeric or character, of columns with additional meta information for units}
 
-\item{model}{[TBD]}
+\item{model}{character: EndPoint (default), AccumulatedTrajectory, SeparateTrajectory}
 
-\item{weight.by}{[TBD]}
+\item{weight.by}{"binary" is default, can supply a function to call (e.g. sum)}
 
-\item{window}{[TBD]}
+\item{window}{MovingStanzaWindow (default) or Conversation}
 
-\item{window.size.back}{[TBD]}
-
-\item{window.size.forward}{[TBD]}
-
-\item{mask}{[TBD]}
+\item{window.size.back}{Number of lines in the stanza window. Default: 1}
 
 \item{include.meta}{[TBD]}
 
@@ -45,13 +40,11 @@ ena(data, codes, units, conversation, metadata = NULL,
 
 \item{runTest}{[TBD]}
 
-\item{testType}{[TBD]}
+\item{points}{logical, TRUE will plot points (default: FALSE)}
 
-\item{points}{[TBD]}
+\item{mean}{logical, TRUE will plot means (default: FALSE)}
 
-\item{mean}{[TBD]}
-
-\item{network}{[TBD]}
+\item{network}{logical, TRUE will plot points (default: TRUE)}
 
 \item{networkMultiplier}{[TBD]}
 
@@ -63,7 +56,7 @@ ena(data, codes, units, conversation, metadata = NULL,
 
 \item{print.plots}{[TBD]}
 
-\item{...}{[TBD]}
+\item{...}{Additional parameters passed to set creation and plotting functions}
 }
 \value{
 ena.set object

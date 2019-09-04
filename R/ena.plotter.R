@@ -32,7 +32,9 @@ ena.plotter = function(
 ) {
   data = set$connection.counts;
 
-  if(is.null(unit) == FALSE){
+  # set$model$plots[[length(set$model$plots)]] <- plot
+  # plot <- set$model$plots[[length(set$model$plots)]]
+  if(is.null(unit) == FALSE) {
     plot = ena.plot(enaset = set,title = unit)
 
     if(any(set$points$ENA_UNIT == unit) == FALSE){
@@ -46,7 +48,7 @@ ena.plotter = function(
     plot = ena.plot.points(enaplot = plot,points = point, colors = "black")
     plot = ena.plot.network(enaplot = plot, network = point.lw, colors = "black")
 
-    set$model$plots = plot
+    set$model$plots[[length(set$model$plots) + 1]] <- plot
 
     if(showPlots == TRUE) {
       print(set$model$plots)
@@ -81,7 +83,7 @@ ena.plotter = function(
       stop("You must set at least one of points, mean, or network to TRUE to obtain a plot.")
     }
 
-    set$model$plots = plot
+    set$model$plots[[length(set$model$plots) + 1]] <- plot
 
     if(showPlots == TRUE) {
       print(set$model$plots)
@@ -119,7 +121,7 @@ ena.plotter = function(
       else if(TRUE %in% c(network,points, mean) == FALSE) {
         stop("You must set at least one of points, mean, or network to TRUE to obtain a plot.")
       }
-      set$model$plots = g.plot
+      set$model$plots[[length(set$model$plots) + 1]] <- g.plot
 
       if(showPlots == TRUE) {
         print(set$model$plots)
@@ -181,7 +183,7 @@ ena.plotter = function(
     else if(TRUE %in% c(network,points, mean) == FALSE) {
       stop("You must set at least one of points, mean, or network to TRUE to obtain a plot.")
     }
-    set$model$plots = g.plot
+    set$model$plots[[length(set$model$plots) + 1]] <- g.plot
 
     if(showPlots == TRUE) {
       print(set$model$plots)

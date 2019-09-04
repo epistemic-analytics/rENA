@@ -305,6 +305,15 @@ Rcpp::NumericMatrix center_data_c(arma::mat values) {
   return Rcpp::wrap(centered);
 }
 
+// @title Indices representing an adjacnecey key
+// @description Create a matrix of indices representing a co-occurrence
+//              adjacency vector.  `len` represents the length of a side in a
+//              square matrix.
+// @param len Integer
+// @param row Which row(s) to return, default to -1, returning both rows. 0
+//            returns the top row, 1 will return the bottom row
+//
+// @return matrix with two rows
 // [[Rcpp::export]]
 arma::umat triIndices(int len, int row = -1) {
   int vL = len;
