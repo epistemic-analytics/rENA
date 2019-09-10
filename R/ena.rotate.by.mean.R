@@ -62,6 +62,7 @@ ena.rotate.by.mean <- function(enaset, groups) {
       sep = ""
     )
   )
+  rownames(defalted_data_svd) <- colnames(as.matrix(enaset$line.weights))
 
   rotation_set <- ENARotationSet$new(
     node.positions = NULL,

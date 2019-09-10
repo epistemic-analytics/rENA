@@ -9,7 +9,8 @@ ena.plot.subtraction = function(
   mean = FALSE,
   network = TRUE,
   networkMultiplier = 1,
-  subtractionMultiplier = 1
+  subtractionMultiplier = 1,
+  ...
 ) {
   group1.rows = set$points[[groupVar]] == group1
   group2.rows = set$points[[groupVar]] == group2

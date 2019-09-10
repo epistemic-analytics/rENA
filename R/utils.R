@@ -151,11 +151,11 @@ print.ena.set <- function(x, ..., plot = FALSE, set = TRUE) {
       !is.null(x.unclass$`_plot_op`) &&
       x.unclass$`_plot_op` == T
    ) {
-      base::print(x.unclass$model$plots)
+      base::print(x.unclass$plots)
    }
    else {
       if(plot == FALSE) {
-         x.unclass$model$plots <- NULL
+         x.unclass$plots <- NULL
       }
       base::print(x.unclass)
    }
@@ -169,7 +169,7 @@ print.ena.set <- function(x, ..., plot = FALSE, set = TRUE) {
 #' @return [TBD]
 #' @export
 show <- function(x, ...) {
-   x$model$plots <- lapply(x$model$plots, check_range)
+   x$plots <- lapply(x$plots, check_range)
    print(x, ..., plot = T, set = F)
    invisible(x)
 }
@@ -209,13 +209,13 @@ as_trajectory <- function(x,
 #' @export
 project_in <- function(x, by = NULL, ...) {
    if(is.null(by)) {
-      stop("A second parameter (ena.set or rotation.matrix) is required")
+      stop("A second parameter (ena.set or rotation.set) is required")
    }
 
    rotation.set <- NULL
    if(is(by, "ena.set")) {
       rotation.set <- by$rotation
-   } else if(is(by, "ena.rotation.matrix")) {
+   } else if(is(by, "ena.rotation.set")) {
       rotation.set <- by
    }
 
@@ -268,14 +268,16 @@ means_rotate <- function(x, on = NULL) {
       groupVar = names(on)
       groups = on[[groupVar]]
    }
-   if(is.null(groupVar) || is.null(groups))
+
+   if(is.null(groupVar) || is.null(groups)) {
       stop("Unable to determine groups for rotation.")
+   }
 
    orig_args <- x$`_function.params`
    orig_args$groupVar = groupVar
    orig_args$groups = groups
    new_set <- do.call(ena, orig_args)
-   new_set$model$plots <- x$model$plots
+   new_set$plots <- x$plots
    invisible(new_set)
 }
 
@@ -283,7 +285,7 @@ means_rotate <- function(x, on = NULL) {
    # browser()
    x$`_plot_op` = from_plot
 # if() {
-#       print(x$model$plots)
+#       print(x$plots)
 #    }
 
    if(invisible == T) {

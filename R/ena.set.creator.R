@@ -55,6 +55,8 @@ ena.set.creator = function(
     ...
   );
 
+  accum$model$raw.input <- as.data.table(data);
+  accum$model$raw.input$ENA_UNIT <- merge_columns_c(accum$model$raw.input, units)
   group1 = NULL
   group2 = NULL
   group1.rows = NULL
@@ -142,7 +144,7 @@ ena.set.creator = function(
     group1.dim2 = as.matrix(set$points)[group1.rows,2]
     group2.dim2 = as.matrix(set$points)[group2.rows,2]
 
-    set$model$tests = list(
+    set$tests = list(
       wilcox.test = list(
         test.dim1 = wilcox.test(x = group1.dim1, y = group2.dim1),
         test.dim2 = wilcox.test(x = group1.dim2, y = group2.dim2)
@@ -153,7 +155,7 @@ ena.set.creator = function(
       )
     )
   } else {
-    set$model$tests = NULL
+    set$tests = NULL
   }
 
   return(set)

@@ -26,7 +26,7 @@ Imports:
     scales,
     magrittr
 Suggests:
-    testthat,
+    testthat (>= 2.1.0),
     knitr,
     rmarkdown
 RoxygenNote: 6.1.1

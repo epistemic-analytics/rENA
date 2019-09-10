@@ -157,20 +157,25 @@ ena.make.set <- function(
       if (!is.null(rotation.by) && is.null(rotation.set)) {
         rotation <- do.call(rotation.by, list(enadata, rotation.params))
 
-        enadata$rotation.matrix <- as.data.table(rotation$rotation);
+        enadata$rotation.matrix <- as.data.table(rotation$rotation, keep.rownames = "codes")
         for (i in seq(ncol(enadata$rotation.matrix))) {
-          set(enadata$rotation.matrix,
-              j = i, value = as.ena.dimension(enadata$rotation.matrix[[i]])
-          )
+          if(i == 1) {
+            set(enadata$rotation.matrix,
+                j = i, value = as.ena.metadata(enadata$rotation.matrix[[i]])
+            )
+          } else {
+            set(enadata$rotation.matrix,
+                j = i, value = as.ena.dimension(enadata$rotation.matrix[[i]])
+            )
+          }
         }
-        class(enadata$rotation.matrix) <- c("ena.rotation.matrix",
-                                            class(enadata$rotation.matrix))
+        class(enadata$rotation.matrix) <- c("ena.rotation.matrix", class(enadata$rotation.matrix))
 
         enadata$rotation$rotation.matrix <- enadata$rotation.matrix
         enadata$rotation$eigenvalues <- rotation$eigenvalues;
       }
       else if (!is.null(rotation.set)) {
-        if (is(rotation.set, "ena.rotation.matrix")) {
+        if (is(rotation.set, "ena.rotation.set")) {
           enadata$rotation.matrix <- rotation.set$rotation.matrix
           enadata$rotation$rotation.matrix <- rotation.set$rotation.matrix
           enadata$rotation$nodes <- rotation.set$nodes;
@@ -233,10 +238,20 @@ ena.make.set <- function(
                                             class(enadata$rotation$nodes))
 
           enadata$model$centroids <- as.data.table(positions$centroids)
-          for (i in seq(ncol(enadata$model$centroids)))
+          for (i in seq(ncol(enadata$model$centroids))) {
             set(enadata$model$centroids, j = i,
               value = as.ena.dimension(enadata$model$centroids[[i]])
             )
+          }
+          colnames(enadata$model$centroids) <- as.character(enadata$rotation$rotation.matrix[[1]])
+          enadata$model$centroids = cbind(
+            data.table(unit = enadata$model$unit.labels),
+            enadata$model$centroids
+          )
+          set(enadata$model$centroids, j = 1L,
+            value = as.ena.metadata(enadata$model$centroids[[1L]])
+          )
+          enadata$model$centroids <- as.ena.matrix(enadata$model$centroids)
         }
         else {
           stop(paste0("The node position method didn't return back the ",
@@ -261,9 +276,10 @@ ena.make.set <- function(
       var_rot_data <- var(points)
       diagonal_variance <- as.vector(diag(var_rot_data))
       enadata$model$variance <- diagonal_variance / sum(diagonal_variance)
+      names(enadata$model$variance) <- colnames(enadata$rotation$rotation.matrix)[-1]
     #####
 
-    enadata$model$plots <- list() #default = ena.plot(enadata, ...))
+    enadata$plots <- list() #default = ena.plot(enadata, ...))
     # class(enadata$model$plot) <- c("ena.plot", class(enadata$model$plot))
 
     enadata$`_function.params`$norm.by <- norm.by

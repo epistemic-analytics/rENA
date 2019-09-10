@@ -1,12 +1,11 @@
 suppressMessages(library(rENA, quietly = T, verbose = F))
 context("Test making sets");
 
-test_that("Simple data.frame to accumulate and make set", {
-  codenames <- c("Data", "Technical.Constraints", "Performance.Parameters",
-    "Client.and.Consultant.Requests", "Design.Reasoning", "Collaboration");
+data(RS.data)
+codenames <- c("Data", "Technical.Constraints", "Performance.Parameters",
+  "Client.and.Consultant.Requests", "Design.Reasoning", "Collaboration");
 
-  data(RS.data)
-  df.file <- RS.data
+test_that("Simple data.frame to accumulate and make set", {
   accum <- ena.accumulate.data.file(
     RS.data, units.by = c("UserName", "Condition"),
     conversations.by = c("ActivityNumber", "GroupName"),
@@ -32,10 +31,6 @@ test_that("Simple data.frame to accumulate and make set", {
 })
 
 test_that("Test custom rotation.set", {
-  codenames <- c("Data", "Technical.Constraints", "Performance.Parameters",
-    "Client.and.Consultant.Requests", "Design.Reasoning", "Collaboration");
-
-  data(RS.data)
   df.file <- RS.data
 
   conversations.by <- c("Condition", "ActivityNumber", "GroupName")
@@ -90,14 +85,14 @@ test_that("Test rotate by mean", {
   expect_equal(ncol(set.svd$rotation.matrix), ncol(set.mr$rotation.matrix))
 
   expect_equal(
-    colnames(set.svd$rotation.matrix),
+    colnames(as.matrix(set.svd$rotation.matrix)),
     colnames(as.matrix(set.svd$points))
   )
   expect_equal(
-    colnames(set.mr$rotation.matrix), colnames(as.matrix(set.mr$points))
+    colnames(as.matrix(set.mr$rotation.matrix)), colnames(as.matrix(set.mr$points))
   )
-  expect_equal("MR1", colnames(set.mr$rotation.matrix)[1])
-  expect_equal("SVD1", colnames(set.svd$rotation.matrix)[1])
+  expect_equal("MR1", colnames(set.mr$rotation.matrix)[2])
+  expect_equal("SVD1", colnames(set.svd$rotation.matrix)[2])
 })
 
 test_that("Test rotation with table for weights", {
@@ -133,20 +128,20 @@ test_that("Test rotation with table for weights", {
   )
 })
 
-test_that("Simple data.frame to accumulate and make set", {
-  codenames <- c("Data", "Technical.Constraints", "Performance.Parameters",
-    "Client.and.Consultant.Requests", "Design.Reasoning", "Collaboration");
-
-  data(RS.data)
-  df.file <- RS.data
-  accum <- ena.accumulate.data.file(
-    RS.data, units.by = c("UserName", "Condition"),
-    conversations.by = c("ActivityNumber", "GroupName"),
-    codes = codenames
-  );
-  set <- ena.make.set(accum)
-
-})
+# test_that("Simple data.frame to accumulate and make set", {
+#   codenames <- c("Data", "Technical.Constraints", "Performance.Parameters",
+#     "Client.and.Consultant.Requests", "Design.Reasoning", "Collaboration");
+#
+#   data(RS.data)
+#   df.file <- RS.data
+#   accum <- ena.accumulate.data.file(
+#     RS.data, units.by = c("UserName", "Condition"),
+#     conversations.by = c("ActivityNumber", "GroupName"),
+#     codes = codenames
+#   );
+#   set <- ena.make.set(accum)
+#
+# })
 
 test_that("Test bad position method", {
   codenames <- c("Data", "Technical.Constraints", "Performance.Parameters",
@@ -168,7 +163,7 @@ test_that("Test bad position method", {
     regexp = "position method didn't return back the expected objects"
   )
 
-  custom_rotation <- structure(list(),class = "ena.rotation.matrix")
+  custom_rotation <- structure(list(),class = "ena.rotation.set")
   testthat::expect_error(
     ena.make.set(acc, rotation.by = NULL, rotation.set = custom_rotation),
     regexp = "no rotation matrix"

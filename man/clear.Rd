@@ -4,7 +4,7 @@
 \alias{clear}
 \title{Title}
 \usage{
-clear(x, wh = seq(x$model$plots))
+clear(x, wh = seq(x$plots))
 }
 \arguments{
 \item{x}{[TBD]}

@@ -1,5 +1,5 @@
 suppressMessages(library(rENA, quietly = T, verbose = F))
-context("Test util methods");
+context("Test util matrix methods");
 
 library(magrittr)
 
@@ -39,7 +39,6 @@ test_that("Verify ena.connection matrices", {
   testthat::expect_equal(nrow(conn_list[[1]]), length(set_end$rotation$codes))
 })
 
-
-test_that("Verify ena.connection line", {
-  conn_one <- as.matrix(set_end$connection.counts[1,], square = T)
-})
+# test_that("Verify ena.connection line", {
+#   conn_one <- as.matrix(set_end$connection.counts[1,], square = T)
+# })

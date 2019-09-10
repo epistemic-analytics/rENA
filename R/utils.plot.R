@@ -40,10 +40,10 @@ plot.ena.set <- function(x, y, ...) {
   p = ena.plot(x, ...)
   # p
   # p$enaset = NULL
-  x$model$plots[[length(x$model$plots) + 1]] = p
+  x$plots[[length(x$plots) + 1]] = p
   args = list(...)
   if(!is.null(args$title)) {
-    names(x$model$plots)[length(x$model$plots)] = args$title
+    names(x$plots)[length(x$plots)] = args$title
   }
 
   .return(x, from_plot = T, invisible = F)
@@ -67,7 +67,7 @@ add_points <- function(
   colors = NULL
 ) {
   set <- x
-  plot <- set$model$plots[[length(set$model$plots)]]
+  plot <- set$plots[[length(set$plots)]]
   more.args <- list(...)
 
   wh_subbed <- as.character(substitute(wh))
@@ -139,7 +139,7 @@ add_points <- function(
     plot <- do.call(ena.plot.group, more.args)
   }
 
-  set$model$plots[[length(set$model$plots)]] <- plot
+  set$plots[[length(set$plots)]] <- plot
   invisible(set)
 }
 
@@ -155,7 +155,7 @@ add_points <- function(
 add_trajectory <- function(x, wh = NULL, ..., name = "plot") {
   set <- x
   # plot <- set$model$plot
-  plot <- set$model$plots[[length(set$model$plots)]]
+  plot <- set$plots[[length(set$plots)]]
 
   subbed <- substitute(wh)
   args_list <- as.character(subbed)
@@ -179,7 +179,7 @@ add_trajectory <- function(x, wh = NULL, ..., name = "plot") {
   plot <- ena.plot.trajectory(plot, points = points, by = by)
 
   # set$model$plot <- plot
-  set$model$plots[[length(x$model$plots)]] <- plot
+  set$plots[[length(x$plots)]] <- plot
   invisible(set)
 }
 
@@ -194,7 +194,7 @@ add_trajectory <- function(x, wh = NULL, ..., name = "plot") {
 add_group <- function(x, wh = NULL, ...) {
   set <- x
   # plot <- set$model$plot
-  plot <- set$model$plots[[length(set$model$plots)]]
+  plot <- set$plots[[length(set$plots)]]
 
   arg_list <- list(...)
   wh.clean <- substitute(wh)
@@ -242,7 +242,7 @@ add_group <- function(x, wh = NULL, ...) {
     color = more_args$colors
   )
 
-  set$model$plots[[length(set$model$plots)]] <- plot
+  set$plots[[length(set$plots)]] <- plot
   invisible(set)
 }
 
@@ -258,7 +258,7 @@ add_group <- function(x, wh = NULL, ...) {
 add_network <- function(x, wh = NULL, ..., with.mean = F) {
   set <- x
   # plot <- set$model$plot
-  plot <- set$model$plots[[length(set$model$plots)]]
+  plot <- set$plots[[length(set$plots)]]
 
   wh.clean <- substitute(wh)
   arg_list <- list(...)
@@ -273,7 +273,7 @@ add_network <- function(x, wh = NULL, ..., with.mean = F) {
 
     if (with.mean) {
       set <- add_group(set, points = set$points, ...)
-      plot <- set$model$plots[[length(set$model$plots)]]
+      plot <- set$plots[[length(set$plots)]]
     }
   }
   else {
@@ -302,7 +302,7 @@ add_network <- function(x, wh = NULL, ..., with.mean = F) {
 
         if (with.mean) {
           set <- add_group(set, wh.clean, ...)
-          plot <- set$model$plots[[length(set$model$plots)]]
+          plot <- set$plots[[length(set$plots)]]
         }
       }
       else {
@@ -318,7 +318,7 @@ add_network <- function(x, wh = NULL, ..., with.mean = F) {
   }
 
   # set$model$plot <- plot
-  set$model$plots[[length(set$model$plots)]] <- plot
+  set$plots[[length(set$plots)]] <- plot
   invisible(set)
 }
 
@@ -331,7 +331,7 @@ add_network <- function(x, wh = NULL, ..., with.mean = F) {
 #' @export
 add_nodes <- function(x, ...) {
   set <- x
-  plot <- set$model$plots[[length(set$model$plots)]]
+  plot <- set$plots[[length(set$plots)]]
 
   nodes <- set$rotation$nodes
   plot <- ena.plot.points(plot,
@@ -345,7 +345,7 @@ add_nodes <- function(x, ...) {
     data = NULL,
     color = NULL
   )
-  set$model$plots[[length(set$model$plots)]] <- plot
+  set$plots[[length(set$plots)]] <- plot
   invisible(set)
 }
 
@@ -358,7 +358,7 @@ add_nodes <- function(x, ...) {
 with_means <- function(x) {
   set <- x
   # plot <- set$model$plot
-  plot <- set$model$plots[[length(set$model$plots)]]
+  plot <- set$plots[[length(set$plots)]]
 
   for(point_group in plot$plotted$points) {
     plot <- ena.plot.group(plot, point_group$data, colors = point_group$color[1])
@@ -370,7 +370,7 @@ with_means <- function(x) {
   }
 
   # set$model$plot <- plot
-  set$model$plots[[length(set$model$plots)]] <- plot
+  set$plots[[length(set$plots)]] <- plot
   invisible(set)
 }
 
@@ -400,7 +400,7 @@ with_trajectory <- function(
   if(!grepl(x = set$model$model.type, pattern = "Trajectory")) {
     stop(paste0("Unable to plot trajectories on model of type: ", set$model$model.type))
   }
-  plot <- set$model$plots[[length(set$model$plots)]]
+  plot <- set$plots[[length(set$plots)]]
 
   args = list(...)
 
@@ -486,7 +486,7 @@ with_trajectory <- function(
   #####
 
   # set$model$plot <- plot
-  set$model$plots[[length(set$model$plots) + 1]] <- thisPlot
+  set$plots[[length(set$plots) + 1]] <- thisPlot
   invisible(set)
 }
 
@@ -579,9 +579,9 @@ prepare_trajectory_data <- function(
 #'
 #' @return [TBD]
 #' @export
-clear <- function(x, wh = seq(x$model$plots)) {
+clear <- function(x, wh = seq(x$plots)) {
   if(length(wh) > 0) {
-    x$model$plots[[wh]] <- NULL
+    x$plots[[wh]] <- NULL
   }
   invisible(x)
 }
@@ -596,7 +596,7 @@ clear <- function(x, wh = seq(x$model$plots)) {
 #' @export
 scale.ena.set <- function(x, center = TRUE, scale = TRUE) {
   set <- x
-  plot <- set$model$plots[[length(set$model$plots)]]
+  plot <- set$plots[[length(set$plots)]]
   browser()
   dims <- 1:2
   point_range <- range(sapply(plot$plotted$points, function(d) range(as.matrix(d$data)[,dims])))
@@ -621,7 +621,7 @@ scale.ena.set <- function(x, center = TRUE, scale = TRUE) {
     plot <- do.call(ena.plot.group, more_args)
   }
 
-  set$model$plots[[length(set$model$plots)]] <- plot
+  set$plots[[length(set$plots)]] <- plot
 
   invisible(set)
 }

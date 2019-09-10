@@ -33,7 +33,6 @@ test_that("Find different col types", {
   testthat::expect_equal(length(which(dim_cols)), 15)
 })
 
-
 test_that("Custom subsetting.", {
   weight_groups <- unique(`$.line.weights`(set_end$line.weights, "Condition"));
   testthat::expect_equal(weight_groups, c("FirstGame", "SecondGame"))
@@ -52,11 +51,11 @@ test_that("Test summary output", {
 
   sink(tmp)
   summary(set_end)
-  closeAllConnections()
 
   testthat::expect_true(
     grepl(x = readChar(tmp, nchars = 1024), pattern = "pearson")
   )
+  unlink(tmp)
 })
 
 test_that("Test print output", {
@@ -65,11 +64,11 @@ test_that("Test print output", {
 
   sink(tmp)
   print(set_end)
-  closeAllConnections()
 
   testthat::expect_true(
     grepl(x = readLines(tmp)[1], pattern = "\\$connection\\.counts")
   )
+  unlink(tmp)
 })
 
 test_that("Test show output", {
@@ -78,11 +77,11 @@ test_that("Test show output", {
 
   sink(tmp, type = "output")
   set_end %>% plot() %>% show()
-  closeAllConnections()
 
   testthat::expect_true(
     grepl(x = readLines(tmp)[1], pattern = "[[1]]")
   )
+  unlink(tmp)
 })
 
 test_that("Test means rotation", {
@@ -148,4 +147,4 @@ test_that("Test trajectory", {
   testthat::expect_false(all(set_traj$rotation$nodes == set_traj_projected$rotation$nodes))
   testthat::expect_true(all(set_end$rotation$nodes == set_traj_projected$rotation$nodes))
 })
-2
+

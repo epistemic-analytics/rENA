@@ -92,15 +92,16 @@ test_that("Corrected adjacency.vectors equals manually corrected raw data (corre
                                codes=LETTERS[1:6],
                                window.size.back=4,
                                weight.by = log)
-  #binary=F,
-  #correction = log)
 
-  xtest = data.table::copy(x$model$unweighted.connection.counts);
+  x_binary = rENA:::ena.accumulate.data.file(testdf,
+                               units.by='unit',
+                               conversations.by='tr',
+                               #units='1',
+                               codes=LETTERS[1:6],
+                               window.size.back=4)
 
-  cols = colnames(xtest)[find_code_cols(xtest)]; #colnames(xtest)[grep("adjacency.code", colnames(xtest))];
-  xtest[, (cols) := lapply(.SD, log), .SDcols = cols];
-
-  testthat::expect_true(all(as.matrix(x$connection.counts) == as.matrix(xtest)))
+  testthat::expect_null(x$model$unweighted.connection.counts)
+  testthat::expect_false(all(x$connection.counts == x_binary$connection.counts))
 })
 test_that("Simple forwarded metadata", {
   fake.codes.len = 10;

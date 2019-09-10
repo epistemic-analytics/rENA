@@ -1,15 +1,3 @@
-
-# ENA connections as matrix
-#
-# @param x ena.connection data.table to convert to matrix
-# @param ... Additional parameters to pass along to other functions
-#
-# @return matrix
-# @export
-#as.matrix.ena.connection <- function(x, ...) {
-#  connection.matrix(x, ...)
-#}
-
 #' ENA line weights as matrix
 #'
 #' @param x ena.line.weights data.table to covert to matrix
@@ -64,6 +52,19 @@ as.matrix.ena.rotation.matrix <- function(x, ...) {
 #' @return matrix
 #' @export
 as.matrix.ena.points <- function(x, ...) {
+  class(x) = class(x)[-1]
+  x = remove_meta_data(x)
+  as.matrix(x, ...)
+}
+
+#' Matrix without metadata
+#'
+#' @param x Object to convert to  a matrix
+#' @param ... 	additional arguments to be passed to or from methods
+#'
+#' @return matrix
+#' @export
+as.matrix.ena.matrix <- function(x, ...) {
   class(x) = class(x)[-1]
   x = remove_meta_data(x)
   as.matrix(x, ...)

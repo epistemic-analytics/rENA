@@ -77,8 +77,8 @@ ena <- function(
   networkMultiplier = 1,
   subtractionMultiplier = 1,
   unit = NULL,
-  include.plots = F,
-  print.plots = T,
+  include.plots = T,
+  print.plots = F,
   ...
 ) {
   set <- ena.set.creator(

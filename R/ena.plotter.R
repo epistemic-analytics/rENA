@@ -95,7 +95,7 @@ ena.plotter = function(
     unique.groups = unique(data[[groupVar]])
 
     if(length(unique.groups) == 1){
-      print("Warning: No groups specified and group variable only contains one unique value. Generating plot for one group.")
+      warning("No groups specified and group variable only contains one unique value. Generating plot for one group.")
 
       group = unique.groups
 
@@ -133,7 +133,7 @@ ena.plotter = function(
       group1 = unique.groups[1]
       group2 = unique.groups[2]
 
-      print(paste0("Warning: No groups specified. Generating plots of first two unique values of group variable: ",group1," and ",group2))
+      warning(paste0("No groups specified. Generating plots of first two unique values of group variable: ",group1," and ",group2))
 
       set = ena.plot.subtraction(set = set,
                groupVar = groupVar,
@@ -198,7 +198,7 @@ ena.plotter = function(
 
     groups.missing = groups[which(!groups %in% data[[groupVar]])]
     if(length(groups.missing) > 0) {
-      stop(paste("Group column does not contain group value(s): ", groups[groups.missing]))
+      stop(paste0("Group column does not contain group value(s): ", groups[groups.missing]))
     }
 
     set = ena.plot.subtraction(

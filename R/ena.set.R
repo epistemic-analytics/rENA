@@ -57,27 +57,27 @@ ena.set <- function(x) {
     unit.labels = x$enadata$unit.names
   )
 
-  if(quote(x$enadata$function.params$weight.by) != "binary") {
-    newset$model$unweighted.connection.counts <- x$enadata$adjacency.vectors.raw
-    class(newset$model$unweighted.connection.counts) <- c("ena.connections",
-                              class(newset$model$unweighted.connection.counts))
-    are.codes <- find_code_cols(newset$model$unweighted.connection.counts)
-    for (i in seq(are.codes)) {
-      if (are.codes[i]) {
-        set(newset$model$unweighted.connection.counts, j = i,
-          value = as.ena.co.occurrence(
-            newset$model$unweighted.connection.counts[[i]]
-          )
-        )
-      } else {
-        set(newset$model$unweighted.connection.counts, j = i,
-          value = as.ena.metadata(
-            newset$model$unweighted.connection.counts[[i]]
-          )
-        )
-      }
-    }
-  }
+  # if(quote(x$enadata$function.params$weight.by) != "binary") {
+  #   newset$model$unweighted.connection.counts <- x$enadata$adjacency.vectors.raw
+  #   class(newset$model$unweighted.connection.counts) <- c("ena.connections",
+  #                             class(newset$model$unweighted.connection.counts))
+  #   are.codes <- find_code_cols(newset$model$unweighted.connection.counts)
+  #   for (i in seq(are.codes)) {
+  #     if (are.codes[i]) {
+  #       set(newset$model$unweighted.connection.counts, j = i,
+  #         value = as.ena.co.occurrence(
+  #           newset$model$unweighted.connection.counts[[i]]
+  #         )
+  #       )
+  #     } else {
+  #       set(newset$model$unweighted.connection.counts, j = i,
+  #         value = as.ena.metadata(
+  #           newset$model$unweighted.connection.counts[[i]]
+  #         )
+  #       )
+  #     }
+  #   }
+  # }
 
   cols <- grep("adjacency.code", colnames(newset$model$row.connection.counts))
   colnames(newset$model$row.connection.counts)[cols] <- code.columns
@@ -108,13 +108,14 @@ ena.set <- function(x) {
     newset$model$points.for.projection <- cbind(x$enadata$metadata,
                                                x$points.normed.centered)
     newset$model$variance <- x$variance
+    names(newset$model$variance) <- colnames(newset$rotation.matrix)
   }
 
   newset$rotation <- list(
     adjacency.key = as.data.table(x$enadata$adjacency.matrix),
     codes = x$enadata$codes
   )
-  class(newset$rotation) <- c("ena.rotation.matrix", class(newset$rotation))
+  class(newset$rotation) <- c("ena.rotation.set", class(newset$rotation))
 
   for (i in seq(ncol(newset$rotation$adjacency.key))) {
     set(newset$rotation$adjacency.key, j = i,
