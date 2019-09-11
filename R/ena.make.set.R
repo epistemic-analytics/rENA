@@ -216,7 +216,7 @@ ena.make.set <- function(
     # Calculate node positions
     #  - The supplied methoed is responsible is expected to return a list
     #    with two keys, "node.positions" and "centroids"
-    #####2
+    #####
       if (exists("rotation") && !is.null(rotation) && is.null(rotation.set)) {
         positions <- node.position.method(enadata)
 
@@ -243,7 +243,7 @@ ena.make.set <- function(
               value = as.ena.dimension(enadata$model$centroids[[i]])
             )
           }
-          colnames(enadata$model$centroids) <- as.character(enadata$rotation$rotation.matrix[[1]])
+          colnames(enadata$model$centroids) <- colnames(as.matrix(enadata$rotation.matrix))
           enadata$model$centroids = cbind(
             data.table(unit = enadata$model$unit.labels),
             enadata$model$centroids

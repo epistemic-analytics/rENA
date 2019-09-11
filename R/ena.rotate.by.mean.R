@@ -24,7 +24,8 @@ ena.rotate.by.mean <- function(enaset, groups) {
   if (!is(groups[[1]], "list")) {
     groups <- list(groups);
   }
-  data <- enaset$line.weights
+
+  data <- as.matrix(enaset$line.weights)
   data <- scale(data, scale = F, center = T);
 
   col <- NULL
@@ -56,11 +57,8 @@ ena.rotate.by.mean <- function(enaset, groups) {
   defalted_data_svd <- orthogonal_svd(deflated.data, weights);
 
   colnames(defalted_data_svd) <- c(
-    paste("MR", as.character(1:length(groups)), sep = ""),
-    paste("SVD", as.character(
-      (length(groups) + 1):(ncol(defalted_data_svd))),
-      sep = ""
-    )
+    paste0("MR", as.character(1:length(groups))),
+    paste0("SVD", as.character((length(groups) + 1):(ncol(defalted_data_svd))))
   )
   rownames(defalted_data_svd) <- colnames(as.matrix(enaset$line.weights))
 
