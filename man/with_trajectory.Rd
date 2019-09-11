@@ -22,10 +22,6 @@ with_trajectory(x, ..., by = x$`_function.params`$conversation[1],
 \item{transition}{[TBD]}
 
 \item{easing}{[TBD]}
-
-\item{group_var}{[TBD]}
-
-\item{groups}{[TBD]}
 }
 \value{
 [TBD]

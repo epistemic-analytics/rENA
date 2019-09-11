@@ -59,13 +59,15 @@ check:r-oldrelease:
   <<: *check_template
 check:r-release:
   image: $REG_URL/release:current
-  only:
-    - master
+  #only:
+  #  - master
   <<: *check_template
 check:r-winbuilder:
   stage: checkWindows
   image: egruw/r-ftp
   when: manual
+  only:
+    - develop
   script:
     - curl -v -T archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-oldrelease/${PKG}_${VERSION}.tar.gz
     - curl -v -T archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-release/${PKG}_${VERSION}.tar.gz
@@ -150,7 +152,6 @@ docker:release-test:
     changes:
       - "inst/docker/rENA-release-test"
   <<: *docker_template
-
 docker:old-release:
   variables:
     TAG: "old-release"

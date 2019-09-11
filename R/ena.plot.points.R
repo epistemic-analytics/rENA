@@ -22,6 +22,7 @@
 #' @param label.font.family	A character which determines label font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
 #' @param show.legend Logical indicating whether to show the point labels in the in legend
 #' @param legend.name Character indicating the name to show above the plot legend
+#' @param texts [TBD]
 #' @param ... additional parameters addressed in inner function
 #'
 #' @keywords ENA, plot, points

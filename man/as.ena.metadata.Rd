@@ -8,8 +8,6 @@ as.ena.metadata(x)
 }
 \arguments{
 \item{x}{data.frame, data.table, or matrix to extend}
-
-\item{new.class}{Additional class to extend the matrix with, default: NULL}
 }
 \value{
 Object of same st

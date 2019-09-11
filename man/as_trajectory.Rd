@@ -11,6 +11,10 @@ as_trajectory(x, by = x$`_function.params`$conversation[1],
 \item{x}{[TBD]}
 
 \item{by}{[TBD]}
+
+\item{model}{[TBD]}
+
+\item{...}{[TBD]}
 }
 \value{
 [TBD]

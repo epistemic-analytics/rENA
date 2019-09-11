@@ -17,6 +17,8 @@ add_points(x, wh = NULL, ..., name = "plot", mean = NULL,
 \item{name}{name to give the plot}
 
 \item{mean}{include a mean point for the provided points}
+
+\item{colors}{colors for plotted points}
 }
 \value{
 ena.plot.object

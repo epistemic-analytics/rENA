@@ -38,8 +38,6 @@ ena.set.creator(data, codes, units, conversation, metadata = NULL,
 \item{runTest}{[TBD]}
 
 \item{...}{[TBD]}
-
-\item{window.size.forward}{[TBD]}
 }
 \value{
 ena.set object

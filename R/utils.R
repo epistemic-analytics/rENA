@@ -141,6 +141,8 @@ summary.ena.set <- function(object, ...) {
 #'
 #' @param x [TBD]
 #' @param ... [TBD]
+#' @param plot [TBD]
+#' @param set [TBD]
 #'
 #' @return [TBD]
 #' @export
@@ -178,6 +180,8 @@ show <- function(x, ...) {
 #'
 #' @param x [TBD]
 #' @param by [TBD]
+#' @param model [TBD]
+#' @param ... [TBD]
 #'
 #' @return [TBD]
 #' @export
@@ -246,6 +250,7 @@ project_in <- function(x, by = NULL, ...) {
 #' Title
 #'
 #' @param x [TBD]
+#' @param on [TBD]
 #'
 #' @return [TBD]
 #' @export

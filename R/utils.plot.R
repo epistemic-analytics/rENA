@@ -56,6 +56,7 @@ plot.ena.set <- function(x, y, ...) {
 #' @param ... additional parameters to pass along
 #' @param name name to give the plot
 #' @param mean include a mean point for the provided points
+#' @param colors colors for plotted points
 #'
 #' @return ena.plot.object
 #' @export
@@ -383,8 +384,6 @@ with_means <- function(x) {
 #' @param frame [TBD]
 #' @param transition [TBD]
 #' @param easing [TBD]
-#' @param group_var [TBD]
-#' @param groups [TBD]
 #'
 #' @return [TBD]
 #' @export
@@ -435,7 +434,7 @@ with_trajectory <- function(
   size = ifelse(is.null(args$size), 10, args$size)
   opacity = ifelse(is.null(args$opacity), 1, args$opacity)
 
-  dims = as.matrix(points_cleaned[,find.dimension.cols(points_cleaned), with = F])[, 1:2]
+  dims = as.matrix(points_cleaned[, find_dimension_cols(points_cleaned), with = F])[, 1:2]
   if(add_jitter) {
     dims[, 1] = jitter(dims[, 1])
     dims[, 2] = jitter(dims[, 2])
@@ -494,6 +493,12 @@ with_trajectory <- function(
 #' Title
 #'
 #' @param x [TBD]
+#' @param by [TBD]
+#' @param rotation_matrix [TBD]
+#' @param points [TBD]
+#' @param units [TBD]
+#' @param units_by [TBD]
+#' @param steps [TBD]
 #'
 #' @return [TBD]
 #' @export
@@ -576,6 +581,7 @@ prepare_trajectory_data <- function(
 #' Title
 #'
 #' @param x [TBD]
+#' @param wh [TBD]
 #'
 #' @return [TBD]
 #' @export
@@ -605,7 +611,7 @@ scale.ena.set <- function(x, center = TRUE, scale = TRUE) {
   scale_factor <- min(abs(network_range) / abs(point_range))
 
   for( points in plot$plotted$points) {
-    dim_cols = colnames(points$data)[find.dimension.cols(points$data)]
+    dim_cols = colnames(points$data)[find_dimension_cols(points$data)]
     points$data[, c(dim_cols) := lapply(.SD, function(x) x * scale_factor), .SDcols = c(dim_cols)]
     more_args = list()
     more_args$enaplot <- plot

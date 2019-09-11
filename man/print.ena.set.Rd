@@ -10,6 +10,10 @@
 \item{x}{[TBD]}
 
 \item{...}{[TBD]}
+
+\item{plot}{[TBD]}
+
+\item{set}{[TBD]}
 }
 \value{
 [TBD]

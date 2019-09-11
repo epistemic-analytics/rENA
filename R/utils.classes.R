@@ -14,7 +14,6 @@ as.ena.matrix <- function(x, new.class = NULL) {
 #' Re-class matrix as ena.metadata
 #'
 #' @param x data.frame, data.table, or matrix to extend
-#' @param new.class Additional class to extend the matrix with, default: NULL
 #'
 #' @return Object of same st
 #' @export

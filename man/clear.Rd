@@ -8,6 +8,8 @@ clear(x, wh = seq(x$plots))
 }
 \arguments{
 \item{x}{[TBD]}
+
+\item{wh}{[TBD]}
 }
 \value{
 [TBD]

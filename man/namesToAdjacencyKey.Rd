@@ -9,7 +9,7 @@ namesToAdjacencyKey(vector, upper_triangle = TRUE)
 \arguments{
 \item{vector}{Vector representing the names of a square matrix}
 
-\item{upper_triangle}{}
+\item{upper_triangle}{Not Implemented}
 }
 \description{
 Convert a vector of strings, representing names of a square matrix, to an adjacency

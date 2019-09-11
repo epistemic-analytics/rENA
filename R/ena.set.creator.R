@@ -10,7 +10,6 @@
 #' @param weight.by [TBD]
 #' @param window [TBD]
 #' @param window.size.back [TBD]
-#' @param window.size.forward [TBD]
 #' @param include.meta [TBD]
 #' @param groupVar [TBD]
 #' @param groups [TBD]

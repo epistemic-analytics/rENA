@@ -6,7 +6,7 @@
 #' @details Returns a matrix of 2 rows by choose(length(vector), 2) columns
 #'
 #' @param vector Vector representing the names of a square matrix
-#' @param upper_triangle
+#' @param upper_triangle Not Implemented
 #'
 #' @export
 ##

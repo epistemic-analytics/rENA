@@ -8,6 +8,8 @@ means_rotate(x, on = NULL)
 }
 \arguments{
 \item{x}{[TBD]}
+
+\item{on}{[TBD]}
 }
 \value{
 [TBD]

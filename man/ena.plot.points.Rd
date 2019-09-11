@@ -49,6 +49,8 @@ ena.plot.points(enaplot, points = NULL,
 
 \item{legend.name}{Character indicating the name to show above the plot legend}
 
+\item{texts}{[TBD]}
+
 \item{...}{additional parameters addressed in inner function}
 }
 \value{
