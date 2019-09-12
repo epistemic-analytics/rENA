@@ -89,8 +89,8 @@
 ena.plot.network = function(
   enaplot = NULL,
   network = NULL,
-  node.positions = as.matrix(enaplot$enaset$rotation$nodes),
-  adjacency.key = enaplot$enaset$rotation$adjacency.key, #namesToAdjacencyKey(rownames(node.positions)), #enaplot$enaset$enadata$adjacency.matrix,
+  node.positions = enaplot$enaset$rotation$nodes,
+  adjacency.key = NULL, #enaplot$enaset$enadata$adjacency.matrix,
   colors = c(pos=enaplot$palette[1], enaplot$palette[2]),
   edge_type = "line", #c("line", "dash", "dot"),
   show.all.nodes = T,
@@ -104,7 +104,7 @@ ena.plot.network = function(
 
   node.size = c(3,10),
 
-  labels = enaplot$enaset$rotation$codes,
+  labels = NULL,
   label.offset = "middle right",
   label.font.size = enaplot$get("font.size"),
   label.font.color = enaplot$get("font.color"),
@@ -117,15 +117,32 @@ ena.plot.network = function(
   if(choose(nrow(node.positions), 2) != length(network)) {
     stop(paste0("Network vector needs to be of length ", choose(nrow(node.positions), 2)))
   }
+  node.rows <- NULL
+  if(is(node.positions, "ena.nodes")) {
+    adjacency.key <- namesToAdjacencyKey(node.positions$code)
+    node.rows <- node.positions$code
+
+    if(is.null(labels)) {
+      labels <- node.positions$code
+    }
+  } else {
+    if(is.matrix(node.positions)) {
+      node.positions <- as.data.frame(node.positions)
+    }
+    adjacency.key <- namesToAdjacencyKey(rownames(node.positions))
+    node.rows <- rownames(node.positions)
+    if(is.null(labels)) {
+      labels  <- rownames(node.positions)
+    }
+  }
   args = list(...);
   network.edges.shapes = list();
   edge_type = match.arg(arg = edge_type, choices = c("line", "dash", "dot"));
 
-  nodes = data.frame(node.positions);
+  nodes = data.frame(as.matrix(node.positions));
   colnames(nodes) = paste0("X", seq(colnames(nodes)))
   nodes$weight = rep(0, nrow(nodes))
   nodes$color = "black";
-  node.rows = enaplot$enaset$rotation$codes; #rownames(node.positions) #labels; #rownames(enaplot$enaset$node.positions);
 
   # Handle label parameters
   if(length(label.offset) == 1) {
@@ -193,8 +210,8 @@ ena.plot.network = function(
 
   mat = as.matrix(adjacency.key);
   for (i in 1:length(network)) {
-    v0 <- node.positions[node.rows==mat[1,i], ];
-    v1 <- node.positions[node.rows==mat[2,i], ];
+    v0 <- nodes[node.rows==mat[1,i], ];
+    v1 <- nodes[node.rows==mat[2,i], ];
     nodes[node.rows==mat[1,i],]$weight = nodes[node.rows==mat[1,i],]$weight + abs(network.thickness[i]);
     nodes[node.rows==mat[2,i],]$weight = nodes[node.rows==mat[2,i],]$weight + abs(network.thickness[i]);
 
@@ -216,10 +233,10 @@ ena.plot.network = function(
         width= abs(network.thickness[i]) * enaplot$get("multiplier"),
         dash = edge_type
       ),
-      x0 = v0[1],
-      y0 = v0[2],
-      x1 = v1[1],
-      y1 = v1[2],
+      x0 = as.numeric(v0[1]),
+      y0 = as.numeric(v0[2]),
+      x1 = as.numeric(v1[1]),
+      y1 = as.numeric(v1[2]),
       layer = "below",
       size = as.numeric(abs(network.scaled[i]))
     );

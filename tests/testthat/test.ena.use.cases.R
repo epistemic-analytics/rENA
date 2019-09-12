@@ -1,102 +1,134 @@
-# suppressMessages(library(rENA, quietly = T, verbose = F))
-# context("Test Use Cases");
-#
-# # codeNames = c("Tradeoffs", "Performance.Parameters", "Constraints.and.Requests", "Collaboration", "Data");
-# codeNames = c('Data','Technical.Constraints','Performance.Parameters','Client.and.Consultant.Requests','Design.Reasoning'); #,'Collaboration');
-#
-#
-# test_that("Case 1: Group Plotting 1", {
-#   fileName = system.file("extdata","rs.data.csv", package = "rENA")
-#   file = read.csv(fileName);
-#   accum = ena.accumulate.data(
-#     units = file[,c("UserName","Condition")],
-#     conversation = file[,c("Condition","GroupName")],
-#     metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
-#     codes = file[,codeNames],
-#     window.size.back = 4
-#   );
-#   set = ena.make.set(
-#     enadata = accum,
-#     rotation.by = ena.rotate.by.mean,
-#     rotation.params = list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
-#   )
-#   unitNames = set$enadata$units
-#
-#     ### Subset rotated points and plot Condition 1 Group Mean
-#     first.game = unitNames$Condition == "FirstGame"
-#     first.game.points = set$points.rotated[first.game,]
-#
-#     ### Subset rotated points and plot Condition 2 Group Mean
-#     second.game = unitNames$Condition == "SecondGame"
-#     second.game.points = set$points.rotated[second.game,]
-#
-#     first.game.mean = colMeans( first.game.points )
-#     second.game.mean = colMeans( second.game.points )
-#
-#     first.game.ci = t.test(first.game.points, conf.level = 0.95)$conf.int
-#     second.game.ci = t.test(second.game.points, conf.level = 0.95)$conf.int
-#
-#   ### GROUP PLOTTING VERSION 1
-#     plot = ena.plot(set) %>%
-#       ena.plot.points(
-#         first.game.mean, labels="FirstGame", colors = "red", shape="square", confidence.interval.values=first.game.ci, confidence.interval = "crosshair") %>%
-#       ena.plot.points(second.game.mean, labels = "SecondGame", colors  = "blue", shape="square", confidence.interval.values=second.game.ci, confidence.interval = "crosshair");
-#
-#     testthat::expect_is(plot, c("ENAplot", "R6"));
-#
-#   ### GROUP PLOTTING VERSION 2
-#     plot2 = ena.plot(set) %>%
-#      ena.plot.group(first.game.points, labels = "FirstGame", colors = "red", confidence.interval = "crosshair") %>%
-#      ena.plot.group(second.game.points, labels = "SecondGame", colors  = "blue", confidence.interval = "crosshair");
-#
-#     testthat::expect_is(plot2, c("ENAplot", "R6"));
-#   ### END V2
-#
-#    ### Subset edge weights and plot Condition 1 Mean Network
-#    first.game.lineweights = set$line.weights[first.game,]
-#    first.game.mean = colMeans(first.game.lineweights)
-#    plot.network.1 = ena.plot(set) %>% ena.plot.network(network = first.game.mean)
-#
-#    ### Subset edge weights and plot Condition 2 Mean Network
-#    second.game.lineweights = set$line.weights[second.game,]
-#    second.game.mean = colMeans(second.game.lineweights)
-#    plot.network.2 = ena.plot(set) %>% ena.plot.network(network = second.game.mean, colors = c("blue"))
-#
-#    ### Subset Plot subtracted mean networks
-#    subtracted.network = first.game.mean - second.game.mean
-#    plot.network.sub = ena.plot(set) %>% ena.plot.network(network = subtracted.network)
-#
-#   testthat::expect_is(plot, c("ENAplot", "R6"));
-# })
-#
-# test_that("Case 2: Individual Plotting", {
-#   fileName = system.file("extdata","rs.data.csv", package = "rENA")
-#   file = read.csv(fileName);
-#   accum = ena.accumulate.data(
-#     units = file[,c("UserName","Condition")],
-#     conversation = file[,c("Condition","GroupName")],
-#     metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
-#     codes = file[,codeNames],
-#     window.size.back = 4
-#   );
-#   set = ena.make.set(
-#     enadata = accum,
-#     rotation.by = ena.rotate.by.mean,
-#     rotation.params = list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
-#   )
-#   unitNames = set$enadata$units
-#
-#   first.game = unitNames$Condition == "FirstGame"
-#   first.game.points = set$points.rotated[first.game,]
-#   plot.firstgame.points = ena.plot(set) %>% ena.plot.points(points = first.game.points)
-#
-#   user.akashv.rows = set$enadata$units$UserName == "akash v"
-#   user.akashv = set$line.weights[user.akashv.rows,]
-#   user.akashv.network = ena.plot(set) %>% ena.plot.network(network = user.akashv)
-#
-#   testthat::expect_is(user.akashv.network, c("ENAplot", "R6"));
-# })
-#
+suppressMessages(library(rENA, quietly = T, verbose = F))
+context("Test Use Cases");
+
+codeNames = c('Data','Technical.Constraints','Performance.Parameters','Client.and.Consultant.Requests','Design.Reasoning'); #,'Collaboration');
+file = RS.data
+
+accum = ena.accumulate.data(
+  units = file[,c("UserName","Condition")],
+  conversation = file[,c("Condition","GroupName")],
+  metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
+  codes = file[,codeNames],
+  window.size.back = 4
+);
+set = ena.make.set(
+  enadata = accum,
+  rotation.by = ena.rotate.by.mean,
+  rotation.params = list(accum$meta.data$Condition=="FirstGame", accum$meta.data$Condition=="SecondGame")
+)
+
+#####
+  # test_that("Case 1: Group Plotting 1", {
+  #   fileName = system.file("extdata","rs.data.csv", package = "rENA")
+  #   file = read.csv(fileName);
+  #   accum = ena.accumulate.data(
+  #     units = file[,c("UserName","Condition")],
+  #     conversation = file[,c("Condition","GroupName")],
+  #     metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
+  #     codes = file[,codeNames],
+  #     window.size.back = 4
+  #   );
+  #   set = ena.make.set(
+  #     enadata = accum,
+  #     rotation.by = ena.rotate.by.mean,
+  #     rotation.params = list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
+  #   )
+  #   unitNames = set$enadata$units
+  #
+  #     ### Subset rotated points and plot Condition 1 Group Mean
+  #     first.game = unitNames$Condition == "FirstGame"
+  #     first.game.points = set$points.rotated[first.game,]
+  #
+  #     ### Subset rotated points and plot Condition 2 Group Mean
+  #     second.game = unitNames$Condition == "SecondGame"
+  #     second.game.points = set$points.rotated[second.game,]
+  #
+  #     first.game.mean = colMeans( first.game.points )
+  #     second.game.mean = colMeans( second.game.points )
+  #
+  #     first.game.ci = t.test(first.game.points, conf.level = 0.95)$conf.int
+  #     second.game.ci = t.test(second.game.points, conf.level = 0.95)$conf.int
+  #
+  #   ### GROUP PLOTTING VERSION 1
+  #     plot = ena.plot(set) %>%
+  #       ena.plot.points(
+  #         first.game.mean, labels="FirstGame", colors = "red", shape="square", confidence.interval.values=first.game.ci, confidence.interval = "crosshair") %>%
+  #       ena.plot.points(second.game.mean, labels = "SecondGame", colors  = "blue", shape="square", confidence.interval.values=second.game.ci, confidence.interval = "crosshair");
+  #
+  #     testthat::expect_is(plot, c("ENAplot", "R6"));
+  #
+  #   ### GROUP PLOTTING VERSION 2
+  #     plot2 = ena.plot(set) %>%
+  #      ena.plot.group(first.game.points, labels = "FirstGame", colors = "red", confidence.interval = "crosshair") %>%
+  #      ena.plot.group(second.game.points, labels = "SecondGame", colors  = "blue", confidence.interval = "crosshair");
+  #
+  #     testthat::expect_is(plot2, c("ENAplot", "R6"));
+  #   ### END V2
+  #
+  #    ### Subset edge weights and plot Condition 1 Mean Network
+  #    first.game.lineweights = set$line.weights[first.game,]
+  #    first.game.mean = colMeans(first.game.lineweights)
+  #    plot.network.1 = ena.plot(set) %>% ena.plot.network(network = first.game.mean)
+  #
+  #    ### Subset edge weights and plot Condition 2 Mean Network
+  #    second.game.lineweights = set$line.weights[second.game,]
+  #    second.game.mean = colMeans(second.game.lineweights)
+  #    plot.network.2 = ena.plot(set) %>% ena.plot.network(network = second.game.mean, colors = c("blue"))
+  #
+  #    ### Subset Plot subtracted mean networks
+  #    subtracted.network = first.game.mean - second.game.mean
+  #    plot.network.sub = ena.plot(set) %>% ena.plot.network(network = subtracted.network)
+  #
+  #   testthat::expect_is(plot, c("ENAplot", "R6"));
+  # })
+#####
+
+test_that("Case 2: Individual Plotting", {
+  first.unit.point <- set$points$ENA_UNIT$`steven z.FirstGame`
+  first.unit.edges <- as.matrix(set$line.weights$ENA_UNIT$`steven z.FirstGame`)
+  plot <- ena.plot(set) %>%
+            ena.plot.points(points = first.unit.point) %>%
+            ena.plot.network(network = first.unit.edges)
+
+  testthat::expect_is(plot, c("ENAplot", "R6"));
+
+
+  testthat::expect_equal(length(plot$plot$x$attrs),
+    sum(sapply(plot$plot$x$visdat, function(d) { nrow(d()) })),
+    length(first.unit.edges)*2 + 1 + length(set$rotation$codes)
+  )
+})
+test_that("Case 3: Custom Node Plotting", {
+  first.unit.point <- set$points$ENA_UNIT$`steven z.FirstGame`
+  first.unit.edges <- as.matrix(set$line.weights$ENA_UNIT$`steven z.FirstGame`)
+  first.unit.edges[1:2] = 0
+
+  test_codes <- LETTERS[1:4]
+  test_adj <- namesToAdjacencyKey(test_codes)
+  test_edges <- runif(choose(length(test_codes), 2))
+  names(test_edges) <- apply(test_adj, 2, paste, collapse = " & ")
+  b_edges <- grep(x = names(test_edges), pattern = "B")
+  test_edges[b_edges] <- 0
+
+  rand_positions <- matrix(runif(length(test_codes) * 2, -1, 1), ncol = 2)
+  plot <- ena.plot(set) %>%
+            ena.plot.points(first.unit.point) %>%
+            ena.plot.network(
+              network = test_edges,
+              node.positions = rand_positions
+            )
+
+  testthat::expect_is(plot, c("ENAplot", "R6"));
+
+  lines <- sapply(plot$plot$x$attrs, function(a) { a$line$width })
+  lines <- lines[!sapply(lines, is.null)]
+  names(lines) <- as.character(sapply(lines, names))
+  lines <- sapply(lines, as.numeric)
+  b_edges <- sum(lines[grep(x = names(lines), pattern = "B")] )
+
+  testthat::expect_equal(b_edges, 0)
+})
+
 # test_that("Case 3: Group Plotting 2", {
 #   fileName = system.file("extdata","rs.data.csv", package = "rENA")
 #   file = read.csv(fileName);
