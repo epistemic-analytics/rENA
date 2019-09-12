@@ -31,7 +31,7 @@ test_that("Verify raw input", {
 test_that("Named centroid dimensions", {
   testthat::expect_equal(
     colnames(as.matrix(set_end$model$centroids)),
-    as.character(set_end$rotation$rotation.matrix$codes)
+    colnames(as.matrix(set_end$points))
   )
 
   testthat::expect_equal(

@@ -5,15 +5,13 @@
 \title{Plot an ENA network}
 \usage{
 ena.plot.network(enaplot = NULL, network = NULL,
-  node.positions = as.matrix(enaplot$enaset$rotation$nodes),
-  adjacency.key = enaplot$enaset$rotation$adjacency.key, colors = c(pos
-  = enaplot$palette[1], enaplot$palette[2]), edge_type = "line",
-  show.all.nodes = T, threshold = c(0), thin.lines.in.front = T,
-  thickness = c(min(abs(network)), max(abs(network))),
-  opacity = thickness, saturation = thickness,
+  node.positions = enaplot$enaset$rotation$nodes, adjacency.key = NULL,
+  colors = c(pos = enaplot$palette[1], enaplot$palette[2]),
+  edge_type = "line", show.all.nodes = T, threshold = c(0),
+  thin.lines.in.front = T, thickness = c(min(abs(network)),
+  max(abs(network))), opacity = thickness, saturation = thickness,
   scale.range = c(ifelse(min(network) == 0, 0, 0.1), 1),
-  node.size = c(3, 10), labels = enaplot$enaset$rotation$codes,
-  label.offset = "middle right",
+  node.size = c(3, 10), labels = NULL, label.offset = "middle right",
   label.font.size = enaplot$get("font.size"),
   label.font.color = enaplot$get("font.color"),
   label.font.family = enaplot$get("font.family"), legend.name = NULL,
