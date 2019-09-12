@@ -76,12 +76,13 @@ test_that("Test show output", {
   on.exit(unlink(tmp), add = TRUE)
 
   sink(tmp, type = "output")
-  set_end %>% plot() %>% show()
+  set_end %>% plot()
 
   testthat::expect_true(
     grepl(x = readLines(tmp)[1], pattern = "[[1]]")
   )
-  unlink(tmp)
+
+  lapply(seq_len(sink.number()), sink, file = NULL)
 })
 
 test_that("Test means rotation", {

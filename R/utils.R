@@ -166,19 +166,6 @@ print.ena.set <- function(x, ..., plot = FALSE, set = TRUE) {
 #' Title
 #'
 #' @param x [TBD]
-#' @param ... [TBD]
-#'
-#' @return [TBD]
-#' @export
-show <- function(x, ...) {
-   x$plots <- lapply(x$plots, check_range)
-   print(x, ..., plot = T, set = F)
-   invisible(x)
-}
-
-#' Title
-#'
-#' @param x [TBD]
 #' @param by [TBD]
 #' @param model [TBD]
 #' @param ... [TBD]

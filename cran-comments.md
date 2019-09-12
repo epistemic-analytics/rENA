@@ -1,4 +1,4 @@
-# v0.1.6.1
+# v0.2.0.0
 
-Updates to CITATION and vignettes
-Fixes for weighted accumulations with window size of 1 
+Cleaned up returned objects
+New wrapper function for simple use-cases

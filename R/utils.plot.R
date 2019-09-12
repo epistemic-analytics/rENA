@@ -667,3 +667,16 @@ check_range <- function(x) {
 
   x
 }
+
+#' Title
+#'
+#' @param x [TBD]
+#' @param ... [TBD]
+#'
+#' @return [TBD]
+#' @export
+show <- function(x, ...) {
+   x$plots <- lapply(x$plots, check_range)
+   print(x, ..., plot = T, set = F)
+   invisible(x)
+}

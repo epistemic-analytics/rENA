@@ -32,8 +32,8 @@ ena.plotter = function(
 ) {
   data = set$connection.counts;
 
-  # set$model$plots[[length(set$model$plots)]] <- plot
-  # plot <- set$model$plots[[length(set$model$plots)]]
+  # set$plots[[length(set$plots)]] <- plot
+  # plot <- set$plots[[length(set$plots)]]
   if(is.null(unit) == FALSE) {
     plot = ena.plot(enaset = set,title = unit)
 
@@ -48,10 +48,10 @@ ena.plotter = function(
     plot = ena.plot.points(enaplot = plot,points = point, colors = "black")
     plot = ena.plot.network(enaplot = plot, network = point.lw, colors = "black")
 
-    set$model$plots[[length(set$model$plots) + 1]] <- plot
+    set$plots[[length(set$plots) + 1]] <- plot
 
     if(showPlots == TRUE) {
-      print(set$model$plots)
+      print(set$plots)
     }
 
     return(set)
@@ -83,10 +83,10 @@ ena.plotter = function(
       stop("You must set at least one of points, mean, or network to TRUE to obtain a plot.")
     }
 
-    set$model$plots[[length(set$model$plots) + 1]] <- plot
+    set$plots[[length(set$plots) + 1]] <- plot
 
     if(showPlots == TRUE) {
-      print(set$model$plots)
+      print(set$plots)
     }
 
     return(set)
@@ -121,10 +121,10 @@ ena.plotter = function(
       else if(TRUE %in% c(network,points, mean) == FALSE) {
         stop("You must set at least one of points, mean, or network to TRUE to obtain a plot.")
       }
-      set$model$plots[[length(set$model$plots) + 1]] <- g.plot
+      set$plots[[length(set$plots) + 1]] <- g.plot
 
       if(showPlots == TRUE) {
-        print(set$model$plots)
+        print(set$plots)
       }
 
       return(set)
@@ -147,7 +147,7 @@ ena.plotter = function(
 
 
       if(showPlots == TRUE) {
-        print(set$model$plots)
+        print(set$plots)
       }
 
        return(set)
@@ -183,10 +183,10 @@ ena.plotter = function(
     else if(TRUE %in% c(network,points, mean) == FALSE) {
       stop("You must set at least one of points, mean, or network to TRUE to obtain a plot.")
     }
-    set$model$plots[[length(set$model$plots) + 1]] <- g.plot
+    set$plots[[length(set$plots) + 1]] <- g.plot
 
     if(showPlots == TRUE) {
-      print(set$model$plots)
+      print(set$plots)
     }
 
     return(set)
@@ -215,7 +215,7 @@ ena.plotter = function(
     )
 
     if(showPlots == TRUE) {
-      print(set$model$plots)
+      print(set$plots)
     }
 
     return(set)
