@@ -86,7 +86,8 @@ test_that("Simple forwarded metadata", {
     m2=c(1,2,3,4,9,9,9,9,9,9,9,9)
   );
 
-  # df.accum = ena.accumulate.data.file(df, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"));
+  df.accum = rENA:::ena.accumulate.data.file(df, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"));
+
   df.accum.sep = ena.accumulate.data(units = df.units, conversation = df.conversation, codes = df.codes, metadata = df.meta)
 
   # expect_true("m1" %in% colnames(df.accum$metadata));
@@ -159,7 +160,7 @@ test_that("Test trajectories", {
       Name == "Z" & ActivityNumber == 1, ..adjacency.code.1
     ]) == 1)
 
-  
+
   # Test for a value of 0 in the second accumulation of the trajectory of code 1
   testthat::expect_true(all(
     df.accum$model$row.connection.counts[
@@ -173,35 +174,35 @@ test_that("Test trajectories", {
   # Test that the first summed trajectory is 1
   testthat::expect_equal(as.numeric(
     df.accum$connection.counts[
-      df.accum$trajectories$Name == "Z" & 
+      df.accum$trajectories$Name == "Z" &
       df.accum$trajectories$ActivityNumber == 1, ..adjacency.code.1
     ]), 1
   )
   testthat::expect_equal(as.numeric(
     df.accum.sep$connection.counts[
-      df.accum$trajectories$Name == "Z" & 
+      df.accum$trajectories$Name == "Z" &
       df.accum$trajectories$ActivityNumber == 1, ..adjacency.code.1
     ]), 1
   )
 
-  # Test that the second summed trajectory is 1, even thought it had a zero 
+  # Test that the second summed trajectory is 1, even thought it had a zero
   # accumulation for it's conversations
   testthat::expect_equal(as.numeric(
     df.accum$connection.counts[
-      df.accum$trajectories$Name == "Z" & 
-      df.accum$trajectories$ActivityNumber == 2 & 
+      df.accum$trajectories$Name == "Z" &
+      df.accum$trajectories$ActivityNumber == 2 &
       df.accum$trajectories$Day == 1, ..adjacency.code.1
     ]), 1
   )
   testthat::expect_equal(as.numeric(
     df.accum.sep$connection.counts[
-      df.accum$trajectories$Name == "Z" & 
-      df.accum$trajectories$ActivityNumber == 2 & 
+      df.accum$trajectories$Name == "Z" &
+      df.accum$trajectories$ActivityNumber == 2 &
       df.accum$trajectories$Day == 1, ..adjacency.code.1
     ]), 1
   )
 
-  # Test that non-accumulation is properly leaving second trajectory group 0 
+  # Test that non-accumulation is properly leaving second trajectory group 0
   # (different than the previous test)
   testthat::expect_identical(
     c(1, 0, 0, 1),
@@ -323,7 +324,7 @@ test_that("Test different params", {
   expect_error(ena.accumulate.data(
       units = df.units[1:5,, drop = F],
       conversation = df.conversation[1:6,, drop = F],
-      codes = df.codes    
+      codes = df.codes
     ),
     regexp = "the same number of rows"
   )

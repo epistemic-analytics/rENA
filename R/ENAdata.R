@@ -126,7 +126,7 @@ ENAdata <- R6::R6Class("ENAdata", public = list(
       # \preformatted{  Parameters:
       #      colnames - Logical, whether to replace colnames with their names
       #                 values from the adjacency (co-occurrence)
-      #      sep - String to use as a seperator in the updated column names. 
+      #      sep - String to use as a seperator in the updated column names.
       #             Ignored if colnames == F}
       ####
       read = function(colnames = T, sep = " & ") {
@@ -141,7 +141,7 @@ ENAdata <- R6::R6Class("ENAdata", public = list(
       },
       add.metadata = function(merge = F) {
         meta_avail <- colnames(self$raw)[
-          -which(colnames(self$raw) %in% 
+          -which(colnames(self$raw) %in%
                   c(self$codes, private$units.by, private$conversations.by))]
 
         meta_avail <- meta_avail[which(meta_avail != "ENA_UNIT")]
@@ -154,7 +154,7 @@ ENAdata <- R6::R6Class("ENAdata", public = list(
         raw.meta <- self$raw[!duplicated(ENA_UNIT)][
                       ENA_UNIT %in% unique(
                         self$accumulated.adjacency.vectors$ENA_UNIT
-                      ), 
+                      ),
                       c("ENA_UNIT", private$units.by, meta_cols_to_use),
                       with = F
                     ]
@@ -162,13 +162,13 @@ ENAdata <- R6::R6Class("ENAdata", public = list(
         df_to_return <- NULL;
         if (merge == T) {
           df_to_return <- merge(
-            self$adjacency.vectors, 
+            self$adjacency.vectors,
             raw.meta[, unique(colnames(raw.meta)), with = F],
             by = c("ENA_UNIT"),
             suffixes = c("", ".y"), sort = F
           )
         } else {
-          df_to_return <- raw.meta;
+          df_to_return <- raw.meta[ENA_UNIT %in% self$unit.names,];
         }
 
         return(df_to_return)
@@ -275,7 +275,7 @@ ENAdata <- R6::R6Class("ENAdata", public = list(
         cols <- colnames(self$adjacency.vectors)[
                   grep("adjacency.code", colnames(self$adjacency.vectors))
                 ]
-        self$adjacency.vectors <- self$adjacency.vectors[, 
+        self$adjacency.vectors <- self$adjacency.vectors[,
                                     lapply(
                                       .SD,
                                       private$weight.by

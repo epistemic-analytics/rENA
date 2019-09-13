@@ -96,12 +96,9 @@ ena.accumulate.data <- function(
     }
   }
 
-  units.used <- NULL;
-
   data <- ENAdata$new(
     file = df,
     units = units,
-    units.used = units.used,
     units.by = units.by,
     conversations.by = conversations.by,
     codes = codes,
