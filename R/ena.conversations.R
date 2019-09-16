@@ -90,13 +90,15 @@ ena.conversations = function(set, units, units.by=NULL, codes=NULL, conversation
     codedUnitRowConvsAll = unique(unlist(sapply(X = 1:length(codedUnitRows2), simplify = F, FUN = function(x) {
       thisConvRows = rows2[[codedUnitRowConvs2[x]]]
       thisRowInConv = which(thisConvRows == codedUnitRows2[x])
-      thisRowAndWindow = rep(thisRowInConv,window) - (window-1):0;
+      winUse = ifelse(is.infinite(window), thisRowInConv, window)
+      thisRowAndWindow = rep(thisRowInConv,winUse) - (winUse-1):0
       coOccursFound = all(rawAcc2[thisConvRows[thisRowAndWindow[thisRowAndWindow > 0]], lapply(.SD, sum), .SDcols=codes] > 0)
       if(coOccursFound) {
         thisConvRows[thisRowAndWindow[thisRowAndWindow > 0]]
       } else {
         unitRowsNotCooccurred <<- c(unitRowsNotCooccurred, thisConvRows[thisRowInConv])
-        coOccursFound
+        # coOccursFound
+        NULL
       }
     })))
   }
