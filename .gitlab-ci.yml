@@ -1,14 +1,18 @@
 stages:
  - docker
  - check
+ - test
+ - docs
  - checkWindows
  - release
 
 variables:
-  VERSION: "0.1.6.1"
+  VERSION: "0.2.0.0"
   PKG: "rENA"
   PKGL: "rena"
-  REG_URL: "registry.doit.wisc.edu/epistemic-analytics/qe-packages/rena"
+  REG_URL: "${CI_REGISTRY}/epistemic-analytics/qe-packages/rena"
+  DOCKER_HOST: tcp://localhost:2375/
+  DOCKER_DRIVER: overlay2
 
 # Templates
 .build_definition: &build_template
@@ -20,13 +24,8 @@ variables:
     - mkdir -p ~/.R/
     - rm -f ~/.R/Makevars
     - cp demo/backup/Makevars ~/.R/
-    - cat ~/.R/Makevars
     - Rscript -e 'Rcpp::compileAttributes()'
     - Rscript -e 'update(devtools::dev_package_deps("."))'
-    - Rscript -e 'install.packages("webshot", repos = "https://cran.rstudio.com")'
-    #- Rscript -e 'devtools::build_vignettes(upgrade = F, install = T, keep_md = F)' || true
-    #- mkdir -p build/
-    #- mv Meta/* build/ || true
     - cd ..; R CMD build --log rENA || true
 .check_definition: &check_template
   stage: check
@@ -40,19 +39,14 @@ variables:
   <<: *build_template
   script:
     - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_$VERSION.tar.gz --as-cran --no-manual
-    - ls -al ./
-    - ls -al ./rENA.Rcheck/
-    - ls -al ./rENA/ || true
     - mv ./rENA-00build.log rENA/archive/ || true
     - mv ./rENA.Rcheck/00check.log rENA/archive/ || true
     - mv ./rENA.Rcheck/00install.out rENA/archive/ || true
     - mv ./rENA_*.tar.gz rENA/archive/ || true
-    #- cp ./${PKG}/doc/ ./${PKG}/inst/doc/
   tags:
     - docker
   allow_failure: false
 
-# Check Steps
 check:r-devel:
   image: $REG_URL/devel:current
   only:
@@ -65,20 +59,47 @@ check:r-oldrelease:
   <<: *check_template
 check:r-release:
   image: $REG_URL/release:current
+  #only:
+  #  - master
   <<: *check_template
 check:r-winbuilder:
   stage: checkWindows
   image: egruw/r-ftp
   when: manual
-  # <<: *build_template
+  only:
+    - master
   script:
     - curl -v -T archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-oldrelease/${PKG}_${VERSION}.tar.gz
     - curl -v -T archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-release/${PKG}_${VERSION}.tar.gz
     - curl -v -T archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-devel/${PKG}_${VERSION}.tar.gz
-    #- mv ./${PKG}_${VERSION}.tar.gz ${PKG}/archive/
   tags:
     - docker
   allow_failure: false
+
+test:r-release:
+  stage: test
+  image: registry.doit.wisc.edu/epistemic-analytics/qe-packages/rena/release-test:current
+  script:
+    - 'Rscript -e "Rcpp::compileAttributes()"'
+    #- 'Rscript -e "library(\"rvest\")"'
+    - 'Rscript -e "rep <- covr::report( x = covr::package_coverage(quiet = T), file = \"inst/coverage/${CI_COMMIT_REF_NAME}/index.html\" )"'
+    - 'Rscript -e "setwd(\"inst/coverage/${CI_COMMIT_REF_NAME}\"); res = lapply(dir(\".\", full.names = F, recursive = T), function(f) { aws.s3::put_object(file = f, object = paste0(\"coverage/${CI_COMMIT_REF_NAME}/\", f), bucket = \"${PKGL}.qe-libs.org\", acl = \"public-read\") })"'
+    - 'Rscript --vanilla demo/backup/coverage-report.R ${CI_COMMIT_REF_NAME}'
+  dependencies:
+    - check:r-release
+
+docs:build-site:
+  stage: docs
+  image: $REG_URL/release-test:current
+  script:
+    - rm -rf src/RcppExports*
+    - rm -rf R/RcppExports*
+    - 'Rscript -e "Rcpp::compileAttributes()"'
+    - 'Rscript -e "devtools::install(\".\", quick = T, build = T, dependencies = F, upgrade = F)"'
+    - 'Rscript -e "pkgdown::build_site(preview = F, document = F, lazy = T, new_process = T)"'
+    - 'Rscript -e "setwd(\"docs\"); res = lapply(dir(\".\", full.names = F, recursive = T), function(f) { aws.s3::put_object(file = f, object = f, bucket = \"${PKGL}.qe-libs.org\", acl = \"public-read\") })"'
+  dependencies:
+    - test:r-release
 
 release:cran:
   stage: release
@@ -99,31 +120,59 @@ release:cran:
 
 .docker_definition: &docker_template
   stage: docker
-  tags:
-    - shell
+  image: docker:19.03.1
+  services:
+    - docker:19.03.1-dind
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
     - docker build -t $REG_URL/$TAG:current -f inst/docker/${PKG}-$FILE inst/docker/
     - docker push $REG_URL/$TAG:current
+docker:release:
+  variables:
+    TAG: "release"
+    FILE: "release"
+    DOCKER_HOST: tcp://localhost:2375/
+    DOCKER_DRIVER: overlay2
   only:
     refs:
       - develop
     changes:
       - "inst/docker/rENA-$FILE"
-      - ".gitlab-ci.yml"
-docker:release:
+  <<: *docker_template
+docker:release-test:
   variables:
-    TAG: "release"
-    FILE: "release"
+    TAG: "release-test"
+    FILE: "release-test"
+    DOCKER_HOST: tcp://localhost:2375/
+    DOCKER_DRIVER: overlay2
+  only:
+    refs:
+      - develop
+    changes:
+      - "inst/docker/rENA-release-test"
   <<: *docker_template
 docker:old-release:
   variables:
     TAG: "old-release"
     FILE: "oldrelease"
+    DOCKER_HOST: tcp://localhost:2375/
+    DOCKER_DRIVER: overlay2
+  only:
+    refs:
+      - develop
+    changes:
+      - "inst/docker/rENA-$FILE"
   <<: *docker_template
 docker:devel:
   variables:
     TAG: "devel"
     FILE: "devel"
+    DOCKER_HOST: tcp://localhost:2375/
+    DOCKER_DRIVER: overlay2
+  only:
+    refs:
+      - develop
+    changes:
+      - "inst/docker/rENA-$FILE"
   <<: *docker_template

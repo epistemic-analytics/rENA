@@ -1,4 +1,4 @@
-FROM rocker/r-ver:3.4.4
+FROM rocker/r-ver:3.5.3
 
 RUN apt-get update -y
 RUN apt-get install -y apt-utils
@@ -22,5 +22,6 @@ RUN R -e 'install.packages(c("rmarkdown"), repos="http://cran.rstudio.com")'
 RUN R -e 'install.packages(c("RcppArmadillo"), repos="http://cran.rstudio.com")'
 RUN R -e 'install.packages(c("RcppParallel"), repos="http://cran.rstudio.com")'
 RUN R -e 'install.packages(c("RcppEigen"), repos="http://cran.rstudio.com")'
+RUN R -e 'install.packages(c("webshot"), repos="http://cran.rstudio.com")'
 
 RUN R --version
