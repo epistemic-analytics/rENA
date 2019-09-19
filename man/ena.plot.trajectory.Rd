@@ -94,6 +94,3 @@ print(plot)
 \seealso{
 \code{\link{ena.plot}}
 }
-\keyword{ENA,}
-\keyword{plot,}
-\keyword{trajectory}

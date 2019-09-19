@@ -25,7 +25,6 @@
 #' @param label.font.color A character which determines the color of label font, default: enaplot\$font.color
 #' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot\$font.family
 #' @param default.hidden A logical indicating if the trajectories should start hidden (click on the legend to show them) Default: FALSE
-#' @keywords ENA, plot, trajectory
 #'
 #' @seealso \code{\link{ena.plot}}
 #'

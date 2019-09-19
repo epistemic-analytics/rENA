@@ -41,8 +41,6 @@
 #' @param include.meta Locigal indicating if unit metadata should be attached to the resulting ENAdata object, default is TRUE
 #' @param as.list R6 objects will be deprecated, but if this is TRUE, the original R6 object will be returned, otherwise a list with class `ena.set`
 #'
-#' @keywords data, accumulate
-#'
 #' @seealso \code{\link{ENAdata}}, \code{\link{ena.make.set}}
 #'
 #' @return \code{\link{ENAdata}} object with data [adjacency (co-occurrence) vectors] accumulated from the provided data frames.

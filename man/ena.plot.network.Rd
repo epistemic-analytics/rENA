@@ -125,8 +125,3 @@ print(plot)
 \seealso{
 \code{\link{ena.plot}}, \code{\link{ena.plot.points}}
 }
-\keyword{ENA,}
-\keyword{edges}
-\keyword{network,}
-\keyword{nodes,}
-\keyword{plot,}

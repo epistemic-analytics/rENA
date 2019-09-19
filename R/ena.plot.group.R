@@ -24,7 +24,6 @@
 #' @param ... Additional parameters
 #'
 #' @import magrittr
-#' @keywords ENA, plot, group
 #'
 #' @seealso \code{\link{ena.plot}}, \code{ena.plot.points}
 #'

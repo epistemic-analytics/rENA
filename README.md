@@ -1,6 +1,6 @@
 # rENA <img src="man/figures/logo.png" align="right" alt="" width="120" />
 
-[![cran status](https://www.r-pkg.org/badges/version-ago/rENA)](https://cran.r-project.org/web/packages/rENA/index.html) 
+[![cran status](https://www.r-pkg.org/badges/version-ago/rENA)](https://CRAN.R-project.org/package=rENA) 
 [![cran downloads](https://cranlogs.r-pkg.org/badges/grand-total/rENA)](https://cranlogs.r-pkg.org/badges/grand-total/rENA) 
 [![build status](https://git.doit.wisc.edu/epistemic-analytics/qe-packages/rENA/badges/master/build.svg)](https://git.doit.wisc.edu/epistemic-analytics/qe-packages/rENA/commits/master)
 [![coverage](https://s3-us-west-2.amazonaws.com/rena.qe-libs.org/coverage-master.svg)](http://rena.qe-libs.org/coverage/master/index.html)
@@ -18,7 +18,7 @@ Researchers have used ENA to analyze and visualize a wide range of phenomena, in
 [![build status](https://git.doit.wisc.edu/epistemic-analytics/qe-packages/rENA/badges/master/build.svg)](https://git.doit.wisc.edu/epistemic-analytics/qe-packages/rENA/commits/master)
 [![coverage](https://s3-us-west-2.amazonaws.com/rena.qe-libs.org/coverage-master.svg)](http://rena.qe-libs.org/coverage/master/index.html)
 
-[![cran status](https://www.r-pkg.org/badges/version-ago/rENA)](https://cran.r-project.org/web/packages/rENA/index.html) 
+[![cran status](https://www.r-pkg.org/badges/version-ago/rENA)](https://CRAN.R-project.org/package=rENA) 
 [![cran downloads](https://cranlogs.r-pkg.org/badges/grand-total/rENA)](https://cranlogs.r-pkg.org/badges/grand-total/rENA) 
 
 ```

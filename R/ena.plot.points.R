@@ -25,7 +25,6 @@
 #' @param texts [TBD]
 #' @param ... additional parameters addressed in inner function
 #'
-#' @keywords ENA, plot, points
 #'
 #' @seealso \code{\link{ena.plot}}, \code{\link{ENAplot}}, \code{\link{ena.plot.group}}
 #'

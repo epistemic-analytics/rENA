@@ -22,7 +22,6 @@
 # @param mask [TBD]
 # @param ... additional parameters addressed in inner function
 #
-# @keywords data, accumulate
 #
 # @seealso \code{\link{ena.make.set}}
 #
@@ -54,7 +53,7 @@ ena.accumulate.data.file <- function(
   conversations.by,
   codes = NULL,
   model = c("EndPoint",
-            "AccumulatedTrajectory", 
+            "AccumulatedTrajectory",
             "SeparateTrajectory"),
   window = c("Moving Stanza", "Conversation"),
   window.size.back = 1,

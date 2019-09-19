@@ -16,7 +16,6 @@
 #' @param scale.to "network" (default), "points", or a list with x and y ranges. Network and points both scale to the c(-max, max) of the corresponding data.frame
 #' @param ... additional parameters addressed in inner function
 #'
-#' @keywords ENA, generate, plot
 #'
 #' @seealso \code{\link{ena.make.set}}, \code{\link{ena.plot.points}}
 #'

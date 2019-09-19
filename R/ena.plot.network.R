@@ -31,8 +31,6 @@
 #' @param scale.weights Logical indicating to scale the supplied network
 #' @param ... Additional parameters
 #'
-#' @keywords ENA, plot, network, nodes, edges
-#'
 #' @seealso \code{\link{ena.plot}}, \code{\link{ena.plot.points}}
 #' @importFrom scales rescale
 

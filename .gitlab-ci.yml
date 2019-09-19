@@ -7,7 +7,7 @@ stages:
  - release
 
 variables:
-  VERSION: "0.1.6.1"
+  VERSION: "0.2.0.0"
   PKG: "rENA"
   PKGL: "rena"
   REG_URL: "${CI_REGISTRY}/epistemic-analytics/qe-packages/rena"
@@ -67,7 +67,7 @@ check:r-winbuilder:
   image: egruw/r-ftp
   when: manual
   only:
-    - develop
+    - master
   script:
     - curl -v -T archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-oldrelease/${PKG}_${VERSION}.tar.gz
     - curl -v -T archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-release/${PKG}_${VERSION}.tar.gz

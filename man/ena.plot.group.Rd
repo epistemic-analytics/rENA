@@ -93,6 +93,3 @@ print(plot);
 \seealso{
 \code{\link{ena.plot}}, \code{ena.plot.points}
 }
-\keyword{ENA,}
-\keyword{group}
-\keyword{plot,}

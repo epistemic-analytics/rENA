@@ -23,8 +23,6 @@
 #' @param as.list R6 objects will be deprecated, but if this is TRUE, the original R6 object will be returned, otherwise a list with class `ena.set`
 #' @param ... additional parameters addressed in inner function
 #'
-#' @keywords ENA, generate, set
-#'
 #' @examples
 #' data(RS.data)
 #'

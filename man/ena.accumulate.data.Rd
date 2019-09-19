@@ -70,5 +70,3 @@ from all previous conversations in the data.
 \seealso{
 \code{\link{ENAdata}}, \code{\link{ena.make.set}}
 }
-\keyword{accumulate}
-\keyword{data,}

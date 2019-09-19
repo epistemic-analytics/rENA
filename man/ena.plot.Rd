@@ -62,6 +62,3 @@ print(plot);
 \seealso{
 \code{\link{ena.make.set}}, \code{\link{ena.plot.points}}
 }
-\keyword{ENA,}
-\keyword{generate,}
-\keyword{plot}

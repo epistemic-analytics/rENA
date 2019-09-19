@@ -75,6 +75,3 @@ set.means.rotated = ena.make.set(
 \seealso{
 \code{\link{ena.accumulate.data}}, \code{\link{ENAset}}
 }
-\keyword{ENA,}
-\keyword{generate,}
-\keyword{set}
