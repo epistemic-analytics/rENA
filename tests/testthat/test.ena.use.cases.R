@@ -128,6 +128,34 @@ test_that("Case 3: Custom Node Plotting", {
 
   testthat::expect_equal(b_edges, 0)
 })
+test_that("Case 4: Old sets plot", {
+  accum_old = ena.accumulate.data(
+    units = file[,c("UserName","Condition")],
+    conversation = file[,c("Condition","GroupName")],
+    metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
+    codes = file[,codeNames],
+    window.size.back = 4,
+    as.list = FALSE
+  );
+  set_old = ena.make.set(
+    enadata = accum_old,
+    rotation.by = ena.rotate.by.mean,
+    rotation.params = list(accum$meta.data$Condition=="FirstGame", accum$meta.data$Condition=="SecondGame"),
+    as.list = FALSE
+  );
+  first.unit.point <- set$points$ENA_UNIT$`steven z.FirstGame`
+  first.unit.edges <- as.matrix(set$line.weights$ENA_UNIT$`steven z.FirstGame`)
+  plot = ena.plot(set_old) %>%
+            ena.plot.points(points = first.unit.point) %>%
+            ena.plot.network(network = first.unit.edges)
+
+  testthat::expect_is(plot, c("ENAplot", "R6"));
+
+  testthat::expect_equal(length(plot$plot$x$attrs),
+    sum(sapply(plot$plot$x$visdat, function(d) { nrow(d()) })),
+    length(first.unit.edges)*2 + 1 + length(set$rotation$codes)
+  )
+})
 
 # test_that("Case 3: Group Plotting 2", {
 #   fileName = system.file("extdata","rs.data.csv", package = "rENA")
