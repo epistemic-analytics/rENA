@@ -33,6 +33,14 @@ ENAplot = R6::R6Class("ENAplot",
         scale.to = "network",
         ...
       ) {
+
+        if (is(enaset, "ENAset")) {
+          warning(paste0("Usage of ENAset objects will be deprecated ",
+            "and potentially removed altogether in future versions."))
+
+          enaset <- ena.set(enaset);
+        }
+
         code.cols = !colnames(enaset$line.weights) %in% colnames(enaset$meta.data)
 
         args = list(...);
