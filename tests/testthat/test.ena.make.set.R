@@ -192,7 +192,8 @@ test_that("Test writeup output", {
   );
   set <- ena.make.set(accum)
 
-  writeup <- ena.writeup(set, theory = T, methods = T, type = "file", output_dir = tempdir())
+  writeup <- suppressMessages(ena.writeup(set, theory = T, methods = T, type = "file", output_dir = tempdir()))
+
   writeup_lines <- readLines(writeup)
   methods_para_2_start <- grep(x = writeup_lines, pattern = "We defined the units of analysis")
   methods_para_2_end <- methods_para_2_start + grep(x = writeup_lines[methods_para_2_start:length(writeup_lines)], pattern = "^$")[1] - 2
