@@ -38,7 +38,7 @@ variables:
     expire_in: 1 week
   <<: *build_template
   script:
-    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check rENA_$VERSION.tar.gz --as-cran --no-manual
+    - R --no-site-file --no-environ --no-save --no-restore CMD check rENA_$VERSION.tar.gz --as-cran --no-manual || true
     - mv ./rENA-00build.log rENA/archive/ || true
     - mv ./rENA.Rcheck/00check.log rENA/archive/ || true
     - mv ./rENA.Rcheck/00install.out rENA/archive/ || true
