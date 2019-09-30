@@ -2,7 +2,7 @@
 output: rENA:::methods_report
 ---
 `r ub = enaset[["_function.params"]]$units.by`
-`r meta = enaset$meta.data`
+`r meta = enaset$meta.data[, ub, with = F]`
 `r u = enaset$enadata$units`
 `r cvb = enaset[["_function.params"]]$conversations.by`
 `r cv = enaset[["_function.params"]]$conversation`

@@ -24,6 +24,7 @@ ena.writeup <- function(
   comparison = NULL, comparison.groups = NULL, sig.dig = 2,
   output_dir = getwd(), type = c("file","stream"), theory = T, methods = T
 ) {
+  type = match.arg(type, choices = c("file","stream"), several.ok = FALSE)
   file = rmarkdown::render(system.file("rmd","methods.rmd", package="rENA"), output_dir = getwd(),
                     knit_root_dir = getwd(), intermediates_dir = getwd())
   if(type == "file") file
