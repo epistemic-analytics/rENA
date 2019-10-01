@@ -157,96 +157,95 @@ test_that("Case 4: Old sets plot", {
   )
 })
 
-# test_that("Case 3: Group Plotting 2", {
-#   fileName = system.file("extdata","rs.data.csv", package = "rENA")
-#   file = read.csv(fileName);
-#   accum = ena.accumulate.data(
-#     units = file[,c("UserName","Condition")],
-#     conversation = file[,c("Condition","GroupName")],
-#     metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
-#     codes = file[,codeNames],
-#     window.size.back = 4
-#   );
-#   set = ena.make.set(
-#     enadata = accum,
-#     rotation.by = ena.rotate.by.mean,
-#     rotation.params = list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
-#   )
-#   unitNames = set$enadata$units
-#   groups = ena.group(set, by=set$enadata$metadata$C.Change, method="mean")
-#
-#   ####OR TRY THIS WAY####
-#   groups.2 = ena.group(set, by=set$enadata$metadata$C.Change=="Pos.Change", method="mean") #Test to make sure this returns only 1 group
-#
-#   plot.confidence.change = ena.plot(set) %>%
-#                             ena.plot.points(points = groups$points[groups$names=="Pos.Change",], labels = "Positive Confidence Change", shape = "square", colors="red")%>%
-#                             ena.plot.points(points = groups$points[groups$names=="Neg.Change",], labels = "Negative Confidence Change", shape = "square", colors="blue")
-#
-#   # testthat::expect_is(plot, c("ENAplot", "R6"))
-# })
-#
-# test_that("Case 4: Stats", {
-#   fileName = system.file("extdata","rs.data.csv", package = "rENA")
-#   file = read.csv(fileName);
-#   accum = ena.accumulate.data(
-#     units = file[,c("UserName","Condition")],
-#     conversation = file[,c("Condition","GroupName")],
-#     metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
-#     codes = file[,codeNames],
-#     window.size.back = 4
-#   );
-#   set = ena.make.set(
-#     enadata = accum,
-#     rotation.by = ena.rotate.by.mean,
-#     rotation.params = list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
-#   )
-#   unitNames = set$enadata$units
-#   unitNames = set$enadata$units
-#   first.game = unitNames$Condition == "FirstGame"
-#   first.game.points = set$points.rotated[first.game,]
-#   second.game = unitNames$Condition == "SecondGame"
-#   second.game.points = set$points.rotated[second.game,]
-#
-#   t.test(first.game.points[,1], second.game.points[,1])
-#
-#   data = data.frame("conf.change"=set$enadata$metadata$CONFIDENCE.Change, dim1 = set$points.rotated[,1])
-#
-#   # lm(conf.change ~ dim1, data)
-# })
-#
-# test_that("Case 5: Code Masking", {
-#   fileName = system.file("extdata","rs.data.csv", package = "rENA")
-#   file = read.csv(fileName);
-#   accum = ena.accumulate.data(
-#     units = file[,c("UserName","Condition")],
-#     conversation = file[,c("Condition","GroupName")],
-#     metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
-#     codes = file[,codeNames],
-#     window.size.back = 4
-#   );
-#   set = ena.make.set(
-#     enadata = accum,
-#     rotation.by = ena.rotate.by.mean,
-#     rotation.params = list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
-#   )
-#   unitNames = set$enadata$units
-#   ### generate mask matrix
-#   mask = matrix(1, nrow=length(set$codes), ncol=length(set$codes), dimnames=list(set$codes,set$codes))
-#   mask["Data", "Client.and.Consultant.Requests"] = 0
-#   mask["Technical.Constraints", "Design.Reasoning"] = 0
-#
-#   ###accumulate data using mask
-#   accum = ena.accumulate.data(
-#     units = file[,c("UserName","Condition")],
-#     conversation = file[,c("Condition","GroupName")],
-#     codes = file[,codeNames],
-#     window.size.back = 4,
-#     mask = mask
-#   );
-#
-#   testthat::expect_true(all(accum$adjacency.vectors[,4] == 0))
-#   testthat::expect_true(all(accum$adjacency.vectors[,8] == 0))
-# })
+#####
+  # test_that("Case 3: Group Plotting 2", {
+  #   fileName = system.file("extdata","rs.data.csv", package = "rENA")
+  #   file = read.csv(fileName);
+  #   accum = ena.accumulate.data(
+  #     units = file[,c("UserName","Condition")],
+  #     conversation = file[,c("Condition","GroupName")],
+  #     metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
+  #     codes = file[,codeNames],
+  #     window.size.back = 4
+  #   );
+  #   set = ena.make.set(
+  #     enadata = accum,
+  #     rotation.by = ena.rotate.by.mean,
+  #     rotation.params = list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
+  #   )
+  #   unitNames = set$enadata$units
+  #   groups = ena.group(set, by=set$enadata$metadata$C.Change, method="mean")
+  #
+  #
+  #   groups.2 = ena.group(set, by=set$enadata$metadata$C.Change=="Pos.Change", method="mean") #Test to make sure this returns only 1 group
+  #
+  #   plot.confidence.change = ena.plot(set) %>%
+  #                             ena.plot.points(points = groups$points[groups$names=="Pos.Change",], labels = "Positive Confidence Change", shape = "square", colors="red")%>%
+  #                             ena.plot.points(points = groups$points[groups$names=="Neg.Change",], labels = "Negative Confidence Change", shape = "square", colors="blue")
+  #
+  #   # testthat::expect_is(plot, c("ENAplot", "R6"))
+  # })
+  #
+  # test_that("Case 4: Stats", {
+  #   fileName = system.file("extdata","rs.data.csv", package = "rENA")
+  #   file = read.csv(fileName);
+  #   accum = ena.accumulate.data(
+  #     units = file[,c("UserName","Condition")],
+  #     conversation = file[,c("Condition","GroupName")],
+  #     metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
+  #     codes = file[,codeNames],
+  #     window.size.back = 4
+  #   );
+  #   set = ena.make.set(
+  #     enadata = accum,
+  #     rotation.by = ena.rotate.by.mean,
+  #     rotation.params = list(accum$metadata$Condition=="FirstGame", accum$metadata$Condition=="SecondGame")
+  #   )
+  #   unitNames = set$enadata$units
+  #   unitNames = set$enadata$units
+  #   first.game = unitNames$Condition == "FirstGame"
+  #   first.game.points = set$points.rotated[first.game,]
+  #   second.game = unitNames$Condition == "SecondGame"
+  #   second.game.points = set$points.rotated[second.game,]
+  #
+  #   t.test(first.game.points[,1], second.game.points[,1])
+  #
+  #   data = data.frame("conf.change"=set$enadata$metadata$CONFIDENCE.Change, dim1 = set$points.rotated[,1])
+  #
+  #   # lm(conf.change ~ dim1, data)
+  # })
+######
+
+test_that("Case 5: Code Masking", {
+  accum = ena.accumulate.data(
+    units = file[,c("UserName","Condition")],
+    conversation = file[,c("Condition","GroupName")],
+    metadata = file[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")],
+    codes = file[,codeNames],
+    window.size.back = 4
+  )
+  set = ena.make.set( enadata = accum )
+  unitNames = set$enadata$units
+
+  ### generate mask matrix
+  #mask = matrix(1, nrow=length(set$rotation$codes), ncol=length(set$rotation$codes), dimnames=list(set$rotation$codes,set$rotation$codes))
+  mask <- connection.matrix(set$connection.counts[1])
+  mask[,] <- 1
+  mask["Data", "Client.and.Consultant.Requests"] = 0
+  mask["Technical.Constraints", "Design.Reasoning"] = 0
+
+  ###accumulate data using mask
+  accum = ena.accumulate.data(
+    units = file[,c("UserName","Condition")],
+    conversation = file[,c("Condition","GroupName")],
+    codes = file[,codeNames],
+    window.size.back = 4,
+    mask = mask
+  );
+
+  testthat::expect_true(all(as.matrix(accum$connection.counts)[,4] == 0))
+  testthat::expect_true(all(as.matrix(accum$connection.counts)[,8] == 0))
+})
 #
 # test_that("Case 6: Other Rotation Functions", {
 #   fileName = system.file("extdata","rs.data.csv", package = "rENA")
