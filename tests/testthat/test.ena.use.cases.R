@@ -228,9 +228,14 @@ test_that("Case 5: Code Masking", {
   unitNames = set$enadata$units
 
   ### generate mask matrix
-  #mask = matrix(1, nrow=length(set$rotation$codes), ncol=length(set$rotation$codes), dimnames=list(set$rotation$codes,set$rotation$codes))
-  mask <- connection.matrix(set$connection.counts[1])
-  mask[,] <- 1
+  #mask <- connection.matrix(set$connection.counts[1])
+  #mask[,] <- 1
+  mask = matrix(
+    1,
+    nrow=length(codeNames),
+    ncol=length(codeNames),
+    dimnames=list(codeNames, codeNames)
+  )
   mask["Data", "Client.and.Consultant.Requests"] = 0
   mask["Technical.Constraints", "Design.Reasoning"] = 0
 
