@@ -67,16 +67,55 @@ test_that("Accumulate weighted data.", {
   testmeta = data.frame(tr=1:4, unit=rep(1, 4))
   testdf = cbind(testmeta, testmat)
 
-  x = rENA:::ena.accumulate.data.file(testdf,
+  x.normal = rENA:::ena.accumulate.data.file(testdf,
                                units.by='unit',
                                conversations.by='tr',
-                               #units='1',
                                codes=LETTERS[1:6],
                                window.size.back=4,
-                               weight.by = "weighted")
+                               weight.by = "binary")
 
-  testthat::expect_true(all(
-    sapply(as.matrix(x$connection.counts), is.double)
+  x.prod = rENA:::ena.accumulate.data.file(testdf,
+                               units.by='unit',
+                               conversations.by='tr',
+                               codes=LETTERS[1:6],
+                               window.size.back=4,
+                               weight.by = "product")
+  x.sqrt = rENA:::ena.accumulate.data.file(testdf,
+                               units.by='unit',
+                               conversations.by='tr',
+                               codes=LETTERS[1:6],
+                               window.size.back=4,
+                               weight.by = sqrt)
+  x.log = rENA:::ena.accumulate.data.file(testdf,
+                               units.by='unit',
+                               conversations.by='tr',
+                               codes=LETTERS[1:6],
+                               window.size.back=4,
+                               weight.by = function(x) { log(x + 1) })
+
+  testthat::expect_false(identical(
+    as.matrix(x.normal$connection.counts),
+    as.matrix(x.prod$connection.counts)
+  ))
+  testthat::expect_false(identical(
+    as.matrix(x.normal$connection.counts),
+    as.matrix(x.sqrt$connection.counts)
+  ))
+  testthat::expect_false(identical(
+    as.matrix(x.normal$connection.counts),
+    as.matrix(x.log$connection.counts)
+  ))
+  testthat::expect_false(identical(
+    as.matrix(x.prod$connection.counts),
+    as.matrix(x.sqrt$connection.counts)
+  ))
+  testthat::expect_false(identical(
+    as.matrix(x.prod$connection.counts),
+    as.matrix(x.log$connection.counts)
+  ))
+  testthat::expect_false(identical(
+    as.matrix(x.sqrt$connection.counts),
+    as.matrix(x.log$connection.counts)
   ))
 })
 test_that("Corrected adjacency.vectors equals manually corrected raw data (correction = log)", {

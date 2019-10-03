@@ -37,7 +37,7 @@ test_that("Test custom rotation.set", {
   df_accum_grps <- rENA:::ena.accumulate.data.file(
     df.file, units.by = c("GroupName", "Condition"),
     conversations.by = conversations.by, codes = codenames);
-  df_accum_usrs <- ena.accumulate.data.file(
+  df_accum_usrs <- rENA:::ena.accumulate.data.file(
     df.file, units.by = c("UserName", "Condition"),
     conversations.by = conversations.by, codes = codenames);
 
