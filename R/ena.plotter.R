@@ -15,6 +15,7 @@
 #' @param showPlots [TBD]
 #' @param ... Parameters passed along to other plotting function
 #'
+#' @export
 #' @return ena.set object
 #####
 ena.plotter = function(

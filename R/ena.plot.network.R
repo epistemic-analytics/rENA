@@ -117,7 +117,9 @@ ena.plot.network = function(
   }
   node.rows <- NULL
   if(is(node.positions, "ena.nodes")) {
-    adjacency.key <- namesToAdjacencyKey(node.positions$code)
+    if(is.null(adjacency.key)) {
+      adjacency.key <- namesToAdjacencyKey(node.positions$code)
+    }
     node.rows <- node.positions$code
 
     if(is.null(labels)) {

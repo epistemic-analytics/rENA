@@ -287,7 +287,7 @@ add_network <- function(x, wh = NULL, ..., with.mean = F) {
         if(with.mean) {
           set <- add_group(set, y,
                 colors = plot$palette[length(attr(plot, "means")) + 1], ...)
-          plot <- set$model$plot
+          plot <- set$plots[[length(set$plots)]]
         }
 
         colMeans(set$line.weights[set$line.weights[[parts[2]]] == parts[3], ])
