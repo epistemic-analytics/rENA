@@ -2,38 +2,43 @@
 % Please edit documentation in R/ena.plotter.R
 \name{ena.plotter}
 \alias{ena.plotter}
-\title{Set Plotting Wrapper}
+\title{Wrapper to generate plots of units, groups, and networks}
 \usage{
 ena.plotter(set, groupVar = NULL, groups = NULL, points = FALSE,
   mean = FALSE, network = TRUE, networkMultiplier = 1,
-  subtractionMultiplier = 1, unit = NULL, showPlots = F, ...)
+  subtractionMultiplier = 1, unit = NULL, print.plots = F, ...)
 }
 \arguments{
-\item{set}{[TBD]}
+\item{set}{an ena.set object}
 
-\item{groupVar}{[TBD]}
+\item{groupVar}{vector, character, of column name containing group identifiers.}
 
-\item{groups}{[TBD]}
+\item{groups}{vector, character, of values of groupVar column you wish to plot. Maxium of two groups allowed.}
 
-\item{points}{[TBD]}
+\item{points}{logical, TRUE will plot points (default: FALSE)}
 
-\item{mean}{[TBD]}
+\item{mean}{logical, TRUE will plot the mean position of the groups defined in the groups argument (default: FALSE)}
 
-\item{network}{[TBD]}
+\item{network}{logical, TRUE will plot networks (default: TRUE)}
 
-\item{networkMultiplier}{[TBD]}
+\item{networkMultiplier}{numeric, scaling factor for non-subtracted networks (default: 1)}
 
-\item{subtractionMultiplier}{[TBD]}
+\item{subtractionMultiplier}{numeric, scaling factor for subtracted networks (default: 1)}
 
-\item{unit}{[TBD]}
+\item{unit}{vector, character, name of a single unit to plot}
 
-\item{showPlots}{[TBD]}
+\item{print.plots}{logical, TRUE will show plots in the Viewer (default: FALSE)}
 
-\item{...}{Parameters passed along to other plotting function}
+\item{...}{Additional parameters passed to set creation and plotting functions}
 }
 \value{
 ena.set object
 }
 \description{
-Set Plotting Wrapper. TODO: need to make a function for making subtraction plots...
+Plots individual units, all units, groups of units, networks, and network subtractions
+}
+\details{
+This function includes options to plots individual units, all units,
+groups of units, networks, and network subtractions, given an ena.set objects. Plots are stored
+on the supplied ena.set object.
 }
