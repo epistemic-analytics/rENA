@@ -27,7 +27,6 @@ accumulate.data <- function(enadata) {
     binary <- T
   }
 
-
   ### We need data
   if (is.null(dfDT) || nrow(dfDT) < 1) {
     stop("The provided data is NULL")
@@ -77,7 +76,7 @@ accumulate.data <- function(enadata) {
     dfDT.co.occurrences <- dfDT_codes[,{
         ocs <- data.table::as.data.table(
                 rows_to_co_occurrences(
-                  .SD[,.SD,.SDcols=codes, with=T], 
+                  .SD[,.SD,.SDcols=codes, with=T],
                   binary = binary
                 )
               );

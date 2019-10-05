@@ -1,20 +1,35 @@
 #####
-#' Wrapper for making ENA sets
 #'
-#' @param data [TBD]
-#' @param codes [TBD]
-#' @param units [TBD]
-#' @param conversation [TBD]
-#' @param metadata [TBD]
-#' @param model [TBD]
-#' @param weight.by [TBD]
-#' @param window [TBD]
-#' @param window.size.back [TBD]
+#' @title Wrapper to generate an ENA model
+#'
+#' @description Generates an ENA model by constructing a dimensional reduction
+#' of adjacency (co-occurrence) vectors as defined by the supplied
+#' conversations, units, and codes.
+#'
+#' @details This function generates an ena.set object given a data.frame, units,
+#' conversations, and codes. After accumulating the adjacency (co-occurrence)
+#' vectors, computes a dimensional reduction (projection), and calculates node
+#' positions in the projected ENA space. Returns location of the units in the
+#' projected space, as well as locations for node positions, and normalized
+#' adjacency (co-occurrence) vectors to construct network graphs. Includes options
+#' for returning statistical tests between groups of units.
+#'
+#' @param data data.frame with containing metadata and coded columns
+#' @param codes vector, numeric or character, of columns with codes
+#' @param units vector, numeric or character, of columns representing units
+#' @param conversation  vector, numeric or character, of columns to segment conversations by
+#' @param metadata  vector, numeric or character, of columns with additional meta information for units
+#' @param model character: EndPoint (default), AccumulatedTrajectory, SeparateTrajectory
+#' @param weight.by "binary" is default, can supply a function to call (e.g. sum)
+#' @param window MovingStanzaWindow (default) or Conversation
+#' @param window.size.back Number of lines in the stanza window (default: 1)
 #' @param include.meta [TBD]
-#' @param groupVar [TBD]
-#' @param groups [TBD]
-#' @param runTest [TBD]
-#' @param ... [TBD]
+#' @param groupVar vector, character, of column name containing group identifiers.
+#' If column contains at least two unique values, will generate model using a means rotation (a dimensional reduction maximizing the variance between the means of the two groups)
+#' @param groups vector, character, of values of groupVar column used for means rotation or statistical tests
+#' @param runTest logical, TRUE will run a Student's t-Test and a Wilcoxon test for groups defined by the groups argument
+#' @param ... Additional parameters passed to model generation
+#'
 #'
 #' @return ena.set object
 #####

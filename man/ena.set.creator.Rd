@@ -2,7 +2,7 @@
 % Please edit documentation in R/ena.set.creator.R
 \name{ena.set.creator}
 \alias{ena.set.creator}
-\title{Wrapper for making ENA sets}
+\title{Wrapper to generate an ENA model}
 \usage{
 ena.set.creator(data, codes, units, conversation, metadata = NULL,
   model = c("EndPoint", "AccumulatedTrajectory", "SeparateTrajectory"),
@@ -11,37 +11,49 @@ ena.set.creator(data, codes, units, conversation, metadata = NULL,
   groupVar = NULL, groups = NULL, runTest = FALSE, ...)
 }
 \arguments{
-\item{data}{[TBD]}
+\item{data}{data.frame with containing metadata and coded columns}
 
-\item{codes}{[TBD]}
+\item{codes}{vector, numeric or character, of columns with codes}
 
-\item{units}{[TBD]}
+\item{units}{vector, numeric or character, of columns representing units}
 
-\item{conversation}{[TBD]}
+\item{conversation}{vector, numeric or character, of columns to segment conversations by}
 
-\item{metadata}{[TBD]}
+\item{metadata}{vector, numeric or character, of columns with additional meta information for units}
 
-\item{model}{[TBD]}
+\item{model}{character: EndPoint (default), AccumulatedTrajectory, SeparateTrajectory}
 
-\item{weight.by}{[TBD]}
+\item{weight.by}{"binary" is default, can supply a function to call (e.g. sum)}
 
-\item{window}{[TBD]}
+\item{window}{MovingStanzaWindow (default) or Conversation}
 
-\item{window.size.back}{[TBD]}
+\item{window.size.back}{Number of lines in the stanza window (default: 1)}
 
 \item{include.meta}{[TBD]}
 
-\item{groupVar}{[TBD]}
+\item{groupVar}{vector, character, of column name containing group identifiers.
+If column contains at least two unique values, will generate model using a means rotation (a dimensional reduction maximizing the variance between the means of the two groups)}
 
-\item{groups}{[TBD]}
+\item{groups}{vector, character, of values of groupVar column used for means rotation or statistical tests}
 
-\item{runTest}{[TBD]}
+\item{runTest}{logical, TRUE will run a Student's t-Test and a Wilcoxon test for groups defined by the groups argument}
 
-\item{...}{[TBD]}
+\item{...}{Additional parameters passed to model generation}
 }
 \value{
 ena.set object
 }
 \description{
-Wrapper for making ENA sets
+Generates an ENA model by constructing a dimensional reduction
+of adjacency (co-occurrence) vectors as defined by the supplied
+conversations, units, and codes.
+}
+\details{
+This function generates an ena.set object given a data.frame, units,
+conversations, and codes. After accumulating the adjacency (co-occurrence)
+vectors, computes a dimensional reduction (projection), and calculates node
+positions in the projected ENA space. Returns location of the units in the
+projected space, as well as locations for node positions, and normalized
+adjacency (co-occurrence) vectors to construct network graphs. Includes options
+for returning statistical tests between groups of units.
 }

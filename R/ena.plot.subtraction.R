@@ -57,8 +57,9 @@ ena.plot.subtraction = function(
     stop("You must set at least one of points, mean, or network to TRUE to obtain a plot.")
   }
 
-  set$model$plots[[group1]] = g1.plot
-  set$model$plots[[group2]] = g2.plot
-  set$model$plots[[paste0(group1,"-",group2)]] = sub.plot
+  set$plots[[group1]] = g1.plot
+  set$plots[[group2]] = g2.plot
+  set$plots[[paste0(group1,"-",group2)]] = sub.plot
+
   return(set)
 }

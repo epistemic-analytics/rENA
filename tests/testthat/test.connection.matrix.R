@@ -4,7 +4,7 @@ context("Test connection matrices");
 library(magrittr)
 
 data(RS.data)
-units <- c("UserName", "Condition")
+units <- c("Condition", "UserName")
 conversation <- c("ActivityNumber", "GroupName")
 codes <- c("Data", "Technical.Constraints", "Performance.Parameters",
             "Client.and.Consultant.Requests", "Design.Reasoning",
@@ -31,8 +31,22 @@ test_that("return all units", {
 })
 
 test_that("return single unit", {
-  connections <- connection.matrix(set_end$connection.counts$ENA_UNIT$`steven z.FirstGame`)
+  connections <- connection.matrix(set_end$connection.counts$ENA_UNIT$`FirstGame.steven z`)
 
   testthat::expect_is(connections, "matrix")
   testthat::expect_equal(nrow(connections), ncol(connections))
+})
+
+test_that("test additional metadata", {
+  meta <- colnames(RS.data)[3:8]
+  set_end <- RS.data %>%
+    ena(
+      units = units,
+      conversation = conversation,
+      metadata = meta,
+      codes = codes,
+      window.size.back = 4,
+    )
+
+  testthat::expect_equal(c("ENA_UNIT",units, meta), colnames(set_end$meta.data))
 })

@@ -30,31 +30,32 @@ ena(data, codes, units, conversation, metadata = NULL,
 
 \item{window}{MovingStanzaWindow (default) or Conversation}
 
-\item{window.size.back}{Number of lines in the stanza window. Default: 1}
+\item{window.size.back}{Number of lines in the stanza window (default: 1)}
 
 \item{include.meta}{[TBD]}
 
-\item{groupVar}{[TBD]}
+\item{groupVar}{vector, character, of column name containing group identifiers.
+If column contains at least two unique values, will generate model using a means rotation (a dimensional reduction maximizing the variance between the means of the two groups)}
 
-\item{groups}{[TBD]}
+\item{groups}{vector, character, of values of groupVar column used for means rotation, plotting, or statistical tests}
 
-\item{runTest}{[TBD]}
+\item{runTest}{logical, TRUE will run a Student's t-Test and a Wilcoxon test for groups defined by the groups argument}
 
 \item{points}{logical, TRUE will plot points (default: FALSE)}
 
-\item{mean}{logical, TRUE will plot means (default: FALSE)}
+\item{mean}{logical, TRUE will plot the mean position of the groups defined in the groups argument (default: FALSE)}
 
-\item{network}{logical, TRUE will plot points (default: TRUE)}
+\item{network}{logical, TRUE will plot networks (default: TRUE)}
 
-\item{networkMultiplier}{[TBD]}
+\item{networkMultiplier}{numeric, scaling factor for non-subtracted networks (default: 1)}
 
-\item{subtractionMultiplier}{[TBD]}
+\item{subtractionMultiplier}{numeric, scaling factor for subtracted networks (default: 1)}
 
-\item{unit}{[TBD]}
+\item{unit}{vector, character, name of a single unit to plot}
 
-\item{include.plots}{If TRUE, will generate plots based on the generated model}
+\item{include.plots}{logical, TRUE will generate plots based on the model (default: TRUE)}
 
-\item{print.plots}{[TBD]}
+\item{print.plots}{logical, TRUE will show plots in the Viewer(default: FALSE)}
 
 \item{...}{Additional parameters passed to set creation and plotting functions}
 }
@@ -64,7 +65,7 @@ ena.set object
 \description{
 Generates an ENA model by constructing a dimensional reduction
 of adjacency (co-occurrence) vectors as defined by the supplied
-conversations, units, and codes
+conversations, units, and codes.
 }
 \details{
 This function generates an ena.set object given a data.frame, units,
@@ -72,7 +73,9 @@ conversations, and codes. After accumulating the adjacency (co-occurrence)
 vectors, computes a dimensional reduction (projection), and calculates node
 positions in the projected ENA space. Returns location of the units in the
 projected space, as well as locations for node positions, and normalized
-adjacency (co-occurrence) vectors to construct network graphs
+adjacency (co-occurrence) vectors to construct network graphs. Includes options
+for returning statistical tests between groups of units, as well as plots of units,
+groups, and networks.
 }
 \examples{
 data(RS.data)

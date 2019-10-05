@@ -1,20 +1,25 @@
 #####
-#' Set Plotting Wrapper
+#' @title Wrapper to generate plots of units, groups, and networks
 #'
-#' @description Set Plotting Wrapper. TODO: need to make a function for making subtraction plots...
+#' @description Plots individual units, all units, groups of units, networks, and network subtractions
 #'
-#' @param set [TBD]
-#' @param groupVar [TBD]
-#' @param groups [TBD]
-#' @param points [TBD]
-#' @param mean [TBD]
-#' @param network [TBD]
-#' @param networkMultiplier [TBD]
-#' @param subtractionMultiplier [TBD]
-#' @param unit [TBD]
-#' @param showPlots [TBD]
-#' @param ... Parameters passed along to other plotting function
+#' @details This function includes options to plots individual units, all units,
+#' groups of units, networks, and network subtractions, given an ena.set objects. Plots are stored
+#' on the supplied ena.set object.
 #'
+#'
+#' @param set an ena.set object
+#' @param groupVar vector, character, of column name containing group identifiers.
+#' @param groups vector, character, of values of groupVar column you wish to plot. Maxium of two groups allowed.
+#' @param points logical, TRUE will plot points (default: FALSE)
+#' @param mean logical, TRUE will plot the mean position of the groups defined in the groups argument (default: FALSE)
+#' @param network logical, TRUE will plot networks (default: TRUE)
+#' @param networkMultiplier numeric, scaling factor for non-subtracted networks (default: 1)
+#' @param subtractionMultiplier numeric, scaling factor for subtracted networks (default: 1)
+#' @param unit vector, character, name of a single unit to plot
+#' @param print.plots logical, TRUE will show plots in the Viewer (default: FALSE)
+#' @param ... Additional parameters passed to set creation and plotting functions
+#' @export
 #' @return ena.set object
 #####
 ena.plotter = function(
@@ -27,7 +32,7 @@ ena.plotter = function(
   networkMultiplier = 1,
   subtractionMultiplier = 1,
   unit = NULL,
-  showPlots = F,
+  print.plots = F,
   ...
 ) {
   data = set$connection.counts;
@@ -50,7 +55,7 @@ ena.plotter = function(
 
     set$plots[[length(set$plots) + 1]] <- plot
 
-    if(showPlots == TRUE) {
+    if(print.plots == TRUE) {
       print(set$plots)
     }
 
@@ -85,7 +90,7 @@ ena.plotter = function(
 
     set$plots[[length(set$plots) + 1]] <- plot
 
-    if(showPlots == TRUE) {
+    if(print.plots == TRUE) {
       print(set$plots)
     }
 
@@ -123,7 +128,7 @@ ena.plotter = function(
       }
       set$plots[[length(set$plots) + 1]] <- g.plot
 
-      if(showPlots == TRUE) {
+      if(print.plots == TRUE) {
         print(set$plots)
       }
 
@@ -146,7 +151,7 @@ ena.plotter = function(
                subtractionMultiplier = subtractionMultiplier)
 
 
-      if(showPlots == TRUE) {
+      if(print.plots == TRUE) {
         print(set$plots)
       }
 
@@ -185,7 +190,7 @@ ena.plotter = function(
     }
     set$plots[[length(set$plots) + 1]] <- g.plot
 
-    if(showPlots == TRUE) {
+    if(print.plots == TRUE) {
       print(set$plots)
     }
 
@@ -214,7 +219,7 @@ ena.plotter = function(
       ...
     )
 
-    if(showPlots == TRUE) {
+    if(print.plots == TRUE) {
       print(set$plots)
     }
 
