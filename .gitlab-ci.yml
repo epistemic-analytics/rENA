@@ -10,23 +10,31 @@ variables:
   VERSION: "0.2.0.0"
   PKG: "rENA"
   PKGL: "rena"
-  REG_URL: "${CI_REGISTRY}/epistemic-analytics/qe-packages/rena"
-  DOCKER_HOST: tcp://localhost:2375/
-  DOCKER_DRIVER: overlay2
 
 # Templates
+.check_condition: &check_condition
+  except:
+    refs:
+      - tags
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\[skip check\].*/
 .build_definition: &build_template
   before_script:
-    - export _R_CHECK_CRAN_INCOMING_=FALSE
+    - export _R_CHECK_CRAN_INCOMING_=TRUE
+    - export _R_CHECK_CRAN_INCOMING_REMOTE_=TRUE
     - export _R_CHECK_FORCE_SUGGESTS_=TRUE
     - mkdir -p archive/
     - rm -f ./R/RcppExports.R
     - mkdir -p ~/.R/
     - rm -f ~/.R/Makevars
     - cp demo/backup/Makevars ~/.R/
+    - cat DESCRIPTION
     - Rscript -e 'Rcpp::compileAttributes()'
     - Rscript -e 'update(devtools::dev_package_deps("."))'
-    - cd ..; R CMD build --log rENA || true
+    - Rscript -e 'install.packages("knitr")'
+    - Rscript -e 'install.packages("rmarkdown")'
+    - Rscript -e 'install.packages("testthat")'
+    - cd ..; R CMD build --resave-data --no-manual --log $PKG
 .check_definition: &check_template
   stage: check
   artifacts:
@@ -38,48 +46,121 @@ variables:
     expire_in: 1 week
   <<: *build_template
   script:
-    - R --no-site-file --no-environ --no-save --no-restore CMD check rENA_$VERSION.tar.gz --as-cran --no-manual || true
-    - mv ./rENA-00build.log rENA/archive/ || true
-    - mv ./rENA.Rcheck/00check.log rENA/archive/ || true
-    - mv ./rENA.Rcheck/00install.out rENA/archive/ || true
-    - mv ./rENA_*.tar.gz rENA/archive/ || true
-  tags:
-    - docker
+    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check ${PKG}_${VERSION}.tar.gz --as-cran --no-manual
+    - ls -al ./
+    - ls -al ./$PKG.Rcheck/ || true
+    - mv ./$PKG-00build.log $PKG/archive/ || true
+    - mv ./$PKG.Rcheck/00check.log $PKG/archive/ || true
+    - mv ./$PKG.Rcheck/00install.out $PKG/archive/ || true
+    - mv ./${PKG}_${VERSION}.tar.gz $PKG/archive/
+    - "grep -v -e 'STATUS:.*ERROR' -e 'STATUS:.*WARNING' ${PKG}/archive/00check.log && echo $? || echo $?"
   allow_failure: false
+  <<: *check_condition
 
+
+# Docker Checks
 check:r-devel:
-  image: $REG_URL/devel:current
-  only:
-    - master
+  image: $CI_REGISTRY_IMAGE/devel:current
   <<: *check_template
 check:r-oldrelease:
-  image: $REG_URL/old-release:current
-  only:
-    - master
+  image: $CI_REGISTRY_IMAGE/old-release:current
   <<: *check_template
 check:r-release:
-  image: $REG_URL/release:current
+  image: $CI_REGISTRY_IMAGE/release:current
   <<: *check_template
+
+# WinBuilder Checks
+.winbuilder_condition: &winbuilder_condition
+  except:
+    refs:
+      - tags
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\[skip winbuilder\].*/
 check:r-winbuilder:
-  stage: checkWindows
-  image: egruw/r-ftp
-  when: manual
-  only:
-    - master
+  stage: check
+  image: $CI_REGISTRY_IMAGE/release-test:current
+  <<: *build_template
   script:
     - curl -v -T archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-oldrelease/${PKG}_${VERSION}.tar.gz
     - curl -v -T archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-release/${PKG}_${VERSION}.tar.gz
     - curl -v -T archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-devel/${PKG}_${VERSION}.tar.gz
-  tags:
-    - docker
+    - mv ./${PKG}_${VERSION}.tar.gz $PKG/archive/
   allow_failure: false
+  <<: *winbuilder_condition
+
+# Rhub Checks
+.rhub_condition: &rhub_condition
+  except:
+    refs:
+      - tags
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\[skip rhub\].*/
+.rhub_definition: &rhub_definition
+  stage: check
+  image: $CI_REGISTRY_IMAGE/release:current
+  before_script:
+    - Rscript -e 'install.packages("rhub")'
+  script:
+    - |
+        Rscript -e "rhub::validate_email(email = \"${RHUB_EMAIL_ADDRESS}\", token = \"${RHUB_EMAIL_TOKEN}\");
+                    checked <- rhub::check(platform = \"${RHUB_PLATFORM}\", show_status = TRUE);
+                    checked\$cran_summary();
+                    quit(status = ifelse(!checked\$.__enclos_env__\$private\$status_[[1]]\$status %in% c('error', 'warning'), 0, 1));"
+  only:
+    refs:
+      - master
+    variables:
+      - $RHUB_EMAIL_ADDRESS
+      - $RHUB_EMAIL_TOKEN
+  <<: *rhub_condition
+check:r-hub-windows-old-release:
+  variables:
+    RHUB_PLATFORM: "windows-x86_64-oldrel"
+  <<: *rhub_definition
+check:r-hub-windows-release:
+  variables:
+    RHUB_PLATFORM: "windows-x86_64-release"
+  <<: *rhub_definition
+check:r-hub-windows-devel:
+  variables:
+    RHUB_PLATFORM: "windows-x86_64-devel"
+  <<: *rhub_definition
+
+.release_definition: &release_definition
+  stage: release
+  image: $REG_URL/release:current
+  dependencies:
+    - check:r-release
+  only:
+    refs:
+      - tags
+    variables:
+      - $CI_COMMIT_TAG
+  except:
+    - branches
+    - master
+  <<: *build_template
+  script:
+    - cat ./${PKG}/cran-comments.md || true
+    - ls -al || true
+    - Rscript -e "devtools:::upload_cran(devtools::as.package(\"${PKG}\"), \"./${PKG}_${VERSION}.tar.gz\")"
+    - "curl --request POST --header \"PRIVATE-TOKEN: ${GITLAB_API_TOKEN}\" --data-urlencode \"tag_name=${VERSION}\" --data-urlencode \"name=v${VERSION}\" --data-urlencode \"description=Automatically created from CI for ${VERSION}\" \"${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases?ref=${CI_COMMIT_REF_NAME}\""
+  allow_failure: false
+release:cran-manual:
+  <<: *release_definition
+  when: manual
 
 test:r-release:
   stage: test
-  image: registry.doit.wisc.edu/epistemic-analytics/qe-packages/rena/release-test:current
+  image: $CI_REGISTRY_IMAGE/release-test:current
   script:
+    - "sed -i -e \"s/Version: \\(.*\\)/Version: ${VERSION}/\" DESCRIPTION"
     - 'Rscript -e "Rcpp::compileAttributes()"'
-    - 'Rscript -e "rep <- covr::report( x = covr::package_coverage(quiet = T), file = \"inst/coverage/${CI_COMMIT_REF_NAME}/index.html\" )"'
+    #- 'Rscript -e "rep <- covr::report( x = covr::package_coverage(quiet = T), file = \"inst/coverage/${CI_COMMIT_REF_NAME}/index.html\" )"'
+    - |
+        Rscript -e "cov <- covr::package_coverage(quiet = F);
+                    print(cov);
+                    rep <- covr::report( x = cov, file = \"inst/coverage/${CI_COMMIT_REF_NAME}/index.html\", browse = FALSE );"
     - 'Rscript -e "setwd(\"inst/coverage/${CI_COMMIT_REF_NAME}\"); res = lapply(dir(\".\", full.names = F, recursive = T), function(f) { aws.s3::put_object(file = f, object = paste0(\"coverage/${CI_COMMIT_REF_NAME}/\", f), bucket = \"${PKGL}.qe-libs.org\", acl = \"public-read\") })"'
     - 'Rscript --vanilla demo/backup/coverage-report.R ${CI_COMMIT_REF_NAME}'
   dependencies:
@@ -87,10 +168,11 @@ test:r-release:
 
 docs:build-site:
   stage: docs
-  image: $REG_URL/release-test:current
+  image: $CI_REGISTRY_IMAGE/release-test:current
   script:
     - rm -rf src/RcppExports*
     - rm -rf R/RcppExports*
+    - "sed -i -e \"s/Version: \\(.*\\)/Version: ${VERSION}/\" DESCRIPTION"
     - 'Rscript -e "Rcpp::compileAttributes()"'
     - 'Rscript -e "devtools::install(\".\", quick = T, build = T, dependencies = F, upgrade = F)"'
     - 'Rscript -e "pkgdown::build_site(preview = F, document = F, lazy = T, new_process = T)"'
@@ -98,23 +180,11 @@ docs:build-site:
   dependencies:
     - test:r-release
 
-release:cran:
-  stage: release
-  image: egruw/r-ftp
-  dependencies:
-    - check:r-release
-  only:
-    - tags
-  except:
-    - branches
-  when: manual
-  script:
-    - cat cran-comments.md
-    - Rscript -e "devtools:::upload_cran(devtools::as.package('.'), './archive/rENA_$VERSION.tar.gz')"
-  tags:
-    - docker
-  allow_failure: false
-
+# Docker Image steps
+.docker_variables: &docker_variables
+  DOCKER_HOST: tcp://localhost:2375/
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
 .docker_definition: &docker_template
   stage: docker
   image: docker:19.03.1
@@ -123,59 +193,32 @@ release:cran:
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
-    - docker build -t $REG_URL/$TAG:current -f inst/docker/${PKG}-$FILE inst/docker/
-    - docker push $REG_URL/$TAG:current
+    - docker build -t $CI_REGISTRY_IMAGE/$TAG:current -f inst/docker/${PKG}-${FILE} inst/docker/
+    - docker push $CI_REGISTRY_IMAGE/$TAG:current
+  only:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\[build docker\].*/ || $DOCKER_FORCE_REBUILD
 docker:release:
   variables:
+    <<: *docker_variables
     TAG: "release"
     FILE: "release"
-    DOCKER_HOST: tcp://localhost:2375/
-    DOCKER_DRIVER: overlay2
-    DOCKER_TLS_CERTDIR: ""
-  only:
-    refs:
-      - develop
-    changes:
-      - "inst/docker/rENA-$FILE"
   <<: *docker_template
 docker:release-test:
   variables:
+    <<: *docker_variables
     TAG: "release-test"
     FILE: "release-test"
-    DOCKER_HOST: tcp://localhost:2375/
-    DOCKER_DRIVER: overlay2
-    DOCKER_TLS_CERTDIR: ""
-  only:
-    refs:
-      - develop
-    changes:
-      - "inst/docker/rENA-release-test"
   <<: *docker_template
-  dependencies:
-    - docker:release
 docker:old-release:
   variables:
+    <<: *docker_variables
     TAG: "old-release"
     FILE: "oldrelease"
-    DOCKER_HOST: tcp://localhost:2375/
-    DOCKER_DRIVER: overlay2
-    DOCKER_TLS_CERTDIR: ""
-  only:
-    refs:
-      - develop
-    changes:
-      - "inst/docker/rENA-$FILE"
   <<: *docker_template
 docker:devel:
   variables:
+    <<: *docker_variables
     TAG: "devel"
     FILE: "devel"
-    DOCKER_HOST: tcp://localhost:2375/
-    DOCKER_DRIVER: overlay2
-    DOCKER_TLS_CERTDIR: ""
-  only:
-    refs:
-      - develop
-    changes:
-      - "inst/docker/rENA-$FILE"
   <<: *docker_template
