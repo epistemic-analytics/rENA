@@ -7,7 +7,7 @@ stages:
  - release
 
 variables:
-  VERSION: "0.2.0.0"
+  VERSION: "0.2.0.1"
   PKG: "rENA"
   PKGL: "rena"
 
@@ -53,7 +53,8 @@ variables:
     - mv ./$PKG.Rcheck/00check.log $PKG/archive/ || true
     - mv ./$PKG.Rcheck/00install.out $PKG/archive/ || true
     - mv ./${PKG}_${VERSION}.tar.gz $PKG/archive/
-    - "grep -v -e 'STATUS:.*ERROR' -e 'STATUS:.*WARNING' ${PKG}/archive/00check.log && echo $? || echo $?"
+    - cat ${PKG}/archive/00check.log || true
+    - "grep -iv -e 'Status:.*ERROR' -e 'Status:.*WARNING' ${PKG}/archive/00check.log && echo $? || echo $?"
   allow_failure: false
   <<: *check_condition
 
@@ -81,6 +82,7 @@ check:r-winbuilder:
   image: $CI_REGISTRY_IMAGE/release-test:current
   <<: *build_template
   script:
+    - ls -al
     - curl -v -T archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-oldrelease/${PKG}_${VERSION}.tar.gz
     - curl -v -T archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-release/${PKG}_${VERSION}.tar.gz
     - curl -v -T archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-devel/${PKG}_${VERSION}.tar.gz
