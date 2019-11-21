@@ -15,8 +15,7 @@
 Dockerfile
 cran-comments.md
 
-R/ena.generate.R
-R/put.s3.object.R
-R/getHandsetCT.R
 ^configure.old*
 ^src/Makevars.bak*
+^doc$
+^Meta$
