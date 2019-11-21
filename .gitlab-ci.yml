@@ -59,8 +59,6 @@ check:r-oldrelease:
   <<: *check_template
 check:r-release:
   image: $REG_URL/release:current
-  #only:
-  #  - master
   <<: *check_template
 check:r-winbuilder:
   stage: checkWindows
@@ -81,7 +79,6 @@ test:r-release:
   image: registry.doit.wisc.edu/epistemic-analytics/qe-packages/rena/release-test:current
   script:
     - 'Rscript -e "Rcpp::compileAttributes()"'
-    #- 'Rscript -e "library(\"rvest\")"'
     - 'Rscript -e "rep <- covr::report( x = covr::package_coverage(quiet = T), file = \"inst/coverage/${CI_COMMIT_REF_NAME}/index.html\" )"'
     - 'Rscript -e "setwd(\"inst/coverage/${CI_COMMIT_REF_NAME}\"); res = lapply(dir(\".\", full.names = F, recursive = T), function(f) { aws.s3::put_object(file = f, object = paste0(\"coverage/${CI_COMMIT_REF_NAME}/\", f), bucket = \"${PKGL}.qe-libs.org\", acl = \"public-read\") })"'
     - 'Rscript --vanilla demo/backup/coverage-report.R ${CI_COMMIT_REF_NAME}'
@@ -134,6 +131,7 @@ docker:release:
     FILE: "release"
     DOCKER_HOST: tcp://localhost:2375/
     DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
   only:
     refs:
       - develop
@@ -146,18 +144,22 @@ docker:release-test:
     FILE: "release-test"
     DOCKER_HOST: tcp://localhost:2375/
     DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
   only:
     refs:
       - develop
     changes:
       - "inst/docker/rENA-release-test"
   <<: *docker_template
+  dependencies:
+    - docker:release
 docker:old-release:
   variables:
     TAG: "old-release"
     FILE: "oldrelease"
     DOCKER_HOST: tcp://localhost:2375/
     DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
   only:
     refs:
       - develop
@@ -170,6 +172,7 @@ docker:devel:
     FILE: "devel"
     DOCKER_HOST: tcp://localhost:2375/
     DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
   only:
     refs:
       - develop
