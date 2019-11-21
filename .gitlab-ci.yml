@@ -83,10 +83,11 @@ check:r-winbuilder:
   <<: *build_template
   script:
     - ls -al
-    - curl -v -T archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-oldrelease/${PKG}_${VERSION}.tar.gz
-    - curl -v -T archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-release/${PKG}_${VERSION}.tar.gz
-    - curl -v -T archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-devel/${PKG}_${VERSION}.tar.gz
+    - ls -al $PKG/archive/ || true
     - mv ./${PKG}_${VERSION}.tar.gz $PKG/archive/
+    - curl -v -T $PKG/archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-oldrelease/${PKG}_${VERSION}.tar.gz
+    - curl -v -T $PKG/archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-release/${PKG}_${VERSION}.tar.gz
+    - curl -v -T $PKG/archive/${PKG}_${VERSION}.tar.gz ftp://win-builder.r-project.org/R-devel/${PKG}_${VERSION}.tar.gz
   allow_failure: false
   <<: *winbuilder_condition
 
