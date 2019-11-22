@@ -34,6 +34,7 @@ variables:
     - Rscript -e 'install.packages("knitr")'
     - Rscript -e 'install.packages("rmarkdown")'
     - Rscript -e 'install.packages("testthat")'
+    - Rscript -e 'devtools::build_vignettes()'
     - cd ..; R CMD build --resave-data --no-manual --log $PKG
 .check_definition: &check_template
   stage: check
@@ -75,8 +76,9 @@ check:r-release:
   except:
     refs:
       - tags
+  only:
     variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\[skip winbuilder\].*/
+      - $CI_COMMIT_MESSAGE =~ /.*\[check winbuilder\].*/
 check:r-winbuilder:
   stage: check
   image: $CI_REGISTRY_IMAGE/release-test:current
