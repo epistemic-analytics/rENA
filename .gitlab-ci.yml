@@ -57,7 +57,7 @@ variables:
     - cat ${PKG}/archive/check.log || true
     - cat ${PKG}/archive/00check.log || true
     - cat ${PKG}/archive/00install.out || true
-    - "grep -iv -e 'Status:.*ERROR' -e 'Status:.*WARNING' ${PKG}/archive/00check.log && echo $? || echo $?"
+    - "grep -iv -e 'Status:.*ERROR' -e 'Status:.*WARNING' ${PKG}/archive/check.log && echo $? || echo $?"
   allow_failure: false
   <<: *check_condition
 
