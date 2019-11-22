@@ -112,8 +112,6 @@ check:r-winbuilder:
                     checked\$cran_summary();
                     quit(status = ifelse(!checked\$.__enclos_env__\$private\$status_[[1]]\$status %in% c('error', 'warning'), 0, 1));"
   only:
-    refs:
-      - master
     variables:
       - $RHUB_EMAIL_ADDRESS
       - $RHUB_EMAIL_TOKEN
