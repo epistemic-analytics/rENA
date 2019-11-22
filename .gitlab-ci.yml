@@ -110,7 +110,7 @@ check:r-winbuilder:
         Rscript -e "rhub::validate_email(email = \"${RHUB_EMAIL_ADDRESS}\", token = \"${RHUB_EMAIL_TOKEN}\");
                     checked <- rhub::check(
                       platform = \"${RHUB_PLATFORM}\", show_status = TRUE,
-                      env_vars = c(\"_R_CHECK_CRAN_INCOMING_\" = "true\", \"_R_CHECK_CRAN_INCOMING_REMOTE_\" = \"true\", \"_R_CHECK_FORCE_SUGGESTS_\" = \"true\"),
+                      env_vars = c(\"_R_CHECK_CRAN_INCOMING_\" = \"true\", \"_R_CHECK_CRAN_INCOMING_REMOTE_\" = \"true\", \"_R_CHECK_FORCE_SUGGESTS_\" = \"true\"),
                       cran = TRUE, remote = TRUE, force_suggests = TRUE
                     );
                     checked\$cran_summary();
