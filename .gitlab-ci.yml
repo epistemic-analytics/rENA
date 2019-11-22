@@ -169,7 +169,7 @@ test:r-release:
                     print(cov);
                     rep <- covr::report( x = cov, file = \"inst/coverage/${CI_COMMIT_REF_NAME}/index.html\", browse = FALSE );"
     - 'Rscript -e "setwd(\"inst/coverage/${CI_COMMIT_REF_NAME}\"); res = lapply(dir(\".\", full.names = F, recursive = T), function(f) { aws.s3::put_object(file = f, object = paste0(\"coverage/${CI_COMMIT_REF_NAME}/\", f), bucket = \"${PKGL}.qe-libs.org\", acl = \"public-read\") })"'
-    - 'Rscript --vanilla demo/backup/coverage-report.R ${CI_COMMIT_REF_NAME}'
+    #- 'Rscript --vanilla demo/backup/coverage-report.R ${CI_COMMIT_REF_NAME}'
   dependencies:
     - check:r-release
 
