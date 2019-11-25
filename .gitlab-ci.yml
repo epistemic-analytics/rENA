@@ -93,7 +93,6 @@ check:r-winbuilder:
   allow_failure: false
   <<: *winbuilder_condition
 
-
 # Rhub Checks
 .rhub_condition: &rhub_condition
   except:
