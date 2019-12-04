@@ -7,7 +7,7 @@ stages:
  - release
 
 variables:
-  VERSION: "0.2.0.2"
+  VERSION: "0.2.0.1"
   PKG: "rENA"
   PKGL: "rena"
 
