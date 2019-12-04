@@ -1,4 +1,3 @@
-# v0.2.0.0
+# v0.2.0.1
 
-Cleaned up returned objects
-New wrapper function for simple use-cases
+* Fix for updated r-devel to 4.0.0
