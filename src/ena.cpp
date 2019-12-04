@@ -68,6 +68,13 @@ NumericMatrix toNumericMatrix(DataFrame x) {
   return y;
 }
 
+//' Upper Triangle from Vector
+//'
+//' @title vector to upper triangle
+//' @description TBD
+//' @param v [TBD]
+//' @export
+// [[Rcpp::export]]
 arma::rowvec vector_to_ut(arma::mat v) {
   int vL = v.size();
   int vS = ( (vL * (vL + 1)) / 2) - vL;
