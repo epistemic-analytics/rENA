@@ -21,7 +21,6 @@ Imports:
     plotly,
     doParallel,
     parallel,
-    data.tree,
     scales,
     magrittr
 Suggests:
