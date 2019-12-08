@@ -139,7 +139,7 @@ check:r-hub-debian-gcc-devel:
   <<: *rhub_definition
 check:r-hub-debian-clang-devel:
   variables:
-    RHUB_PLATFORM: "debian-clang-devel""
+    RHUB_PLATFORM: "debian-clang-devel"
   <<: *rhub_definition
 
 .release_definition: &release_definition
