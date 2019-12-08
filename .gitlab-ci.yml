@@ -133,6 +133,14 @@ check:r-hub-windows-devel:
   variables:
     RHUB_PLATFORM: "windows-x86_64-devel"
   <<: *rhub_definition
+check:r-hub-debian-gcc-devel:
+  variables:
+    RHUB_PLATFORM: "debian-gcc-devel"
+  <<: *rhub_definition
+check:r-hub-debian-clang-devel:
+  variables:
+    RHUB_PLATFORM: "debian-clang-devel""
+  <<: *rhub_definition
 
 .release_definition: &release_definition
   stage: release
