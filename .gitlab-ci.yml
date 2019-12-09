@@ -24,6 +24,9 @@ variables:
     - export _R_CHECK_CRAN_INCOMING_REMOTE_=TRUE
     - export _R_CHECK_FORCE_SUGGESTS_=TRUE
     - export _R_CLASS_MATRIX_ARRAY_=TRUE
+    - export R_REMOTES_STANDALONE=TRUE
+    - export R_REMOTES_NO_ERRORS_FROM_WARNINGS=TRUE
+    - export TZ=Europe/London
     - export _R_CHECK_LENGTH_1_CONDITION_="package:_R_CHECK_PACKAGE_NAME_,verbose"
     - mkdir -p archive/
     - rm -f ./R/RcppExports.R
