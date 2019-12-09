@@ -20,12 +20,12 @@ variables:
       - $CI_COMMIT_MESSAGE =~ /.*\[skip check\].*/
 .build_definition: &build_template
   before_script:
-    - export _R_CHECK_CRAN_INCOMING_=TRUE
-    - export _R_CHECK_CRAN_INCOMING_REMOTE_=TRUE
-    - export _R_CHECK_FORCE_SUGGESTS_=TRUE
-    - export _R_CLASS_MATRIX_ARRAY_=TRUE
-    - export R_REMOTES_STANDALONE=TRUE
-    - export R_REMOTES_NO_ERRORS_FROM_WARNINGS=TRUE
+    - export _R_CHECK_CRAN_INCOMING_="true"
+    - export _R_CHECK_CRAN_INCOMING_REMOTE_="true"
+    - export _R_CHECK_FORCE_SUGGESTS_="true"
+    - export _R_CLASS_MATRIX_ARRAY_="true"
+    - export R_REMOTES_STANDALONE="true"
+    - export R_REMOTES_NO_ERRORS_FROM_WARNINGS="true"
     - export TZ=Europe/London
     - export _R_CHECK_LENGTH_1_CONDITION_="package:_R_CHECK_PACKAGE_NAME_,verbose"
     - mkdir -p archive/
@@ -65,15 +65,15 @@ variables:
   <<: *check_condition
 
 # Docker Checks
-check:r-devel:
-  image: $CI_REGISTRY_IMAGE/devel:current
-  <<: *check_template
-check:r-oldrelease:
-  image: $CI_REGISTRY_IMAGE/old-release:current
-  <<: *check_template
-check:r-release:
-  image: $CI_REGISTRY_IMAGE/release:current
-  <<: *check_template
+#check:r-devel:
+#  image: $CI_REGISTRY_IMAGE/devel:current
+#  <<: *check_template
+#check:r-oldrelease:
+#  image: $CI_REGISTRY_IMAGE/old-release:current
+#  <<: *check_template
+#check:r-release:
+#  image: $CI_REGISTRY_IMAGE/release:current
+#  <<: *check_template
 check:r-devel-san:
   image: $CI_REGISTRY_IMAGE/devel-san:current
   <<: *check_template
