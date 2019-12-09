@@ -61,7 +61,6 @@ variables:
   allow_failure: false
   <<: *check_condition
 
-
 # Docker Checks
 check:r-devel:
   image: $CI_REGISTRY_IMAGE/devel:current
