@@ -1,7 +1,7 @@
 #FROM rocker/r-ver:devel
-FROM rhub/rocker-gcc-san
+FROM rocker/r-devel-san
 
-RUN apt-get update -y
+#RUN apt-get update -y
 RUN apt-get install -y apt-utils
 RUN apt-get install -y libxml2 xml2
 RUN apt-get install -y libxml2-dev

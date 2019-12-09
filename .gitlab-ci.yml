@@ -223,30 +223,30 @@ docs:build-site:
   only:
     variables:
       - $CI_COMMIT_MESSAGE =~ /.*\[build docker\].*/ || $DOCKER_FORCE_REBUILD
-docker:release:
-  variables:
-    <<: *docker_variables
-    TAG: "release"
-    FILE: "release"
-  <<: *docker_template
-docker:release-test:
-  variables:
-    <<: *docker_variables
-    TAG: "release-test"
-    FILE: "release-test"
-  <<: *docker_template
-docker:old-release:
-  variables:
-    <<: *docker_variables
-    TAG: "old-release"
-    FILE: "oldrelease"
-  <<: *docker_template
-docker:devel:
-  variables:
-    <<: *docker_variables
-    TAG: "devel"
-    FILE: "devel"
-  <<: *docker_template
+#docker:release:
+#  variables:
+#    <<: *docker_variables
+#    TAG: "release"
+#    FILE: "release"
+#  <<: *docker_template
+#docker:release-test:
+#  variables:
+#    <<: *docker_variables
+#    TAG: "release-test"
+#    FILE: "release-test"
+#  <<: *docker_template
+#docker:old-release:
+#  variables:
+#    <<: *docker_variables
+#    TAG: "old-release"
+#    FILE: "oldrelease"
+#  <<: *docker_template
+#docker:devel:
+#  variables:
+#    <<: *docker_variables
+#    TAG: "devel"
+#    FILE: "devel"
+#  <<: *docker_template
 docker:devel-san:
   variables:
     <<: *docker_variables
