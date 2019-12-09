@@ -34,8 +34,8 @@ variables:
     - rm -f ~/.R/Makevars
     - cp demo/backup/Makevars ~/.R/
     - cat DESCRIPTION
-    #- Rscript -e 'Rcpp::compileAttributes()'
-    #- Rscript -e 'update(devtools::dev_package_deps("."))'
+    - Rscript -e 'Rcpp::compileAttributes()'
+    - Rscript -e 'update(devtools::dev_package_deps("."))'
     #- Rscript -e 'install.packages("knitr")'
     #- Rscript -e 'install.packages("rmarkdown")'
     #- Rscript -e 'install.packages("testthat")'
@@ -142,14 +142,14 @@ check:r-hub-linux-x86_64-rocker-gcc-san:
   variables:
     RHUB_PLATFORM: "linux-x86_64-rocker-gcc-san"
   <<: *rhub_definition
-check:r-hub-debian-gcc-devel:
-  variables:
-    RHUB_PLATFORM: "debian-gcc-devel"
-  <<: *rhub_definition
-check:r-hub-debian-clang-devel:
-  variables:
-    RHUB_PLATFORM: "debian-clang-devel"
-  <<: *rhub_definition
+#check:r-hub-debian-gcc-devel:
+#  variables:
+#    RHUB_PLATFORM: "debian-gcc-devel"
+#  <<: *rhub_definition
+#check:r-hub-debian-clang-devel:
+#  variables:
+#    RHUB_PLATFORM: "debian-clang-devel"
+#  <<: *rhub_definition
 
 .release_definition: &release_definition
   stage: release
