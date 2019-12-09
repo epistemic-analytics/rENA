@@ -154,8 +154,8 @@ check:r-hub-linux-x86_64-rocker-gcc-san:
 .release_definition: &release_definition
   stage: release
   image: $REG_URL/release:current
-  dependencies:
-    - check:r-release
+  #dependencies:
+  #  - check:r-release
   only:
     refs:
       - tags
@@ -188,8 +188,8 @@ test:r-release:
                     rep <- covr::report( x = cov, file = \"inst/coverage/${CI_COMMIT_REF_NAME}/index.html\", browse = FALSE );"
     - 'Rscript -e "setwd(\"inst/coverage/${CI_COMMIT_REF_NAME}\"); res = lapply(dir(\".\", full.names = F, recursive = T), function(f) { aws.s3::put_object(file = f, object = paste0(\"coverage/${CI_COMMIT_REF_NAME}/\", f), bucket = \"${PKGL}.qe-libs.org\", acl = \"public-read\") })"'
     #- 'Rscript --vanilla demo/backup/coverage-report.R ${CI_COMMIT_REF_NAME}'
-  dependencies:
-    - check:r-release
+  #dependencies:
+  #  - check:r-release
 
 docs:build-site:
   stage: docs
