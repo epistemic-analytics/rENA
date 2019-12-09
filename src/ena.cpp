@@ -362,7 +362,8 @@ Rcpp::List lws_lsq_positions(arma::mat adjMats, arma::mat t, int numDims) { // =
   // Weighting matrix, putting half of each line.wieght onto the respective
   // nodes.
   arma::mat weights = arma::mat(adjMats.n_rows, numNodes, fill::zeros);
-  for (int k = 0; k < adjMats.n_rows; k++) {
+  int row_count = adjMats.n_rows;
+  for (int k = 0; k < row_count; k++) {
     arma::rowvec currAdj = adjMats.row(k);
     int z = 0;
     for(int x = 0; x < numNodes-1; x++) {
@@ -374,7 +375,8 @@ Rcpp::List lws_lsq_positions(arma::mat adjMats, arma::mat t, int numDims) { // =
     }
   }
 
-  for (int k = 0; k < adjMats.n_rows; k++) {
+  //row_count = adjMats.n_rows;
+  for (int k = 0; k < row_count; k++) {
     double length = 0;
     for(int i = 0; i < numNodes; i++) {
       length = length + std::abs(weights(k,i));
