@@ -191,18 +191,24 @@ DataFrame ref_window_df(
         headRows = 0;
       }
       arma::mat currRows2_refs = currRows2.head_rows(headRows);
-      arma::mat currRow_refsSummed = arma::sum(currRows2_refs);
+      arma::mat currRow_refsSummed(1, currRows2_refs.n_cols, fill::zeros);
+      if(currRows2_refs.n_rows > 0) {
+        currRow_refsSummed = arma::sum(currRows2_refs);
+      }
 
       arma::rowvec toUT_refs = vector_to_ut(currRow_refsSummed);
       toUT = toUT - toUT_refs;
     }
 
     if(windowForward > 0 && lastRow <= (dfRows-1)) {
-      arma::mat currRows2_refs = currRows2.tail_rows(lastRow - row);
+      int tail_rows_to_use = lastRow - row;
+      if(tail_rows_to_use > 0) {
+        arma::mat currRows2_refs = currRows2.tail_rows(tail_rows_to_use);
 
-      arma::mat currRow_refsSummed = arma::sum(currRows2_refs);
-      arma::rowvec toUT_refs = vector_to_ut(currRow_refsSummed);
-      toUT = toUT - toUT_refs;
+        arma::mat currRow_refsSummed = arma::sum(currRows2_refs);
+        arma::rowvec toUT_refs = vector_to_ut(currRow_refsSummed);
+        toUT = toUT - toUT_refs;
+      }
     }
 
     if (binaryStanzas==true) {
@@ -251,7 +257,6 @@ DataFrame ref_window_lag(
 
   return wrap(df_LagSummed);
 }
-
 
 //' Sphere norm
 //' @title Sphere norm

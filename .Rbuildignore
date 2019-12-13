@@ -19,3 +19,7 @@ cran-comments.md
 ^src/Makevars.bak*
 ^doc$
 ^Meta$
+
+src/*.o
+src/*.so
+.bash_history

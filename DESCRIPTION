@@ -10,7 +10,7 @@ LazyData: TRUE
 Depends:
     R (>= 3.0.0)
 License: GPL-3 | file LICENSE
-LinkingTo: Rcpp, RcppArmadillo, RcppParallel
+LinkingTo: Rcpp, RcppArmadillo
 Imports:
     data.table,
     Rcpp,
@@ -27,5 +27,5 @@ Suggests:
     testthat (>= 2.1.0),
     knitr,
     rmarkdown
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 VignetteBuilder: knitr

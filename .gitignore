@@ -19,3 +19,11 @@ inst/coverage/
 docs/
 
 \.idea/
+
+\.bash_history
+
+inst/docker/san\.sh
+
+inst/scripts/san-check\.R
+
+inst/scripts/san-check\.sh
