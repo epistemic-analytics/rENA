@@ -121,24 +121,25 @@ check:r-winbuilder:
                       env_vars = c(\"_R_CHECK_CRAN_INCOMING_\" = \"true\", \"_R_CHECK_CRAN_INCOMING_REMOTE_\" = \"true\", \"_R_CHECK_FORCE_SUGGESTS_\" = \"true\")
                     );
                     checked\$cran_summary();
+                    print(checked);
                     quit(status = ifelse(!checked\$.__enclos_env__\$private\$status_[[1]]\$status %in% c('error', 'warning'), 0, 1));"
   only:
     variables:
       - $RHUB_EMAIL_ADDRESS
       - $RHUB_EMAIL_TOKEN
   <<: *rhub_condition
-#check:r-hub-windows-old-release:
-#  variables:
-#    RHUB_PLATFORM: "windows-x86_64-oldrel"
-#  <<: *rhub_definition
-#check:r-hub-windows-release:
-#  variables:
-#    RHUB_PLATFORM: "windows-x86_64-release"
-#  <<: *rhub_definition
-#check:r-hub-windows-devel:
-#  variables:
-#    RHUB_PLATFORM: "windows-x86_64-devel"
-#  <<: *rhub_definition
+check:r-hub-windows-old-release:
+  variables:
+    RHUB_PLATFORM: "windows-x86_64-oldrel"
+  <<: *rhub_definition
+check:r-hub-windows-release:
+  variables:
+    RHUB_PLATFORM: "windows-x86_64-release"
+  <<: *rhub_definition
+check:r-hub-windows-devel:
+  variables:
+    RHUB_PLATFORM: "windows-x86_64-devel"
+  <<: *rhub_definition
 check:r-hub-linux-x86_64-rocker-gcc-san:
   variables:
     RHUB_PLATFORM: "linux-x86_64-rocker-gcc-san"
@@ -147,10 +148,10 @@ check:r-hub-debian-gcc-devel:
   variables:
     RHUB_PLATFORM: "debian-gcc-devel"
   <<: *rhub_definition
-check:r-hub-debian-clang-devel:
-  variables:
-    RHUB_PLATFORM: "debian-clang-devel"
-  <<: *rhub_definition
+#check:r-hub-debian-clang-devel:
+#  variables:
+#    RHUB_PLATFORM: "debian-clang-devel"
+#  <<: *rhub_definition
 
 .release_definition: &release_definition
   stage: release
