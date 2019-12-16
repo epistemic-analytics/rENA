@@ -127,18 +127,18 @@ check:r-winbuilder:
       - $RHUB_EMAIL_ADDRESS
       - $RHUB_EMAIL_TOKEN
   <<: *rhub_condition
-check:r-hub-windows-old-release:
-  variables:
-    RHUB_PLATFORM: "windows-x86_64-oldrel"
-  <<: *rhub_definition
-check:r-hub-windows-release:
-  variables:
-    RHUB_PLATFORM: "windows-x86_64-release"
-  <<: *rhub_definition
-check:r-hub-windows-devel:
-  variables:
-    RHUB_PLATFORM: "windows-x86_64-devel"
-  <<: *rhub_definition
+#check:r-hub-windows-old-release:
+#  variables:
+#    RHUB_PLATFORM: "windows-x86_64-oldrel"
+#  <<: *rhub_definition
+#check:r-hub-windows-release:
+#  variables:
+#    RHUB_PLATFORM: "windows-x86_64-release"
+#  <<: *rhub_definition
+#check:r-hub-windows-devel:
+#  variables:
+#    RHUB_PLATFORM: "windows-x86_64-devel"
+#  <<: *rhub_definition
 check:r-hub-linux-x86_64-rocker-gcc-san:
   variables:
     RHUB_PLATFORM: "linux-x86_64-rocker-gcc-san"
