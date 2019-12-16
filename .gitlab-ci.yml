@@ -118,7 +118,14 @@ check:r-winbuilder:
         Rscript -e "rhub::validate_email(email = \"${RHUB_EMAIL_ADDRESS}\", token = \"${RHUB_EMAIL_TOKEN}\");
                     checked <- rhub::check(
                       platform = \"${RHUB_PLATFORM}\", show_status = TRUE,
-                      env_vars = c(\"_R_CHECK_CRAN_INCOMING_\" = \"true\", \"_R_CHECK_CRAN_INCOMING_REMOTE_\" = \"true\", \"_R_CHECK_FORCE_SUGGESTS_\" = \"true\")
+                      env_vars = c(
+                        \"_R_CHECK_CRAN_INCOMING_\" = \"true\",
+                        \"_R_CHECK_CRAN_INCOMING_REMOTE_\" = \"true\",
+                        \"_R_CHECK_FORCE_SUGGESTS_\" = \"true\",
+                        \"_R_CLASS_MATRIX_ARRAY_\"=\"true\",
+                        \"R_REMOTES_STANDALONE\"=\"true\",
+                        \"R_REMOTES_NO_ERRORS_FROM_WARNINGS\"=\"true\"
+                      )
                     );
                     checked\$cran_summary();
                     print(checked);
@@ -148,10 +155,10 @@ check:r-hub-debian-gcc-devel:
   variables:
     RHUB_PLATFORM: "debian-gcc-devel"
   <<: *rhub_definition
-#check:r-hub-debian-clang-devel:
-#  variables:
-#    RHUB_PLATFORM: "debian-clang-devel"
-#  <<: *rhub_definition
+check:r-hub-debian-clang-devel:
+  variables:
+    RHUB_PLATFORM: "debian-clang-devel"
+  <<: *rhub_definition
 
 .release_definition: &release_definition
   stage: release
