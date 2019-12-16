@@ -4,12 +4,8 @@
 \alias{as_trajectory}
 \title{Title}
 \usage{
-as_trajectory(
-  x,
-  by = x$`_function.params`$conversation[1],
-  model = c("AccumulatedTrajectory", "SeperateTrajectory"),
-  ...
-)
+as_trajectory(x, by = x$`_function.params`$conversation[1],
+  model = c("AccumulatedTrajectory", "SeperateTrajectory"), ...)
 }
 \arguments{
 \item{x}{[TBD]}

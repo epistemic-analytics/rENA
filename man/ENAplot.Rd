@@ -4,85 +4,19 @@
 \name{ENAplot}
 \alias{ENAplot}
 \title{ENAset R6class}
+\format{An object of class \code{R6ClassGenerator} of length 25.}
+\usage{
+ENAplot
+}
 \description{
 ENAset R6class
-
-ENAset R6class
 }
-\section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
+\section{Fields}{
+
 \describe{
 \item{\code{enaset}}{- The \code{\link{ENAset}} object from which the ENAplot was constructed}
 
 \item{\code{plot}}{- The plotly object used for data visualization}
-}
-\if{html}{\out{</div>}}
-}
-\section{Methods}{
-\subsection{Public methods}{
-\itemize{
-\item \href{#method-new}{\code{ENAplot$new()}}
-\item \href{#method-print}{\code{ENAplot$print()}}
-\item \href{#method-get}{\code{ENAplot$get()}}
-\item \href{#method-update.axis.lines}{\code{ENAplot$update.axis.lines()}}
-\item \href{#method-clone}{\code{ENAplot$clone()}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\subsection{Method \code{new()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ENAplot$new(
-  enaset = NULL,
-  title = "ENA Plot",
-  dimension.labels = c("", ""),
-  font.size = 14,
-  font.color = "#000000",
-  font.family = "Arial",
-  scale.to = "network",
-  ...
-)}\if{html}{\out{</div>}}
-}
+}}
 
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\subsection{Method \code{print()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ENAplot$print()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get"></a>}}
-\subsection{Method \code{get()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ENAplot$get(x)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-update.axis.lines"></a>}}
-\subsection{Method \code{update.axis.lines()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ENAplot$update.axis.lines()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ENAplot$clone(deep = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
-}
+\keyword{datasets}
