@@ -128,8 +128,18 @@ check:r-winbuilder:
                       )
                     );
                     checked\$cran_summary();
-                    print(checked);
-                    quit(status = ifelse(!checked\$.__enclos_env__\$private\$status_[[1]]\$status %in% c('error', 'warning'), 0, 1));"
+                    rhub_content <- function(text_url) {
+                      text_get <- httr::GET(url = text_url)
+                      test_content <- strsplit(httr::content(text_get), split = "\\n")[[1]]
+                      err_found <- grep(x = test_content, pattern = "runtime error")
+                      print(test_content[err_found])
+                      return(err_found)
+                    }
+                    if(!checked\$.__enclos_env__\$private\$status_[[1]]\$status %in% c('error', 'warning')) {
+                      rhub_errors <- rhub_content(checked$urls()$text)
+                      if(length(rhub_errors) > 0) { quit(status = 1) }
+                      else { quit(status = 0) }
+                    } else { quit(status = 1) }
   only:
     variables:
       - $RHUB_EMAIL_ADDRESS
