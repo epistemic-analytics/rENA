@@ -63,4 +63,4 @@ RUN RDsan -e 'install.packages(c("webshot"), repos="http://cran.rstudio.com")'
 RUN pwd
 RUN RDsan --version
 
-CMD ["/bin/bash"]
+#CMD ["/bin/bash"]

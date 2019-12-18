@@ -61,7 +61,9 @@ variables:
     - mv ./$PKG.Rcheck/* $PKG/archive/ || true
     - mv ./${PKG}_${VERSION}.tar.gz $PKG/archive/
     - cat ${PKG}/archive/check.log || true
+    - cat ${PKG}/archive/tests/testthat.Rout || true
     - "tail -n1 ${PKG}/archive/00check.log | grep -iv -e 'Status:.*ERROR' -e 'Status:.*WARNING'"
+    - "cat ${PKG}/archive/tests/testthat.Rout | grep -iv -e 'runtime error'"
   allow_failure: false
   <<: *check_condition
 
@@ -84,6 +86,8 @@ check:r-devel-san:
   except:
     refs:
       - tags
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\[skip winbuilder\].*/
   only:
     variables:
       - $CI_COMMIT_MESSAGE =~ /.*\[check winbuilder\].*/
@@ -103,6 +107,11 @@ check:r-winbuilder:
 
 # Rhub Checks
 .rhub_condition: &rhub_condition
+  only:
+    variables:
+      - $RHUB_EMAIL_ADDRESS
+      - $RHUB_EMAIL_TOKEN
+      - $CI_COMMIT_MESSAGE =~ /.*\[check rhub\].*/
   except:
     refs:
       - tags
@@ -140,10 +149,6 @@ check:r-winbuilder:
                       if(length(rhub_errors) > 0) { quit(status = 1); }
                       else { quit(status = 0); }
                     } else { quit(status = 1); }"
-  only:
-    variables:
-      - $RHUB_EMAIL_ADDRESS
-      - $RHUB_EMAIL_TOKEN
   <<: *rhub_condition
 check:r-hub-windows-old-release:
   variables:
