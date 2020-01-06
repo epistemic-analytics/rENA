@@ -4,10 +4,18 @@
 \alias{ena.writeup}
 \title{Calculate the correlations}
 \usage{
-ena.writeup(enaset, tool = "rENA",
-  tool.version = as.character(packageVersion(tool)), comparison = NULL,
-  comparison.groups = NULL, sig.dig = 2, output_dir = getwd(),
-  type = c("file", "stream"), theory = T, methods = T)
+ena.writeup(
+  enaset,
+  tool = "rENA",
+  tool.version = as.character(packageVersion(tool)),
+  comparison = NULL,
+  comparison.groups = NULL,
+  sig.dig = 2,
+  output_dir = getwd(),
+  type = c("file", "stream"),
+  theory = T,
+  methods = T
+)
 }
 \arguments{
 \item{enaset}{ENAset to view methods of}

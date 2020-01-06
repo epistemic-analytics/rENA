@@ -4,15 +4,13 @@
 \name{ENAset}
 \alias{ENAset}
 \title{ENAset R6class}
-\format{An object of class \code{R6ClassGenerator} of length 25.}
-\usage{
-ENAset
-}
 \description{
 ENAset R6class
-}
-\section{Fields}{
 
+ENAset R6class
+}
+\section{Public fields}{
+\if{html}{\out{<div class="r6-fields">}}
 \describe{
 \item{\code{enadata}}{An \code{\link{ENAdata}} object originally used to create the set}
 
@@ -39,6 +37,91 @@ ENAset R6class
 \item{\code{function.call}}{- The string representation of function called}
 
 \item{\code{function.params}}{- A list of all parameters sent to function call}
-}}
+}
+\if{html}{\out{</div>}}
+}
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
+\item{\code{correlation}}{- A data frame of spearman and pearson correlations for each dimension specified}
+}
+\if{html}{\out{</div>}}
+}
+\section{Methods}{
+\subsection{Public methods}{
+\itemize{
+\item \href{#method-new}{\code{ENAset$new()}}
+\item \href{#method-process}{\code{ENAset$process()}}
+\item \href{#method-get.data}{\code{ENAset$get.data()}}
+\item \href{#method-get}{\code{ENAset$get()}}
+\item \href{#method-print}{\code{ENAset$print()}}
+\item \href{#method-clone}{\code{ENAset$clone()}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-new"></a>}}
+\subsection{Method \code{new()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ENAset$new(
+  enadata,
+  dimensions = 2,
+  norm.by = fun_sphere_norm,
+  rotation.by = ena.svd.R6,
+  rotation.params = NULL,
+  rotation.set = NULL,
+  node.position.method = lws.positions.sq.R6,
+  endpoints.only = T,
+  ...
+)}\if{html}{\out{</div>}}
+}
 
-\keyword{datasets}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-process"></a>}}
+\subsection{Method \code{process()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ENAset$process()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-get.data"></a>}}
+\subsection{Method \code{get.data()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ENAset$get.data(wh = c("normed", "centered", "rotated"), with.meta = T)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-get"></a>}}
+\subsection{Method \code{get()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ENAset$get(x = "enadata")}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-print"></a>}}
+\subsection{Method \code{print()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ENAset$print(...)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-clone"></a>}}
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ENAset$clone(deep = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
+\if{html}{\out{</div>}}
+}
+}
+}
