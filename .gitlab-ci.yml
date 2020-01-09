@@ -52,7 +52,7 @@ variables:
     expire_in: 1 week
   <<: *build_template
   script:
-    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check ${PKG}_${VERSION}.tar.gz --as-cran --no-manual > $PKG/archive/check.log
+    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check ${PKG}_${VERSION}.tar.gz --as-cran --no-manual > $PKG/archive/check.log || true
     - ls -al ./
     - ls -al ./$PKG.Rcheck/ || true
     - mv ./$PKG-00build.log $PKG/archive/ || true
