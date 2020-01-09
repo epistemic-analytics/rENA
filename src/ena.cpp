@@ -136,16 +136,15 @@ arma::mat rows_to_co_occurrences(DataFrame df, bool binary = true) {
 // @param windowSize Integer for number of rows in the stanza window
 // @param windowForward Integer for number of rows in the stanza window forward
 // @param binary Logical, treat codes as binary or leave as weighted
-// @param binaryStanzas Logical, treat codes as binary or leave as weighted
 // [[Rcpp::interfaces(r, cpp)]]
 // [[Rcpp::export]]
 DataFrame ref_window_df(
     DataFrame df,
     float windowSize = 1,
     float windowForward = 0,
-    bool binary = true,
-    bool binaryStanzas = false
+    bool binary = true
   ) {
+    //,bool binaryStanzas = false
   int dfRows = df.nrows();
   int dfCols = df.size();
   int numCoOccurences = ( (dfCols * (dfCols + 1)) / 2) - dfCols;
@@ -211,9 +210,9 @@ DataFrame ref_window_df(
       }
     }
 
-    if (binaryStanzas==true) {
-      toUT.elem( find(toUT > 0) ).ones();
-    }
+    //if (binaryStanzas==true) {
+    //  toUT.elem( find(toUT > 0) ).ones();
+    //}
     df_CoOccurred.row(row) = toUT;
   }
   if(binary == true) {

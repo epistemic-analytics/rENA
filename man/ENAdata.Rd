@@ -42,9 +42,7 @@ ENAdata R6class
 \item \href{#method-new}{\code{ENAdata$new()}}
 \item \href{#method-process}{\code{ENAdata$process()}}
 \item \href{#method-get}{\code{ENAdata$get()}}
-\item \href{#method-read}{\code{ENAdata$read()}}
 \item \href{#method-add.metadata}{\code{ENAdata$add.metadata()}}
-\item \href{#method-print}{\code{ENAdata$print()}}
 \item \href{#method-clone}{\code{ENAdata$clone()}}
 }
 }
@@ -87,26 +85,10 @@ ENAdata R6class
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-read"></a>}}
-\subsection{Method \code{read()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ENAdata$read(colnames = T, sep = " & ")}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-add.metadata"></a>}}
 \subsection{Method \code{add.metadata()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ENAdata$add.metadata(merge = F)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\subsection{Method \code{print()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ENAdata$print(...)}\if{html}{\out{</div>}}
 }
 
 }

@@ -21,6 +21,62 @@ test_that("Accumulate returns an R6", {
   )
 })
 
+test_that("Function params includes ... args", {
+  data(RS.data)
+
+  df.file <- RS.data
+
+  df.accum <- suppressWarnings(
+    ena.accumulate.data.file(
+      df.file, units.by = c("UserName", "Condition"),
+      conversations.by = c("ActivityNumber", "GroupName"),
+      codes = code_names, as.list = FALSE)
+  )
+
+  df.accum.grain <- suppressWarnings(
+    ena.accumulate.data.file(
+      df.file, units.by = c("UserName", "Condition"),
+      conversations.by = c("ActivityNumber", "GroupName"),
+      codes = code_names, as.list = FALSE, grainSize = 10)
+  )
+
+  testthat::expect_false("grainSize" %in% names(df.accum$function.params))
+  testthat::expect_true("grainSize" %in% names(df.accum.grain$function.params))
+})
+
+test_that("Old accum ignored meta.data", {
+  data(RS.data)
+
+  df.file <- RS.data
+
+  df.accum <- suppressWarnings(
+    ena.accumulate.data.file(
+      df.file, units.by = c("UserName", "Condition"),
+      conversations.by = c("ActivityNumber", "GroupName"),
+      codes = code_names, as.list = FALSE,
+      include.meta = FALSE
+    )
+  )
+  testthat::expect_equal(nrow(df.accum$metadata), 0)
+})
+
+test_that("Old accum reads a file string", {
+  data(RS.data)
+
+  df.file.path <- system.file("extdata/rs.data.csv", package = "rENA")
+  df.accum <- suppressWarnings(
+    ena.accumulate.data.file(
+      df.file.path, units.by = c("UserName", "Condition"),
+      conversations.by = c("ActivityNumber", "GroupName"),
+      codes = code_names, as.list = FALSE
+    )
+  )
+
+  testthat::expect_is(df.accum, "ENAdata",
+    "Accumulation with file path did not return ENAdata"
+  )
+})
+
 test_that("Make.set returns an R6", {
   data(RS.data)
 
@@ -28,7 +84,7 @@ test_that("Make.set returns an R6", {
 
   df.accum <- suppressWarnings(
     rENA:::ena.accumulate.data.file(
-      df.file, units.by = c("UserName", "Condition"), 
+      df.file, units.by = c("UserName", "Condition"),
       conversations.by = c("ActivityNumber", "GroupName"),
       codes = code_names, as.list = FALSE
     )
@@ -41,7 +97,7 @@ test_that("Make.set returns an R6", {
     "Set with as.list = FALSE did not return ENAset")
 
   df.accum2 <- rENA:::ena.accumulate.data.file(
-    df.file, units.by = c("UserName", "Condition"), 
+    df.file, units.by = c("UserName", "Condition"),
     conversations.by = c("ActivityNumber", "GroupName"),
     codes = code_names, as.list = T
   )

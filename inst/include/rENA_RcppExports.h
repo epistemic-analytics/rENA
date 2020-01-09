@@ -109,17 +109,17 @@ namespace rENA {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline DataFrame ref_window_df(DataFrame df, float windowSize = 1, float windowForward = 0, bool binary = true, bool binaryStanzas = false) {
-        typedef SEXP(*Ptr_ref_window_df)(SEXP,SEXP,SEXP,SEXP,SEXP);
+    inline DataFrame ref_window_df(DataFrame df, float windowSize = 1, float windowForward = 0, bool binary = true) {
+        typedef SEXP(*Ptr_ref_window_df)(SEXP,SEXP,SEXP,SEXP);
         static Ptr_ref_window_df p_ref_window_df = NULL;
         if (p_ref_window_df == NULL) {
-            validateSignature("DataFrame(*ref_window_df)(DataFrame,float,float,bool,bool)");
+            validateSignature("DataFrame(*ref_window_df)(DataFrame,float,float,bool)");
             p_ref_window_df = (Ptr_ref_window_df)R_GetCCallable("rENA", "_rENA_ref_window_df");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_ref_window_df(Shield<SEXP>(Rcpp::wrap(df)), Shield<SEXP>(Rcpp::wrap(windowSize)), Shield<SEXP>(Rcpp::wrap(windowForward)), Shield<SEXP>(Rcpp::wrap(binary)), Shield<SEXP>(Rcpp::wrap(binaryStanzas)));
+            rcpp_result_gen = p_ref_window_df(Shield<SEXP>(Rcpp::wrap(df)), Shield<SEXP>(Rcpp::wrap(windowSize)), Shield<SEXP>(Rcpp::wrap(windowForward)), Shield<SEXP>(Rcpp::wrap(binary)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();

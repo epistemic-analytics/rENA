@@ -63,7 +63,8 @@ ENAdata <- R6::R6Class("ENAdata", public = list(
     ) {
       if (exists(x = p)) {
         self$function.params[[p]] <- get(p)
-      } else if (!is.null(args[[p]])) {
+      }
+      else if (!is.null(args[[p]])) {
         self$function.params[[p]] <- args[[p]]
       }
     }
@@ -119,26 +120,6 @@ ENAdata <- R6::R6Class("ENAdata", public = list(
         return(private[[x]])
       },
 
-      ####
-      # \code{read()} - Return the accumulated data
-      # \preformatted{  Example:
-      #     get( colnames = T, sep = " & " )}
-      # \preformatted{  Parameters:
-      #      colnames - Logical, whether to replace colnames with their names
-      #                 values from the adjacency (co-occurrence)
-      #      sep - String to use as a seperator in the updated column names.
-      #             Ignored if colnames == F}
-      ####
-      read = function(colnames = T, sep = " & ") {
-        named_data <- data.table::copy(self$adjacency.vectors);
-        if (colnames == T) {
-          named_rows <- attr(named_data, "adjacency.matrix");
-          colnames(named_data)[grep("adjacency.code", colnames(named_data))] <-
-            apply(named_rows, 2, function(x) paste(x[1], x[2], sep = sep))
-        }
-
-        return()
-      },
       add.metadata = function(merge = F) {
         meta_avail <- colnames(self$raw)[
           -which(colnames(self$raw) %in%
@@ -159,33 +140,9 @@ ENAdata <- R6::R6Class("ENAdata", public = list(
                       with = F
                     ]
 
-        df_to_return <- NULL;
-        if (merge == T) {
-          df_to_return <- merge(
-            self$adjacency.vectors,
-            raw.meta[, unique(colnames(raw.meta)), with = F],
-            by = c("ENA_UNIT"),
-            suffixes = c("", ".y"), sort = F
-          )
-        } else {
-          df_to_return <- raw.meta[ENA_UNIT %in% self$unit.names,];
-        }
+        df_to_return <- raw.meta[ENA_UNIT %in% self$unit.names,];
 
         return(df_to_return)
-      },
-      print = function(...) {
-        args <- list(...);
-        fields <- NULL;
-        to.print <- list();
-        if (is.null(args$fields)) {
-          fields <- names(get(class(self))$public_fields)
-        } else {
-          fields <- args$fields
-        }
-        for (f in fields) {
-          to.print[[f]] <- self[[f]]
-        }
-        return(to.print);
       }
     ####
     ## END: Public Functions

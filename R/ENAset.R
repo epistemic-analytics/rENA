@@ -108,34 +108,6 @@ ENAset = R6::R6Class("ENAset",
      },
 
      ####
-     get.data = function(wh = c("normed","centered","rotated"), with.meta = T) {
-       wh =  match.arg(wh);
-       data = NULL;
-       if( wh == "normed" ) {
-         data = self$line.weights
-       } else if ( wh == "centered" ) {
-         data = self$points.normed.centered
-       } else if ( wh == "rotated" ) {
-         data = self$points.rotated
-       }
-       df.to.return = NULL;
-       if(with.meta == T) {
-         data.units = attr(data, opts$UNIT_NAMES);
-         df.to.return = merge(
-           data.table::data.table(
-             data, data.units,
-             ENA_UNIT=merge_columns_c(data.units, self$enadata$get("units.by")),
-             TRAJ_UNIT=merge_columns_c(data.units, c(self$enadata$get("units.by"), self$enadata$get("trajectory.by")))
-           ),
-           self$enadata$add.metadata()
-         )
-       } else {
-         df.to.return = data
-       }
-       df.to.return
-     },
-
-     ####
      # \code{get()} - Return a read-only property
      # \preformatted{  Example:
      #     get( x = 'file' )}
@@ -144,33 +116,6 @@ ENAset = R6::R6Class("ENAset",
      ####
      get = function(x = "enadata") {
        return(private[[x]])
-     },
-     print = function(...) {
-       args = list(...);
-       fields = NULL;
-       to.print = list();
-
-       if (!is.null(args$fields)) {
-         fields = args$fields
-       } else if(!is.null(private$args$fields)) {
-         fields = private$args$fields
-       } else {
-         #fields = Filter(function(f) { (class(self[[f]]) != "function") }, names(get(class(self))$public_fields))
-         fields = Filter(function(f) {
-           cls = class(self[[f]]);
-           !is(self[[f]], "function") && !is.null(self[[f]])
-         }, names(get(class(self))$public_fields))
-       }
-
-       for(field in fields) {
-         if(grepl("\\$", field)) {
-           parts = Filter(function(f) { f!="" }, strsplit(field,"\\$")[[1]])
-           to.print[[field]] = Reduce(function(o, i) { o[[i]] }, parts, self)
-         } else {
-           to.print[[field]] = self[[field]]
-         }
-       }
-       return(to.print);
      }
 
      #####
@@ -195,7 +140,7 @@ ENAset = R6::R6Class("ENAset",
      #####
      ## Private Functions
      #####
-     run = function() {       
+     run = function() {
        df = self$enadata$adjacency.vectors;
 
        ###
