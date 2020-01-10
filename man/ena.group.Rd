@@ -44,7 +44,7 @@ set = ena.make.set(
   enadata = accum
 )
 
-means = ena.group(set, by=accum$metadata$Condition)
+means = ena.group(set, "Condition")
 
 
 }

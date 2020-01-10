@@ -28,7 +28,7 @@
 #'   enadata = accum
 #' )
 #'
-#' means = ena.group(set, by=accum$metadata$Condition)
+#' means = ena.group(set, "Condition")
 #'
 #'
 #' @return A list containing names, points, and edge weights for each of the unique groups formed by the function

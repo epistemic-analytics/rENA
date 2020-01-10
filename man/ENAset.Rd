@@ -52,9 +52,7 @@ ENAset R6class
 \itemize{
 \item \href{#method-new}{\code{ENAset$new()}}
 \item \href{#method-process}{\code{ENAset$process()}}
-\item \href{#method-get.data}{\code{ENAset$get.data()}}
 \item \href{#method-get}{\code{ENAset$get()}}
-\item \href{#method-print}{\code{ENAset$print()}}
 \item \href{#method-clone}{\code{ENAset$clone()}}
 }
 }
@@ -85,26 +83,10 @@ ENAset R6class
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get.data"></a>}}
-\subsection{Method \code{get.data()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ENAset$get.data(wh = c("normed", "centered", "rotated"), with.meta = T)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get"></a>}}
 \subsection{Method \code{get()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ENAset$get(x = "enadata")}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\subsection{Method \code{print()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ENAset$print(...)}\if{html}{\out{</div>}}
 }
 
 }

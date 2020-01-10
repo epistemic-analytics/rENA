@@ -63,7 +63,13 @@ test_that("Old accum ignored meta.data", {
 test_that("Old accum reads a file string", {
   data(RS.data)
 
-  df.file.path <- system.file("extdata/rs.data.csv", package = "rENA")
+  df.file.path <- system.file("extdata", "rs.data.csv", package = "rENA")
+  if(!file.exists(df.file.path)) {
+    df.file.path = "../../../rENA/inst/extdata/rs.data.csv"
+  }
+  cat("WD: ", getwd(), "\n")
+  cat("PATH: ", df.file.path, "\n")
+  cat("EXISTS: ", file.exists(df.file.path), "\n")
   df.accum <- suppressWarnings(
     ena.accumulate.data.file(
       df.file.path, units.by = c("UserName", "Condition"),
