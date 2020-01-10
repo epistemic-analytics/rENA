@@ -151,3 +151,106 @@ test_that("Old sets are the same as the new ones", {
   testthat::expect_equivalent(df.set$line.weights[1, ],
     as.matrix(new.set$line.weights)[1, ])
 })
+
+
+test_that("Old R6 w custom rotation", {
+  data(RS.data)
+
+  df.file <- RS.data
+
+  df.accum <- suppressWarnings(
+    rENA:::ena.accumulate.data.file(
+      df.file, units.by = c("UserName", "Condition"),
+      conversations.by = c("ActivityNumber", "GroupName"),
+      codes = code_names, as.list = FALSE
+    )
+  )
+  df.set <- suppressWarnings(
+    rENA:::ena.make.set(df.accum, as.list = FALSE)
+  )
+
+  df.accum.2 <- suppressWarnings(
+    rENA:::ena.accumulate.data.file(
+      df.file, units.by = c("GroupName", "Condition"),
+      conversations.by = c("ActivityNumber", "GroupName"),
+      codes = code_names, as.list = FALSE
+    )
+  )
+  df.set.2 <- suppressWarnings(
+    rENA:::ena.make.set(df.accum.2, as.list = FALSE, rotation.set = df.set$rotation.set)
+  )
+  testthat::expect_equal(df.set$node.positions, df.set.2$node.positions)
+
+  testthat::expect_error(
+    rENA:::ena.make.set(df.accum.2, as.list = FALSE, rotation.set = -1),
+    regexp = "Supplied rotation.set is not an instance of ENARotationSet"
+  )
+  testthat::expect_error(
+    rENA:::ena.make.set(df.accum.2, as.list = FALSE, rotation.by = "NOTHING"),
+    regexp = "Unable to find or create a rotation set"
+  )
+
+  testthat::expect_error(
+    rENA:::ena.make.set(df.accum.2, as.list = FALSE, node.position.method = function(set) {
+      return(list("failed" = NULL))
+    }),
+    regexp = "node position method didn't return back the expected objects"
+  )
+
+
+  # testthat::expect_error(
+  #   rENA:::ena.make.set(df.accum.2, as.list = FALSE, rotation.by = function(set, nothing) {
+  #     return(
+  #       list(
+  #         "rotation" = matrix(rep(0, choose(length(code_names),2) ^ 2 ), nrow = choose(length(code_names),2)),
+  #         "node.positions" = NULL
+  #       )
+  #     )
+  #   }),
+  #   regexp = "node position method didn't return back the expected objects"
+  # )
+
+
+  testthat::expect_error(
+    rENA:::ena.make.set(df.accum.2, as.list = FALSE, rotation.set = -1),
+    regexp = "Supplied rotation.set is not an instance of ENARotationSet"
+  )
+
+  rot.set <- list(
+    "rotation" = matrix(rep(0, choose(length(code_names),2) ^ 2 ), nrow = choose(length(code_names),2)),
+    "node.positions" = NULL
+  )
+  class(rot.set) <- c("ENARotationSet")
+  testthat::expect_error(
+    rENA:::ena.make.set(df.accum.2, as.list = FALSE, rotation.set = rot.set),
+    regexp = "Unable to determine the node positions either by calculating"
+  )
+})
+
+test_that("Verify ENArotation set class", {
+   data(RS.data)
+
+  df.file <- RS.data
+
+  df.accum <- suppressWarnings(
+    rENA:::ena.accumulate.data.file(
+      df.file, units.by = c("UserName", "Condition"),
+      conversations.by = c("ActivityNumber", "GroupName"),
+      codes = code_names,
+      as.list = FALSE
+    )
+  )
+  df.set <- suppressWarnings(
+    rENA:::ena.make.set(df.accum, as.list = FALSE)
+  )
+
+  nodes <- df.set$node.positions
+  rownames(nodes) <- NULL
+  rotationSet = ENARotationSet$new(
+    rotation = df.set$rotation.set$rotation,
+    codes = df.set$codes,
+    node.positions = nodes,
+    eigenvalues = NULL
+  )
+  testthat::expect_true(all(rownames(rotationSet$node.positions) == df.set$codes))
+})

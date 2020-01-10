@@ -79,7 +79,7 @@ ena.make.set <- function(
       enadata = enadata,
       dimensions = dimensions,
       rotation.by = ifelse(
-        identical(rotation.by, ena.svd),
+        !is.null(rotation.by) && identical(rotation.by, ena.svd),
         ena.svd.R6,
         rotation.by
       ),

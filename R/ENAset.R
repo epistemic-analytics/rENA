@@ -191,9 +191,10 @@ ENAset = R6::R6Class("ENAset",
        ###
        # Generate and Assign the rotation set
        ###
-        if(!is.null(self$function.params$rotation.by) && is.null(self$function.params$rotation.set)) {
+        if(is.function(self$function.params$rotation.by) && is.null(self$function.params$rotation.set)) {
           self$rotation.set = do.call(self$function.params$rotation.by, list(self, self$function.params$rotation.params));
-        } else if (!is.null(self$function.params$rotation.set)) {
+        }
+        else if (!is.null(self$function.params$rotation.set)) {
           if(is(self$function.params$rotation.set, "ENARotationSet")) {
             print("Using custom rotation.set.")
 
@@ -201,7 +202,8 @@ ENAset = R6::R6Class("ENAset",
           } else {
             stop("Supplied rotation.set is not an instance of ENARotationSet")
           }
-        } else {
+        }
+        else {
           stop("Unable to find or create a rotation set")
         }
        ###
@@ -226,17 +228,25 @@ ENAset = R6::R6Class("ENAset",
             self$centroids = positions$centroids
 
             self$rotation.set$node.positions = positions$node.positions
-          } else {
-            print("The node position method didn't return back the expected objects:")
-            print("    Expected: c('node.positions','centroids')");
-            print(paste("    Received: ",names(positions),sep=""));
           }
-        } else if (!is.null(self$function.params$rotation.set)) {
-          self$node.positions = self$function.params$rotation.set$node.positions
-        } else {
-          stop("Unable to determine the node positions either by calculating
-                them using `node.position.method` or using a supplied
-                `rotation.set`");
+          else {
+            stop(paste(
+                "The node position method didn't return back the expected objects:",
+                "\tExpected: c('node.positions','centroids')",
+                paste("\tReceived: ", names(positions), sep=""),
+                sep = "\n"
+            ));
+          }
+        }
+        else {
+          if (!is.null(self$function.params$rotation.set) && !is.null(self$function.params$rotation.set$node.positions)) {
+            self$node.positions = self$function.params$rotation.set$node.positions
+          }
+          else {
+            stop("Unable to determine the node positions either by calculating
+                  them using `node.position.method` or using a supplied
+                  `rotation.set`");
+          }
         }
        ###
 
