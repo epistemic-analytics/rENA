@@ -80,7 +80,7 @@ ENAplot = R6::R6Class("ENAplot",
             axis.range.y = scale.to$y
           }
         } else {
-          if(scale.to == "points") {
+          if(is.character(scale.to) && scale.to == "points") {
             max.axis = max(abs(as.matrix(enaset$points)))*1.2
           } else if (is.numeric(scale.to)) {
             max.axis = tail(scale.to, 1)
