@@ -22,7 +22,8 @@ Imports:
     doParallel,
     parallel,
     scales,
-    magrittr
+    magrittr,
+    concatenate
 Suggests:
     testthat (>= 2.1.0),
     knitr,
