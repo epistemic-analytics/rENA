@@ -96,7 +96,7 @@ test_that("Make.set returns an R6", {
     )
   )
   df.set <- suppressWarnings(
-    ena.make.set(df.accum, as.list = FALSE)
+    rENA:::ena.make.set(df.accum, as.list = FALSE)
   )
 
   testthat::expect_is(df.set, "ENAset",
@@ -108,12 +108,12 @@ test_that("Make.set returns an R6", {
     codes = code_names, as.list = T
   )
   error_set <- testthat::expect_error(
-    suppressWarnings(ena.make.set(df.accum2, as.list = F)),
+    suppressWarnings(rENA:::ena.make.set(df.accum2, as.list = F)),
     regexp = "Re-run the accumulation with as.list=FALSE"
   )
 
   error_set2 <- testthat::expect_warning(
-    ena.make.set(df.accum, as.list = T),
+    rENA:::ena.make.set(df.accum, as.list = T),
     regexp = "ENAdata objects will be deprecated"
   )
 })
@@ -125,7 +125,7 @@ test_that("Old sets are the same as the new ones", {
   conv.by <- c("Condition", "GroupName")
 
   df.accum <- suppressWarnings(
-    ena.accumulate.data.file(
+    rENA:::ena.accumulate.data.file(
       RS.data, units.by = units.by,
       conversations.by = conv.by,
       codes = code_names, as.list = FALSE, window.size.back = 4
@@ -133,10 +133,10 @@ test_that("Old sets are the same as the new ones", {
   )
 
   df.set <- suppressWarnings(
-    ena.make.set(df.accum, as.list = FALSE)
+    rENA:::ena.make.set(df.accum, as.list = FALSE)
   )
 
-  new.set <- ena.accumulate.data(
+  new.set <- rENA:::ena.accumulate.data(
           units = RS.data[, units.by],
           conversation = RS.data[, conv.by],
           metadata = RS.data[, code_names],
@@ -144,7 +144,7 @@ test_that("Old sets are the same as the new ones", {
           model = "EndPoint",
           window.size.back = 4
         ) %>%
-          ena.make.set()
+          rENA:::ena.make.set()
 
   testthat::expect_equivalent(df.set$points.rotated[1, ],
     as.matrix(new.set$points)[1, ])
@@ -182,18 +182,18 @@ test_that("Old R6 w custom rotation", {
   testthat::expect_equal(df.set$node.positions, df.set.2$node.positions)
 
   testthat::expect_error(
-    rENA:::ena.make.set(df.accum.2, as.list = FALSE, rotation.set = -1),
+    suppressWarnings(rENA:::ena.make.set(df.accum.2, as.list = FALSE, rotation.set = -1)),
     regexp = "Supplied rotation.set is not an instance of ENARotationSet"
   )
   testthat::expect_error(
-    rENA:::ena.make.set(df.accum.2, as.list = FALSE, rotation.by = "NOTHING"),
+    suppressWarnings(rENA:::ena.make.set(df.accum.2, as.list = FALSE, rotation.by = "NOTHING")),
     regexp = "Unable to find or create a rotation set"
   )
 
   testthat::expect_error(
-    rENA:::ena.make.set(df.accum.2, as.list = FALSE, node.position.method = function(set) {
+    suppressWarnings(rENA:::ena.make.set(df.accum.2, as.list = FALSE, node.position.method = function(set) {
       return(list("failed" = NULL))
-    }),
+    })),
     regexp = "node position method didn't return back the expected objects"
   )
 
@@ -212,7 +212,7 @@ test_that("Old R6 w custom rotation", {
 
 
   testthat::expect_error(
-    rENA:::ena.make.set(df.accum.2, as.list = FALSE, rotation.set = -1),
+    suppressWarnings(rENA:::ena.make.set(df.accum.2, as.list = FALSE, rotation.set = -1)),
     regexp = "Supplied rotation.set is not an instance of ENARotationSet"
   )
 
@@ -222,7 +222,7 @@ test_that("Old R6 w custom rotation", {
   )
   class(rot.set) <- c("ENARotationSet")
   testthat::expect_error(
-    rENA:::ena.make.set(df.accum.2, as.list = FALSE, rotation.set = rot.set),
+    suppressWarnings(rENA:::ena.make.set(df.accum.2, as.list = FALSE, rotation.set = rot.set)),
     regexp = "Unable to determine the node positions either by calculating"
   )
 })

@@ -13,7 +13,6 @@ ENARotationSet R6class
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-new}{\code{ENARotationSet$new()}}
-\item \href{#method-print}{\code{ENARotationSet$print()}}
 \item \href{#method-clone}{\code{ENARotationSet$clone()}}
 }
 }
@@ -22,14 +21,6 @@ ENARotationSet R6class
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ENARotationSet$new(rotation, codes, node.positions, eigenvalues = NULL)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\subsection{Method \code{print()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ENARotationSet$print(...)}\if{html}{\out{</div>}}
 }
 
 }
