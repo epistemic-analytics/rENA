@@ -12,6 +12,38 @@ using namespace Rcpp;
 using namespace arma;
 using namespace std;
 
+arma::umat combn_c2(double n) {
+  double n_combos = ( n * ( n - 1 ) ) / 2;
+  arma::umat out = zeros<arma::umat>(2, n_combos);
+
+  int col = 0;
+  for(int i = 0; i < n_combos; i++) {
+    for(int j = i + 1; j < n; j++) {
+      out(0, col) = i;
+      out(1, col) = j;
+      col += 1;
+    }
+  }
+
+  return(out);
+}
+
+// [[Rcpp::export]]
+arma::umat ena_correlation(arma::umat points, arma::umat centroids) {
+  arma::umat pComb = combn_c2(points.n_rows);
+  arma::umat point1 = pComb.row(0);
+  arma::umat point2 = pComb.row(1);
+
+  arma::umat pts_diff = points.rows(point1) - points.rows(point2);
+  arma::umat cts_diff = centroids.rows(point1) - centroids.rows(point2);
+
+  arma::umat out(2, 1);
+  out.row(0) = cor(pts_diff.col(0), cts_diff.col(0));
+  out.row(1) = cor(pts_diff.col(1), cts_diff.col(1));
+
+  return out;
+}
+
 //' Merge data frame columns
 //' @title Merge data frame columns
 //' @description TBD
