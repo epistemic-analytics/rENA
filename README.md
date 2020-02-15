@@ -1,5 +1,6 @@
 # rENA <img src="man/figures/logo.png" align="right" alt="" width="120" />
 
+[![R build status](https://github.com/epistemic-analytics/qe/workflows/R-CMD-check/badge.svg)](https://github.com/epistemic-analytics/qe)
 [![build status](https://git.doit.wisc.edu/epistemic-analytics/qe-packages/rENA/badges/master/build.svg)](https://git.doit.wisc.edu/epistemic-analytics/qe-packages/rENA/commits/master)
 [![coverage report](https://git.doit.wisc.edu/epistemic-analytics/qe-packages/rENA/badges/master/coverage.svg)](https://git.doit.wisc.edu/epistemic-analytics/qe-packages/rENA/commits/master)
 
