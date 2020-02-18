@@ -68,9 +68,10 @@ test_that("Old accum reads a file string", {
     df.file.path = "../../../rENA/inst/extdata/rs.data.csv"
   }
   if(!file.exists(df.file.path)) {
-    df.file.path = "../../../inst/extdata/rs.data.csv"
+    df.file.path = "../../../../inst/extdata/rs.data.csv"
   }
   cat("WD: ", getwd(), "\n")
+  list.files()
   cat("PATH: ", df.file.path, "\n")
   cat("EXISTS: ", file.exists(df.file.path), "\n")
   df.accum <- suppressWarnings(
