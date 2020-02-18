@@ -67,11 +67,14 @@ test_that("Old accum reads a file string", {
   if(!file.exists(df.file.path)) {
     df.file.path = "../../../rENA/inst/extdata/rs.data.csv"
   }
+  if(!file.exists(df.file.path)) {
+    df.file.path = "../../../inst/extdata/rs.data.csv"
+  }
   cat("WD: ", getwd(), "\n")
   cat("PATH: ", df.file.path, "\n")
   cat("EXISTS: ", file.exists(df.file.path), "\n")
   df.accum <- suppressWarnings(
-    ena.accumulate.data.file(
+    rENA:::ena.accumulate.data.file(
       df.file.path, units.by = c("UserName", "Condition"),
       conversations.by = c("ActivityNumber", "GroupName"),
       codes = code_names, as.list = FALSE
