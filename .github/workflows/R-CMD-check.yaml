@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - master
+      - unknown
   pull_request:
     branches:
       - unknown
