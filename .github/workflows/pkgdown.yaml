@@ -1,6 +1,6 @@
 on:
   push:
-    branches: unknown
+    branches: master
 name: Pkgdown
 jobs:
   pkgdown:
