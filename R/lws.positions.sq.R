@@ -10,7 +10,24 @@ lws.positions.sq <- function(enaset) {
   return(list("node.positions" = node.positions, "centroids" = positions$centroids))
 }
 
+#' Title
+#'
+#' @param enaset
+#'
+#' @return
+#' @export
+#'
+#' @examples
+lws.positions.sq_directed <- function(enaset) {
+  points = as.matrix(enaset$points)
+  weights = as.matrix(enaset$line.weights)
+  positions = lws_lsq_positions_directed(weights, points, ncol(points));
 
+  node.positions = positions$nodes;
+  rownames(node.positions) = enaset$enadata$codes;
+
+  return(list("node.positions" = node.positions, "centroids" = positions$centroids))
+}
 lws.positions.sq.R6 <- function(enaset) {
   positions = lws_lsq_positions(enaset$line.weights, enaset$points.rotated, enaset$get("dimensions"));
 
