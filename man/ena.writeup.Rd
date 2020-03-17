@@ -14,7 +14,9 @@ ena.writeup(
   output_dir = getwd(),
   type = c("file", "stream"),
   theory = T,
-  methods = T
+  methods = T,
+  params = NULL,
+  output_file = NULL
 )
 }
 \arguments{
