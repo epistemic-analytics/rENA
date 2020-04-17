@@ -48,6 +48,7 @@ ENAdata R6class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-new"></a>}}
+\if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ENAdata$new(
@@ -70,6 +71,7 @@ ENAdata R6class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-process"></a>}}
+\if{latex}{\out{\hypertarget{method-process}{}}}
 \subsection{Method \code{process()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ENAdata$process()}\if{html}{\out{</div>}}
@@ -78,6 +80,7 @@ ENAdata R6class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get"></a>}}
+\if{latex}{\out{\hypertarget{method-get}{}}}
 \subsection{Method \code{get()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ENAdata$get(x = "data")}\if{html}{\out{</div>}}
@@ -86,6 +89,7 @@ ENAdata R6class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-add.metadata"></a>}}
+\if{latex}{\out{\hypertarget{method-add.metadata}{}}}
 \subsection{Method \code{add.metadata()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ENAdata$add.metadata(merge = F)}\if{html}{\out{</div>}}
@@ -94,6 +98,7 @@ ENAdata R6class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

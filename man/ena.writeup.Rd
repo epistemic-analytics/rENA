@@ -39,6 +39,10 @@ ena.writeup(
 \item{theory}{Logical indicating whether to include theory in the writeup}
 
 \item{methods}{Logical indicating whether to include methods in the writeup}
+
+\item{params}{additional parameters for rmarkdown::render}
+
+\item{output_file}{character}
 }
 \value{
 String representing the methods used to generate the model

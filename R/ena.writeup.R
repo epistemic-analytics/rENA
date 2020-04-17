@@ -14,6 +14,8 @@
 #' @param type c("file","stream") File will save to a file in output_dir, Stream returns the contents directly
 #' @param theory Logical indicating whether to include theory in the writeup
 #' @param methods Logical indicating whether to include methods in the writeup
+#' @param params additional parameters for rmarkdown::render
+#' @param output_file character
 #'
 #' @export
 #'

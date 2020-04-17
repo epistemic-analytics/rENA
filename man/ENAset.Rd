@@ -58,6 +58,7 @@ ENAset R6class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-new"></a>}}
+\if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ENAset$new(
@@ -76,6 +77,7 @@ ENAset R6class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-process"></a>}}
+\if{latex}{\out{\hypertarget{method-process}{}}}
 \subsection{Method \code{process()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ENAset$process()}\if{html}{\out{</div>}}
@@ -84,6 +86,7 @@ ENAset R6class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get"></a>}}
+\if{latex}{\out{\hypertarget{method-get}{}}}
 \subsection{Method \code{get()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ENAset$get(x = "enadata")}\if{html}{\out{</div>}}
@@ -92,6 +95,7 @@ ENAset R6class
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{
