@@ -222,7 +222,7 @@ test_that("Test bad position method", {
 
     writeup_lines <- suppressMessages(ena.writeup(set, theory = T, methods = T, type = "stream", output_dir = tempdir()))
     testthat::expect_true(
-      grepl(x = writeup_lines, pattern = "ENA Theory\n\nEpistemic Network Analysis")
+      grepl(x = writeup_lines, pattern = "ENA Theory")
     )
   })
 #####
