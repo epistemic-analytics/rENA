@@ -28,11 +28,16 @@ ENAdata R6class
 
 \item{\code{trajectories}}{A list: units - data frame, for a given row tells which trajectory it's a part; step - data frame, where along the trajectory a row sits}
 
+\item{\code{adjacency.matrix}}{TBD}
+
+\item{\code{adjacency.vectors.raw}}{TBD}
+
 \item{\code{codes}}{A vector of code names}
 
 \item{\code{function.call}}{The string representation of function called and parameters provided}
 
-\item{\code{function.params}}{A list of all parameters sent to function call}
+\item{\code{function.params}}{A list of all parameters sent to function call
+Construct ENAdata}
 }
 \if{html}{\out{</div>}}
 }
@@ -68,6 +73,40 @@ ENAdata R6class
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file}}{TBD}
+
+\item{\code{units}}{TBD}
+
+\item{\code{units.used}}{TBD}
+
+\item{\code{units.by}}{TBD}
+
+\item{\code{conversations.by}}{TBD}
+
+\item{\code{codes}}{TBD}
+
+\item{\code{model}}{TBD}
+
+\item{\code{weight.by}}{TBD}
+
+\item{\code{window.size.back}}{TBD}
+
+\item{\code{window.size.forward}}{TBD}
+
+\item{\code{mask}}{TBD}
+
+\item{\code{include.meta}}{TBD}
+
+\item{\code{...}}{TBD}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Process accumulation
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-process"></a>}}
@@ -77,6 +116,10 @@ ENAdata R6class
 \if{html}{\out{<div class="r">}}\preformatted{ENAdata$process()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+ENAdata
+Get property from object
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get"></a>}}
@@ -86,6 +129,17 @@ ENAdata R6class
 \if{html}{\out{<div class="r">}}\preformatted{ENAdata$get(x = "data")}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{character key to retrieve from object}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+value from object at x
+Add metadata
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-add.metadata"></a>}}
@@ -95,6 +149,16 @@ ENAdata R6class
 \if{html}{\out{<div class="r">}}\preformatted{ENAdata$add.metadata(merge = F)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{merge}}{logical (default: FALSE)}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+data.frame
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}

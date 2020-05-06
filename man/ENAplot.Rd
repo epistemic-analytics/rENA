@@ -15,6 +15,15 @@ ENAset R6class
 \item{\code{enaset}}{- The \code{\link{ENAset}} object from which the ENAplot was constructed}
 
 \item{\code{plot}}{- The plotly object used for data visualization}
+
+\item{\code{axes}}{- TBD}
+
+\item{\code{point}}{- TBD}
+
+\item{\code{palette}}{- TBD}
+
+\item{\code{plotted}}{- TBD
+Create ENApolot}
 }
 \if{html}{\out{</div>}}
 }
@@ -24,7 +33,6 @@ ENAset R6class
 \item \href{#method-new}{\code{ENAplot$new()}}
 \item \href{#method-print}{\code{ENAplot$print()}}
 \item \href{#method-get}{\code{ENAplot$get()}}
-\item \href{#method-update.axis.lines}{\code{ENAplot$update.axis.lines()}}
 \item \href{#method-clone}{\code{ENAplot$clone()}}
 }
 }
@@ -45,6 +53,31 @@ ENAset R6class
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{enaset}}{TBD}
+
+\item{\code{title}}{TBD}
+
+\item{\code{dimension.labels}}{TBD}
+
+\item{\code{font.size}}{TBD}
+
+\item{\code{font.color}}{TBD}
+
+\item{\code{font.family}}{TBD}
+
+\item{\code{scale.to}}{TBD}
+
+\item{\code{...}}{TBD}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+ENAplot
+Print ENA plot
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-print"></a>}}
@@ -54,6 +87,9 @@ ENAset R6class
 \if{html}{\out{<div class="r">}}\preformatted{ENAplot$print()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+Get property from object
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get"></a>}}
@@ -63,15 +99,16 @@ ENAset R6class
 \if{html}{\out{<div class="r">}}\preformatted{ENAplot$get(x)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{character key to retrieve from object}
 }
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-update.axis.lines"></a>}}
-\if{latex}{\out{\hypertarget{method-update.axis.lines}{}}}
-\subsection{Method \code{update.axis.lines()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ENAplot$update.axis.lines()}\if{html}{\out{</div>}}
+\if{html}{\out{</div>}}
 }
-
+\subsection{Returns}{
+value from object at x
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}

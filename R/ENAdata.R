@@ -15,11 +15,31 @@
 #' @field metadata A data frame of unique metadata for each unit
 #' @field trajectories A list: units - data frame, for a given row tells which trajectory it's a part; step - data frame, where along the trajectory a row sits
 #'
+#' @field adjacency.matrix TBD
+#' @field adjacency.vectors.raw TBD
 #' @field codes A vector of code names
 #' @field function.call The string representation of function called and parameters provided
 #' @field function.params A list of all parameters sent to function call
 ####
 ENAdata <- R6::R6Class("ENAdata", public = list(
+
+  #' Construct ENAdata
+  #'
+  #' @param file TBD
+  #' @param units TBD
+  #' @param units.used TBD
+  #' @param units.by TBD
+  #' @param conversations.by TBD
+  #' @param codes TBD
+  #' @param model TBD
+  #' @param weight.by TBD
+  #' @param window.size.back TBD
+  #' @param window.size.forward TBD
+  #' @param mask TBD
+  #' @param include.meta TBD
+  #' @param ... TBD
+  #'
+  #' @return
   initialize = function(
     file,
     units = NULL,
@@ -76,9 +96,7 @@ ENAdata <- R6::R6Class("ENAdata", public = list(
     return(self)
   },
 
-    ####
-    ## Public Properties
-    ####
+    ## Public Properties ----
       model = NULL,
       raw = NULL,
       adjacency.vectors = NULL,
@@ -95,31 +113,29 @@ ENAdata <- R6::R6Class("ENAdata", public = list(
       codes = NULL,
       function.call = NULL,
       function.params = NULL,
-    ####
-    ## END: Public Properties
-    ####
 
-    ####
-    ## Public Functions
-    ####
-      ####
-      # Process the accumulation
-      #####
+    ## Public Functions ----
+
+      #' Process accumulation
+      #'
+      #' @return ENAdata
       process = function() {
         private$loadFile();
       },
 
-      ####
-      # \code{get()} - Return a read-only property
-      # \preformatted{  Example:
-      #     get( x = 'file' )}
-      # \preformatted{  Parameters:
-      #      x - Property to return. Defaults 'data', returns the original data
-      ####
+      #' Get property from object
+      #'
+      #' @param x character key to retrieve from object
+      #' @return value from object at x
       get = function(x = "data") {
         return(private[[x]])
       },
 
+      #' Add metadata
+      #'
+      #' @param merge logical (default: FALSE)
+      #'
+      #' @return data.frame
       add.metadata = function(merge = F) {
         meta_avail <- colnames(self$raw)[
           -which(colnames(self$raw) %in%
@@ -144,19 +160,13 @@ ENAdata <- R6::R6Class("ENAdata", public = list(
 
         return(df_to_return)
       }
-    ####
-    ## END: Public Functions
-    ####
+
   ),
 
-  ####
-  ### Private
-  ####
+  ### Private ----
   private = list(
 
-    ####
-    ## Private Properties
-    #####
+    ## Private Properties ----
       file = NULL,
       window.size = NULL,
       units.used = NULL,
@@ -165,14 +175,9 @@ ENAdata <- R6::R6Class("ENAdata", public = list(
       weight.by = NULL,
       trajectory.by = NULL,
       mask = NULL,
-    #####
-    ## END: Private Properties
-    ####
 
-    ####
-    ## Private Functions
-    #####
-    loadFile = function() {
+    ## Private Functions ----
+      loadFile = function() {
       if(any(class(private$file) == "data.table")) {
         df_DT <- private$file
       } else {

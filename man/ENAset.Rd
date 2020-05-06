@@ -28,8 +28,6 @@ ENAset R6class
 
 \item{\code{rotation.set}}{- An \code{\link{ENARotationSet}} object}
 
-\item{\code{correlation}}{- A data frame of spearman and pearson correlations for each dimension specified}
-
 \item{\code{variance}}{- A vector of variance accounted for by each dimension specified}
 
 \item{\code{centroids}}{- A matrix of the calculated centroid positions}
@@ -37,13 +35,20 @@ ENAset R6class
 \item{\code{function.call}}{- The string representation of function called}
 
 \item{\code{function.params}}{- A list of all parameters sent to function call}
-}
-\if{html}{\out{</div>}}
-}
-\section{Active bindings}{
-\if{html}{\out{<div class="r6-active-bindings">}}
-\describe{
-\item{\code{correlation}}{- A data frame of spearman and pearson correlations for each dimension specified}
+
+\item{\code{rotation_dists}}{TBD}
+
+\item{\code{points.rotated.scaled}}{TBD}
+
+\item{\code{points.rotated.non.zero}}{TBD}
+
+\item{\code{line.weights.unrotated}}{TBD}
+
+\item{\code{line.weights.non.zero}}{TBD}
+
+\item{\code{correlations}}{A data frame of spearman and pearson correlations for each dimension specified
+
+Create ENAset}
 }
 \if{html}{\out{</div>}}
 }
@@ -74,6 +79,33 @@ ENAset R6class
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{enadata}}{TBD}
+
+\item{\code{dimensions}}{TBD}
+
+\item{\code{norm.by}}{TBD}
+
+\item{\code{rotation.by}}{TBD}
+
+\item{\code{rotation.params}}{TBD}
+
+\item{\code{rotation.set}}{TBD}
+
+\item{\code{node.position.method}}{TBD}
+
+\item{\code{endpoints.only}}{TBD}
+
+\item{\code{...}}{TBD}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+ENAset
+Process ENAset
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-process"></a>}}
@@ -83,6 +115,10 @@ ENAset R6class
 \if{html}{\out{<div class="r">}}\preformatted{ENAset$process()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+ENASet
+Get property from object
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get"></a>}}
@@ -92,6 +128,16 @@ ENAset R6class
 \if{html}{\out{<div class="r">}}\preformatted{ENAset$get(x = "enadata")}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{character key to retrieve from object}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+value from object at x
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}

@@ -14,34 +14,51 @@
 #' @field node.positions - A data frame of positions for each code
 #' @field codes - A vector of code names
 #' @field rotation.set - An \code{\link{ENARotationSet}} object
-#' @field correlation - A data frame of spearman and pearson correlations for each dimension specified
 #' @field variance - A vector of variance accounted for by each dimension specified
 #' @field centroids - A matrix of the calculated centroid positions
 #' @field function.call - The string representation of function called
 #' @field function.params - A list of all parameters sent to function call
+#' @field rotation_dists TBD
+#' @field points.rotated.scaled TBD
+#' @field points.rotated.non.zero TBD
+#' @field line.weights.unrotated TBD
+#' @field line.weights.non.zero TBD
+#' @field correlations A data frame of spearman and pearson correlations for each dimension specified
 #'
 ####
-
 ENAset = R6::R6Class("ENAset",
-   public = list(
-     #####
-     ### Constructor - documented in main class declaration
-     #####
-     initialize = function(
-       enadata,
-       dimensions = 2,
+  public = list(
 
-       norm.by = fun_sphere_norm,
 
-       rotation.by = ena.svd.R6,
-       rotation.params = NULL,
-       rotation.set = NULL,
+  ## Public Functions ----
+    #' Create ENAset
+    #'
+    #' @param enadata TBD
+    #' @param dimensions TBD
+    #' @param norm.by TBD
+    #' @param rotation.by TBD
+    #' @param rotation.params TBD
+    #' @param rotation.set TBD
+    #' @param node.position.method TBD
+    #' @param endpoints.only TBD
+    #' @param ... TBD
+    #'
+    #' @return ENAset
+    initialize = function(
+        enadata,
+        dimensions = 2,
 
-       #center.data = center_data_c,    ### made local to run
-       node.position.method = lws.positions.sq.R6,
-       endpoints.only = T,
-       ...
-     ) {
+        norm.by = fun_sphere_norm,
+
+        rotation.by = ena.svd.R6,
+        rotation.params = NULL,
+        rotation.set = NULL,
+
+        #center.data = center_data_c,    ### made local to run
+        node.position.method = lws.positions.sq.R6,
+        endpoints.only = T,
+        ...
+    ) {
        self$enadata <- enadata;
 
        private$dimensions <- dimensions;
@@ -60,99 +77,72 @@ ENAset = R6::R6Class("ENAset",
 
        private$args <- list(...);
      },
-     #####
-     ### END: Constructor
-     #####
 
-     #####
-     ## Public Properties
-     #####
-     rotation_dists = NULL,  #leave for now - to be removed for a temp variable
-     enadata = NULL,
-     points.raw = NULL,    #was data$raw
-     points.normed.centered = NULL,    #was data$centered$normed
-     points.rotated = NULL,    #was data$centered$rotated
-     points.rotated.scaled = NULL,
-     points.rotated.non.zero = NULL,
-     line.weights = NULL,   #was data$normed
-     line.weights.non.zero = NULL,
-     line.weights.unrotated = NULL,
-     node.positions = NULL,  #was nodes$positions$scaled
-     codes = NULL,
-     rotation.set = NULL,   ## new - ENARotation object
-     correlations = NULL,   #not formerly listed, comes from optimized node positions in egr.positions
-     variance = NULL,     #was self$data$centered$latent
-     centroids = NULL,
-     function.call = NULL,     #new - string reping function call
-     function.params = list(   #list containing parameters function was called with
-       norm.by = NULL,
-       node.position.method = NULL,
-       rotation.by = NULL,
-       rotation.params = NULL,
-       endpoints.only = NULL
-     ),
-     #####
-     ## END: Public Properties
-     #####
 
-     #####
-     ## Public Functions
-     #####
+    #' Process ENAset
+    #'
+    #' @return ENASet
+    process = function() {
+      return(private$run())
+    },
 
-     ####
-     # \code{process()} - Process the ENAset.
-     # \preformatted{}
-     ####
-     process = function() {
-       return(private$run())
-     },
+    #' Get property from object
+    #'
+    #' @param x character key to retrieve from object
+    #' @return value from object at x
+    get = function(x = "enadata") {
+      return(private[[x]])
+    },
 
-     ####
-     # \code{get()} - Return a read-only property
-     # \preformatted{  Example:
-     #     get( x = 'file' )}
-     # \preformatted{  Parameters:
-     #      x - Property to return. Defaults to 'file', returning the original data}
-     ####
-     get = function(x = "enadata") {
-       return(private[[x]])
-     }
+  ## Public Properties ----
+    rotation_dists = NULL,  #leave for now - to be removed for a temp variable
+    enadata = NULL,
+    points.raw = NULL,    #was data$raw
+    points.normed.centered = NULL,    #was data$centered$normed
+    points.rotated = NULL,    #was data$centered$rotated
+    points.rotated.scaled = NULL,
+    points.rotated.non.zero = NULL,
+    line.weights = NULL,   #was data$normed
+    line.weights.non.zero = NULL,
+    line.weights.unrotated = NULL,
+    node.positions = NULL,  #was nodes$positions$scaled
+    codes = NULL,
+    rotation.set = NULL,   ## new - ENARotation object
+    correlations = NULL,   #not formerly listed, comes from optimized node positions in egr.positions
+    variance = NULL,     #was self$data$centered$latent
+    centroids = NULL,
+    function.call = NULL,     #new - string reping function call
+    function.params = list(   #list containing parameters function was called with
+      norm.by = NULL,
+      node.position.method = NULL,
+      rotation.by = NULL,
+      rotation.params = NULL,
+      endpoints.only = NULL
+    )
+  ),
 
-     #####
-     ## END: Public Functions
-     #####
-   ),
+  private = list(
 
-   private = list(
-     #####
-     ## Private Properties
-     #####
+     ## Private Properties ----
      args = NULL,
      data.original = NULL,
      optim = NULL,
 
      #moved from public
      dimensions = 2,
-     #####
-     ## END: Private Properties
-     #####
 
-     #####
-     ## Private Functions
-     #####
+     ## Private Functions ----
      run = function() {
        df = self$enadata$adjacency.vectors;
 
-       ###
        # Backup of ENA data, this is not touched again.
-       ###
        #private$data.original = df[,grep("adjacency.code", colnames(df)), with=F];
        private$data.original = df;
-       ###
+
+
        # Copy of the original data, this is used for all
        # further operations. Unlike, `data.original`, this
        # is likely to be overwritten.
-       ###
        self$points.raw = data.table::copy(private$data.original);
 
        ###
@@ -259,8 +249,5 @@ ENAset = R6::R6Class("ENAset",
 
        return(self);
      }
-     #####
-     ## END: Private Functions
-     #####
    )
 )

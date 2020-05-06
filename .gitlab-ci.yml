@@ -13,11 +13,17 @@ variables:
 
 # Templates
 .check_condition: &check_condition
+  #except:
+  #  refs:
+  #    - tags
+  #  variables:
+  #    - $CI_COMMIT_MESSAGE =~ /.*\[skip check\].*/
   except:
     refs:
       - tags
+  only:
     variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\[skip check\].*/
+      - $CI_COMMIT_MESSAGE =~ /.*\[check docker\].*/
 .build_definition: &build_template
   before_script:
     - export _R_CHECK_CRAN_INCOMING_="true"
@@ -164,6 +170,14 @@ check:r-hub-windows-release:
 check:r-hub-windows-devel:
   variables:
     RHUB_PLATFORM: "windows-x86_64-devel"
+  <<: *rhub_definition
+check:r-hub-debian-gcc-devel:
+  variables:
+    RHUB_PLATFORM: "debian-gcc-devel"
+  <<: *rhub_definition
+check:r-hub-debian-gcc-release:
+  variables:
+    RHUB_PLATFORM: "debian-gcc-devel"
   <<: *rhub_definition
 #check:r-hub-linux-x86_64-rocker-gcc-san:
 #  variables:
