@@ -3,6 +3,7 @@ stages:
  - check
  - deploy
  - release
+ 
 
 variables:
   VERSION: "0.2.0.2"
