@@ -1,3 +1,4 @@
+destination: public/
 navbar:
   title: "rENA"
   type: inverse
@@ -12,7 +13,7 @@ navbar:
       href: "coverage/index.html"
   right:
     - icon: fa-gitlab
-      href: https://git.doit.wisc.edu/epistemic-analytics/qe-packages/rena/
+      href: https://gitlab.com/epistemic-analytics/qe-packages/rena/
 reference:
   - title: "Creating Models"
     desc: >
