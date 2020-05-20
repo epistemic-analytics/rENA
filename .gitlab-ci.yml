@@ -98,8 +98,6 @@ check:r-devel-san:
   except:
     refs:
       - tags
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\[skip rhub\].*/
 .rhub_definition: &rhub_definition
   stage: check
   image: $CI_REGISTRY_IMAGE/release:current
@@ -149,7 +147,7 @@ check:r-hub-ubuntu-gcc-devel:
   variables:
     RHUB_PLATFORM: "ubuntu-gcc-devel"
   <<: *rhub_definition
-check:macos-highsierra-release-cran:
+check:r-hub-macos-highsierra-release-cran:
   variables:
     RHUB_PLATFORM: "macos-highsierra-release-cran"
   <<: *rhub_definition
