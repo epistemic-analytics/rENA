@@ -3,7 +3,7 @@ stages:
  - check
  - deploy
  - release
- 
+
 
 variables:
   VERSION: "0.2.0.2"
@@ -91,14 +91,12 @@ check:r-devel-san:
 
 # Rhub Checks
 .rhub_condition: &rhub_condition
-  only:
-    variables:
-      - $RHUB_EMAIL_ADDRESS
-      - $RHUB_EMAIL_TOKEN
-      - $CI_COMMIT_MESSAGE =~ /.*\[check rhub\].*/
   except:
     refs:
       - tags
+  only:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\[check rhub\].*/
 .rhub_definition: &rhub_definition
   stage: check
   image: $CI_REGISTRY_IMAGE/release:current
@@ -131,6 +129,12 @@ check:r-devel-san:
                       if(length(rhub_errors) > 0) { quit(status = 1); }
                       else { quit(status = 0); }
                     } else { quit(status = 1); }"
+  only:
+    refs:
+      - master
+    variables:
+      - $RHUB_EMAIL_ADDRESS
+      - $RHUB_EMAIL_TOKEN
   <<: *rhub_condition
 check:r-hub-windows-old-release:
   variables:
