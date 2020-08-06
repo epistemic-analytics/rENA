@@ -145,14 +145,14 @@ check:r-hub-windows-release:
   variables:
     RHUB_PLATFORM: "windows-x86_64-release"
   <<: *rhub_definition
-check:r-hub-ubuntu-gcc-release:
-  variables:
-    RHUB_PLATFORM: "ubuntu-gcc-release"
-  <<: *rhub_definition
-check:r-hub-ubuntu-gcc-devel:
-  variables:
-    RHUB_PLATFORM: "ubuntu-gcc-devel"
-  <<: *rhub_definition
+# check:r-hub-ubuntu-gcc-release:
+#   variables:
+#     RHUB_PLATFORM: "ubuntu-gcc-release"
+#   <<: *rhub_definition
+# check:r-hub-ubuntu-gcc-devel:
+#   variables:
+#     RHUB_PLATFORM: "ubuntu-gcc-devel"
+#   <<: *rhub_definition
 check:r-hub-macos-highsierra-release-cran:
   variables:
     RHUB_PLATFORM: "macos-highsierra-release-cran"

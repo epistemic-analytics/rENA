@@ -76,7 +76,7 @@ test_that("Test print plot output", {
   on.exit(unlink(tmp), add = TRUE)
 
   sink(tmp)
-  print(plot(set_end))
+  suppressWarnings(print(plot(set_end)))
 
   testthat::expect_true(
     grepl(x = readLines(tmp)[1], pattern = "[[1]]")

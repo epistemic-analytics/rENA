@@ -69,6 +69,7 @@ test_that("Test custom rotation.set", {
   ))
   expect_equal(df_set_usrs$rotation$nodes, df_set_grps_usrs$rotation$nodes)
   expect_equal(df_set_grps$line.weights, df_set_grps_usrs$line.weights)
+  expect_equal(df_set_usrs$rotation$center.vec, df_set_grps_usrs$rotation$center.vec)
 
   testthat::expect_error(
     df_set_bogus <- ena.make.set(df_accum_grps, rotation.set = list()),
@@ -180,7 +181,13 @@ test_that("Test bad position method", {
     regexp = "position method didn't return back the expected objects"
   )
 
-  custom_rotation <- structure(list(),class = "ena.rotation.set")
+  custom_rotation <- structure(list(), class = "ena.rotation.set")
+  testthat::expect_error(
+    ena.make.set(acc, rotation.by = NULL, rotation.set = custom_rotation),
+    regexp = "does not have a center vector"
+  )
+
+  custom_rotation$center.vec <- runif(choose(length(codenames), 2))
   testthat::expect_error(
     ena.make.set(acc, rotation.by = NULL, rotation.set = custom_rotation),
     regexp = "no rotation matrix"
@@ -210,7 +217,7 @@ test_that("Test bad position method", {
     );
     set <- ena.make.set(accum)
 
-    writeup <- suppressMessages(ena.writeup(set, theory = T, methods = T, type = "file", output_dir = tempdir()))
+    writeup <- suppressWarnings(suppressMessages(ena.writeup(set, theory = T, methods = T, type = "file", output_dir = tempdir())))
     writeup_lines <- readLines(writeup)
     methods_para_2_start <- grep(x = writeup_lines, pattern = "We defined the units of analysis")
     methods_para_2_end <- methods_para_2_start + grep(x = writeup_lines[methods_para_2_start:length(writeup_lines)], pattern = "^$")[1] - 2
