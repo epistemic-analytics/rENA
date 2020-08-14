@@ -131,8 +131,6 @@ check:r-devel-san:
                       else { quit(status = 0); }
                     } else { quit(status = 1); }"
   only:
-    refs:
-      - master
     variables:
       - $RHUB_EMAIL_ADDRESS
       - $RHUB_EMAIL_TOKEN
