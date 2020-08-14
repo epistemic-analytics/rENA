@@ -95,9 +95,9 @@ check:r-devel-san:
   except:
     refs:
       - tags
-  only:
+  #only:
     variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\[check rhub\].*/
+      - $CI_COMMIT_MESSAGE =~ /.*\[skip rhub\].*/
 .rhub_definition: &rhub_definition
   stage: check
   image: $CI_REGISTRY_IMAGE/release:current
