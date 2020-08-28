@@ -28,6 +28,11 @@ arma::umat combn_c2(double n) {
   return(out);
 }
 
+//' Calculate the correlations
+//'
+//' @description Calculate both Pearson correlations for the
+//' provided points and centorids
+//' @export
 // [[Rcpp::export]]
 arma::umat ena_correlation(arma::umat points, arma::umat centroids) {
   arma::umat pComb = combn_c2(points.n_rows);
