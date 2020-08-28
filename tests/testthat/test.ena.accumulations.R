@@ -353,12 +353,12 @@ test_that("Test forward windows", {
   );
   df.conversation <- data.frame(
     Day = c(1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2)
-  )
+  );
   df.codes <- data.frame(
     c1 = c(1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1),
     c2 = c(1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0),
     c3 = c(0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0)
-  )
+  );
 
   df_accum_inf_forward <- ena.accumulate.data(
     units = df.units, conversation = df.conversation, codes = df.codes,

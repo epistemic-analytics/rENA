@@ -177,8 +177,9 @@ DataFrame ref_window_df(
     bool binary = true
   ) {
     //,bool binaryStanzas = false
-  int dfRows = df.nrows();
-  int dfCols = df.size();
+  int window_back, window_forward;
+  int dfRows = (int) df.nrows();
+  int dfCols = (int) df.size();
   int numCoOccurences = ( (dfCols * (dfCols + 1)) / 2) - dfCols;
 
   arma::mat df_CoOccurred(dfRows, numCoOccurences, fill::zeros);
@@ -189,6 +190,23 @@ DataFrame ref_window_df(
     df_AsMatrix2.col(i) = Rcpp::as<arma::vec>(df[i]);
   }
 
+  double inf = std::numeric_limits<double>::infinity();
+  int max = std::numeric_limits<int>::max();
+  int min = std::numeric_limits<int>::min();
+
+  if(windowSize == inf || windowSize == max) {
+    window_back = max;
+  }
+  else {
+    window_back = windowSize;
+  }
+  if(windowForward == inf || windowForward == max) {
+    window_forward = (int) dfRows; //dfRows;
+  }
+  else {
+    window_forward = (int) windowForward;
+  }
+
   for(int row = 0; row < dfRows; row++) {
     /**
      * The rows in the current window. CurrentRow + Referrants == windowSize
@@ -197,41 +215,47 @@ DataFrame ref_window_df(
     // NOTE: change the span to always use 0 if infinite window
     int earliestRow = 0, lastRow = row;
 
-    if (windowSize == std::numeric_limits<double>::infinity()) {
+    if (window_back == min || window_back == max) {
       earliestRow = 0;
     }
-    else if (windowSize == 0) {
+    else if (window_back == 0) {
       earliestRow = row;
     }
-    else if ( row - (windowSize-1) >= 0 ) {
-      earliestRow = row - (windowSize - 1);
+    else if ( (row - (window_back-1) >= 0) ) {
+      earliestRow = row - (window_back - 1);
     }
 
-    if (windowForward == std::numeric_limits<double>::infinity()) {
+    if(window_forward == R_PosInf || (row + (window_forward) >= dfRows)) {
       lastRow = dfRows-1;
-    } else if ( windowForward > 0 &&  (row + (windowForward) <= dfRows-1)) {
-      lastRow = row + windowForward;
+    }
+    else if ( window_forward > 0 &&  (row + (window_forward) <= dfRows-1)) {
+      lastRow = row + window_forward;
     }
 
     arma::mat currRows2 = df_AsMatrix2( span( earliestRow, lastRow ), span::all );
     arma::mat currRowsSummed = arma::sum(currRows2);
     arma::rowvec toUT = vector_to_ut(currRowsSummed);
-    if(windowSize > 1 && row-1>=0) {
-      int headRows = currRows2.n_rows - 1 - windowForward;
-      if(headRows < 0) {
-        headRows = 0;
-      }
-      arma::mat currRows2_refs = currRows2.head_rows(headRows);
-      arma::mat currRow_refsSummed(1, currRows2_refs.n_cols, fill::zeros);
-      if(currRows2_refs.n_rows > 0) {
-        currRow_refsSummed = arma::sum(currRows2_refs);
-      }
 
-      arma::rowvec toUT_refs = vector_to_ut(currRow_refsSummed);
-      toUT = toUT - toUT_refs;
+    int headRows = 0;
+    int currRows2_n_rows = (int) currRows2.n_rows;
+    if(currRows2_n_rows > 0 && window_back > 1 && row-1 >= 0) {
+      headRows = (int) (currRows2_n_rows - 1 - lastRow);
+      if(headRows <= 0) {
+        headRows = (int) 0;
+      }
+      else {
+        arma::mat currRows2_refs = currRows2.head_rows(headRows);
+        arma::mat currRow_refsSummed(1, currRows2_refs.n_cols, fill::zeros);
+        if(currRows2_refs.n_rows > 0) {
+          currRow_refsSummed = arma::sum(currRows2_refs);
+        }
+
+        arma::rowvec toUT_refs = vector_to_ut(currRow_refsSummed);
+        toUT = toUT - toUT_refs;
+      }
     }
 
-    if(windowForward > 0 && lastRow <= (dfRows-1)) {
+    if(currRows2_n_rows > 0 && window_forward > 0 && lastRow <= (dfRows-1)) {
       int tail_rows_to_use = lastRow - row;
       if(tail_rows_to_use > 0) {
         arma::mat currRows2_refs = currRows2.tail_rows(tail_rows_to_use);
@@ -442,3 +466,84 @@ Rcpp::List lws_lsq_positions(arma::mat adjMats, arma::mat t, int numDims) { // =
     _("points") = t
   );
 }
+
+
+/*** R
+fake_codes_len <- 10;
+fake.codes <- function(x) sample(0:1, fake_codes_len, replace = T)
+codes <- paste("Codes", LETTERS[1:fake_codes_len], sep = "-")
+
+df.units <- data.frame(
+  Name = rep(c("J", "Z"), 6)
+);
+df.conversation <- data.frame(
+  Day = c(1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2)
+)
+df.codes <- data.frame(
+  c1 = c(1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1),
+  c2 = c(1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0),
+  c3 = c(0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0)
+);
+df <- cbind(df.units, df.conversation);
+df <- cbind(df, df.codes);
+dfDT_codes <- data.table::data.table(df);
+
+
+units.by <- colnames(units);
+convesration.by <- colnames(df.conversation);
+codes <- colnames(df.codes);
+
+initial_cols <- c(units.by, codes)
+just_codes <- c(codes)
+
+vL <- length(codes);
+adjacency.length <- ( (vL * (vL + 1)) / 2) - vL ;
+codedTriNames <- paste("adjacency.code",rep(1:adjacency.length), sep=".");
+
+# df.accum.sep  <- ena.accumulate.data(
+#     units = df.units, conversation = df.conversation, codes = df.codes)
+# df.accum.inf  <- ena.accumulate.data(
+#    units = df.units, conversation = df.conversation, codes = df.codes,
+#    window.size.back = Inf)
+# print(df.accum.sep$connection.counts)
+# print(df.accum.inf$connection.counts)
+
+# accums <- dfDT_codes[,
+#   (codedTriNames) := ref_window_df(
+#     .SD[, .SD, .SDcols = just_codes],
+#     windowSize = 1,
+#     windowForward = .Machine$integer.max,
+#     binary = TRUE
+#   ),
+#   by = convesration.by,
+#   .SDcols = initial_cols,
+#   with = T
+# ]
+# print(accums)
+
+accums2 <- dfDT_codes[,
+  (codedTriNames) := ref_window_df(
+    .SD[, .SD, .SDcols = just_codes],
+    windowSize = 5,
+    windowForward = 5,
+    binary = TRUE
+  ),
+  by = convesration.by,
+  .SDcols = initial_cols,
+  with = T
+]
+print(accums2)
+
+# accums3 <- dfDT_codes[,
+#   (codedTriNames) := ref_window_df(
+#     .SD[, .SD, .SDcols = just_codes],
+#     windowSize = 1,
+#     windowForward = .Machine$integer.max,
+#     binary = TRUE
+#   ),
+#   by = convesration.by,
+#   .SDcols = initial_cols,
+#   with = T
+# ]
+# print(accums3)
+*/
