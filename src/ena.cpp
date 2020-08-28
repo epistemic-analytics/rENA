@@ -30,6 +30,8 @@ arma::umat combn_c2(double n) {
 
 //' Calculate the correlations
 //'
+//' @param points TBD
+//' @param centroids TBD
 //' @description Calculate both Pearson correlations for the
 //' provided points and centorids
 //' @export

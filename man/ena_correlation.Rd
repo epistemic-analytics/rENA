@@ -6,6 +6,11 @@
 \usage{
 ena_correlation(points, centroids)
 }
+\arguments{
+\item{points}{TBD}
+
+\item{centroids}{TBD}
+}
 \description{
 Calculate both Pearson correlations for the
 provided points and centorids
