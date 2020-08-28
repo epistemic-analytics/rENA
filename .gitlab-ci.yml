@@ -47,6 +47,7 @@ variables:
     - RDsan -e 'install.packages("magrittr")'
     - RDsan -e 'install.packages("R6")'
     - RDsan -e 'install.packages("codetools")'
+    - RDsan -e 'install.packages("digest")'
     - cd ..; RDsan CMD build --resave-data --no-manual --log $PKG
 .check_definition: &check_template
   stage: check
