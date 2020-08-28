@@ -42,10 +42,11 @@ variables:
     - cat DESCRIPTION
     - RDsan -e 'Rcpp::compileAttributes()'
     - RDsan -e 'update(devtools::dev_package_deps("."))'
-    #- Rscript -e 'install.packages("knitr")'
-    #- Rscript -e 'install.packages("rmarkdown")'
-    #- Rscript -e 'install.packages("testthat")'
-    #- Rscript -e 'devtools::build_vignettes()'
+    - RDsan -e 'devtools::install_dev_deps()'
+    - RDsan -e 'devtools::install_deps()'
+    - RDsan -e 'install.packages("magrittr")'
+    - RDsan -e 'install.packages("R6")'
+    - RDsan -e 'install.packages("codetools")'
     - cd ..; RDsan CMD build --resave-data --no-manual --log $PKG
 .check_definition: &check_template
   stage: check
@@ -61,6 +62,7 @@ variables:
     - RDsan --no-site-file --no-environ --no-save --no-restore --quiet CMD check ${PKG}_${VERSION}.tar.gz --as-cran --no-manual > $PKG/archive/check.log || true
     - ls -al ./
     - ls -al ./$PKG.Rcheck/ || true
+    - cat ./$PKG.Rcheck/00install.out || true
     - mv ./$PKG-00build.log $PKG/archive/ || true
     - mv ./$PKG.Rcheck/00check.log $PKG/archive/ || true
     - mv ./$PKG.Rcheck/00install.out $PKG/archive/ || true
