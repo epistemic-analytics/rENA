@@ -40,13 +40,13 @@ variables:
     - rm -f ~/.R/Makevars
     - cp demo/backup/Makevars ~/.R/
     - cat DESCRIPTION
-    - Rscript -e 'Rcpp::compileAttributes()'
-    - Rscript -e 'update(devtools::dev_package_deps("."))'
+    - RDsan -e 'Rcpp::compileAttributes()'
+    - RDsan -e 'update(devtools::dev_package_deps("."))'
     #- Rscript -e 'install.packages("knitr")'
     #- Rscript -e 'install.packages("rmarkdown")'
     #- Rscript -e 'install.packages("testthat")'
     #- Rscript -e 'devtools::build_vignettes()'
-    - cd ..; R CMD build --resave-data --no-manual --log $PKG
+    - cd ..; RDsan CMD build --resave-data --no-manual --log $PKG
 .check_definition: &check_template
   stage: check
   artifacts:
@@ -58,7 +58,7 @@ variables:
     expire_in: 1 week
   <<: *build_template
   script:
-    - R --no-site-file --no-environ --no-save --no-restore --quiet CMD check ${PKG}_${VERSION}.tar.gz --as-cran --no-manual > $PKG/archive/check.log || true
+    - RDsan --no-site-file --no-environ --no-save --no-restore --quiet CMD check ${PKG}_${VERSION}.tar.gz --as-cran --no-manual > $PKG/archive/check.log || true
     - ls -al ./
     - ls -al ./$PKG.Rcheck/ || true
     - mv ./$PKG-00build.log $PKG/archive/ || true
