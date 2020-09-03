@@ -222,6 +222,7 @@ pages:
     - Rscript -e "pkgdown::build_site(preview = F, devel = T, lazy = T, new_process = T)"
     - |
         Rscript -e "cov <- covr::package_coverage(quiet = F);
+                    print(cov);
                     rep <- covr::report( x = cov, file = \"public/coverage/index.html\", browse = FALSE );"
   artifacts:
     paths:
