@@ -1,4 +1,4 @@
-## rENA 0.2.0.2 
+## rENA 0.2.1.0
 
 #### Features
   * Projections use the centering vector of a provided rotation set. See `ena.make.set()`
