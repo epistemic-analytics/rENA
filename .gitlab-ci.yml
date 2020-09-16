@@ -183,6 +183,31 @@ check:r-hub-macos-highsierra-release-cran:
 #    RHUB_PLATFORM: "debian-clang-devel"
 #  <<: *rhub_definition
 
+.release_build_definition: &release_build_template
+  before_script:
+    - export _R_CHECK_CRAN_INCOMING_="true"
+    - export _R_CHECK_CRAN_INCOMING_REMOTE_="true"
+    - export _R_CHECK_FORCE_SUGGESTS_="true"
+    - export _R_CLASS_MATRIX_ARRAY_="true"
+    - export R_REMOTES_STANDALONE="true"
+    - export R_REMOTES_NO_ERRORS_FROM_WARNINGS="true"
+    - export TZ=Europe/London
+    - export _R_CHECK_LENGTH_1_CONDITION_="package:_R_CHECK_PACKAGE_NAME_,verbose"
+    - mkdir -p archive/
+    - rm -f ./R/RcppExports.R
+    - mkdir -p ~/.R/
+    - rm -f ~/.R/Makevars
+    - cp demo/backup/Makevars ~/.R/
+    - cat DESCRIPTION
+    - R -e 'Rcpp::compileAttributes()'
+    - R -e 'update(devtools::dev_package_deps("."))'
+    - R -e 'devtools::install_dev_deps()'
+    - R -e 'devtools::install_deps()'
+    - R -e 'install.packages("magrittr")'
+    - R -e 'install.packages("R6")'
+    - R -e 'install.packages("codetools")'
+    - R -e 'install.packages("digest")'
+    - cd ..; R CMD build --resave-data --no-manual --log $PKG
 .release_definition: &release_definition
   stage: release
   image: $REG_URL/release:current
@@ -196,7 +221,7 @@ check:r-hub-macos-highsierra-release-cran:
   except:
     - branches
     - master
-  <<: *build_template
+  <<: *release_build_template
   script:
     - cat ./${PKG}/cran-comments.md || true
     - ls -al || true
