@@ -21,7 +21,7 @@
 ## rENA 0.2.0.0
 
 #### Features
-  
+
   * New `ena()` function for easier model generation
   * Updated default model object returned by all methods.  See help for `ena()`
   * Custom S3 methods for removing meta data from data.frames on the ena model.
