@@ -74,7 +74,8 @@ variables:
     - cat ${PKG}/archive/check.log || true
     - cat ${PKG}/archive/tests/testthat.Rout || true
     - cat ${PKG}/archive/tests/testthat.Rout.fail || true
-    - "tail -n1 ${PKG}/archive/00check.log | grep -iv -e 'Status:.*ERROR' -e 'Status:.*WARNING'"
+    - tail -n10 ${PKG}/archive/00check.log || true
+    - "tail -n10 ${PKG}/archive/00check.log | grep -iv -e 'Status:.*ERROR' -e 'Status:.*WARNING'"
     - "cat ${PKG}/archive/tests/testthat.Rout | grep -iv -e 'runtime error'"
   allow_failure: false
   <<: *check_condition
