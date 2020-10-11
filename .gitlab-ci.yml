@@ -6,7 +6,7 @@ stages:
 
 
 variables:
-  VERSION: "0.2.1.1"
+  VERSION: "0.2.1.2"
   PKG: "rENA"
   PKGL: "rena"
   REG_URL: "${CI_REGISTRY}/epistemic-analytics/qe-packages/rena"
