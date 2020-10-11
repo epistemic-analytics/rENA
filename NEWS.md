@@ -1,3 +1,8 @@
+## rENA 0.2.1.2
+
+#### Bugs
+  * Bug fix in window accumulation
+
 ## rENA 0.2.1.1
 
 #### Bugs
