@@ -1,3 +1,4 @@
-# v0.2.1.2
+# v0.2.2.0
 
-Fix for a major bug introduced in v0.2.1.0
+## Features
+- Weighting function now applied at the line level, not at the unit level

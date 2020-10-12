@@ -150,6 +150,22 @@ accumulate.data <- function(enadata) {
       ];
     # }
   }
+  # browser()
+
+  if( is.function(enadata$get("weight.by")) ) {
+    cols <- colnames(dfDT.co.occurrences)[
+              grep("adjacency.code", colnames(dfDT.co.occurrences))
+            ]
+    dfDT.co.occurrences <- dfDT.co.occurrences[,
+                                (cols) := lapply(
+                                  .SD,
+                                  enadata$get("weight.by")
+                                ),
+                                .SDcols = cols,
+                                by = 1:nrow(dfDT.co.occurrences)
+                           ]
+  }
+
 
   ###
   # Convert the generic `V` names to corresponding `adjacency.vector` names
