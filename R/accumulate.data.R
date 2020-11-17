@@ -12,7 +12,7 @@ accumulate.data <- function(enadata) {
 
   conversations.by <- enadata$get("conversations.by")
   window <- enadata$get("window.size")
-  binaryStanzas <- F
+  # binaryStanzas <- F
   units.exclude <- enadata$get("units.exclude")
 
   if(is.null(trajectory.by)) {
@@ -136,13 +136,13 @@ accumulate.data <- function(enadata) {
     #                          ];
     #
     # } else {
+            # ,binaryStanzas = binaryStanzas
       dfDT.co.occurrences <- dfDT_codes[,
           (codedTriNames) := ref_window_df(
             .SD[, .SD, .SDcols = just_codes],
             windowSize = window$back,
             windowForward = window$forward,
-            binary = binary,
-            binaryStanzas = binaryStanzas
+            binary = binary
           ),
           by = conversations.by,
           .SDcols = initial_cols,
@@ -150,6 +150,22 @@ accumulate.data <- function(enadata) {
       ];
     # }
   }
+  # browser()
+
+  if( is.function(enadata$get("weight.by")) ) {
+    cols <- colnames(dfDT.co.occurrences)[
+              grep("adjacency.code", colnames(dfDT.co.occurrences))
+            ]
+    dfDT.co.occurrences <- dfDT.co.occurrences[,
+                                (cols) := lapply(
+                                  .SD,
+                                  enadata$get("weight.by")
+                                ),
+                                .SDcols = cols,
+                                by = 1:nrow(dfDT.co.occurrences)
+                           ]
+  }
+
 
   ###
   # Convert the generic `V` names to corresponding `adjacency.vector` names

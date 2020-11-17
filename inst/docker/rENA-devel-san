@@ -1,0 +1,67 @@
+#FROM rocker/r-ver:devel
+#FROM rocker/r-devel-san
+#FROM rhub/rocker-gcc-san
+#FROM rocker/r-devel-san:latest
+#FROM rocker/r-devel-ubsan-clang:latest
+FROM wch1/r-debug
+
+# ## Fix a rocker bug (?)
+# RUN rm -rf /var/lib/apt/lists/*
+#
+# RUN apt-get update -m && apt-get install -y curl
+#
+# RUN apt-get install -y --no-install-recommends valgrind
+#
+# RUN apt-get install -y --no-install-recommends qpdf
+# RUN apt search llvm
+# RUN apt-get install -y llvm-6.0
+#
+# RUN curl -o /usr/bin/pandoc.gz \
+#          https://files.r-hub.io/pandoc/linux-64/pandoc.gz && \
+#     gzip -d /usr/bin/pandoc.gz && \
+#     curl -o /usr/bin/pandoc-citeproc.gz \
+# 	 https://files.r-hub.io/pandoc/linux-64/pandoc-citeproc.gz && \
+#     gzip -d /usr/bin/pandoc-citeproc.gz && \
+#     chmod +x /usr/bin/pandoc /usr/bin/pandoc-citeproc
+#
+# RUN apt-get install -y aspell aspell-en
+#
+# ## Need to patch the R Makeconf file, to run with -g
+#
+# ENV RHUB_PLATFORM linux-x86_64-debian-gcc
+# ENV RBINARY /usr/local/bin/RD
+#
+# ADD san.sh /usr/local/bin/
+#
+# ENV RHUB_CHECK_COMMAND san.sh
+#
+RUN apt-get update -y
+RUN apt-get install -y apt-utils
+RUN apt-get install -y libxml2 xml2
+RUN apt-get install -y libxml2-dev
+RUN apt-get install -y libcurl4-openssl-dev libssh2-1-dev libssl-dev git
+RUN apt-get install -y qpdf pandoc pandoc-citeproc openssh-client curl
+RUN apt-cache search git
+RUN apt-get install -y libgit2-dev
+
+RUN RDsan -e 'install.packages(c("devtools"), repos="http://cran.rstudio.com")'
+RUN RDsan -e 'install.packages(c("roxygen2"), repos="http://cran.rstudio.com")'
+RUN RDsan -e 'install.packages(c("git2r","usethis","devtools","testthat"), repos="http://cran.rstuDdio.com")'
+RUN RDsan -e 'install.packages(c("data.table"), repos="http://cran.rstudio.com")'
+RUN RDsan -e 'install.packages(c("foreach"), repos="http://cran.rstudio.com")'
+RUN RDsan -e 'install.packages(c("plotly"), repos="http://cran.rstudio.com")'
+RUN RDsan -e 'install.packages(c("doParallel"), repos="http://cran.rstudio.com")'
+RUN RDsan -e 'install.packages(c("RcppRoll"), repos="http://cran.rstudio.com")'
+RUN RDsan -e 'install.packages(c("data.tree"), repos="http://cran.rstudio.com")'
+RUN RDsan -e 'install.packages(c("scales"), repos="http://cran.rstudio.com")'
+RUN RDsan -e 'install.packages(c("rmarkdown"), repos="http://cran.rstudio.com")'
+RUN RDsan -e 'install.packages(c("RcppArmadillo"), repos="http://cran.rstudio.com")'
+RUN RDsan -e 'install.packages(c("RcppParallel"), repos="http://cran.rstudio.com")'
+RUN RDsan -e 'install.packages(c("RcppEigen"), repos="http://cran.rstudio.com")'
+RUN RDsan -e 'install.packages(c("webshot"), repos="http://cran.rstudio.com")'
+RUN RDsan -e 'install.packages(c("concatenate"), repos="http://cran.rstudio.com")'
+
+RUN pwd
+RUN RDsan --version
+
+#CMD ["/bin/bash"]

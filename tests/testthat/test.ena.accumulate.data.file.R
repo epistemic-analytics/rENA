@@ -7,24 +7,24 @@ test_that("NULL sent to accumulate", {
     codes = c("c1", "c2", "c3")))
 })
 
-test_that("Simple data.frame to accumulate", {
-  fake.codes.len = 10;
-  fake.codes <- function(x) sample(0:1,fake.codes.len, replace=T)
-
-  codes = paste("Codes",LETTERS[1:fake.codes.len],sep="-");
-
-  df = data.frame(
-    Name=c("J","Z"),
-    Day=c(1,1,1,1,1,1,2,2,2,2,2,2),
-    c1=c(1,1,1,1,1,0,0,1,1,0,0,1),
-    c2=c(1,1,1,0,0,1,0,1,0,1,0,0),
-    c3=c(0,0,1,0,1,0,1,0,0,0,1,0),
-    c4=c(1,1,1,0,0,1,0,1,0,1,0,0)
-  );
-
-  df.accum = ena.accumulate.data.file(df, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"));
-  df.accum.weighted = ena.accumulate.data.file(df, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"), weight.by = "weighted");
-});
+# test_that("Simple data.frame to accumulate", {
+#   fake.codes.len = 10;
+#   fake.codes <- function(x) sample(0:1,fake.codes.len, replace=T)
+#
+#   codes = paste("Codes",LETTERS[1:fake.codes.len],sep="-");
+#
+#   df = data.frame(
+#     Name=c("J","Z"),
+#     Day=c(1,1,1,1,1,1,2,2,2,2,2,2),
+#     c1=c(1,1,1,1,1,0,0,1,1,0,0,1),
+#     c2=c(1,1,1,0,0,1,0,1,0,1,0,0),
+#     c3=c(0,0,1,0,1,0,1,0,0,0,1,0),
+#     c4=c(1,1,1,0,0,1,0,1,0,1,0,0)
+#   );
+#
+#   df.accum = ena.accumulate.data.file(df, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"));
+#   df.accum.weighted = ena.accumulate.data.file(df, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"), weight.by = "weighted");
+# });
 test_that("Accumulate using conversation model", {
   fake.codes.len = 10;
   fake.codes <- function(x) sample(0:1,fake.codes.len, replace=T)
@@ -158,9 +158,12 @@ test_that("Simple forwarded metadata", {
     m2=c(1,2,3,4)
   );
 
-  df.accum = rENA:::ena.accumulate.data.file(df, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"));
+  df.accum = rENA:::ena.accumulate.data.file(df, units.by = c("Name"), conversations.by = c("Day"), codes = c("c1","c2","c3"), window.size.back = 4, weight.by = 'product');
 
   testthat::expect_true("m1" %in% colnames(df.accum$meta.data));
+
+  row_3_win_mat <- tcrossprod(apply((df[1:3, 3:5]), 2, sum)) - tcrossprod(apply((df[1:2, 3:5]), 2, sum))
+  all.equal(row_3_win_mat[upper.tri(row_3_win_mat)], as.numeric(as.matrix(df.accum$model$row.connection.counts)[3,]))
 2});
 test_that("Test trajectories", {
   fake.codes.len = 10;
@@ -216,33 +219,33 @@ test_that("Test trajectories", {
       == c(0,0,0)
   ));
 })
-test_that("Test accumulation with data.frame and matrix", {
-  # #df.file <- system.file("extdata", "rs.data.csv", package="rENA")
-  #
-  # codeNames = c('Data','Technical.Constraints','Performance.Parameters','Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
-  # df.csv = RS.data; # read.csv(df.file)
-  #
-  # df.accum = ena.accumulate.data.file(df.csv, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
-  # df.accum2 = ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
-  #
-  # testthat::expect_is(df.csv, "data.frame")
-  # testthat::expect_is(df.accum, "ENAdata")
-  # testthat::expect_is(df.accum2, "ENAdata")
-  #
-  # ## Test with file reported in #5
-  # pn.file <- system.file("extdata", "sample-data", "PinterestMock2.csv", package="rENA")
-  # pn.csv = read.csv(pn.file)
-  # pn.accum = ena.accumulate.data.file(pn.csv, units.by =  c("Teacher"), conversations.by = c("Board"), codes = c("Kinesthetic", "Algorithmic"))
-  #
-  # testthat::expect_is(pn.accum, "ENAdata")
-})
-test_that("Test accumulation with dplyr::tbl_df", {
-  # pn.file = system.file("extdata", "sample-data", "PinterestMock2.csv", package="rENA")
-  # PinterestMock2 <- readr::read_csv(pn.file)
-  # pn.accum = ena.accumulate.data.file(PinterestMock2, units.by =  c("Teacher"), conversations.by = c("Board"), codes = c("Kinesthetic", "Algorithmic"))
-  #
-  # testthat::expect_is(pn.accum, "ENAdata")
-})
+# test_that("Test accumulation with data.frame and matrix", {
+#   # #df.file <- system.file("extdata", "rs.data.csv", package="rENA")
+#   #
+#   # codeNames = c('Data','Technical.Constraints','Performance.Parameters','Client.and.Consultant.Requests','Design.Reasoning','Collaboration');
+#   # df.csv = RS.data; # read.csv(df.file)
+#   #
+#   # df.accum = ena.accumulate.data.file(df.csv, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
+#   # df.accum2 = ena.accumulate.data.file(df.file, units.by = c("UserName","Condition"), conversations.by = c("ActivityNumber","GroupName"), codes = codeNames);
+#   #
+#   # testthat::expect_is(df.csv, "data.frame")
+#   # testthat::expect_is(df.accum, "ENAdata")
+#   # testthat::expect_is(df.accum2, "ENAdata")
+#   #
+#   # ## Test with file reported in #5
+#   # pn.file <- system.file("extdata", "sample-data", "PinterestMock2.csv", package="rENA")
+#   # pn.csv = read.csv(pn.file)
+#   # pn.accum = ena.accumulate.data.file(pn.csv, units.by =  c("Teacher"), conversations.by = c("Board"), codes = c("Kinesthetic", "Algorithmic"))
+#   #
+#   # testthat::expect_is(pn.accum, "ENAdata")
+# })
+# test_that("Test accumulation with dplyr::tbl_df", {
+#   # pn.file = system.file("extdata", "sample-data", "PinterestMock2.csv", package="rENA")
+#   # PinterestMock2 <- readr::read_csv(pn.file)
+#   # pn.accum = ena.accumulate.data.file(PinterestMock2, units.by =  c("Teacher"), conversations.by = c("Board"), codes = c("Kinesthetic", "Algorithmic"))
+#   #
+#   # testthat::expect_is(pn.accum, "ENAdata")
+# })
 
 # test_that("Test accumulation output JSON", {
 #   pn.file = system.file("extdata", "sample-data", "PinterestMock2.csv", package="rENA")

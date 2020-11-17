@@ -23,6 +23,7 @@ RUN R -e 'install.packages(c("RcppArmadillo"), repos="http://cran.rstudio.com")'
 RUN R -e 'install.packages(c("RcppParallel"), repos="http://cran.rstudio.com")'
 RUN R -e 'install.packages(c("RcppEigen"), repos="http://cran.rstudio.com")'
 RUN R -e 'install.packages(c("webshot"), repos="http://cran.rstudio.com")'
+RUN R -e 'install.packages(c("concatenate"), repos="http://cran.rstudio.com")'
 
 RUN R -e 'install.packages(c("covr", "DT"), repos="http://cran.rstudio.com")'
 RUN R -e 'install.packages(c("aws.s3","aws.signature"), repos="http://cran.rstudio.com")'

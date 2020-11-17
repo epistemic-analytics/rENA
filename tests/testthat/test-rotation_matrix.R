@@ -1,5 +1,5 @@
 suppressMessages(library(rENA, quietly = T, verbose = F))
-context("Test making sets");
+context("Test making sets 1");
 
 data(RS.data)
 codenames <- c("Data", "Technical.Constraints", "Performance.Parameters",

@@ -1,16 +1,40 @@
-# rENA 0.2.0.1
+## rENA 0.2.2.0
 
-* Fix for updated r-devel to 4.0.0
+#### Bugs
+  * Removed outline from plotted nodes in networks
+  
+#### Features
+  * Weighting function now applied at the line level, not at the unit level
 
-# rENA 0.2.0.0
+## rENA 0.2.1.2
 
-## Features
+#### Bugs
+  * Bug fix in window accumulation
 
-* New `ena()` function for easier model generation
-* Updated default model object returned by all methods.  See help for `ena()`
-* Custom S3 methods for removing meta data from data.frames on the ena model.
-    - e.g. as.matrix(set$line.weights)
+## rENA 0.2.1.1
 
-## Bugs
+#### Bugs
+  * Removing test checking for output
+  * Including 'webshot' as Suggests to fix for issues on CRAN
 
-* Fixed bug in accumulation code for forward windows
+## rENA 0.2.1.0
+
+#### Features
+  * Projections use the centering vector of a provided rotation set. See `ena.make.set()`
+  * Faster correlation function: `ena_correlation()`
+
+## rENA 0.2.0.1
+  * Fix for updated r-devel to 4.0.0
+
+## rENA 0.2.0.0
+
+#### Features
+
+  * New `ena()` function for easier model generation
+  * Updated default model object returned by all methods.  See help for `ena()`
+  * Custom S3 methods for removing meta data from data.frames on the ena model.
+      - e.g. as.matrix(set$line.weights)
+
+#### Bugs
+
+  * Fixed bug in accumulation code for forward windows
