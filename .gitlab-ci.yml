@@ -233,34 +233,93 @@ release:cran-manual:
   <<: *release_definition
   when: manual
 
-
-pages:
+coverage:
   stage: deploy
   image: $REG_URL/release-test:current
+  artifacts:
+    paths:
+      - public/
+    expire_in: 30 days
   script:
     - rm -rf src/RcppExports*
     - rm -rf R/RcppExports*
     - "sed -i -e \"s/Version: \\(.*\\)/Version: ${VERSION}/\" DESCRIPTION"
-    #- Rscript -e 'update(devtools::dev_package_deps("."))'
+    - Rscript -e 'update(devtools::dev_package_deps("."))'
     - Rscript -e 'install.packages("microbenchmark")'
     - Rscript -e 'Rcpp::compileAttributes()'
     - Rscript -e "devtools::install(\".\", quick = T, build = T, dependencies = F, upgrade = F)"
-    - Rscript -e "pkgdown::build_site(preview = F, devel = T, lazy = T, new_process = T)"
     - |
         Rscript -e "cov <- covr::package_coverage(quiet = F);
                     print(cov);
                     rep <- covr::report( x = cov, file = \"public/coverage/index.html\", browse = FALSE );"
-  artifacts:
-    paths:
-      - public
-    expire_in: 30 days
   only:
-    - master
+    refs:
+      - master
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\[build coverage\].*/
   except:
     refs:
       - tags
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\[skip pages\].*/
+
+release:cranqe:
+  stage: release
+  image: rocker/tidyverse:4.0.3
+  artifacts:
+    paths:
+      - archive/
+      - ${PKGL}/
+    expire_in: 1 week
+  only:
+    refs:
+      - master
+  before_script:
+    - apt update && apt install -y curl libxt-dev
+  script:
+    - R --version
+    - export VERSION_TIMESTAMP=$(date +%y%m%d%H%M)
+    - echo $VERSION_TIMESTAMP
+    - "sed -i -e \"s/Version: \\(.*\\)/Version: ${VERSION}.${VERSION_TIMESTAMP}/\" DESCRIPTION"
+    - Rscript -e 'install.packages("pkgdown")'
+    - Rscript -e 'update(devtools::dev_package_deps("."))'
+    - mkdir -p archive/
+    - cd ..; R CMD build --resave-data --no-manual --log $PKG
+    - mv ./${PKG}_${VERSION}.${VERSION_TIMESTAMP}.tar.gz $PKG/archive/
+    - cd $PKG/
+    - Rscript -e 'pkgdown::build_site()'
+    - ls -al || true
+    - mkdir -p $PKGL/
+    - mv public/* $PKGL/ || true
+    - ls -al $PKGL/ || true
+    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "variables[QE_PROJECT_NAME]=${PKGL}" --form "variables[QE_PROJECT_ID]=${CI_PROJECT_ID}" --form ref=master https://gitlab.com/api/v4/projects/22522458/trigger/pipeline
+
+
+#pages:
+#  stage: deploy
+#  image: $REG_URL/release-test:current
+#  script:
+#    - rm -rf src/RcppExports*
+#    - rm -rf R/RcppExports*
+#    - "sed -i -e \"s/Version: \\(.*\\)/Version: ${VERSION}/\" DESCRIPTION"
+#    #- Rscript -e 'update(devtools::dev_package_deps("."))'
+#    - Rscript -e 'install.packages("microbenchmark")'
+#    - Rscript -e 'Rcpp::compileAttributes()'
+#    - Rscript -e "devtools::install(\".\", quick = T, build = T, dependencies = F, upgrade = F)"
+#    - Rscript -e "pkgdown::build_site(preview = F, devel = T, lazy = T, new_process = T)"
+#    - |
+#        Rscript -e "cov <- covr::package_coverage(quiet = F);
+#                    print(cov);
+#                    rep <- covr::report( x = cov, file = \"public/coverage/index.html\", browse = FALSE );"
+#  artifacts:
+#    paths:
+#      - public
+#    expire_in: 30 days
+#  only:
+#    - master
+#  except:
+#    refs:
+#      - tags
+#    variables:
+#      - $CI_COMMIT_MESSAGE =~ /.*\[skip pages\].*/
 
 # Docker Image steps
 .docker_variables: &docker_variables
