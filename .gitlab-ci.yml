@@ -4,7 +4,6 @@ stages:
  - deploy
  - release
 
-
 variables:
   VERSION: "0.2.3"
   PKG: "rENA"
