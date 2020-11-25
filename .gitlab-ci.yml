@@ -254,8 +254,8 @@ coverage:
   only:
     refs:
       - master
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /.*\[build coverage\].*/
+    # variables:
+    #   - $CI_COMMIT_MESSAGE =~ /.*\[build pages\].*/
   except:
     refs:
       - tags
