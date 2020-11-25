@@ -1,4 +1,4 @@
-destination: public/
+destination: rena/
 navbar:
   title: "rENA"
   type: inverse
