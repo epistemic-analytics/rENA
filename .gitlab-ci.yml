@@ -266,7 +266,7 @@ release:cranqe:
   artifacts:
     paths:
       - archive/
-      - ${PKGL}/
+      - ${PKG}/
     expire_in: 1 week
   only:
     refs:
@@ -288,9 +288,9 @@ release:cranqe:
     #     Rscript -e "cov <- covr::package_coverage(quiet = F);
     #                 rep <- covr::report( x = cov, file = \"public/coverage/index.html\", browse = FALSE );"
     - Rscript -e 'pkgdown::build_site()'
-    - ls -al $PKGL/
-    - mv public/* $PKGL/
-    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "variables[QE_PROJECT_NAME]=${PKGL}" --form "variables[QE_PROJECT_ID]=${CI_PROJECT_ID}" --form ref=master https://gitlab.com/api/v4/projects/22522458/trigger/pipeline
+    - ls -al $PKG/
+    - mv public/* $PKG/
+    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "variables[QE_PROJECT_NAME]=${PKG}" --form "variables[QE_PROJECT_ID]=${CI_PROJECT_ID}" --form ref=master https://gitlab.com/api/v4/projects/22522458/trigger/pipeline
 
 
 
