@@ -114,7 +114,7 @@ check:r-devel-san:
                       env_vars = c(
                         \"_R_CHECK_CRAN_INCOMING_\" = \"true\",
                         \"_R_CHECK_CRAN_INCOMING_REMOTE_\" = \"true\",
-                        \"_R_CHECK_FORCE_SUGGESTS_\" = \"false\",
+                        \"_R_CHECK_FORCE_SUGGESTS_\" = \"true\",
                         \"_R_CLASS_MATRIX_ARRAY_\"=\"true\",
                         \"R_REMOTES_STANDALONE\"=\"true\",
                         \"R_REMOTES_NO_ERRORS_FROM_WARNINGS\"=\"true\"
@@ -138,14 +138,14 @@ check:r-devel-san:
       - $RHUB_EMAIL_ADDRESS
       - $RHUB_EMAIL_TOKEN
   <<: *rhub_condition
-check:r-hub-windows-old-release:
-  variables:
-    RHUB_PLATFORM: "windows-x86_64-oldrel"
-  <<: *rhub_definition
-check:r-hub-windows-release:
-  variables:
-    RHUB_PLATFORM: "windows-x86_64-release"
-  <<: *rhub_definition
+#check:r-hub-windows-old-release:
+#  variables:
+#    RHUB_PLATFORM: "windows-x86_64-oldrel"
+#  <<: *rhub_definition
+#check:r-hub-windows-release:
+#  variables:
+#    RHUB_PLATFORM: "windows-x86_64-release"
+#  <<: *rhub_definition
 # check:r-hub-ubuntu-gcc-release:
 #   variables:
 #     RHUB_PLATFORM: "ubuntu-gcc-release"
