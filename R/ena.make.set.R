@@ -19,6 +19,7 @@
 #' @param rotation.params (optional) A character vector containing additional parameters for the function in rotation.by, if needed
 #' @param rotation.set A previously-constructed  ENARotationSet object to use for the dimensional reduction
 #' @param endpoints.only A logical variable which determines whether to only show endpoints for trajectory models
+#' @param center.align.to.origin A logical variable which determines whether or not to align both point center and centroid center to origin
 #' @param node.position.method A function to be used to determine node positions based on the dimensional reduction, default: lws.position.es()
 #' @param as.list R6 objects will be deprecated, but if this is TRUE, the original R6 object will be returned, otherwise a list with class `ena.set`
 #' @param ... additional parameters addressed in inner function
@@ -62,6 +63,7 @@ ena.make.set <- function(
   rotation.params = NULL,
   rotation.set = NULL,
   endpoints.only = T,
+  center.align.to.origin = T,
   node.position.method = lws.positions.sq,
   as.list = TRUE,
   ...
@@ -92,6 +94,7 @@ ena.make.set <- function(
         node.position.method
       ),
       endpoints.only = endpoints.only,
+      center.align.to.origin = center.align.to.origin,
       ...
     )
     return(set$process());
@@ -138,14 +141,31 @@ ena.make.set <- function(
     # }
     if ( !is.null(rotation.set)  ) {
       if( inherits(rotation.set, "ena.rotation.set") ) {
-        points.for.projection <- center.projection(lws = line.weights, rotation = rotation.set);
+        if(center.align.to.origin)
+        {
+          points.for.projection <- line.weights
+          points.for.projection[rowSums(as.matrix(line.weights))!=0,] <- center.projection(lws = line.weights[rowSums(as.matrix(line.weights))!=0,], rotation = rotation.set);
+        }
+        else
+        {
+          points.for.projection <- center.projection(lws = line.weights, rotation = rotation.set)
+        }
       }
       else {
         stop("Supplied rotation.set is not an instance of ENARotationSet");
       }
     }
     else {
-      points.for.projection <- center_data_c(line.weights)
+      if(center.align.to.origin)
+      {
+        points.for.projection <- line.weights
+        points.for.projection[rowSums(as.matrix(line.weights))!=0,] <- center_data_c(line.weights[rowSums(as.matrix(line.weights))!=0,])
+      }
+      else
+      {
+        points.for.projection <- center_data_c(line.weights)
+      }
+
     }
 
     colnames(points.for.projection) <- code_columns;
@@ -187,7 +207,15 @@ ena.make.set <- function(
 
       enadata$rotation$rotation.matrix <- enadata$rotation.matrix
       enadata$rotation$eigenvalues <- rotation$eigenvalues;
-      enadata$rotation$center.vec = colMeans(line.weights) # ADD CENTERING VEC HERE
+      if(center.align.to.origin)
+      {
+        enadata$rotation$center.vec = colMeans(line.weights[rowSums(as.matrix(line.weights))!=0,]) # ADD CENTERING VEC HERE
+      }
+      else
+      {
+        enadata$rotation$center.vec = colMeans(line.weights) # ADD CENTERING VEC HERE
+      }
+
     }
     else if (!is.null(rotation.set)) {
       if (is(rotation.set, "ena.rotation.set")) {
