@@ -15,12 +15,7 @@ accum$connection.counts[ENA_UNIT %in% zero_units, 8:22] = 0
 
 test_that("no force zero networks", {
   ### create ENA set WITHOUT center alignment
-  set_F = ena.make.set(
-    enadata = accum,
-    rotation.by = ena.rotate.by.mean,
-    rotation.params = list(FirstGame=accum$meta.data$Condition=="FirstGame",
-                           SecondGame=accum$meta.data$Condition=="SecondGame")
-  );
+  set_F = ena.make.set(enadata = accum);
 
   # sapply(as.matrix(set_F$points[ENA_UNIT %in% zero_units,]), all.equal)
 
