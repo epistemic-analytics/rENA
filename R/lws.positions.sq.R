@@ -11,18 +11,19 @@ lws.positions.sq <- function(enaset) {
 }
 
 lws.positions.sq.R6 <- function(enaset) {
-  if( enaset$center.align.to.origin)
-  {
-    positions = lws_lsq_positions(enaset$line.weights[rowSums(as.matrix(enaset$line.weights))!=0,], enaset$points.rotated[rowSums(as.matrix(enaset$points.rotated))!=0,], enaset$get("dimensions"));
+  if( enaset$function.params$center.align.to.origin ) {
+    non_zero_rows <- rowSums(as.matrix(enaset$line.weights)) != 0
+    positions = lws_lsq_positions(enaset$line.weights[non_zero_rows,], enaset$points.rotated[non_zero_rows,], ncol(enaset$points.rotated));
     mean_centroids = colMeans(positions$centroids);
     centroids = enaset$points.rotated;
-    centroids[rowSums(as.matrix(centroids))!=0,] = t(t(positions$centroids)-mean_centroids)
+
+    non_zero_row_centroids = rowSums(as.matrix(centroids))!=0;
+    centroids[non_zero_row_centroids,] = t(t(positions$centroids) - mean_centroids)
     positions$centroids = centroids;
     positions$nodes = t(t(positions$nodes)-mean_centroids)
   }
-  else
-  {
-    positions = lws_lsq_positions(enaset$line.weights, enaset$points.rotated, enaset$get("dimensions"));
+  else {
+    positions = lws_lsq_positions(enaset$line.weights, enaset$points.rotated, ncol(enaset$points.rotated));
   }
 
   node.positions = positions$nodes;

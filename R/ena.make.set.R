@@ -19,7 +19,7 @@
 #' @param rotation.params (optional) A character vector containing additional parameters for the function in rotation.by, if needed
 #' @param rotation.set A previously-constructed  ENARotationSet object to use for the dimensional reduction
 #' @param endpoints.only A logical variable which determines whether to only show endpoints for trajectory models
-#' @param center.align.to.origin A logical variable which determines whether or not to align both point center and centroid center to origin
+#' @param center.align.to.origin A logical variable when TRUE (default) determines aligns both point center and centroid center to the origin
 #' @param node.position.method A function to be used to determine node positions based on the dimensional reduction, default: lws.position.es()
 #' @param as.list R6 objects will be deprecated, but if this is TRUE, the original R6 object will be returned, otherwise a list with class `ena.set`
 #' @param ... additional parameters addressed in inner function
@@ -62,8 +62,8 @@ ena.make.set <- function(
   rotation.by = ena.svd,
   rotation.params = NULL,
   rotation.set = NULL,
-  endpoints.only = T,
-  center.align.to.origin = T,
+  endpoints.only = TRUE,
+  center.align.to.origin = FALSE,
   node.position.method = lws.positions.sq,
   as.list = TRUE,
   ...
@@ -121,7 +121,7 @@ ena.make.set <- function(
     line.weights <- norm.by(as.matrix(enadata$connection.counts))
     colnames(line.weights) <- code_columns
 
-    line.weights.dt <- as.data.table(line.weights)
+    line.weights.dt <- data.table::as.data.table(line.weights)
     for (i in seq(ncol(line.weights.dt)))
       set(line.weights.dt, j = i,
           value = as.ena.co.occurrence(line.weights.dt[[i]]))
@@ -141,13 +141,11 @@ ena.make.set <- function(
     # }
     if ( !is.null(rotation.set)  ) {
       if( inherits(rotation.set, "ena.rotation.set") ) {
-        if(center.align.to.origin)
-        {
+        if(center.align.to.origin) {
           points.for.projection <- line.weights
           points.for.projection[rowSums(as.matrix(line.weights))!=0,] <- center.projection(lws = line.weights[rowSums(as.matrix(line.weights))!=0,], rotation = rotation.set);
         }
-        else
-        {
+        else {
           points.for.projection <- center.projection(lws = line.weights, rotation = rotation.set)
         }
       }
@@ -156,20 +154,17 @@ ena.make.set <- function(
       }
     }
     else {
-      if(center.align.to.origin)
-      {
+      if(center.align.to.origin) {
         points.for.projection <- line.weights
         points.for.projection[rowSums(as.matrix(line.weights))!=0,] <- center_data_c(line.weights[rowSums(as.matrix(line.weights))!=0,])
       }
-      else
-      {
+      else {
         points.for.projection <- center_data_c(line.weights)
       }
-
     }
 
     colnames(points.for.projection) <- code_columns;
-    enadata$model$points.for.projection = as.data.table(points.for.projection)
+    enadata$model$points.for.projection = data.table::as.data.table(points.for.projection)
     for (i in seq(ncol(enadata$model$points.for.projection))) {
       set(
         enadata$model$points.for.projection,
@@ -197,7 +192,8 @@ ena.make.set <- function(
           set(enadata$rotation.matrix,
               j = i, value = as.ena.metadata(enadata$rotation.matrix[[i]])
           )
-        } else {
+        }
+        else {
           set(enadata$rotation.matrix,
               j = i, value = as.ena.dimension(enadata$rotation.matrix[[i]])
           )
@@ -207,15 +203,12 @@ ena.make.set <- function(
 
       enadata$rotation$rotation.matrix <- enadata$rotation.matrix
       enadata$rotation$eigenvalues <- rotation$eigenvalues;
-      if(center.align.to.origin)
-      {
+      if(center.align.to.origin) {
         enadata$rotation$center.vec = colMeans(line.weights[rowSums(as.matrix(line.weights))!=0,]) # ADD CENTERING VEC HERE
       }
-      else
-      {
+      else {
         enadata$rotation$center.vec = colMeans(line.weights) # ADD CENTERING VEC HERE
       }
-
     }
     else if (!is.null(rotation.set)) {
       if (is(rotation.set, "ena.rotation.set")) {
