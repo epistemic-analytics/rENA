@@ -30,7 +30,7 @@ install.packages("rENA")
 [![coverage report](https://gitlab.com/epistemic-analytics/qe-packages/rENA/badges/master/coverage.svg)](https://gitlab.com/epistemic-analytics/qe-packages/rENA/-/commits/master)
 
 ```
-install.packages("rENA", repos = "cran.qe-libs.org")
+install.packages("rENA", repos = "https://cran.qe-libs.org")
 ```
 
 ---
