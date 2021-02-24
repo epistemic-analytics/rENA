@@ -1,5 +1,7 @@
-## rENA 0.2.3.0
-  * TBD
+## rENA 0.2.3
+
+#### Feature 
+  * Added option `center.align.to.origin` to `ena.make.set()`, when TRUE centers zero points to the origin (default: FALSE)
 
 ## rENA 0.2.2.0
 
