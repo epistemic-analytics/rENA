@@ -1,0 +1,372 @@
+stages:
+ - docker
+ - check
+ - deploy
+ - release
+
+variables:
+  VERSION: "0.2.3.0"
+  PKG: "rENA"
+  PKGL: "rena"
+  REG_URL: "${CI_REGISTRY}/epistemic-analytics/qe-packages/rena"
+
+# Templates
+.check_condition: &check_condition
+  #except:
+  #  refs:
+  #    - tags
+  #  variables:
+  #    - $CI_COMMIT_MESSAGE =~ /.*\[skip check\].*/
+  except:
+    refs:
+      - tags
+  only:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\[check docker\].*/
+.build_definition: &build_template
+  before_script:
+    - export _R_CHECK_CRAN_INCOMING_="true"
+    - export _R_CHECK_CRAN_INCOMING_REMOTE_="true"
+    - export _R_CHECK_FORCE_SUGGESTS_="true"
+    - export _R_CLASS_MATRIX_ARRAY_="true"
+    - export R_REMOTES_STANDALONE="true"
+    - export R_REMOTES_NO_ERRORS_FROM_WARNINGS="true"
+    - export TZ=Europe/London
+    - export _R_CHECK_LENGTH_1_CONDITION_="package:_R_CHECK_PACKAGE_NAME_,verbose"
+    - mkdir -p archive/
+    - rm -f ./R/RcppExports.R
+    - mkdir -p ~/.R/
+    - rm -f ~/.R/Makevars
+    - cp demo/backup/Makevars ~/.R/
+    - cat DESCRIPTION
+    - RDsan -e 'Rcpp::compileAttributes()'
+    - RDsan -e 'update(devtools::dev_package_deps("."))'
+    - RDsan -e 'devtools::install_dev_deps()'
+    - RDsan -e 'devtools::install_deps()'
+    - RDsan -e 'install.packages("magrittr")'
+    - RDsan -e 'install.packages("R6")'
+    - RDsan -e 'install.packages("codetools")'
+    - RDsan -e 'install.packages("digest")'
+    - cd ..; RDsan CMD build --resave-data --no-manual --log $PKG
+.check_definition: &check_template
+  stage: check
+  artifacts:
+    paths:
+      - build/
+      - archive/
+      - doc/
+      - inst/doc/
+    expire_in: 1 week
+  <<: *build_template
+  script:
+    - RDsan --no-site-file --no-environ --no-save --no-restore --quiet CMD check ${PKG}_${VERSION}.tar.gz --as-cran --no-manual > $PKG/archive/check.log || true
+    - ls -al ./
+    - ls -al ./$PKG.Rcheck/ || true
+    - cat ./$PKG.Rcheck/00install.out || true
+    - mv ./$PKG-00build.log $PKG/archive/ || true
+    - mv ./$PKG.Rcheck/00check.log $PKG/archive/ || true
+    - mv ./$PKG.Rcheck/00install.out $PKG/archive/ || true
+    - mv ./$PKG.Rcheck/* $PKG/archive/ || true
+    - mv ./${PKG}_${VERSION}.tar.gz $PKG/archive/
+    - ls -al $PKG/archive/ || true
+    - ls -al $PKG/archive/tests/ || true
+    - cat ${PKG}/archive/check.log || true
+    - cat ${PKG}/archive/tests/testthat.Rout || true
+    - cat ${PKG}/archive/tests/testthat.Rout.fail || true
+    - tail -n10 ${PKG}/archive/00check.log || true
+    - "tail -n10 ${PKG}/archive/00check.log | grep -iv -e 'Status:.*ERROR' -e 'Status:.*WARNING'"
+    - "cat ${PKG}/archive/tests/testthat.Rout | grep -iv -e 'runtime error'"
+  allow_failure: false
+  <<: *check_condition
+
+# Docker Checks
+#check:r-devel:
+#  image: $CI_REGISTRY_IMAGE/devel:current
+#  <<: *check_template
+#check:r-oldrelease:
+#  image: $CI_REGISTRY_IMAGE/old-release:current
+#  <<: *check_template
+#check:r-release:
+#  image: $CI_REGISTRY_IMAGE/release:current
+#  <<: *check_template
+check:r-devel-san:
+  image: $CI_REGISTRY_IMAGE/devel-san:current
+  <<: *check_template
+
+# Rhub Checks
+.rhub_condition: &rhub_condition
+  except:
+    refs:
+      - tags
+  #only:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\[skip rhub\].*/
+.rhub_definition: &rhub_definition
+  stage: check
+  image: $CI_REGISTRY_IMAGE/release:current
+  before_script:
+    - Rscript -e 'install.packages("rhub")'
+  script:
+    - |
+        Rscript -e "rhub::validate_email(email = \"${RHUB_EMAIL_ADDRESS}\", token = \"${RHUB_EMAIL_TOKEN}\");
+                    checked <- rhub::check(
+                      platform = \"${RHUB_PLATFORM}\", show_status = TRUE,
+                      env_vars = c(
+                        \"_R_CHECK_CRAN_INCOMING_\" = \"true\",
+                        \"_R_CHECK_CRAN_INCOMING_REMOTE_\" = \"true\",
+                        \"_R_CHECK_FORCE_SUGGESTS_\" = \"true\",
+                        \"_R_CLASS_MATRIX_ARRAY_\"=\"true\",
+                        \"R_REMOTES_STANDALONE\"=\"true\",
+                        \"R_REMOTES_NO_ERRORS_FROM_WARNINGS\"=\"true\"
+                      )
+                    );
+                    checked\$cran_summary();
+                    rhub_content <- function(text_url) {
+                      text_get <- httr::GET(url = text_url)
+                      test_content <- strsplit(httr::content(text_get), split = \"\\\\n\")[[1]];
+                      err_found <- grep(x = test_content, pattern = \"runtime error\");
+                      print(test_content[err_found]);
+                      return(err_found);
+                    }
+                    if(!checked\$.__enclos_env__\$private\$status_[[1]]\$status %in% c('error', 'warning')) {
+                      rhub_errors <- rhub_content(checked\$urls()\$text);
+                      if(length(rhub_errors) > 0) { quit(status = 1); }
+                      else { quit(status = 0); }
+                    } else { quit(status = 1); }"
+  only:
+    variables:
+      - $RHUB_EMAIL_ADDRESS
+      - $RHUB_EMAIL_TOKEN
+  <<: *rhub_condition
+#check:r-hub-windows-old-release:
+#  variables:
+#    RHUB_PLATFORM: "windows-x86_64-oldrel"
+#  <<: *rhub_definition
+#check:r-hub-windows-release:
+#  variables:
+#    RHUB_PLATFORM: "windows-x86_64-release"
+#  <<: *rhub_definition
+# check:r-hub-ubuntu-gcc-release:
+#   variables:
+#     RHUB_PLATFORM: "ubuntu-gcc-release"
+#   <<: *rhub_definition
+# check:r-hub-ubuntu-gcc-devel:
+#   variables:
+#     RHUB_PLATFORM: "ubuntu-gcc-devel"
+#   <<: *rhub_definition
+check:r-hub-macos-highsierra-release-cran:
+  variables:
+    RHUB_PLATFORM: "macos-highsierra-release-cran"
+  <<: *rhub_definition
+#check:r-hub-windows-devel:
+#  variables:
+#    RHUB_PLATFORM: "windows-x86_64-devel"
+#  <<: *rhub_definition
+#check:r-hub-debian-gcc-devel:
+#  variables:
+#    RHUB_PLATFORM: "debian-gcc-devel"
+#  <<: *rhub_definition
+#check:r-hub-debian-gcc-release:
+#  variables:
+#    RHUB_PLATFORM: "debian-gcc-devel"
+#  <<: *rhub_definition
+#check:r-hub-linux-x86_64-rocker-gcc-san:
+#  variables:
+#    RHUB_PLATFORM: "linux-x86_64-rocker-gcc-san"
+#  <<: *rhub_definition
+#check:r-hub-debian-gcc-devel:
+#  variables:
+#    RHUB_PLATFORM: "debian-gcc-devel"
+#  <<: *rhub_definition
+#check:r-hub-debian-clang-devel:
+#  variables:
+#    RHUB_PLATFORM: "debian-clang-devel"
+#  <<: *rhub_definition
+
+.release_build_definition: &release_build_template
+  before_script:
+    - export _R_CHECK_CRAN_INCOMING_="true"
+    - export _R_CHECK_CRAN_INCOMING_REMOTE_="true"
+    - export _R_CHECK_FORCE_SUGGESTS_="true"
+    - export _R_CLASS_MATRIX_ARRAY_="true"
+    - export R_REMOTES_STANDALONE="true"
+    - export R_REMOTES_NO_ERRORS_FROM_WARNINGS="true"
+    - export TZ=Europe/London
+    - export _R_CHECK_LENGTH_1_CONDITION_="package:_R_CHECK_PACKAGE_NAME_,verbose"
+    - mkdir -p archive/
+    - rm -f ./R/RcppExports.R
+    - mkdir -p ~/.R/
+    - rm -f ~/.R/Makevars
+    - cp demo/backup/Makevars ~/.R/
+    - cat DESCRIPTION
+    - R -e 'Rcpp::compileAttributes()'
+    - R -e 'update(devtools::dev_package_deps("."))'
+    - R -e 'devtools::install_dev_deps()'
+    - R -e 'devtools::install_deps()'
+    - R -e 'install.packages("magrittr")'
+    - R -e 'install.packages("R6")'
+    - R -e 'install.packages("codetools")'
+    - R -e 'install.packages("digest")'
+    - cd ..; R CMD build --resave-data --no-manual --log $PKG
+.release_definition: &release_definition
+  stage: release
+  image: $REG_URL/release:current
+  #dependencies:
+  #  - check:r-release
+  only:
+    refs:
+      - tags
+    variables:
+      - $CI_COMMIT_TAG
+  except:
+    - branches
+    - master
+  <<: *release_build_template
+  script:
+    - cat ./${PKG}/cran-comments.md || true
+    - ls -al || true
+    - Rscript -e "devtools:::upload_cran(devtools::as.package(\"${PKG}\"), \"./${PKG}_${VERSION}.tar.gz\")"
+    - "curl --request POST --header \"PRIVATE-TOKEN: ${GITLAB_API_TOKEN}\" --data-urlencode \"tag_name=${VERSION}\" --data-urlencode \"name=v${VERSION}\" --data-urlencode \"description=Automatically created from CI for ${VERSION}\" \"${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases?ref=${CI_COMMIT_REF_NAME}\""
+  allow_failure: false
+release:cran-manual:
+  <<: *release_definition
+  when: manual
+
+coverage:
+  stage: deploy
+  image: $REG_URL/release-test:current
+  artifacts:
+    paths:
+      - public/
+    expire_in: 30 days
+  script:
+    - rm -rf src/RcppExports*
+    - rm -rf R/RcppExports*
+    - "sed -i -e \"s/Version: \\(.*\\)/Version: ${VERSION}/\" DESCRIPTION"
+    - Rscript -e 'update(devtools::dev_package_deps("."))'
+    - Rscript -e 'install.packages("microbenchmark")'
+    - Rscript -e 'Rcpp::compileAttributes()'
+    - Rscript -e "devtools::install(\".\", quick = T, build = T, dependencies = F, upgrade = F)"
+    - |
+        Rscript -e "cov <- covr::package_coverage(quiet = F);
+                    print(cov);
+                    rep <- covr::report( x = cov, file = \"public/coverage/index.html\", browse = FALSE );"
+  only:
+    refs:
+      - master
+    # variables:
+    #   - $CI_COMMIT_MESSAGE =~ /.*\[build pages\].*/
+  except:
+    refs:
+      - tags
+
+release:cranqe:
+  stage: release
+  image: rocker/tidyverse:4.0.3
+  artifacts:
+    paths:
+      - archive/
+      - ${PKG}/
+    expire_in: 1 week
+  only:
+    refs:
+      - master
+  before_script:
+    - apt update && apt install -y curl libxt-dev
+  script:
+    - R --version
+    - export VERSION_TIMESTAMP=$(date +%y%m%d%H%M)
+    - echo $VERSION_TIMESTAMP
+    - "sed -i -e \"s/Version: \\(.*\\)/Version: ${VERSION}.${VERSION_TIMESTAMP}/\" DESCRIPTION"
+    - Rscript -e 'install.packages("pkgdown")'
+    - Rscript -e 'update(devtools::dev_package_deps("."))'
+    - mkdir -p archive/
+    - cd ..; R CMD build --resave-data --no-manual --log $PKG
+    - mv ./${PKG}_${VERSION}.${VERSION_TIMESTAMP}.tar.gz $PKG/archive/
+    - cd $PKG/
+    # - |
+    #     Rscript -e "cov <- covr::package_coverage(quiet = F);
+    #                 rep <- covr::report( x = cov, file = \"public/coverage/index.html\", browse = FALSE );"
+    - Rscript -e 'pkgdown::build_site()'
+    - ls -al $PKG/
+    - mv public/* $PKG/
+    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "variables[QE_PROJECT_NAME]=${PKG}" --form "variables[QE_PROJECT_ID]=${CI_PROJECT_ID}" --form ref=master https://gitlab.com/api/v4/projects/22522458/trigger/pipeline
+
+
+
+#pages:
+#  stage: deploy
+#  image: $REG_URL/release-test:current
+#  script:
+#    - rm -rf src/RcppExports*
+#    - rm -rf R/RcppExports*
+#    - "sed -i -e \"s/Version: \\(.*\\)/Version: ${VERSION}/\" DESCRIPTION"
+#    #- Rscript -e 'update(devtools::dev_package_deps("."))'
+#    - Rscript -e 'install.packages("microbenchmark")'
+#    - Rscript -e 'Rcpp::compileAttributes()'
+#    - Rscript -e "devtools::install(\".\", quick = T, build = T, dependencies = F, upgrade = F)"
+#    - Rscript -e "pkgdown::build_site(preview = F, devel = T, lazy = T, new_process = T)"
+#    - |
+#        Rscript -e "cov <- covr::package_coverage(quiet = F);
+#                    print(cov);
+#                    rep <- covr::report( x = cov, file = \"public/coverage/index.html\", browse = FALSE );"
+#  artifacts:
+#    paths:
+#      - public
+#    expire_in: 30 days
+#  only:
+#    - master
+#  except:
+#    refs:
+#      - tags
+#    variables:
+#      - $CI_COMMIT_MESSAGE =~ /.*\[skip pages\].*/
+
+# Docker Image steps
+.docker_variables: &docker_variables
+  DOCKER_HOST: tcp://localhost:2375/
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+.docker_definition: &docker_template
+  stage: docker
+  image: docker:19.03.1
+  services:
+    - docker:19.03.1-dind
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE/$TAG:current -f inst/docker/${PKG}-${FILE} inst/docker/
+    - docker push $CI_REGISTRY_IMAGE/$TAG:current
+  only:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /.*\[build docker\].*/ || $DOCKER_FORCE_REBUILD
+docker:release:
+  variables:
+    <<: *docker_variables
+    TAG: "release"
+    FILE: "release"
+  <<: *docker_template
+docker:release-test:
+  variables:
+    <<: *docker_variables
+    TAG: "release-test"
+    FILE: "release-test"
+  <<: *docker_template
+docker:old-release:
+  variables:
+    <<: *docker_variables
+    TAG: "old-release"
+    FILE: "oldrelease"
+  <<: *docker_template
+docker:devel:
+  variables:
+    <<: *docker_variables
+    TAG: "devel"
+    FILE: "devel"
+  <<: *docker_template
+docker:devel-san:
+  variables:
+    <<: *docker_variables
+    TAG: "devel-san"
+    FILE: "devel-san"
+  <<: *docker_template

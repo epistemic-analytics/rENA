@@ -1,7 +1,3 @@
-# v0.2.2.0
+# v0.2.3
 
-## Bugs
-- Removed outline from plotted nodes in networks
-
-## Features
-- Weighting function now applied at the line level, not at the unit level
+- Added option `center.align.to.origin` to `ena.make.set()`, when TRUE centers zero points to the origin (default: FALSE)

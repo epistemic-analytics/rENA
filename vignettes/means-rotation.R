@@ -1,35 +1,18 @@
----
-title: "Means Rotation in rENA"
-author: "Cody L Marquart"
-date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Means Rotation in rENA}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\usepackage[utf8]{inputenc}
----
-
-```{r setup, include=F}
-install.packages(c('foreach', 'plotly', 'doParallel', 'concatenate', 'RcppArmadillo'), repo = "https://cran.r-studio.org")
+## ----setup, include=F---------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-```
-```{r message=F, warning=F, paged.print=T}
+
+## ----message=F, warning=F, paged.print=T--------------------------------------
 #library(rENA)
-```
-```{r echo=F, message=F, warning=F}
+
+## ----echo=F, message=F, warning=F---------------------------------------------
 library(plotly)
 library(rENA)
 data(RS.data)
-```
 
-## Setting up
-
-For this example, we will use the same accumulation as described in `vignette('getting-started',package="rENA")`, so review that document if anything in the following section is not clear.
-
-```{r echo=F}
+## ----echo=F-------------------------------------------------------------------
 units = RS.data[,c("Condition","UserName")]
 conversation = RS.data[,c("Condition","GroupName")]
 meta = RS.data[,c("CONFIDENCE.Change","CONFIDENCE.Pre","CONFIDENCE.Post","C.Change")]
@@ -47,13 +30,8 @@ accum = ena.accumulate.data(
   metadata = meta,
   window.size.back = 4
 )
-```
 
-## Create a Means Rotated Set
-
-Creating and plotting a means rotated set is fairly similar to a standard set, however we will define the rotation function along with the groups of rotated points that will be rotated along their means.  The **rENA** package comes with a function for means rotation, `ena.rotate.by.mean`, which is set as the `rotation.by` parameter of `ena.make.set`.  Along with the function, `rotation.params` is set as the parameters we want to pass along to the rotation function.  In the case of `ena.rotate.by.mean`, it expects `rotation.params` to be a `list` with two named elements, each containing a logical vector representing the rows of units to be included in particular group.
-
-```{r, screenshot.force=FALSE}
+## ---- screenshot.force=FALSE--------------------------------------------------
 ## Save references to the two vectors for easier re-use
 first.game = accum$meta.data$Condition == "FirstGame"
 second.game = accum$meta.data$Condition == "SecondGame"
@@ -80,4 +58,4 @@ plot.rotated = ena.plot(setMeansRotated,  title = "Mean Rotation", scale.to = "p
                                  confidence.interval = "box")
 
 plot.rotated$plot
-```
+
