@@ -170,9 +170,10 @@ accumulate.data <- function(enadata) {
   ###
   # Convert the generic `V` names to corresponding `adjacency.vector` names
   ###
-    colnames(dfDT.co.occurrences)[
-      grep("V\\d+", colnames(dfDT.co.occurrences))
-    ] <- codedTriNames
+    vCols <- grep("V\\d+", colnames(dfDT.co.occurrences))
+    if(length(vCols) == length(codedTriNames)) {
+      colnames(dfDT.co.occurrences)[vCols] <- codedTriNames
+    }
 
   ##
   # If units aren't supplied, use all available
