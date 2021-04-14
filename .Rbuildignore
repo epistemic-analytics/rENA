@@ -24,3 +24,4 @@ cran-comments.md
 src/*.o
 src/*.so
 .bash_history
+^CRAN-RELEASE$
