@@ -4,7 +4,7 @@
 \alias{ena_correlation}
 \title{Calculate the correlations}
 \usage{
-ena_correlation(points, centroids)
+ena_correlation(points, centroids, conf_level = 0.95)
 }
 \arguments{
 \item{points}{TBD}

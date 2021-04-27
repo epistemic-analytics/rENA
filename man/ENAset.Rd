@@ -100,6 +100,8 @@ Create ENAset}
 
 \item{\code{endpoints.only}}{TBD}
 
+\item{\code{center.align.to.origin}}{TBD}
+
 \item{\code{...}}{TBD}
 }
 \if{html}{\out{</div>}}

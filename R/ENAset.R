@@ -41,6 +41,7 @@ ENAset = R6::R6Class("ENAset",
     #' @param rotation.set TBD
     #' @param node.position.method TBD
     #' @param endpoints.only TBD
+    #' @param center.align.to.origin TBD
     #' @param ... TBD
     #'
     #' @return ENAset
