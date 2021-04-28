@@ -44,20 +44,20 @@ arma::umat combn_c2(double n) {
 //' provided points and centorids
 //' @export
 // [[Rcpp::export]]
-arma::fmat ena_correlation(arma::fmat points, arma::fmat centroids, double conf_level = 0.95) {
+arma::mat ena_correlation(arma::mat points, arma::mat centroids, double conf_level = 0.95) {
   arma::umat pComb = combn_c2(points.n_rows);
   arma::umat point1 = pComb.row(0);
   arma::umat point2 = pComb.row(1);
 
-  arma::fmat pts_diff = points.rows(point1) - points.rows(point2);
-  arma::fmat cts_diff = centroids.rows(point1) - centroids.rows(point2);
-  arma::fmat cor_result = arma::cor(pts_diff, cts_diff);
+  arma::mat pts_diff = points.rows(point1) - points.rows(point2);
+  arma::mat cts_diff = centroids.rows(point1) - centroids.rows(point2);
+  arma::mat cor_result = arma::cor(pts_diff, cts_diff);
 
   NumericVector v = { (1 + conf_level) / 2 };
   NumericVector q = Rcpp::qnorm(v, 0.0, 1.0);
   double qq = q(0);
 
-  arma::fmat out(points.n_cols, 3);
+  arma::mat out(points.n_cols, 3);
 
   int n = point1.n_cols;
   double r, z, sigma, cint_lower, cint_upper;
@@ -583,5 +583,5 @@ Rcpp::List lws_lsq_positions(arma::mat adjMats, arma::mat t, int numDims) { // =
 # ]
 # print(accums3)
 
-ena_correlation(as.matrix(set$points)[,1:2], as.matrix(set$model$centroids)[,1:2])
+# ena_correlation(as.matrix(set$points)[,1:2], as.matrix(set$model$centroids)[,1:2])
 */
