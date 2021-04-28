@@ -5,8 +5,6 @@ navbar:
   left:
     - text: "Home"
       href: index.html
-    #- text: "Extensions"
-    #  href: articles/extensions.html
     - text: "Reference"
       href: "reference/"
     - text: "Changelog"
