@@ -10,6 +10,8 @@ ena_correlation(points, centroids, conf_level = 0.95)
 \item{points}{TBD}
 
 \item{centroids}{TBD}
+
+\item{conf_level}{TBD}
 }
 \description{
 Calculate both Pearson correlations for the

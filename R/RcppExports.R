@@ -15,6 +15,7 @@ combn_c2 <- function(n) {
 #'
 #' @param points TBD
 #' @param centroids TBD
+#' @param conf_level TBD
 #' @description Calculate both Pearson correlations for the
 #' provided points and centorids
 #' @export
