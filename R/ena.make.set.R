@@ -108,6 +108,8 @@ ena.make.set <- function(
       enadata <- ena.set(enadata)
     }
 
+    enadata$`_function.params`$center.align.to.origin <- center.align.to.origin
+
     ###
     # Convert the string vector of code names to their corresponding
     # co-occurence names
@@ -321,7 +323,6 @@ ena.make.set <- function(
     # class(enadata$model$plot) <- c("ena.plot", class(enadata$model$plot))
 
     enadata$`_function.params`$norm.by <- norm.by
-
     return(enadata)
   }
 }
