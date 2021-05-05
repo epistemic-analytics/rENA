@@ -108,7 +108,9 @@ ena.make.set <- function(
       enadata <- ena.set(enadata)
     }
 
-    enadata$`_function.params`$center.align.to.origin <- center.align.to.origin
+    enadata$`_function.params`$center.align.to.origin <- center.align.to.origin;
+    enadata$`_function.params`$rotation.by <- rotation.by;
+    enadata$`_function.params`$rotation.params <- rotation.params;
 
     ###
     # Convert the string vector of code names to their corresponding
