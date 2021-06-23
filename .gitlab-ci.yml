@@ -12,7 +12,6 @@ variables:
   PKGL: "rena"
   REG_URL: "${CI_REGISTRY}/epistemic-analytics/qe-packages/${PKGL}"
 
-
 include:
   - project: 'epistemic-analytics/qe-packages/cranqe'
     ref: master
@@ -20,4 +19,3 @@ include:
       - '/public/ci_templates/setup_template.yml'
       - '/public/ci_templates/rhub_template.yml'
       - '/public/ci_templates/build_template.yml'
-      - '/public/ci_templates/cranqe_release_template.yml'
