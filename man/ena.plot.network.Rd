@@ -14,6 +14,7 @@ ena.plot.network(
   show.all.nodes = T,
   threshold = c(0),
   thin.lines.in.front = T,
+  layers = c("nodes", "edges"),
   thickness = c(min(abs(network)), max(abs(network))),
   opacity = thickness,
   saturation = thickness,
@@ -26,7 +27,7 @@ ena.plot.network(
   label.font.family = enaplot$get("font.family"),
   legend.name = NULL,
   legend.include.edges = F,
-  scale.weights = T,
+  scale.weights = F,
   ...
 )
 }

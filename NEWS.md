@@ -1,6 +1,8 @@
 ## rENA 0.2.4
 
-* TBD
+#### Feature
+
+  * Layering in ena.plot.networks controlled by parameter `layers`, defaults to nodes on top with `c("edges", "nodes")`
 
 ## rENA 0.2.3
 
