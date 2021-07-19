@@ -81,6 +81,7 @@ plot_edges <- function(...) {
 #' @param show.all.nodes A Logical variable, default: true
 #' @param threshold A vector of numeric min/max values, default: c(0,Inf) plotting . Edge weights below the min value will not be displayed; edge weights above the max value will be shown at the max value.
 #' @param thin.lines.in.front A logical, default: true
+#' @param layers ordering of layers, default: c("nodes", "edges")
 #' @param thickness A vector of numeric min/max values for thickness, default:  c(min(abs(network)), max(abs(network)))
 #' @param opacity A vector of numeric min/max values for opacity, default: thickness
 #' @param saturation A vector of numeric min/max values for saturation, default: thickness

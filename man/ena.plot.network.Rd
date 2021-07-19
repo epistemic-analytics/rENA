@@ -50,6 +50,8 @@ ena.plot.network(
 
 \item{thin.lines.in.front}{A logical, default: true}
 
+\item{layers}{ordering of layers, default: c("nodes", "edges")}
+
 \item{thickness}{A vector of numeric min/max values for thickness, default:  c(min(abs(network)), max(abs(network)))}
 
 \item{opacity}{A vector of numeric min/max values for opacity, default: thickness}
