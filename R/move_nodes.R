@@ -6,8 +6,7 @@
 #'
 #' @return TBD
 #' @export
-move_nodes_to_unit_circle<-function(set,dimension_name_1,dimension_name_2)
-{
+move_nodes_to_unit_circle<-function(set, dimension_name_1, dimension_name_2) {
   # get node position on the specified two dimensions
   dimension_names = c(dimension_name_1,dimension_name_2)
   node_position = set$rotation$nodes[,..dimension_names]
@@ -58,8 +57,7 @@ move_nodes_to_unit_circle<-function(set,dimension_name_1,dimension_name_2)
 #'
 #' @return TBD
 #' @export
-move_nodes_to_unit_circle_with_equal_space<-function(set,dimension_name_1,dimension_name_2)
-{
+move_nodes_to_unit_circle_with_equal_space <- function(set,dimension_name_1,dimension_name_2) {
   # get node position on the specified two dimensions
   dimension_names = c(dimension_name_1,dimension_name_2)
   node_position = set$rotation$nodes[,..dimension_names]
