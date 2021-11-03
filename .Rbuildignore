@@ -1,6 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 /\.Rproj\.user/
+\.Rproj\.user/
 ^\.gitlab-ci\.yml
 ^inst/extdata/
 ^inst/docker/
@@ -27,3 +28,4 @@ src/*.so
 ^CRAN-RELEASE$
 rENA/
 pkgdown/
+.vscode

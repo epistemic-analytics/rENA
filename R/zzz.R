@@ -7,7 +7,8 @@
     "..groupCol","..units","..metadata", "..codes", "..conversation","ENA_GROUP_NAME",
     "label.font.color","label.font.family","label.font.size",
     "label.offset","legend.include.edges","legend.name",
-    "network.edges.shapes","nodes","rows.to.keep","show.legend"
+    "network.edges.shapes","nodes","rows.to.keep","show.legend",
+    "..connection_name", "..dimension_names"
   ))
 #   op <- options()
 #   op.rENA <- list(
