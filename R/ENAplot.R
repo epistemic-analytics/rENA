@@ -25,6 +25,10 @@ ENAplot = R6::R6Class("ENAplot",
       #' @param font.color TBD
       #' @param font.family TBD
       #' @param scale.to TBD
+      #' @param showticklabels TBD
+      #' @param autosize TBD
+      #' @param automargin TBD
+      #' @param axispadding TBD
       #' @param ... TBD
       #'
       #' @return ENAplot
