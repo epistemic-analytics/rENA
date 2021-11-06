@@ -14,7 +14,7 @@ variables:
 
 include:
   - project: 'epistemic-analytics/qe-packages/cranqe'
-    ref: master
+    ref: main
     file:
       - '/public/ci_templates/setup_template.yml'
       - '/public/ci_templates/rhub_template.yml'
