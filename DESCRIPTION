@@ -9,6 +9,7 @@ Description: ENA (Shaffer, D. W. (2017) Quantitative Ethnography. ISBN: 05781916
 LazyData: TRUE
 Depends: R (>= 3.0.0)
 License: GPL-3 | file LICENSE
+BugReports: https://gitlab.com/epistemic-analytics/qe-packages/rENA/-/issues
 LinkingTo: Rcpp, RcppArmadillo
 Imports: data.table, Rcpp, R6, methods, foreach, stats, plotly,
         doParallel, parallel, scales, magrittr, concatenate
