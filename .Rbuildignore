@@ -29,3 +29,5 @@ src/*.so
 rENA/
 pkgdown/
 .vscode
+
+^data-raw$

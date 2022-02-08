@@ -131,7 +131,7 @@ ena.make.set <- function(
           value = as.ena.co.occurrence(line.weights.dt[[i]]))
 
     enadata$line.weights <- cbind(enadata$meta.data, line.weights.dt)
-    class(enadata$line.weights) <- c("ena.line.weights",
+    class(enadata$line.weights) <- c("ena.line.weights", "ena.matrix",
                                      class(enadata$line.weights))
     #####
 
