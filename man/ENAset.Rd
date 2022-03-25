@@ -76,7 +76,7 @@ Create ENAset}
   rotation.set = NULL,
   node.position.method = lws.positions.sq.R6,
   endpoints.only = TRUE,
-  center.align.to.origin = FALSE,
+  center.align.to.origin = TRUE,
   ...
 )}\if{html}{\out{</div>}}
 }

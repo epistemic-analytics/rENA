@@ -15,7 +15,7 @@ accum$connection.counts[ENA_UNIT %in% zero_units, 8:22] = 0
 
 test_that("testing zero networks", {
   ### create ENA set WITHOUT center alignment
-  set_F = ena.make.set(enadata = accum);
+  set_F = ena.make.set(enadata = accum, center.align.to.origin = FALSE);
 
   # sapply(as.matrix(set_F$points[ENA_UNIT %in% zero_units,]), all.equal)
 

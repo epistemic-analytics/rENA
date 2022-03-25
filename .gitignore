@@ -34,3 +34,5 @@ tests/startup.Rs
 
 rENA/*
 pkgdown/*
+
+.vscode/

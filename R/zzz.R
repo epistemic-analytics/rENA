@@ -25,3 +25,8 @@
 #
 #   invisible()
 }
+
+.onAttach <- function(libname, pkgname) {
+  packageStartupMessage("For the latest features and updates, install from https://cran.qe-libs.org");
+  invisible();
+}
