@@ -1,6 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 /\.Rproj\.user/
+\.Rproj\.user/
 ^\.gitlab-ci\.yml
 ^inst/extdata/
 ^inst/docker/
@@ -24,3 +25,9 @@ cran-comments.md
 src/*.o
 src/*.so
 .bash_history
+^CRAN-RELEASE$
+rENA/
+pkgdown/
+.vscode
+
+^data-raw$

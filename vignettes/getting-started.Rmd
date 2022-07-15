@@ -10,7 +10,7 @@ vignette: >
 ---
 
 ```{r setup, include = FALSE}
-install.packages(c('foreach', 'plotly', 'doParallel', 'concatenate', 'RcppArmadillo'), repo = "https://cran.r-studio.org")
+#install.packages(c('foreach', 'plotly', 'doParallel', 'concatenate', 'RcppArmadillo'), repo = "https://cran.r-studio.org")
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -104,7 +104,7 @@ Now that we have generated ENAset, we can think about plotting.  To do so, we fi
 
 We will start by plotting the units for each condtion as a different color. Referencing back to the `set$points.rotated` we will subset the rows that are in each condition and plot each group of units individually (on the same plot), as a different color.
 
-```{r echo=TRUE}
+```{r echo=rmarkdown::pandoc_available()}
 ### Subset rotated points for the first condition
 first.game.points = as.matrix(set$points$Condition$FirstGame)
 
@@ -121,7 +121,7 @@ plot$plot
 
 Plotting the means of a group of units can be done using the `ena.plot.group` function and by passing the same set of points the function will calculate the mean to plot.  In this case we will define the color to match the units that we already plotted, along with a corresponding confidence interval.
 
-```{r }
+```{r echo=rmarkdown::pandoc_available()}
 ### Using the same plot object above, we will be able to plot the means 
 ### alongside their corresponding units.
 plot = ena.plot(set, scale.to = list(x=-1:1, y=-1:1), title = "Groups and Means")
@@ -164,20 +164,20 @@ head(second.game.mean, 5)
 head(subtracted.mean, 5)
 ```
 
-```{r Plot Network of Units in FirstGame, screenshot.force=FALSE}
+```{r Plot Network of Units in FirstGame, screenshot.force=FALSE, echo=rmarkdown::pandoc_available()}
 #Plot subtracted network only
 plot.first = ena.plot(set, title = "FirstGame")
 plot.first = ena.plot.network(plot.first, network = first.game.mean)
 plot.first$plot
 ```
 
-```{r Plot Network of Units in SecondGame, screenshot.force=FALSE}
+```{r Plot Network of Units in SecondGame, screenshot.force=FALSE, echo=rmarkdown::pandoc_available()}
 plot.second = ena.plot(set, title = "SecondGame")
 plot.second = ena.plot.network(plot.second, network = second.game.mean, colors = c("blue"))
 plot.second$plot
 ```
 
-```{r Plot a Subtracted Network, screenshot.force=FALSE}
+```{r Plot a Subtracted Network, screenshot.force=FALSE, echo=rmarkdown::pandoc_available()}
 plot.sub = ena.plot(set, title = "Subtracted")
 plot.sub = ena.plot.network(plot.sub, network = subtracted.mean)
 plot.sub$plot
@@ -187,7 +187,7 @@ plot.sub$plot
 
 Now we can combine everything together, and using the `magrittr` library, we can make things a bit easier.  The `magrittr` library passes the result of one function, using the forward-pipe operator `%>%`, as the first parameter to the next chained function. This removes the need to supply the plot parameter to each call.
 
-```{r, screenshot.force=FALSE}
+```{r, screenshot.force=FALSE, echo=rmarkdown::pandoc_available()}
 library(magrittr)
 library(scales)
 
