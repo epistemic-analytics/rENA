@@ -3,6 +3,10 @@ title: "hena-example"
 author: "Cody L Marquart"
 date: '2022-07-15'
 output: html_document
+vignette: >
+  %\VignetteIndexEntry{hENA example with rENA}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\usepackage[utf8]{inputenc}
 ---
 
 ```{r setup, include=FALSE}

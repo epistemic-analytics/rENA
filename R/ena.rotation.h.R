@@ -85,6 +85,7 @@ ena.rotation.h <- function(
 
   # Prep deflation
     R = NULL;
+    '..value_vars' = NULL;
     A = as.matrix(data[, ..value_vars]);
 
   # Normalize x rotation vector
