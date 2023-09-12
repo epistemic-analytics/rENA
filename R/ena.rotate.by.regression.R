@@ -14,7 +14,7 @@
 #'
 #' @export
 #' @return \code{\link{ENARotationSet}}
-ena.rotate.by.regression = function(enaset,
+ena.rotate.by.hena.regression = function(enaset,
                                     params
                                     #x, y = NULL, points = NULL, fullNames = F){
 )
