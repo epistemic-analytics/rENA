@@ -72,7 +72,7 @@ ena.rotate.by.hena.regression = function(enaset,
   # Save v1
 
   R = matrix(c(v1), ncol = 1)
-  colnames(R) = c(xName)
+  colnames(R) = c(paste0(xName,"_reg"))
 
   #deflate matrix by x dimension
 
@@ -110,7 +110,7 @@ ena.rotate.by.hena.regression = function(enaset,
     # save both v1 and v2
 
     R = cbind(v1, v2)
-    colnames(R) = c(xName, yName)
+    colnames(R) = c(paste0(xName,"_reg"), paste0(yName,"_reg"))
 
     #deflat by v2
 
