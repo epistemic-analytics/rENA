@@ -1,11 +1,6 @@
-# enaset: the set contains points for projection
-# params:
-# x_var: variable for x-axis,should be dichotomous factor or numeric
-# y_var: variable for y-axis, should be dichotomous factor or numeric, can be NULL
-# control_vars: a set of control variables, each of which could be factor or numeric
-# centering: TRUE/FALSE, centering x and y when it is TRUE.
-# include_xy: include interaction term xy in the model when it is TRUE.
-#' Title
+#' @title hENA rotation for ENA
+#'
+#' @description hENA rotation function.
 #'
 #' @param enaset ena set
 #' @param params list of parameters
@@ -15,11 +10,6 @@
 ena.rotation.h <- function(
   enaset,
   params
-  # x_var, y_var = NULL,
-  # control_vars = NULL,
-  # centering = TRUE,
-  # include_xy = FALSE,
-  # formula = NULL
 ) {
   # check arguments
     if ( !is.list(params) || is.null(params$x_var) ) {
@@ -85,6 +75,7 @@ ena.rotation.h <- function(
 
   # Prep deflation
     R = NULL;
+    '..value_vars' = NULL;
     A = as.matrix(data[, ..value_vars]);
 
   # Normalize x rotation vector

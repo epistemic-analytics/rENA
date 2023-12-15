@@ -1,21 +1,47 @@
+#stages:
+#  - setup
+#  - docker
+#  - build
+#  - check
+#  - package
+#  - release
+#
+#variables:
+#  VERSION: "0.2.5"
+#  PKG: "rENA"
+#  PKGL: "rena"
+#  REG_URL: "${CI_REGISTRY}/epistemic-analytics/qe-packages/${PKGL}"
+#
+#include:
+#  - project: 'epistemic-analytics/qe-packages/cranqe'
+#    ref: main
+#    file:
+#      - '/public/ci_templates/setup_template.yml'
+#      - '/public/ci_templates/rhub_template.yml'
+#      - '/public/ci_templates/build_template.yml'
+
+
 stages:
   - setup
-  - docker
   - build
   - check
-  - package
+  - publish
   - release
-
-variables:
-  VERSION: "0.2.5"
-  PKG: "rENA"
-  PKGL: "rena"
-  REG_URL: "${CI_REGISTRY}/epistemic-analytics/qe-packages/${PKGL}"
+  - tag
 
 include:
-  - project: 'epistemic-analytics/qe-packages/cranqe'
+  - project: 'cran-ci/ci-templates'
     ref: main
-    file:
-      - '/public/ci_templates/setup_template.yml'
-      - '/public/ci_templates/rhub_template.yml'
-      - '/public/ci_templates/build_template.yml'
+    file: '/templates/build/R-build.gitlab-ci.yml'
+  - project: 'cran-ci/ci-templates'
+    ref: main
+    file: '/templates/setup/setup.gitlab-ci.yml'
+  - project: 'cran-ci/ci-templates'
+    ref: main
+    file: '/templates/check/Rhub-checks-updated.gitlab-ci.yml'
+  - project: 'cran-ci/ci-templates'
+    ref: main
+    file: '/templates/release/pkgdown.gitlab-ci.yml'
+  - project: 'cran-ci/ci-templates'
+    ref: main
+    file: '/templates/cran/CRAN.gitlab-ci.yml'

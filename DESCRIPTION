@@ -15,6 +15,5 @@ LinkingTo: Rcpp, RcppArmadillo
 Imports: data.table, Rcpp, R6, methods, foreach, stats, plotly,
         doParallel, parallel, scales, magrittr, concatenate
 Suggests: testthat (>= 2.1.0), knitr, rmarkdown, webshot
-RoxygenNote: 7.2.0
-VignetteBuilder: knitr
+RoxygenNote: 7.2.3
 NeedsCompilation: yes
