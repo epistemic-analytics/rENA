@@ -4,7 +4,7 @@
 \alias{ena.svd}
 \title{ENA SVD}
 \usage{
-ena.svd(enaset, ...)
+ena.svd(enaset, ..., as_object = TRUE)
 }
 \arguments{
 \item{enaset}{An \code{\link{ENAset}}}

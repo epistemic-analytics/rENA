@@ -36,6 +36,7 @@ ena.set <- function(x) {
           value = as.ena.metadata(newset$meta.data[[i]]))
     }
   }
+  newset$meta.data <- as.ena.matrix(newset$meta.data);
 
   if (x.is.set) {
     newset$line.weights <- as.data.table(cbind(x$enadata$metadata, x$line.weights))

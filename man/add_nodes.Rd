@@ -4,7 +4,7 @@
 \alias{add_nodes}
 \title{Title}
 \usage{
-add_nodes(x, ...)
+add_nodes(x, ..., return_plot = FALSE)
 }
 \arguments{
 \item{x}{[TBD]}

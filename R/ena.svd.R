@@ -5,7 +5,7 @@
 #' @param ... Unused, necessary for ena.make.set
 #' @export
 ###
-ena.svd <- function(enaset, ...) {
+ena.svd <- function(enaset, ..., as_object = TRUE) {
   # to.norm = data.table::data.table(
   #   enaset$points.normed.centered,
   #   enaset$enadata$unit.names
@@ -27,12 +27,22 @@ ena.svd <- function(enaset, ...) {
   );
 
   # rotationSet = ENARotationSet$new(rotation = pcaResults$pca, codes = enaset$codes, node.positions = NULL, eigenvalues = pcaResults$latent)
-  rotationSet = ENARotationSet$new(
-    rotation = pcaResults$rotation,
-    codes = enaset$codes,
-    node.positions = NULL,
-    eigenvalues = pcaResults$sdev^2
-  )
+  if(isTRUE(as_object)) {
+    rotationSet = ENARotationSet$new(
+      rotation = pcaResults$rotation,
+      codes = enaset$rotation$codes,
+      node.positions = NULL,
+      eigenvalues = pcaResults$sdev^2
+    )
+  }
+  else {
+    rotationSet <- list(
+      rotation = pcaResults$rotation,
+      codes = enaset$rotation$codes,
+      node.positions = NULL,
+      eigenvalues = pcaResults$sdev^2
+    )
+  }
   return(rotationSet)
 }
 

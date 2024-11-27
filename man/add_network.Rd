@@ -4,7 +4,7 @@
 \alias{add_network}
 \title{Add a network to an ENA plot}
 \usage{
-add_network(x, wh = NULL, ..., with.mean = F)
+add_network(x, wh = NULL, ..., with.mean = F, edge.multiplier = 1)
 }
 \arguments{
 \item{x}{ena.plot object to plot wtih}
@@ -14,6 +14,8 @@ add_network(x, wh = NULL, ..., with.mean = F)
 \item{...}{Additional parametesr to pass along}
 
 \item{with.mean}{Logical value, if TRUE plots the mean for the points in the network}
+
+\item{edge.multiplier}{numeric scalar used to multiply the edge weights}
 }
 \value{
 ena.plot.object

@@ -114,7 +114,8 @@ add_points <- function(
   more.args$legend.name = name
   if(!is.null(colors)) {
     more.args$colors = colors
-  } else {
+  }
+  else {
     more.args$colors = plot$palette[length(plot$plotted$points) + 1]
   }
   plot <- do.call(ena.plot.points, more.args)
@@ -130,14 +131,16 @@ add_points <- function(
   }
 
   if(!is.null(mean) && (is.list(mean) || mean == T)) {
-    if (is.list(mean)) {
-      more.args <- c(mean, more.args[!names(more.args) %in% names(mean)])
-    }
-    more.args$enaplot <- plot
-    more.args$points <- points
-    more.args$labels <- name
-
-    plot <- do.call(ena.plot.group, more.args)
+    # if (is.list(mean)) {
+    #   more.args <- c(mean, more.args[!names(more.args) %in% names(mean)])
+    # }
+    # more.args$enaplot <- plot
+    # more.args$points <- points
+    # more.args$labels <- name
+    #
+    # plot <- do.call(ena.plot.group, more.args).
+    browser()
+    set <- add_group(set, substitute(wh), ...);
   }
 
   set$plots[[length(set$plots)]] <- plot
@@ -210,18 +213,24 @@ add_group <- function(x, wh = NULL, ...) {
   more_args = list(...)
   more_args$enaplot <- plot
   if(is.null(more_args$color)) {
-    more_args$colors = plot$palette[length(plot$plotted$points) + 1]
+    more_args$colors <- plot$palette[length(plot$plotted$means) + 1]
+  }
+  else {
+    more_args$colors <- more_args$color;
   }
 
+  group.rows.log <- NULL;
   if (is.null(wh.clean)) {
     plot <- do.call(ena.plot.group, more_args)
+    group.rows.log <- rep(TRUE, nrow(set$points));
   }
   else {
     parts <- as.character(wh.clean)
 
     if (parts[2] %in% colnames(set$line.weights)) {
       label <- parts[3]
-      group.rows <- set$points[set$points[[parts[2]]] == parts[3], ]
+      group.rows.log <- set$points[[parts[2]]] == parts[3];
+      group.rows <- set$points[group.rows.log, ]
       if(nrow(group.rows) > 0) {
         group.means <- colMeans(group.rows)
 
@@ -239,6 +248,7 @@ add_group <- function(x, wh = NULL, ...) {
   }
 
   plot$plotted$means[[length(plot$plotted$means) + 1]] = list(
+    rows = group.rows.log,
     data = more_args$points,
     color = more_args$colors
   )
@@ -253,10 +263,11 @@ add_group <- function(x, wh = NULL, ...) {
 #' @param wh network to plot
 #' @param with.mean Logical value, if TRUE plots the mean for the points in the network
 #' @param ... Additional parametesr to pass along
+#' @param edge.multiplier numeric scalar used to multiply the edge weights
 #'
 #' @return ena.plot.object
 #' @export
-add_network <- function(x, wh = NULL, ..., with.mean = F) {
+add_network <- function(x, wh = NULL, ..., with.mean = F, edge.multiplier = 1) {
   set <- x
   # plot <- set$model$plot
   plot <- set$plots[[length(set$plots)]]
@@ -265,10 +276,27 @@ add_network <- function(x, wh = NULL, ..., with.mean = F) {
   arg_list <- list(...)
 
   if(is.null(wh.clean)) { #, "ena.points")) {
+    line_weights <- NULL;
+    colors <- c(plot$palette[1], plot$palette[2]);
+
+    means_plotted <- length(plot$plotted$means);
+    if(means_plotted > 0) {
+      line_weights <- colMeans(set$line.weights[plot$plotted$means[[1]]$rows,]);
+      colors <- c(plot$plotted$means[[1]]$color);
+      if(means_plotted > 1) {
+        line_weights <- line_weights - colMeans(set$line.weights[plot$plotted$means[[2]]$rows,]);
+        colors <- c(colors, plot$plotted$means[[2]]$color);
+      }
+    }
+    else {
+      line_weights <- colMeans(set$line.weights)
+    }
+
     plot <- ena.plot.network(
       plot,
-      network = colMeans(set$line.weights),
+      network = line_weights * edge.multiplier,
       points = set$rotation$nodes[, 1:2],
+      labels = set$rotation$nodes$code,
       ...
     )
 
@@ -314,7 +342,8 @@ add_network <- function(x, wh = NULL, ..., with.mean = F) {
     }
 
     plot <- ena.plot.network(plot,
-          network = group.means,
+          network = group.means * edge.multiplier,
+          labels = set$rotation$nodes$code,
           node.positions = as.matrix(set$rotation$nodes)[, 1:2], ...)
   }
 
@@ -330,24 +359,50 @@ add_network <- function(x, wh = NULL, ..., with.mean = F) {
 #'
 #' @return [TBD]
 #' @export
-add_nodes <- function(x, ...) {
-  set <- x
-  plot <- set$plots[[length(set$plots)]]
+add_nodes <- function(x, ..., return_plot = FALSE) {
+  if(is(x, "ENAplot")) {
+    set <- x$enaset;
+    plot <- x;
+  }
+  else {
+    set <- x;
+    plot <- set$plots[[length(set$plots)]]
+  }
 
-  nodes <- set$rotation$nodes
+  dot_args <- list(...);
+  if(!is.null(dot_args$nodes)) {
+    nodes <- dot_args$nodes;
+  }
+  else {
+    nodes <- set$rotation$nodes;
+  }
+
+  node_sizes <- 1;
+  if(!is.null(dot_args$size)) {
+    node_sizes <- dot_args$size;
+  }
+
   plot <- ena.plot.points(plot,
             points = as.matrix(nodes),
             texts = as.character(nodes$code),
+            point.size = node_sizes,
             ...
-          )
+          );
 
   plot$plotted$networks[[length(plot$plotted$networks) + 1]] <- list(
     nodes = nodes,
     data = NULL,
     color = NULL
-  )
+  );
+
   set$plots[[length(set$plots)]] <- plot
-  invisible(set)
+
+  if(!isTRUE(return_plot)) {
+    invisible(plot);
+  }
+  else {
+    invisible(set);
+  }
 }
 
 #' Title
