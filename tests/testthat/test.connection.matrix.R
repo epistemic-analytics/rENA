@@ -31,7 +31,7 @@ test_that("return all units", {
 })
 
 test_that("return single unit", {
-  connections <- connection.matrix(set_end$connection.counts$ENA_UNIT$`FirstGame.steven z`)
+  connections <- connection.matrix(set_end$connection.counts$ENA_UNIT$`FirstGame::steven z`)
 
   testthat::expect_is(connections, "matrix")
   testthat::expect_equal(nrow(connections), ncol(connections))

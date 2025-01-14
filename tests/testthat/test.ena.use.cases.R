@@ -84,8 +84,8 @@ set = ena.make.set(
 #####
 
 test_that("Case 2: Individual Plotting", {
-  first.unit.point <- set$points$ENA_UNIT$`steven z.FirstGame`
-  first.unit.edges <- as.matrix(set$line.weights$ENA_UNIT$`steven z.FirstGame`)
+  first.unit.point <- set$points$ENA_UNIT$`steven z::FirstGame`
+  first.unit.edges <- as.matrix(set$line.weights$ENA_UNIT$`steven z::FirstGame`)
   plot <- ena.plot(set) %>%
             ena.plot.points(points = first.unit.point) %>%
             ena.plot.network(network = first.unit.edges)
@@ -99,8 +99,8 @@ test_that("Case 2: Individual Plotting", {
   )
 })
 test_that("Case 3: Custom Node Plotting", {
-  first.unit.point <- set$points$ENA_UNIT$`steven z.FirstGame`
-  first.unit.edges <- as.matrix(set$line.weights$ENA_UNIT$`steven z.FirstGame`)
+  first.unit.point <- set$points$ENA_UNIT$`steven z::FirstGame`
+  first.unit.edges <- as.matrix(set$line.weights$ENA_UNIT$`steven z::FirstGame`)
   first.unit.edges[1:2] = 0
 
   test_codes <- LETTERS[1:4]
@@ -143,8 +143,8 @@ test_that("Case 4: Old sets plot", {
     rotation.params = list(accum$meta.data$Condition=="FirstGame", accum$meta.data$Condition=="SecondGame"),
     as.list = FALSE
   ));
-  first.unit.point <- set$points$ENA_UNIT$`steven z.FirstGame`
-  first.unit.edges <- as.matrix(set$line.weights$ENA_UNIT$`steven z.FirstGame`)
+  first.unit.point <- set$points$ENA_UNIT$`steven z::FirstGame`
+  first.unit.edges <- as.matrix(set$line.weights$ENA_UNIT$`steven z::FirstGame`)
   plot = suppressWarnings(ena.plot(set_old) %>%
             ena.plot.points(points = first.unit.point) %>%
             ena.plot.network(network = first.unit.edges))

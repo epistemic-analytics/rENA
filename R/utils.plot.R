@@ -139,7 +139,6 @@ add_points <- function(
     # more.args$labels <- name
     #
     # plot <- do.call(ena.plot.group, more.args).
-    browser()
     set <- add_group(set, substitute(wh), ...);
   }
 
