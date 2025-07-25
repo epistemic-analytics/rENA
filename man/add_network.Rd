@@ -7,19 +7,66 @@
 add_network(x, wh = NULL, ..., with.mean = F, edge.multiplier = 1)
 }
 \arguments{
-\item{x}{ena.plot object to plot wtih}
+\item{x}{An `ENAplot` object or an ENA set containing plots.}
 
-\item{wh}{network to plot}
+\item{wh}{Specifies the network to plot. Can be an unevaluated expression, a numeric matrix, or a language object.}
 
-\item{...}{Additional parametesr to pass along}
+\item{...}{Additional parameters passed to the plotting functions.}
 
-\item{with.mean}{Logical value, if TRUE plots the mean for the points in the network}
+\item{with.mean}{Logical; if `TRUE`, plots the mean for the points in the network.}
 
-\item{edge.multiplier}{numeric scalar used to multiply the edge weights}
+\item{edge.multiplier}{Numeric scalar used to multiply the edge weights.}
 }
 \value{
-ena.plot.object
+Invisibly returns the modified ENA set.
 }
 \description{
-Add a network to an ENA plot
+This function adds a network to an existing ENA plot or ENA set. It supports various input types for the `wh` parameter, including unevaluated expressions, numeric matrices, and language objects.
+}
+\details{
+The function determines the type of the `wh` parameter and processes it accordingly:
+- If `wh` is an unevaluated expression, it is captured and evaluated in the parent frame.
+- If `wh` is a numeric matrix, it is used directly as the network data.
+- If `wh` is a language object, it is processed to extract the relevant network information.
+
+The function updates the plot with the new network and stores the updated plot back in the ENA set.
+}
+\examples{
+# Load test data
+data(RS.data);
+
+# Define codenames for the test
+codenames <- c("Data", "Technical.Constraints", "Performance.Parameters",
+  "Client.and.Consultant.Requests", "Design.Reasoning", "Collaboration");
+
+
+# Standard ENA accumulation
+accum <- rENA:::ena.accumulate.data.file(
+  RS.data, units.by = c("UserName", "Condition"),
+  conversations.by = c("ActivityNumber", "GroupName"),
+  codes = codenames
+);
+# Create a standard ENA set 
+newset <- ena.make.set(accum);
+
+# Simple plot for a set of points, and their mean
+newplot <- plot(newset) |> 
+  add_points(Condition$FirstGame, colors = "blue") |>
+  add_group(Condition$FirstGame, colors = "blue");
+
+# Plot a single unit's point and it's line.weights
+unit_to_plot <- newset$points[1,];
+plot(newset) |> add_points(unit_to_plot) |> add_network();
+
+# Trajectory accumulation and plotting
+trajectory_accumulation <- rENA:::ena.accumulate.data.file(
+  RS.data, units.by = c("UserName", "Condition"),
+  conversations.by = c("ActivityNumber", "GroupName"),
+  codes = codenames,
+  model = "A"
+);
+trajectory_model <- ena.make.set(trajectory_accumulation);
+
+newplot3 <- plot(trajectory_model) |> 
+  add_trajectory(Condition$FirstGame);
 }

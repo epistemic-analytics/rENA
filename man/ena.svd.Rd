@@ -10,7 +10,15 @@ ena.svd(enaset, ..., as_object = TRUE)
 \item{enaset}{An \code{\link{ENAset}}}
 
 \item{...}{Unused, necessary for ena.make.set}
+
+\item{as_object}{Logical, if TRUE returns an ENARotationSet object, otherwise a list}
+}
+\value{
+An ENARotationSet object or a list containing the rotation matrix, codes, node positions, and eigenvalues.
 }
 \description{
 ENA method computing a dimensional reduction of points in an ENA set using SVD
+}
+\details{
+This function computes the Singular Value Decomposition (SVD) of the points in the ENA set.
 }

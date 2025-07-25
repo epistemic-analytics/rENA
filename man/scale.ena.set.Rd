@@ -2,20 +2,20 @@
 % Please edit documentation in R/utils.plot.R
 \name{scale.ena.set}
 \alias{scale.ena.set}
-\title{Title}
+\title{Scales the points and means in an ENA set.}
 \usage{
 \method{scale}{ena.set}(x, center = TRUE, scale = TRUE)
 }
 \arguments{
-\item{x}{[TBD]}
+\item{x}{An ENA set object containing the plots.}
 
-\item{center}{Ignored.}
+\item{center}{Logical; if `TRUE`, centers the data before scaling. Default is `TRUE`.}
 
-\item{scale}{[TBD]}
+\item{scale}{Logical; if `TRUE`, scales the data. Default is `TRUE`.}
 }
 \value{
-[TBD]
+Invisibly returns the modified ENA set object with scaled points and means.
 }
 \description{
-Title
+This function adjusts the scale of the points and means in the ENA set to match the range of the network.
 }

@@ -17,19 +17,23 @@
 
 # #FLIBS = 'gfortran -print-search-dirs | grep ^libraries: | sed 's|libraries: =||' | sed 's|:| -L|g' | sed 's|^|-L|''
 
-# carl comment begin
-# CC=/usr/local/clang7/bin/clang
-# CXX=/usr/local/clang7/bin/clang++
-# CXX11=/usr/local/clang7/bin/clang++
-# CXX14=/usr/local/clang7/bin/clang++
+#CC=/usr/local/clang7/bin/clang
+#CXX=/usr/local/clang7/bin/clang++
+#CXX11=/usr/local/clang7/bin/clang++
+#CXX14=/usr/local/clang7/bin/clang++
 #CXX17=/usr/local/clang7/bin/clang++
-# CXX1X=/usr/local/clang7/bin/clang++
-# LDFLAGS=-L/usr/local/clang7/lib
-# carl comment end
+#CXX1X=/usr/local/clang7/bin/clang++
+CC=/usr/bin/clang
+CXX=/usr/bin/clang++
+CXX11=/usr/bin/clang++
+CXX14=/usr/bin/clang++
+CXX17=/usr/bin/clang++
+CXX1X=/usr/bin/clang++
+
+#LDFLAGS=-L/usr/local/clang7/lib
 
 ### RcppArmadillo Example
-# carl comment begin
-# CXX_STD = CXX11
-# PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
-# PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
-# carl comment end
+#CXX_STD = CXX11
+
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
+PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)

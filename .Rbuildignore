@@ -31,3 +31,7 @@ pkgdown/
 .vscode
 
 ^data-raw$
+
+
+## piped not ready yet
+piped.R

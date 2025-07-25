@@ -68,7 +68,7 @@ ena.rotate.by.hena.regression = function(enaset, params) {
   }
   else {
     if(fullNames) {
-      warn("FullName param is likely wrong.")
+      warning("FullName param is likely wrong.")
       xName <- parse(text = x)[[1]][["formula"]][[3]];
     }
     else {
@@ -114,7 +114,7 @@ ena.rotate.by.hena.regression = function(enaset, params) {
     }
     else {
       if(fullNames) {
-        warn("FullName param is likely wrong.")
+        warning("FullName param is likely wrong.")
         yName <- parse(text = y)[[1]][["formula"]][[3]];
       }
       else {

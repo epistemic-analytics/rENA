@@ -3,6 +3,12 @@
 #' @description ENA method computing a dimensional reduction of points in an ENA set using SVD
 #' @param enaset An \code{\link{ENAset}}
 #' @param ... Unused, necessary for ena.make.set
+#' @param as_object Logical, if TRUE returns an ENARotationSet object, otherwise a list
+#' 
+#' @details This function computes the Singular Value Decomposition (SVD) of the points in the ENA set.
+#' 
+#' @return An ENARotationSet object or a list containing the rotation matrix, codes, node positions, and eigenvalues.
+#' 
 #' @export
 ###
 ena.svd <- function(enaset, ..., as_object = TRUE) {

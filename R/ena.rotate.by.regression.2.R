@@ -1,5 +1,21 @@
+#' @title with.ena.matrix
+#' @description This function sets up a context using the provided data (typically an ENA matrix),
+#' allowing the evaluation of an expression (`expr`) with access to both the matrix and
+#' its metadata. Optionally, a custom matrix `V` and other arguments can be supplied.
+#'
+#' @param data An ENA matrix or data frame containing the data to be used.
+#' @param expr An R expression to be evaluated within the context of the ENA matrix.
+#' @param ... Additional arguments, including an optional custom matrix `V` and other parameters.
+#'
+#' @details
+#' - If a custom matrix `V` is provided in `...`, it will be used; otherwise, `data` is converted to a matrix.
+#' - Metadata columns are coerced to numeric if they are character vectors.
+#' - The expression is evaluated with access to both the matrix (`V`) and metadata.
+#'
+#' @return The result of evaluating `expr` in the constructed context.
+#'
+#' @export
 with.ena.matrix <- function(data, expr, ...) {
-  print("With ena.matrix")
   dot_args <- list(...);
 
   # Points
@@ -84,12 +100,22 @@ ena.rotate.by.hena.regression_2 = function( enaset, params ) {
       else
         enquote(prm_var)
     ;
+    vars <- all.vars(formula(prm));
+    all_exists <- sapply(vars, function(x) x == "V" || exists(x))
+    if(!all(all_exists)) {
+      stop(paste0("The following columns in the formula are not found in the unique metadata for the units: ", paste0(vars[!all_exists], collapse = ", ")))
+    }
     lm(formula(prm));
   });
   v1 <- v1_res$coefficients;
 
   # remove intercept
-  v1 <- v1[2:(n+1)];
+  if(is.null(dim(v1))) {
+    v1 <- v1[2:(n+1)];
+  }
+  else {
+    v1 <- v1[2,];
+  }
 
   # make v1  a unit vector
   norm_v1 <- sqrt(sum(v1 * v1));
@@ -120,20 +146,6 @@ ena.rotate.by.hena.regression_2 = function( enaset, params ) {
     # regress to get v2 vector using formula y
     V <- defA;
 
-    # v2 <- eval(parse(text = y))$coefficients;
-    # v2 <- with(enaset$meta.data, {
-    #   for(i in ls()) {
-    #     i_val <- get(i);
-    #     if(is.character(i_val)) {
-    #       assign(x = i, value = as.numeric(as.factor(i_val)));
-    #     }
-    #   }
-    #   eval(parse(text = y))$coefficients;
-    # });
-    # v2_res <- with(enaset$model$points.for.projection, NULL, formula = y, V = V);
-    # v2_res <- with.ena.matrix(enaset$model$points.for.projection, {
-    #   lm(formula(params$y_var));
-    # });
     v2_res <- with.ena.matrix(enaset$model$points.for.projection, {
       prm_var <- params$y_var;
       prm <- if(is.character(prm_var))
@@ -141,9 +153,13 @@ ena.rotate.by.hena.regression_2 = function( enaset, params ) {
       else
         enquote(prm_var)
       ;
+      vars <- all.vars(formula(prm));
+      all_exists <- sapply(vars, function(x) x == "V" || exists(x))
+      if(!all(all_exists)) {
+        stop(paste0("The following columns in the formula are not found in the unique metadata for the units: ", paste0(vars[!all_exists], collapse = ", ")))
+      }
       lm(formula(prm));
-    }, V = V);
-
+    });
     v2 <- v2_res$coefficients;
     v2 <- v2[2:length(v2)];
 
@@ -151,12 +167,12 @@ ena.rotate.by.hena.regression_2 = function( enaset, params ) {
     norm_v2 <- sqrt(sum(v2 * v2));
 
     if (norm_v2 != 0) {
-      v2 <- v2/norm_v2
+      v2 <- v2 / norm_v2;
     }
 
     #name v2 vector
     if(is.na(all.vars(y)[2])) {
-      yName <- names(v2)[1]
+      yName <- names(v2)[1];
     }
     else {
       yName <- all.vars(y)[2];

@@ -26,17 +26,51 @@ accumulate <- function(
   horizon = qedata::horizon(x),
   ...
 ) {
-  set <- ena.accumulate.data.file(
-    file = x,
-    units.by = units,
-    conversations.by = horizon,
-    codes = codes,
+  # set <- ena.accumulate.data.file(
+  #   file = x,
+  #   units.by = units,
+  #   conversations.by = horizon,
+  #   codes = codes,
+  #   ...
+  # )
+  args <- list(...);
+
+  hoo_rules <- list(
+    str2lang(paste0("(", paste0(sapply(horizon, function(cb) paste0(cb, " %in% UNIT$", cb)), collapse = " & "), ")"))
+  );
+  contexts <- tma::contexts(
+    x,
+    units_by = make.names(units),
+    hoo_rules = hoo_rules,
+    split_rules = function(unit, unit_context) {
+      split(unit_context, by = horizon)
+    }
+  );
+
+
+  args$default_window <- if(is.null(args$default_window)) 1 else args$default_window;
+  args$default_weight <- if(is.null(args$default_weight)) 1 else args$default_weight;
+  win_wgts <- tma::windows_weights(
+    x,
+    sender_cols = args$tma_ground_cols,
+    receiver_cols = args$tma_response_cols,
+    mode_column = args$mode_column,
     ...
-  )
+  );
+
+  args$ordered <- if(is.null(args$ordered)) TRUE else FALSE;
+  set <- tma::accumulate(
+    context_model = contexts,
+    # multidim_arr = multidim_arr,
+    # time_column = args$time_column,
+    codes = make.names(codes),
+    ordered = args$ordered
+  );
 
   set$rotation <- list(
     rotation.matrix = NULL,
     codes = codes,
+    adjacency.key = sapply(colnames(as.matrix(set$connection.counts)), function(y) strsplit(y, "\\s?&\\s?")[[1]], simplify = T),
     node.positions = NULL,
     eigenvalues = NULL,
     centervec = NULL
@@ -137,8 +171,10 @@ sphere_norm <- function(x, add.meta = TRUE) {
   meta_ <- NULL;
 
   if(is(x, "ena.set")) {
-    x_ <- x$connection.counts;
-    names_ <- svector_to_ut(x$rotation$codes);
+    x_ <- as.matrix(x$connection.counts);
+    # names_ <- svector_to_ut(x$rotation$codes);
+    # names_ <- apply(x$rotation$adjacency.key, 2, paste, collapse = " & ");
+    names_ <- colnames(x_); #sapply(colnames(x_), function(y) strsplit(y, "\\s?&\\s?")[[1]], simplify = T);
     if(isTRUE(add.meta)) {
       meta_ <- x$meta.data;
     }
@@ -242,8 +278,10 @@ center <- function(x, add.meta = TRUE) {
   meta_ <- NULL;
 
   if(is(x, "ena.set")) {
-    x_ <- x$line.weights;
-    names_ <- svector_to_ut(x$rotation$codes);
+    # x_ <- x$line.weights;
+    x_ <- as.matrix(x$line.weights);
+    # names_ <- svector_to_ut(x$rotation$codes);
+    names_ <- apply(x$rotation$adjacency.key, 2, paste, collapse = " & ");
     if(isTRUE(add.meta)) {
       meta_ <- x$meta.data;
     }
@@ -281,9 +319,10 @@ rotate <- function(
   meta_ <- NULL;
 
   if(is(x, "ena.set")) {
-    x_ <- x$line.weights;
-    codes_ <- x$rotation$codes;
-    names_ <- svector_to_ut(codes_);
+    x_ <- as.matrix(x$line.weights);
+    codes_ <- as.matrix(x$rotation$codes);
+    # names_ <- svector_to_ut(x$rotation$codes);
+    names_ <- apply(x$rotation$adjacency.key, 2, paste, collapse = " & ");
 
     if(isTRUE(add.meta)) {
       meta_ <- x$meta.data;

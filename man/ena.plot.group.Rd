@@ -41,11 +41,11 @@ ena.plot.group(
 
 \item{label.offset}{character: top left (default), top center, top right, middle left, middle center, middle right, bottom left, bottom center, bottom right}
 
-\item{label.font.size}{An integer which determines the font size for label, default: enaplot\$font.size}
+\item{label.font.size}{An integer which determines the font size for label, default: enaplot$font.size}
 
-\item{label.font.color}{A character which determines the color of label, default: enaplot\$font.color}
+\item{label.font.color}{A character which determines the color of label, default: enaplot$font.color}
 
-\item{label.font.family}{A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot\$font.family}
+\item{label.font.family}{A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family}
 
 \item{show.legend}{Logical indicating whether to show the point labels in the in legend}
 
