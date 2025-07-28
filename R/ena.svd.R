@@ -3,9 +3,15 @@
 #' @description ENA method computing a dimensional reduction of points in an ENA set using SVD
 #' @param enaset An \code{\link{ENAset}}
 #' @param ... Unused, necessary for ena.make.set
+#' @param as_object Logical, if TRUE returns an ENARotationSet object, otherwise a list
+#' 
+#' @details This function computes the Singular Value Decomposition (SVD) of the points in the ENA set.
+#' 
+#' @return An ENARotationSet object or a list containing the rotation matrix, codes, node positions, and eigenvalues.
+#' 
 #' @export
 ###
-ena.svd <- function(enaset, ...) {
+ena.svd <- function(enaset, ..., as_object = TRUE) {
   # to.norm = data.table::data.table(
   #   enaset$points.normed.centered,
   #   enaset$enadata$unit.names
@@ -27,12 +33,22 @@ ena.svd <- function(enaset, ...) {
   );
 
   # rotationSet = ENARotationSet$new(rotation = pcaResults$pca, codes = enaset$codes, node.positions = NULL, eigenvalues = pcaResults$latent)
-  rotationSet = ENARotationSet$new(
-    rotation = pcaResults$rotation,
-    codes = enaset$codes,
-    node.positions = NULL,
-    eigenvalues = pcaResults$sdev^2
-  )
+  if(isTRUE(as_object)) {
+    rotationSet = ENARotationSet$new(
+      rotation = pcaResults$rotation,
+      codes = enaset$rotation$codes,
+      node.positions = NULL,
+      eigenvalues = pcaResults$sdev^2
+    )
+  }
+  else {
+    rotationSet <- list(
+      rotation = pcaResults$rotation,
+      codes = enaset$rotation$codes,
+      node.positions = NULL,
+      eigenvalues = pcaResults$sdev^2
+    )
+  }
   return(rotationSet)
 }
 

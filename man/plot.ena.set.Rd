@@ -20,7 +20,6 @@ ena.plot.object
 Plot an ena.set object
 }
 \examples{
-library(magrittr)
 
 data(RS.data)
 
@@ -39,11 +38,57 @@ set = ena.make.set(
   enadata = accum
 )
 
-plot(set) \%>\%
-  add_points(Condition$FirstGame, colors = "blue", with.mean = TRUE) \%>\%
-  add_points(Condition$SecondGame, colors = "red", with.mean = TRUE)
+plot(set) |>
+  add_points(Condition$FirstGame, colors = "blue", with.mean = TRUE) |>
+  add_points(Condition$SecondGame, colors = "red", with.mean = TRUE) |>
+  with_means() |>
+  add_nodes()
 
-plot(set) \%>\%
+myENAplot <- plot(set) |>
   add_network(Condition$FirstGame - Condition$SecondGame)
 
+
+# Add a group mean to an existing ENA plot
+add_group(myENAplot, wh = Condition$FirstGame)
+
+# Add a trajectory to an existing ENA plot
+add_trajectory(myENAplot, wh = Condition$FirstGame)
+
+# Load test data
+data(RS.data);
+
+# Define codenames for the test
+codenames <- c("Data", "Technical.Constraints", "Performance.Parameters",
+  "Client.and.Consultant.Requests", "Design.Reasoning", "Collaboration");
+
+
+# Standard ENA accumulation
+accum <- rENA:::ena.accumulate.data.file(
+  RS.data, units.by = c("UserName", "Condition"),
+  conversations.by = c("ActivityNumber", "GroupName"),
+  codes = codenames
+);
+# Create a standard ENA set 
+newset <- ena.make.set(accum);
+
+# Simple plot for a set of points, and their mean
+newplot <- plot(newset) |> 
+  add_points(Condition$FirstGame, colors = "blue") |>
+  add_group(Condition$FirstGame, colors = "blue");
+
+# Plot a single unit's point and it's line.weights
+unit_to_plot <- newset$points[1,];
+plot(newset) |> add_points(unit_to_plot) |> add_network();
+
+# Trajectory accumulation and plotting
+trajectory_accumulation <- rENA:::ena.accumulate.data.file(
+  RS.data, units.by = c("UserName", "Condition"),
+  conversations.by = c("ActivityNumber", "GroupName"),
+  codes = codenames,
+  model = "A"
+);
+trajectory_model <- ena.make.set(trajectory_accumulation);
+
+newplot3 <- plot(trajectory_model) |> 
+  add_trajectory(Condition$FirstGame);
 }

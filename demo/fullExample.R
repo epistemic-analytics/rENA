@@ -16,11 +16,11 @@ set = ena.make.set(
 
 ### Subset rotated points and plot Condition 1 Group Mean
 first.game = set$meta.data$Condition == "FirstGame"
-first.game.points = set$points.rotated[first.game,]
+first.game.points = set$points[first.game,]
 
 ### Subset rotated points and plot Condition 2 Group Mean
 second.game = set$meta.data$Condition == "SecondGame"
-second.game.points = set$points.rotated[second.game,]
+second.game.points = set$points[second.game,]
 
 ena.conversations(set = set,
   units = c("FirstGame.steven z"), units.by=c("Condition","UserName"),

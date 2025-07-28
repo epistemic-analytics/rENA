@@ -28,7 +28,7 @@ test_that("Create a plot object", {
 test_that("Plot all points", {
   newset <- ena.make.set(accum)
 
-  newplot <- plot(newset) %>% add_points()
+  newplot <- plot(newset) |> add_points()
 
   testthat::expect_equal(nrow(newplot$plots[[1]]$plotted$points[[1]]$data), nrow(newset$points))
 })
@@ -41,7 +41,7 @@ test_that("Plot some points", {
   );
   newset <- ena.make.set(accum)
 
-  newplot <- plot(newset) %>%
+  newplot <- plot(newset) |>
      add_points(Condition$FirstGame, colors = "blue")
 
   expected <- nrow(newset$points$Condition$FirstGame)
@@ -49,7 +49,7 @@ test_that("Plot some points", {
   testthat::expect_equal(observed, expected)
 
   n_to_plot = 5
-  newplot2 <- plot(newset) %>%
+  newplot2 <- plot(newset) |>
                 add_points(as.matrix(
                   newset$points$Condition$FirstGame)[1:n_to_plot, ]
                 )
@@ -65,9 +65,8 @@ test_that("Plot some points with mean from list", {
     codes = codenames
   );
   newset <- ena.make.set(accum)
-
-  newplot <- plot(newset) %>%
-     add_points(Condition$FirstGame, colors = "blue", mean = list(colors = "red"))
+  
+  newplot <- plot(newset) |> add_points(Condition$FirstGame, colors = "blue", mean = list(colors = "red"))
 
   testthat::expect_equal(
     nrow(newplot$plots[[1]]$plotted$points[[1]]$data),
@@ -83,15 +82,12 @@ test_that("Plot a group", {
   );
   newset <- ena.make.set(accum)
 
-  newplot <- plot(newset) %>%
-     add_group(Condition$FirstGame, colors = "blue")
+  newplot <- plot(newset) |> add_group(Condition$FirstGame, colors = "blue")
 
   testthat::expect_equal(length(newplot$plots[[1]]$plotted$means[[1]]$data), 15)
 
-  noplot = testthat::expect_warning(plot(newset) %>%
-                          add_group(Condition$NoGame))
-  noplot = testthat::expect_warning(plot(newset) %>%
-                          add_group(Condition2$FirstGame))
+  noplot = testthat::expect_warning(plot(newset) |> add_group(Condition$NoGame))
+  noplot = testthat::expect_warning(plot(newset) |> add_group(Condition2$FirstGame))
 })
 
 test_that("Plot a network", {
@@ -102,21 +98,20 @@ test_that("Plot a network", {
   );
   newset <- ena.make.set(accum)
 
-  newplot <- plot(newset) %>% add_network(Condition$FirstGame)
+  newplot <- plot(newset) |> add_network(Condition$FirstGame)
   testthat::expect_equal(
     length(newplot$plots[[1]]$plotted$networks[[1]]),
     ncol(newset$rotation$adjacency.key)
   )
 
-  newplot2 <- plot(newset) %>% add_network(with.mean = TRUE)
+  newplot2 <- plot(newset) |> add_network(with.mean = TRUE)
   testthat::expect_equal(
     length(newplot2$plots[[1]]$plotted$networks[[1]]),
     ncol(newset$rotation$adjacency.key)
   )
   testthat::expect_equal(length(newplot2$plots[[1]]$plotted$means), 1)
 
-  newplot3 <- plot(newset) %>%
-                add_network(Condition$FirstGame, with.mean = TRUE)
+  newplot3 <- plot(newset) |> add_network(Condition$FirstGame, with.mean = TRUE)
   testthat::expect_equal(
     length(newplot3$plots[[1]]$plotted$networks[[1]]),
     ncol(newset$rotation$adjacency.key)
@@ -124,17 +119,15 @@ test_that("Plot a network", {
 
   wgts <- as.matrix(newset$line.weights$Condition$FirstGame)
   expect_equal(nrow(wgts), 26)
-  newplot4 <- plot(newset) %>% add_network(wgts)
+  newplot4 <- plot(newset) |> add_network(wgts)
   testthat::expect_equal(
     length(newplot4$plots[[1]]$plotted$networks[[1]]),
     ncol(newset$rotation$adjacency.key)
   )
 
-
-  newplot5 <- plot(newset) %>%
-              add_network(
-                Condition$FirstGame - Condition$SecondGame, with.mean = TRUE
-              )
+  newplot5 <- plot(newset) |> add_network(
+    Condition$FirstGame - Condition$SecondGame, with.mean = TRUE
+  )
   testthat::expect_equal(length(newplot5$plots[[1]]$plotted$means), 2)
   testthat::expect_equal(
     length(newplot5$plots[[1]]$plotted$networks[[1]]),
@@ -151,19 +144,19 @@ test_that("Plot a Trajectory", {
   );
   newset <- ena.make.set(accum)
 
-  newplot <- plot(newset) %>% add_trajectory("ENA_UNIT")
+  newplot <- plot(newset) |> add_trajectory("ENA_UNIT")
   testthat::expect_equal(
     nrow(newplot$plots[[1]]$plotted$trajectories[[1]]),
     length(unique(newset$points$ENA_UNIT))
   )
 
-  newplot2 <- plot(newset) %>% add_trajectory()
+  newplot2 <- plot(newset) |> add_trajectory()
   testthat::expect_equal(
     nrow(newplot2$plots[[1]]$plotted$trajectories[[1]]),
     length(unique(newset$points$ENA_UNIT))
   )
 
-  newplot3 <- plot(newset) %>% add_trajectory(Condition$FirstGame)
+  newplot3 <- plot(newset) |> add_trajectory(Condition$FirstGame)
   testthat::expect_equal(
     nrow(newplot3$plots[[1]]$plotted$trajectories[[1]]),
     length(unique(newset$points$Condition$FirstGame$ENA_UNIT))
@@ -185,7 +178,7 @@ test_that("Test old plot object", {
   testthat::expect_warning(ena.plot(set))
 
   plot <- suppressWarnings({ ena.plot(set) })
-  plot <- plot %>% ena.plot.points()
+  plot <- plot |> ena.plot.points()
 
   testthat::expect_is(plot, "ENAplot")
   testthat::expect_equal(

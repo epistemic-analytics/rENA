@@ -16,14 +16,12 @@
 #' @param confidence.interval A character that determines how the confidence interval is displayed, choices: none, box, crosshair, default: none
 #' @param outlier.interval A character that determines how outlier interval is displayed, choices: none, box, crosshair, default: none
 #' @param label.offset character: top left (default), top center, top right, middle left, middle center, middle right, bottom left, bottom center, bottom right
-#' @param label.font.size An integer which determines the font size for label, default: enaplot\$font.size
-#' @param label.font.color A character which determines the color of label, default: enaplot\$font.color
-#' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot\$font.family
+#' @param label.font.size An integer which determines the font size for label, default: enaplot$font.size
+#' @param label.font.color A character which determines the color of label, default: enaplot$font.color
+#' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
 #' @param show.legend Logical indicating whether to show the point labels in the in legend
 #' @param legend.name Character indicating the name to show above the plot legend
 #' @param ... Additional parameters
-#'
-#' @import magrittr
 #'
 #' @seealso \code{\link{ena.plot}}, \code{ena.plot.points}
 #'
@@ -137,7 +135,8 @@ ena.plot.group <- function(
     }
   }
 
-  enaplot %<>% ena.plot.points(
+  enaplot <- ena.plot.points(
+    enaplot,
     points = points,
     labels = labels,
     colors = colors,

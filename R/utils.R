@@ -174,6 +174,8 @@ print.ena.set <- function(x, ..., plot = FALSE, set = TRUE) {
       }
       base::print(x.unclass)
    }
+
+   invisible(x);
 }
 
 #' Title
@@ -334,3 +336,4 @@ means_rotate <- function(x, on = NULL) {
 #   class(x_) <- orig.class
 #   x_
 # }
+
