@@ -67,7 +67,7 @@ namespace rENA {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline std::vector<std::string> merge_columns_c(DataFrame df, CharacterVector cols, std::string sep = ".") {
+    inline std::vector<std::string> merge_columns_c(DataFrame df, CharacterVector cols, std::string sep = "::") {
         typedef SEXP(*Ptr_merge_columns_c)(SEXP,SEXP,SEXP);
         static Ptr_merge_columns_c p_merge_columns_c = NULL;
         if (p_merge_columns_c == NULL) {

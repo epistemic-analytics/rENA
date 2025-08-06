@@ -92,7 +92,7 @@ arma::mat ena_correlation(arma::mat points, arma::mat centroids, double conf_lev
 std::vector<std::string> merge_columns_c(
     DataFrame df,
     CharacterVector cols,
-    std::string sep = "."
+    std::string sep = "::"
 ) {
   int vRows = df.nrows();
 

@@ -30,7 +30,7 @@ ena_correlation <- function(points, centroids, conf_level = 0.95) {
 #' @param cols Vector
 #' @param sep Character seperator
 #' @export
-merge_columns_c <- function(df, cols, sep = ".") {
+merge_columns_c <- function(df, cols, sep = "::") {
     .Call(`_rENA_merge_columns_c`, df, cols, sep)
 }
 
