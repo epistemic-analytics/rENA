@@ -61,7 +61,6 @@ data(RS.data);
 codenames <- c("Data", "Technical.Constraints", "Performance.Parameters",
   "Client.and.Consultant.Requests", "Design.Reasoning", "Collaboration");
 
-
 # Standard ENA accumulation
 accum <- rENA:::ena.accumulate.data.file(
   RS.data, units.by = c("UserName", "Condition"),
@@ -74,7 +73,9 @@ newset <- ena.make.set(accum);
 # Simple plot for a set of points, and their mean
 newplot <- plot(newset) |> 
   add_points(Condition$FirstGame, colors = "blue") |>
-  add_group(Condition$FirstGame, colors = "blue");
+  add_group(Condition$FirstGame, colors = "blue") |> 
+  add_network() |>
+  show();
 
 # Plot a single unit's point and it's line.weights
 unit_to_plot <- newset$points[1,];
