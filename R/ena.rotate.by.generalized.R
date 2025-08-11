@@ -36,6 +36,8 @@ ena.rotate.by.generalized = function( enaset, params ) {
   x_result <- gmr(V = V, X = x);
   x_vector = x_result;
   Vx1 = attr(x_result,"Vx1");
+  target = attr(x_result,"target");
+
   R <- matrix(c(x_vector), ncol = 1);
   colnames(R) <- c("GMR1");
   # deflate matrix by x dimension
@@ -44,7 +46,29 @@ ena.rotate.by.generalized = function( enaset, params ) {
 
   # further deflate by the linear effect of target variable of x
   # the purpose is to put group means (two groups) back to the x-axis
-  x1 = svd(Vx1)$v[,1]; # the leading eigenvector of Vx1
+  x1 <- NULL;
+  if(!is.null(params$select_2_groups)) # deflate for two selected groups
+  {
+    grp = params$select_2_groups;
+    if(length(grp)==2)
+    {
+      m1 <- colMeans(defA[target == grp[[1]], , drop = FALSE]);
+      m2 <- colMeans(defA[target == grp[[2]], , drop = FALSE]);
+
+      # Difference vector
+      diff_vec <- m1 - m2;
+
+      # Normalize if length is not near zero
+      len <- sqrt(sum(diff_vec^2));
+      if (len > 1e-10) {
+        x1 <- diff_vec / len;
+      }
+    }
+  }
+  if(is.null(x1))
+  {
+    x1 = svd(Vx1)$v[,1]; # the leading eigenvector of Vx1
+  }
   #orthogonalize x1 with x_vector
   p = as.numeric(t(x1)%*%x_vector);
   if(abs(p)<0.99)
@@ -54,7 +78,7 @@ ena.rotate.by.generalized = function( enaset, params ) {
     x1 <- x1 / sqrt(sum(x1^2));
     # deflate again
     defA <- defA - defA %*% x1 %*% t(x1); # this deflation should put the means back to x-axis (if the grouping variable is binary)
-    }
+  }
   y_vector <-NULL;
   y_name = "";
   # if y is given as a data.frame, gmr on y

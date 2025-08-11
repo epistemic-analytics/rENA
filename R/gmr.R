@@ -81,6 +81,7 @@ gmr <- function(V,X) {
   r <- NULL; # return direction
   Vx1 <- NULL; # main effect of X1 without adjustment
   target <- X[[1]]          # always returns the column itself
+  print(colnames(X)[1])
   if (is.list(target)) {    # flatten if it's a list-column
     target <- unlist(target, recursive = FALSE)
   }
@@ -111,7 +112,8 @@ gmr <- function(V,X) {
   #r<- Vx1 <- model$fitted.values;
   #r <- t(V) %*% coef(lm(r ~ t(V) + 0));    # Projection: r ~ V^T %*% beta
   #r <- r / sqrt(sum(r^2));
-  attr(r, "Vx1") <- Vx1# Re-normalize
+  attr(r, "target") <- target
+  attr(r, "Vx1") <- Vx1# target contribution
   return(r);
 }
 
