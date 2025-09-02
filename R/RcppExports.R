@@ -8,7 +8,7 @@
 #'
 #' @export
 combn_c2 <- function(n) {
-    .Call(`_rENA_combn_c2`, n)
+    .Call('_rENA_combn_c2', PACKAGE = 'rENA', n)
 }
 
 #' Calculate the correlations
@@ -20,7 +20,7 @@ combn_c2 <- function(n) {
 #' provided points and centorids
 #' @export
 ena_correlation <- function(points, centroids, conf_level = 0.95) {
-    .Call(`_rENA_ena_correlation`, points, centroids, conf_level)
+    .Call('_rENA_ena_correlation', PACKAGE = 'rENA', points, centroids, conf_level)
 }
 
 #' Merge data frame columns
@@ -31,7 +31,7 @@ ena_correlation <- function(points, centroids, conf_level = 0.95) {
 #' @param sep Character seperator
 #' @export
 merge_columns_c <- function(df, cols, sep = "::") {
-    .Call(`_rENA_merge_columns_c`, df, cols, sep)
+    .Call('_rENA_merge_columns_c', PACKAGE = 'rENA', df, cols, sep)
 }
 
 #' Upper Triangle from Vector
@@ -41,23 +41,23 @@ merge_columns_c <- function(df, cols, sep = "::") {
 #' @param v [TBD]
 #' @export
 vector_to_ut <- function(v) {
-    .Call(`_rENA_vector_to_ut`, v)
+    .Call('_rENA_vector_to_ut', PACKAGE = 'rENA', v)
 }
 
 svector_to_ut <- function(v) {
-    .Call(`_rENA_svector_to_ut`, v)
+    .Call('_rENA_svector_to_ut', PACKAGE = 'rENA', v)
 }
 
 rows_to_co_occurrences <- function(df, binary = TRUE) {
-    .Call(`_rENA_rows_to_co_occurrences`, df, binary)
+    .Call('_rENA_rows_to_co_occurrences', PACKAGE = 'rENA', df, binary)
 }
 
 ref_window_df <- function(df, windowSize = 1, windowForward = 0, binary = TRUE) {
-    .Call(`_rENA_ref_window_df`, df, windowSize, windowForward, binary)
+    .Call('_rENA_ref_window_df', PACKAGE = 'rENA', df, windowSize, windowForward, binary)
 }
 
 ref_window_lag <- function(df, windowSize = 0L, binary = TRUE) {
-    .Call(`_rENA_ref_window_lag`, df, windowSize, binary)
+    .Call('_rENA_ref_window_lag', PACKAGE = 'rENA', df, windowSize, binary)
 }
 
 #' Sphere norm
@@ -66,7 +66,7 @@ ref_window_lag <- function(df, windowSize = 0L, binary = TRUE) {
 #' @param dfM Dataframe
 #' @export
 fun_sphere_norm <- function(dfM) {
-    .Call(`_rENA_fun_sphere_norm`, dfM)
+    .Call('_rENA_fun_sphere_norm', PACKAGE = 'rENA', dfM)
 }
 
 #' Non sphere norm
@@ -76,22 +76,22 @@ fun_sphere_norm <- function(dfM) {
 #' @param dfM Dataframe
 #' @export
 fun_skip_sphere_norm <- function(dfM) {
-    .Call(`_rENA_fun_skip_sphere_norm`, dfM)
+    .Call('_rENA_fun_skip_sphere_norm', PACKAGE = 'rENA', dfM)
 }
 
 center_data_c <- function(values) {
-    .Call(`_rENA_center_data_c`, values)
+    .Call('_rENA_center_data_c', PACKAGE = 'rENA', values)
 }
 
 triIndices <- function(len, row = -1L) {
-    .Call(`_rENA_triIndices`, len, row)
+    .Call('_rENA_triIndices', PACKAGE = 'rENA', len, row)
 }
 
 lws_lsq_positions <- function(adjMats, t, numDims) {
-    .Call(`_rENA_lws_lsq_positions`, adjMats, t, numDims)
+    .Call('_rENA_lws_lsq_positions', PACKAGE = 'rENA', adjMats, t, numDims)
 }
 
 # Register entry points for exported C++ functions
 methods::setLoadAction(function(ns) {
-    .Call(`_rENA_RcppExport_registerCCallable`)
+    .Call('_rENA_RcppExport_registerCCallable', PACKAGE = 'rENA')
 })

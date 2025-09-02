@@ -20,6 +20,25 @@ find_code_cols <- function(x) {
    })
 }
 
+#' Find Binary Columns
+#'
+#' Identifies columns in a data.frame or data.table that are binary (i.e., contain only two unique values), optionally including logical columns.
+#'
+#' @param x A data.frame or data.table to search for binary columns.
+#' @param include_logical Logical. If TRUE, logical columns are also considered binary. Default is FALSE.
+#'
+#' @return A character vector of column names that are binary, or NULL if none are found.
+#' @export
+#'
+#' @examples
+#' df <- data.frame(a = c(0, 1, 1), b = c(TRUE, FALSE, TRUE), c = c(1, 2, 3))
+#' find_binary_cols(df)
+#' find_binary_cols(df, include_logical = TRUE)
+find_binary_cols <- function(x, include_logical = FALSE) {
+   nm <- colnames(x)[sapply(x, is_binary_col, include_logical)];
+   if(length(nm) > 0) nm else NULL;
+}
+
 #' Find dimension columns
 #'
 #' @param x data.table (or frame) to search for columns of class ena.dimension
@@ -307,6 +326,26 @@ means_rotate <- function(x, on = NULL) {
       return(x)
    }
 }
+
+is_logical_col <- function(col) {
+  n_cols = col == TRUE | col == FALSE;
+  is_col <- is.logical(col) & all(n_cols);
+
+  return(is_col);
+}
+
+is_binary_col <- function(col, include_logical = TRUE) {
+  n_cols = col == 1 | col == 0;
+  is_col <- is.numeric(col) && all(is.wholenumber(col) & all(n_cols));
+
+  if(isTRUE(include_logical)) {
+    is_col <- is_col | is_logical_col(col);
+  }
+
+  return(is_col);
+}
+
+is.wholenumber <- function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
 
 
 #' Extract points easily

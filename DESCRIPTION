@@ -7,6 +7,7 @@ Maintainer: Cody L Marquart <cody.marquart@wisc.edu>
 Version: 0.3.0
 Description: ENA (Shaffer, D. W. (2017) Quantitative Ethnography. ISBN: 0578191687) is a method used to identify meaningful and quantifiable patterns in discourse or reasoning. ENA moves beyond the traditional frequency-based assessments by examining the structure of the co-occurrence, or connections in coded data. Moreover, compared to other methodological approaches, ENA has the novelty of (1) modeling whole networks of connections and (2) affording both quantitative and qualitative comparisons between different network models.   Shaffer, D.W., Collier, W., & Ruis, A.R. (2016).
 LazyData: TRUE
+Encoding: UTF-8
 Depends: R (>= 4.1.0)
 License: GPL-3 | file LICENSE
 URL: https://gitlab.com/epistemic-analytics/qe-packages/rENA
