@@ -33,31 +33,77 @@ ena.rotate.by.generalized = function( enaset, params ) {
 
   # call gmr
   # if x is a data.frame, we assume the first column is the target variable
-  x_vector <- gmr(V = V, X = x);
-  
+  x_result <- gmr(V = V, X = x);
+  x_vector = x_result;
+  Vx1 = attr(x_result,"Vx1");
+  target = attr(x_result,"target");
+
   R <- matrix(c(x_vector), ncol = 1);
   colnames(R) <- c("GMR1");
-
-  # #deflate matrix by x dimension
+  # deflate matrix by x dimension
   A <- as.matrix(V);
-  defA <- as.matrix(A) - as.matrix(A) %*% x_vector %*% t(x_vector);
+  defA <- A - A %*% x_vector %*% t(x_vector);
 
-  # old HENA y-dim code here
-  # not sure how to handle this yet, so leaving it commented out
+  # further deflate by the linear effect of target variable of x
+  # the purpose is to put group means (two groups) back to the x-axis
+  x1 <- NULL;
+  if(!is.null(params$select_2_groups)) # deflate for two selected groups
+  {
+    grp = params$select_2_groups;
+    if(length(grp)==2)
+    {
+      m1 <- colMeans(defA[target == grp[[1]], , drop = FALSE]);
+      m2 <- colMeans(defA[target == grp[[2]], , drop = FALSE]);
 
-  # #if y formula is given, regress by y formula
-  if (!is.null(params$y_var)) {
-    y <- params$y_var;
+      # Difference vector
+      diff_vec <- m1 - m2;
 
-    # regress to get v2 vector using formula y
-    V <- defA;
-
-    y_vector <- gmr(V = defA, X = y);
-    R <- matrix(c(x_vector, y_vector), ncol = 2);
-    colnames(R) <- c("GMR1", "GMR2");
-
-    defA <- as.matrix(defA) - as.matrix(defA) %*% y_vector %*% t(y_vector);
+      # Normalize if length is not near zero
+      len <- sqrt(sum(diff_vec^2));
+      if (len > 1e-10) {
+        x1 <- diff_vec / len;
+      }
+    }
   }
+  if(is.null(x1))
+  {
+    x1 = svd(Vx1)$v[,1]; # the leading eigenvector of Vx1
+  }
+  #orthogonalize x1 with x_vector
+  p = as.numeric(t(x1)%*%x_vector);
+  if(abs(p)<0.99)
+  {
+    x1 = x1 - p * x_vector;
+    # re-normalize x1
+    x1 <- x1 / sqrt(sum(x1^2));
+    # deflate again
+    defA <- defA - defA %*% x1 %*% t(x1); # this deflation should put the means back to x-axis (if the grouping variable is binary)
+  }
+  y_vector <-NULL;
+  y_name = "";
+  # if y is given as a data.frame, gmr on y
+  if (!is.null(params$y_var) && is.data.frame(params$y_var)) {
+    y <- params$y_var;
+    V <- defA;
+    y_result <- gmr(V = defA, X = y);
+    y_vector = y_result;
+    y_name = "GMR2";
+
+  }else
+  {
+
+    y_vector = svd(defA)$v[,1];
+    y_name = "SVD2";
+
+
+  }
+
+  R <- matrix(c(x_vector, y_vector), ncol = 2);
+
+  colnames(R) <- c("GMR1", y_name);
+
+  # now  deflation for x_vector and y_vector
+  defA <- A - A %*% x_vector %*% t(x_vector) - A %*% y_vector %*% t(y_vector);
 
   # # get svd for deflated points
   svd_result <- prcomp(defA, retx=FALSE, scale=FALSE, center=FALSE, tol=0);
@@ -79,7 +125,6 @@ ena.rotate.by.generalized = function( enaset, params ) {
     codes = enaset$rotation$codes,
     eigenvalues = NULL
   )
-
   return(rotation_set);
 }
 

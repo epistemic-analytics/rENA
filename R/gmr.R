@@ -77,29 +77,43 @@ compute_SB <- function(A, g) {
 gmr <- function(V,X) {
   # matrix, ENA set points for projection
   # data frame containing all predictor variables, first as target
-  Vx <- NULL;
-  r <- NULL;
-
-  if(ncol(X)==1) {
-    model <- lm(V ~ X[, 1][[1]]) # for ena integration
-    #model = lm(V~ X[,1])  # for myself
-    Vx <- model$fitted.values;
+  Vx <- NULL; # main effect of X1 adjusted for covariates
+  r <- NULL; # return direction
+  Vx1 <- NULL; # main effect of X1 without adjustment
+  target <- X[[1]]          # always returns the column itself
+  print(colnames(X)[1])
+  if (is.list(target)) {    # flatten if it's a list-column
+    target <- unlist(target, recursive = FALSE)
   }
-  else {
+  target <- as.vector(target)  # ensure atomic
+
+  model <- lm(V ~ target)
+  #model <- lm(V ~ X[, 1]); # simple linear model on X[1]
+  Vx1 <- model$fitted.values;
+  if(ncol(X)==1) { # simple linear model if there is no covariates
+    Vx <- Vx1;
+  }
+  else { # Lasso model adjusted for covariates
     Vx <- get_x1_main_effect(V,X);
   }
-
-  if (is.numeric(X[, 1])) {
-    df <- data.frame(Vx = Vx, y = as.vector(X[, 1]));
-    model <- lm(Vx ~ y, data = df);
-    beta <- coef(model)["y",];
+  if (is.numeric(target)) { # compute direction for numerical variable
+    # Reuse the coefficients from the initial model instead of rebuilding
+    beta <- coef(model)[2,];  # Second coefficient is for the slope
     r <- beta / sqrt(sum(beta^2));
-  } 
-  else {
-    sb <- compute_SB(Vx, as.vector(X[, 1, drop = FALSE][[1]]));
-    r <- svd(sb)$v[, 1];
   }
+  else {
+    sb <- compute_SB(Vx, target);
 
+    r <- svd(sb)$v[, 1];
+
+  }
+  # project r to span of row vectors of V
+  #model <- lm(r ~ t(V) + 0)
+  #r<- Vx1 <- model$fitted.values;
+  #r <- t(V) %*% coef(lm(r ~ t(V) + 0));    # Projection: r ~ V^T %*% beta
+  #r <- r / sqrt(sum(r^2));
+  attr(r, "target") <- target
+  attr(r, "Vx1") <- Vx1# target contribution
   return(r);
 }
 
@@ -145,7 +159,7 @@ get_x1_main_effect <- function(V, X, alpha = 1, lambda = "lambda.min") {
   penalty.factor <- rep(1, ncol(mm));
 
   # Don't penalize x1 terms
-  penalty.factor[x1_cols] <- 0  
+  penalty.factor[x1_cols] <- 0
   fit <- cv.glmnet(x = mm, y = V, family = "mgaussian", alpha = alpha, penalty.factor = penalty.factor);
   coefs_list <- coef(fit, s = lambda);
 
