@@ -18,7 +18,6 @@ ena.rotate.by.generalized = function( enaset, params ) {
   # x should be a data.frame with colnames
   x <- params$x_var;
 
-
   # check if x is a data.frame
   if (!is.data.frame(x)) {
     stop("x_var must be a data.frame with column names");
@@ -33,10 +32,16 @@ ena.rotate.by.generalized = function( enaset, params ) {
 
   # call gmr
   # if x is a data.frame, we assume the first column is the target variable
-  x_result <- gmr(V = V, X = x);
+  if(!is.null(params$select_2_groups))
+  {
+    x_result<-gmr2(V = V, X = x, groups = params$select_2_groups)
+  }
+  else {
+    x_result <- gmr(V = V, X = x);
+  }
   x_vector = x_result;
-  Vx1 = attr(x_result,"Vx1");
-  target = attr(x_result,"target");
+  Vx1 = attr(x_result,"Vx1"); # fitted values of regression in gmr
+  target = attr(x_result,"target"); # target variable
 
   R <- matrix(c(x_vector), ncol = 1);
   colnames(R) <- c("GMR1");
@@ -65,13 +70,13 @@ ena.rotate.by.generalized = function( enaset, params ) {
       }
     }
   }
-  if(is.null(x1))
+  if(is.null(x1)) # the case that 2 groups are not selected, remove the major contribution of the whole regression.
   {
     x1 = svd(Vx1)$v[,1]; # the leading eigenvector of Vx1
   }
   #orthogonalize x1 with x_vector
   p = as.numeric(t(x1)%*%x_vector);
-  if(abs(p)<0.99)
+  if(abs(p)<0.99) # in case x1 and x_vector are in the same direction
   {
     x1 = x1 - p * x_vector;
     # re-normalize x1

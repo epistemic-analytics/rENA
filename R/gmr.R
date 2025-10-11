@@ -116,6 +116,86 @@ gmr <- function(V,X) {
   attr(r, "Vx1") <- Vx1# target contribution
   return(r);
 }
+#' Generalized Means Rotation (GMR2)
+#'
+#' Computes the generalized means rotation for a given set of ENA points and predictor variables.
+#'
+#' @param V A matrix containing ENA set points for projection.
+#' @param X A data frame containing all predictor variables, with the first column as the target variable.
+#' @param groups a list of two group names which are values of X[[1]]
+#'
+#' @return A numeric vector representing the rotation.
+#'
+#' @details
+#' If \code{X} has only one column, a linear model is fit between \code{V} and the single predictor.
+#' Otherwise, the main effect of the first predictor is extracted using \code{get_x1_main_effect}.
+#' Singular value decomposition (SVD) is then performed, and the first right singular vector is used
+#' to project the data. A linear model is fit to the projected data, and the coefficients are normalized
+#' to produce the rotation vector.
+#'
+#' @examples
+#' \dontrun{
+#' V <- matrix(rnorm(100), ncol = 5)
+#' X <- data.frame(target = rnorm(20), predictor1 = rnorm(20), predictor2 = rnorm(20))
+#' r <- gmr(V, X)
+#' }
+#'
+#' @seealso \code{\link{get_x1_main_effect}}
+#' @export
+# generalized means rotation
+# V - matrix, ENA set points for projection
+# X - data frame containing all predictor variables, first as target
+gmr2 <- function(V, X, groups = NULL) {
+  target_full <- X[[1]]
+  if (is.list(target_full)) target_full <- unlist(target_full, recursive = FALSE)
+  target_full <- as.vector(target_full)
+
+  subset_idx <- NULL
+  if (!is.null(groups)) {
+    if (all(groups %in% unique(target_full))) {
+      subset_idx <- which(target_full %in% groups)
+      V_sub <- V[subset_idx, , drop = FALSE]
+      X_sub <- X[subset_idx, , drop = FALSE]
+      target_sub <- target_full[subset_idx]
+    } else {
+      warning("Specified groups not found; using all data.")
+      V_sub <- V
+      X_sub <- X
+      target_sub <- target_full
+    }
+  } else {
+    V_sub <- V
+    X_sub <- X
+    target_sub <- target_full
+  }
+
+  model <- lm(V_sub ~ target_sub)
+  Vx1_sub <- model$fitted.values
+
+  if (ncol(X_sub) == 1) {
+    Vx_sub <- Vx1_sub
+  } else {
+    Vx_sub <- get_x1_main_effect(V_sub, X_sub)
+  }
+
+  if (is.numeric(target_sub)) {
+    beta <- coef(model)[2, ]
+    r <- beta / sqrt(sum(beta^2))
+  } else {
+    sb <- compute_SB(Vx_sub, target_sub)
+    r <- svd(sb)$v[, 1]
+  }
+
+  # Build full Vx1: fill subset rows, zeros elsewhere
+  Vx1_full <- matrix(0, nrow = nrow(V), ncol = ncol(V))
+  Vx1_full[subset_idx %||% seq_len(nrow(V)), ] <- Vx1_sub
+  colnames(Vx1_full) <- colnames(V)
+
+  attr(r, "target") <- target_full
+  attr(r, "Vx1") <- Vx1_full
+  return(r)
+}
+
 
 #' Extract Main Effect Contribution of the First Predictor Using Elastic Net
 #'
