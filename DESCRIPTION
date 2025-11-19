@@ -28,3 +28,4 @@ Imports:
 Suggests: testthat (>= 2.1.0), knitr, rmarkdown
 RoxygenNote: 7.3.2
 NeedsCompilation: yes
+Encoding: UTF-8
