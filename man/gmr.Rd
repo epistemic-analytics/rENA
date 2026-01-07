@@ -2,36 +2,65 @@
 % Please edit documentation in R/gmr.R
 \name{gmr}
 \alias{gmr}
-\title{Generalized Means Rotation (GMR)}
+\title{Generalized Means Rotation (GMR) with optional subsetting and interaction control}
 \usage{
-gmr(V, X)
+gmr(
+  V,
+  X,
+  groups = NULL,
+  alpha = 1,
+  lambda = "lambda.min",
+  interactions = TRUE,
+  verbose = TRUE
+)
 }
 \arguments{
-\item{V}{A matrix containing ENA set points for projection.}
+\item{V}{Numeric ENA matrix (units × connections) ready for rotation.}
 
-\item{X}{A data frame containing all predictor variables, with the first column as the target variable.}
+\item{X}{Data frame or matrix of predictors; the first column is the target.}
+
+\item{groups}{Optional vector specifying target groups to subset. If `NULL`
+(default), all rows are used.}
+
+\item{alpha}{Elastic-net mixing parameter forwarded to `get_x1_main_effect`
+(default `1` — Lasso).}
+
+\item{lambda}{Lambda selection for `cv.glmnet` forwarded to
+`get_x1_main_effect` (default `"lambda.min"`).}
+
+\item{interactions}{Logical; if `TRUE` (default) interactions are included when computing the adjusted contribution.}
+
+\item{verbose}{Logical; if `TRUE` (default) the function emits messages about
+fails or successes.}
 }
 \value{
-A numeric vector representing the rotation.
+A numeric vector `r` (length = ncol(V)) giving the normalized
+  rotation direction. Attributes attached:
+  \describe{
+    \item{`target`}{The full-length target vector (un-subsetted).}
+    \item{`Vx1`}{The unadjusted fitted values (`lm(V ~ target)`) embedded in
+        a full-length matrix (rows outside subset filled with zeros).}
+  }
+  If no valid direction can be found (including SVD failure), returns `NULL`
+  and issues a warning.
 }
 \description{
-Computes the generalized means rotation for a given set of ENA points and predictor variables.
-}
-\details{
-If \code{X} has only one column, a linear model is fit between \code{V} and the single predictor.
-Otherwise, the main effect of the first predictor is extracted using \code{get_x1_main_effect}.
-Singular value decomposition (SVD) is then performed, and the first right singular vector is used
-to project the data. A linear model is fit to the projected data, and the coefficients are normalized
-to produce the rotation vector.
+Computes a rotation (direction) `r` representing the contribution of the
+first column of `X` to the multivariate ENA matrix `V`. Supports optional
+subsetting by `groups`, optional inclusion of interaction terms when
+computing adjusted contributions.
 }
 \examples{
 \dontrun{
-V <- matrix(rnorm(100), ncol = 5)
-X <- data.frame(target = rnorm(20), predictor1 = rnorm(20), predictor2 = rnorm(20))
-r <- gmr(V, X)
+set.seed(1)
+V <- matrix(rnorm(200), nrow = 40)
+X <- data.frame(group = rep(letters[1:4], each = 10),
+                x2 = rnorm(40), x3 = rnorm(40))
+r_all <- gmr2(V, X)
+r_subset <- gmr2(V, X, groups = c("a", "b"), interactions = TRUE)
 }
 
 }
 \seealso{
-\code{\link{get_x1_main_effect}}
+[get_x1_main_effect()]
 }

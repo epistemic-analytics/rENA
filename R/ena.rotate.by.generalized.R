@@ -32,7 +32,11 @@ ena.rotate.by.generalized <- function(enaset, params) {
     gmr(V, x, groups = params$select_2_groups)
   } else gmr(V, x)
 
-  if (is.null(x_result)) stop("gmr failed for x_vector")
+  if (is.null(x_result))
+    {
+    warning("gmr failed for x_vector; returning null")
+    return(NULL)
+    }
   x_vector <- x_result
   Vx1 <- attr(x_result, "Vx1")
   target <- attr(x_result, "target")
@@ -59,7 +63,11 @@ ena.rotate.by.generalized <- function(enaset, params) {
     gmr(defA, params$y_var)
   } else safe_normalize(svd(defA)$v[,1])
 
-  if (is.null(y_vector)) stop("y_vector is NULL after fallback")
+  if (is.null(y_vector))
+  {
+    warning("gmr failed for y_vector; returning null")
+    return(NULL)
+  }
   #print(head(y_vector))
   # Orthogonalize y_vector
   y_vector <- y_vector - (t(y_vector) %*% x_vector) * x_vector

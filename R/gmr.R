@@ -51,46 +51,7 @@ compute_SB <- function(A, g) {
 #' Computes a rotation (direction) `r` representing the contribution of the
 #' first column of `X` to the multivariate ENA matrix `V`. Supports optional
 #' subsetting by `groups`, optional inclusion of interaction terms when
-#' computing adjusted contributions, and robust multi-level fallbacks.
-#'
-#' Fallback / robustness layers:
-#'
-#' 1. If `groups` is specified but fewer than 2 valid groups exist, uses all rows.
-#'
-#' 2. If the target variable is constant, falls back to SVD of V.
-#'
-#' 3. If covariates exist, attempts Lasso (with or without interactions) to estimate
-#'    contribution of the target; falls back to simple regression if all-zero.
-#'
-#' 4. If simple regression gives zero coefficients, falls back to SVD(V_sub).
-#'
-#' 5. For categorical targets, computes rotation from SVD of SB matrix.
-#'
-#' 6. Always normalizes the resulting vector and attaches metadata:
-#'
-#'    - target (original X[,1])
-#'
-#'    - Vx1 (full-length fitted values)
-#'
-#'    - fallback_stage (describes which fallback was used)
-#'
-#' This ensures that the function is robust to single-group selections,
-#' constant targets, zero contributions, and categorical variables.
-#'
-#' The function attempts the following model sequence to estimate the target
-#' contribution:
-#'
-#' (1) covariates + interactions (if requested),
-#'
-#' (2) covariates
-#' only (no interactions),
-#'
-#' (3) no covariates (simple `lm`), and finally
-#'
-#' (4)SVD-based fallback on `V`.
-#'
-#' Warnings are emitted whenever a fallback step is
-#' used. If SVD fails, `NULL` is returned with a warning.
+#' computing adjusted contributions.
 #'
 #' @param V Numeric ENA matrix (units × connections) ready for rotation.
 #' @param X Data frame or matrix of predictors; the first column is the target.
@@ -100,10 +61,9 @@ compute_SB <- function(A, g) {
 #'   (default `1` — Lasso).
 #' @param lambda Lambda selection for `cv.glmnet` forwarded to
 #'   `get_x1_main_effect` (default `"lambda.min"`).
-#' @param interactions Logical; if `TRUE` (default) the first fallback attempts
-#'   to include interactions when computing the adjusted contribution.
+#' @param interactions Logical; if `TRUE` (default) interactions are included when computing the adjusted contribution.
 #' @param verbose Logical; if `TRUE` (default) the function emits messages about
-#'   fallback stages and successes.
+#'   fails or successes.
 #'
 #' @return A numeric vector `r` (length = ncol(V)) giving the normalized
 #'   rotation direction. Attributes attached:
@@ -111,7 +71,6 @@ compute_SB <- function(A, g) {
 #'     \item{`target`}{The full-length target vector (un-subsetted).}
 #'     \item{`Vx1`}{The unadjusted fitted values (`lm(V ~ target)`) embedded in
 #'         a full-length matrix (rows outside subset filled with zeros).}
-#'     \item{`fallback_stage`}{A short string describing which fallback was used.}
 #'   }
 #'   If no valid direction can be found (including SVD failure), returns `NULL`
 #'   and issues a warning.
@@ -130,9 +89,104 @@ compute_SB <- function(A, g) {
 #' @importFrom stats lm model.matrix
 #' @importFrom glmnet cv.glmnet
 #' @export
-gmr <- function(V, X, groups = NULL, alpha = 1, lambda = "lambda.min",
-                interactions = TRUE, verbose = TRUE) {
 
+gmr <- function(V, X, groups = NULL, alpha = 1, lambda = "lambda.min",
+  interactions = TRUE, verbose = TRUE) {
+  # prepare a function for almost zero check
+  is_zero <- function(x, tol = 1e-12) all(abs(x) < tol)
+  # get full target variable, namely, the first variable in X
+  target_full <- X[[1]]
+  if (is.list(target_full)) target_full <- unlist(target_full, recursive = FALSE)
+  target_full <- as.vector(target_full)
+
+  # --- Fail if target is constant ---
+  unique_targets <- unique(target_full)
+  if (length(unique_targets) == 1) {
+    warning("Target variable is constant; returning NULL.")
+    return(NULL)
+  }
+
+  # --- Subset by groups if selected groups are provided ---
+  if (!is.null(groups)) {
+    valid_groups <- intersect(groups, unique(target_full))
+    if (length(valid_groups) > 1) {
+      subset_idx <- which(target_full %in% valid_groups)
+      V_sub <- V[subset_idx, , drop = FALSE]
+      X_sub <- X[subset_idx, , drop = FALSE]
+      target_sub <- target_full[subset_idx]
+    } else {
+      warning("Less than 2 valid groups selected; returning NULL.")
+      return(NULL)
+    }
+  } else { # use full data if no groups are selected
+    V_sub <- V
+    X_sub <- X
+    target_sub <- target_full
+    subset_idx <- NULL
+  }
+
+  # --- Base regression model ---
+  model <- lm(V_sub ~ target_sub)
+  Vx1_sub <- model$fitted.values
+
+  # --- Compute contributions via Lasso (if covariates exist) ---
+  Vx_sub <- NULL
+  if (ncol(X_sub) == 1) { # no corariates, use base model
+    Vx_sub <- Vx1_sub
+  } else { # covariates exist, use Lasso model
+    Vx_sub <- get_x1_main_effect(V_sub, X_sub, alpha = alpha,
+                                 lambda = lambda, include_interactions = interactions)
+  }
+  if (is_zero(Vx_sub)) {
+    warning("Regression resulted in zeor contribution; returning NULL.")
+    return(NULL)
+  }
+  # --- Compute rotation direction r ---
+  r <- NULL
+  if (is.numeric(target_sub)) {
+    if (verbose) message("Computing direction for numeric target...")
+    model =  model <- lm(Vx_sub ~ target_sub)
+    beta <- model$coefficients[2,]
+    if (is_zero(beta)) {
+      warning("Numerical target with zero beta; returning NULL.")
+      return(NULL)
+    } else {
+      r <- beta
+    }
+  } else {
+    if (verbose) message("Computing direction for categorical target...")
+    sb <- compute_SB(Vx_sub, target_sub)
+    r <- tryCatch(svd(sb)$v[, 1], error = function(e) NULL)
+  }
+
+  # --- Final SVD fallback if r is NULL or zero ---
+  if (is.null(r) || all(r == 0)) {
+    warning("Uable to compute any valid direction; returning NULL.")
+    return(NULL)
+  }
+
+  # --- Normalize ---
+  r <- r / sqrt(sum(r^2))
+
+  # --- Build full-length Vx1 ---
+  Vx1_full <- matrix(0, nrow = nrow(V), ncol = ncol(V))
+  Vx1_full[subset_idx %||% seq_len(nrow(V)), ] <- Vx_sub
+  colnames(Vx1_full) <- colnames(V)
+
+  # --- Attach metadata ---
+  attr(r, "target") <- target_full
+  attr(r, "Vx1") <- Vx1_full
+  #attr(r, "fallback_stage") <- fallback_stage
+
+  if (verbose) message(" gmr completed successfully ")
+  return(r)
+}
+# the fallback mechanism is created but not used.
+gmr_with_fallbacks <- function(V, X, groups = NULL, alpha = 1, lambda = "lambda.min",
+                interactions = TRUE, verbose = TRUE) {
+  # prepare a function for almost zero check
+  is_zero <- function(x, tol = 1e-12) all(abs(x) < tol)
+  # get full target variable
   target_full <- X[[1]]
   if (is.list(target_full)) target_full <- unlist(target_full, recursive = FALSE)
   target_full <- as.vector(target_full)
@@ -147,16 +201,16 @@ gmr <- function(V, X, groups = NULL, alpha = 1, lambda = "lambda.min",
     if (is.null(r)) {
       warning("Unable to compute any valid direction; returning NULL.")
       return(NULL)
-    }
+     }
 
-    r <- r / sqrt(sum(r^2))
-    Vx1_full <- matrix(0, nrow = nrow(V), ncol = ncol(V))
-    colnames(Vx1_full) <- colnames(V)
+     r <- r / sqrt(sum(r^2))
+     Vx1_full <- matrix(0, nrow = nrow(V), ncol = ncol(V))
+     colnames(Vx1_full) <- colnames(V)
 
-    attr(r, "target") <- target_full
-    attr(r, "Vx1") <- Vx1_full
-    attr(r, "fallback_stage") <- fallback_stage
-    return(r)
+     attr(r, "target") <- target_full
+     attr(r, "Vx1") <- Vx1_full
+     attr(r, "fallback_stage") <- fallback_stage
+     return(r)
   }
 
   # --- Subset by groups if provided ---
@@ -168,11 +222,11 @@ gmr <- function(V, X, groups = NULL, alpha = 1, lambda = "lambda.min",
       X_sub <- X[subset_idx, , drop = FALSE]
       target_sub <- target_full[subset_idx]
     } else {
-      if (verbose) message("Less than 2 valid groups selected; using all rows instead")
-      V_sub <- V
-      X_sub <- X
-      target_sub <- target_full
-      subset_idx <- NULL
+       if (verbose) message("Less than 2 valid groups selected; using all rows instead")
+       V_sub <- V
+       X_sub <- X
+       target_sub <- target_full
+       subset_idx <- NULL
     }
   } else {
     V_sub <- V
@@ -195,7 +249,7 @@ gmr <- function(V, X, groups = NULL, alpha = 1, lambda = "lambda.min",
   } else {
     Vx_sub <- get_x1_main_effect(V_sub, X_sub, alpha = alpha,
                                  lambda = lambda, include_interactions = interactions)
-    if (all(Vx_sub == 0)) {
+    if (is_zero(Vx_sub)) {
       if (verbose) message("⚠️ Lasso with interactions gave zero contribution; trying without interactions.")
       Vx_sub <- get_x1_main_effect(V_sub, X_sub, alpha = alpha,
                                    lambda = lambda, include_interactions = FALSE)
@@ -204,7 +258,7 @@ gmr <- function(V, X, groups = NULL, alpha = 1, lambda = "lambda.min",
       fallback_stage <- if (interactions) "with interactions" else "no interactions"
     }
 
-    if (all(Vx_sub == 0)) {
+    if (is_zero(Vx_sub)) {
       if (verbose) message("⚠️ Lasso without interactions gave zero contribution; falling back to simple model.")
       Vx_sub <- Vx1_sub
       fallback_stage <- "no covariates"
@@ -215,8 +269,8 @@ gmr <- function(V, X, groups = NULL, alpha = 1, lambda = "lambda.min",
   if (is.numeric(target_sub)) {
     if (verbose) message("Computing direction for numeric target...")
     model =  model <- lm(Vx_sub ~ target_sub)
-    beta <- coef(model)[2, ]
-    if (all(beta == 0)) {
+    beta <- model$coefficients[2,]
+    if (is_zero(beta)) {
       if (verbose) message("⚠️ Beta is zero; falling back to SVD(V_sub).")
       r <- tryCatch(svd(Vx_sub)$v[, 1], error = function(e) NULL)
       fallback_stage <- "SVD fallback"
@@ -410,196 +464,67 @@ gmr2_bk <- function(V, X, groups = NULL) {
 #' @importFrom stats lm model.matrix
 #' @importFrom glmnet cv.glmnet
 #' @export
+
 get_x1_main_effect <- function(V, X, alpha = 1, lambda = "lambda.min", include_interactions = FALSE) {
-  # first column of X is the target variable
   x1_name <- colnames(X)[1]
 
-  # Create model matrix (handles factors)
-  mm <- model.matrix(~ .^2, data = X)
+  # 1. Formula & Model Matrix
+  formula_str <- if (include_interactions) "~ .^2" else "~ ."
+  mm <- model.matrix(as.formula(formula_str), data = X)[, -1, drop = FALSE]
 
-  # Escape special regex characters in x1_name
+  # 2. Identify Main Effect Columns for x1
   safe_x1 <- gsub("([.|()\\^{}+$*?]|\\[|\\])", "\\\\\\1", x1_name)
-
-  # Select columns for x1
-  if (include_interactions) {
-    # include main effect + all interactions starting with x1
-    x1_cols <- grep(paste0("^", safe_x1), colnames(mm))
-  } else {
-    # only main effect (no colon)
-    x1_cols <- grep(paste0("^", safe_x1, "$|^", safe_x1, "(?=[^:])"), colnames(mm), perl = TRUE)
-  }
+  x1_main_regex <- paste0("^", safe_x1, "[^:]*$")
+  x1_cols <- grep(x1_main_regex, colnames(mm))
 
   if (length(x1_cols) == 0) {
-    warning("No columns found for X[,1]; returning zeros.")
+    warning("No main effect columns found for X[,1]; returning zeros.")
     return(matrix(0, nrow = nrow(V), ncol = ncol(V), dimnames = list(NULL, colnames(V))))
   }
 
-  # Penalty factors: 0 for x1 columns to force inclusion
-  penalty.factor <- rep(1, ncol(mm))
-  penalty.factor[x1_cols] <- 0
+  # 3. Penalty Factors
+  p <- ncol(mm)
+  penalty_factors <- rep(1, p)
+  penalty_factors[x1_cols] <- 0
 
-  # Determine if fallback to OLS is needed
-  use_ols <- FALSE
-  if (all(penalty.factor[-1] == 0)) {  # only intercept + x1 columns
+  # 4. Fitting Logic
+  x1_contribution <- matrix(0, nrow = nrow(V), ncol = ncol(V), dimnames = list(NULL, colnames(V)))
+  use_ols <- (p <= (nrow(X) - 10)) # Heuristic: Use OLS only if we have enough degrees of freedom
+
+  if (!use_ols) {
+    fit <- tryCatch(
+      # We add lower.limits/upper.limits or tiny penalty to ensure x1 is NEVER zero if it has signal
+      glmnet::cv.glmnet(x = mm, y = V, family = "mgaussian",
+                        alpha = alpha, penalty.factor = penalty_factors),
+      error = function(e) NULL
+    )
+
+    if (!is.null(fit)) {
+      coefs_list <- coef(fit, s = lambda)
+      # coefs_list is a list of sparse matrices (one per response)
+      for (i in seq_along(coefs_list)) {
+        # Extract coefs, skipping intercept ([1,])
+        # Force to numeric to avoid sparse matrix indexing issues
+        beta_all <- as.matrix(coefs_list[[i]])[-1, , drop = FALSE]
+        beta_x1 <- beta_all[x1_cols, , drop = FALSE]
+        x1_contribution[, i] <- mm[, x1_cols, drop = FALSE] %*% beta_x1
+      }
+      return(x1_contribution)
+    }
     use_ols <- TRUE
   }
 
-  # Fit Lasso (multi-response) or fallback to OLS
-  if (!use_ols) {
-    fit <- tryCatch(
-      cv.glmnet(x = mm, y = V, family = "mgaussian", alpha = alpha, penalty.factor = penalty.factor),
-      error = function(e) NULL
-    )
-    if (is.null(fit)) use_ols <- TRUE
-  }
-
-  # Preallocate contribution matrix
-  x1_contribution <- matrix(0, nrow = nrow(V), ncol = ncol(V))
-  colnames(x1_contribution) <- colnames(V)
-
   if (use_ols) {
-    # fallback to OLS (handles multi-response)
-    for (i in seq_len(ncol(V))) {
-      fit_lm <- lm(V[, i] ~ mm[, x1_cols, drop = FALSE])
-      x1_contribution[, i] <- predict(fit_lm, newdata = as.data.frame(mm))
-    }
-  } else {
-    # Lasso case
-    coefs_list <- coef(fit, s = lambda)
-    for (i in seq_along(coefs_list)) {
-      coef_vec <- as.numeric(coefs_list[[i]][x1_cols, , drop = FALSE])
-      if (!all(is.na(coef_vec)) && !all(coef_vec == 0)) {
-        x1_contribution[, i] <- mm[, x1_cols, drop = FALSE] %*% coef_vec
-      }
-    }
+    fit_ols <- lm(V ~ mm)
+    # as.matrix handles the 'incorrect number of dimensions' for single response
+    beta_ols <- as.matrix(coef(fit_ols))[-1, , drop = FALSE]
+    beta_x1_ols <- beta_ols[x1_cols, , drop = FALSE]
+
+    # Handle NAs that OLS produces for rank-deficient matrices
+    beta_x1_ols[is.na(beta_x1_ols)] <- 0
+    x1_contribution <- mm[, x1_cols, drop = FALSE] %*% beta_x1_ols
   }
 
   return(x1_contribution)
 }
 
-
-
-
-get_x1_main_effect_bk <- function(V, X, alpha = 1, lambda = "lambda.min") {
-  # assume the first variable is the target variable
-  x1_name <- colnames(X)[1]
-  # print(x1_name)
-
-  # Create model matrix (handles factors correctly)
-  mm <- model.matrix(~ .^2, data = X)
-
-  # Escape special regex chars in variable name (robust)
-  safe_x1 <- gsub("([.|()\\^{}+$*?]|\\[|\\])", "\\\\\\1", x1_name)
-
-  # Match all main-effect columns for x1 (exclude interactions which contain ':')
-  x1_cols <- grep(paste0("^", safe_x1, "[^:]*$"), colnames(mm))
-  # If no match, return zeros immediately
-  if (length(x1_cols) == 0) {
-    warning("No main-effect columns found for x1; returning zeros.")
-    return(matrix(0, nrow = nrow(V), ncol = ncol(V), dimnames = list(NULL, colnames(V))))
-  }
-
-  # Create penalty factors (0 for x1 terms to force inclusion, 1 for others)
-  penalty.factor <- rep(1, ncol(mm))
-  penalty.factor[x1_cols] <- 0
-
-  # Fit penalized multivariate model
-  fit <- cv.glmnet(x = mm, y = V, family = "mgaussian", alpha = alpha, penalty.factor = penalty.factor)
-  coefs_list <- coef(fit, s = lambda)  # list of coefficient objects (one per response)
-
-  print("colnames(mm)[x1_cols]")
-  print(colnames(mm)[x1_cols])
-  print("as.numeric(coefs_list[[1]][x1_cols, , drop=FALSE])")
-  print(as.numeric(coefs_list[[1]][x1_cols, , drop=FALSE]))   # example coef vector
-  print("as.matrix(mm[, x1_cols, drop = FALSE]) %*% as.numeric(coefs_list[[1]][x1_cols, , drop=FALSE])")
-  print(head(as.matrix(mm[, x1_cols, drop = FALSE]) %*% as.numeric(coefs_list[[1]][x1_cols, , drop=FALSE])))
-
-  # Prepare output
-  x1_contribution <- matrix(NA, nrow = nrow(V), ncol = ncol(V))
-  colnames(x1_contribution) <- colnames(V)
-
-  # Pre-extract the design block as dense matrix once
-  mm_x1 <- as.matrix(mm[, x1_cols, drop = FALSE])
-
-  for (i in seq_along(coefs_list)) {
-    coef_mat <- coefs_list[[i]]                 # typically a dgCMatrix with rownames
-    # extract rows corresponding to x1_cols and coerce to numeric vector
-    beta_part <- as.numeric(coef_mat[x1_cols, , drop = FALSE])
-    # If the coefficient vector is all NA (unlikely) or length mismatch, handle gracefully
-    if (length(beta_part) != ncol(mm_x1)) {
-      # This is a safety fallback: try to match by rownames
-      rn <- rownames(coef_mat)
-      matched <- match(colnames(mm_x1), rn)
-      if (all(!is.na(matched))) {
-        beta_part <- as.numeric(coef_mat[matched, , drop = FALSE])
-      } else {
-        stop("Coefficient extraction failed: length mismatch and rowname matching failed.")
-      }
-    }
-    # Compute contribution (dense numeric multiplication)
-    temp_result <- mm_x1 %*% beta_part
-    x1_contribution[, i] <- as.vector(temp_result)
-  }
-
-  return(x1_contribution)
-}
-
-get_x1_main_effect_copy <- function(V, X, alpha = 1, lambda = "lambda.min") {
-  # assume the first variable is the target variable
-  x1_name <- colnames(X)[1];
-  print(x1_name)
-
-  # Create model matrix (handles factors correctly)
-  mm <- model.matrix(~ .^2, data = X);
- # print("colnames(mm):")
-#  print(colnames(mm))
-
-  # Escape special regex chars in variable name
-  safe_x1 <- gsub("([.|()\\^{}+$*?]|\\[|\\])", "\\\\\\1", x1_name)
- # print("safe_x1:")
-#  print(safe_x1)
-
-  # Match all main-effect columns for x1 (exclude interactions)
- # print("x1_cols new:")
-  x1_cols <- grep(paste0("^", safe_x1, "[^:]*$"), colnames(mm))
-  #print(x1_cols)
-  # This pattern matches x1_name at the start of the string, not followed by a colon
-  #x1_cols <- grep(paste0("^", x1_name, "$|^", x1_name, "(?=[^:])"), colnames(mm), perl = TRUE);
-  #print("x1_cols old:")
-  #print(x1_cols)
-
-  # Create penalty factors (0 for x1 terms to force inclusion, 1 for others)
-  penalty.factor <- rep(1, ncol(mm));
-
-  # Don't penalize x1 terms
-  penalty.factor[x1_cols] <- 0
-  fit <- cv.glmnet(x = mm, y = V, family = "mgaussian", alpha = alpha, penalty.factor = penalty.factor);
-  coefs_list <- coef(fit, s = lambda);
-  print("coef(fit)[x1_cols]:")
-  print(coef(fit)[x1_cols])
-  print("head(mm[, x1_cols, drop=FALSE])")
-  print(head(mm[, x1_cols, drop=FALSE]))
-  print("head(mm[, x1_cols, drop=FALSE] %*% coef(fit)[x1_cols])")
-  print(head(mm[, x1_cols, drop=FALSE] %*% coef(fit)[x1_cols]))
-  # Extract x1 coefficients for each response variable
-  x1_coefs <- lapply(coefs_list, function(coef_mat) {
-    coef_mat[x1_cols, , drop = FALSE];
-  });
-
-  # Calculate x1 main effect contribution for each response variable
-  x1_contribution <- matrix(NA, nrow = nrow(V), ncol = ncol(V));
-
-  for (i in 1:ncol(V)) {
-    if (length(x1_cols) > 0) {
-      temp_result <- mm[, x1_cols, drop = FALSE] %*% x1_coefs[[i]];
-      x1_contribution[, i] <- as.vector(temp_result);
-    }
-    else {
-      # If no x1 coefficients, contribution is zero
-      x1_contribution[, i] <- 0;
-    }
-  }
-  colnames(x1_contribution) <- colnames(V);
-
-  return(x1_contribution);
-}
