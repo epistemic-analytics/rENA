@@ -2,35 +2,38 @@
 % Please edit documentation in R/piped.R
 \name{accumulate}
 \alias{accumulate}
-\title{Title}
+\title{Accumulate Connection Counts for ENA}
 \usage{
 accumulate(
   x,
-  units = units(x),
-  codes = codes(x),
-  horizon = horizon(x),
+  units = rENA::units(x),
+  codes = rENA::codes(x),
+  horizon = rENA::horizon(x),
   ...,
-  ordered = FALSE
+  ordered = FALSE,
+  binary = TRUE
 )
 }
 \arguments{
-\item{x}{data.frame}
+\item{x}{A data.frame or similar object containing the data to be analyzed.}
 
-\item{units}{character vector}
+\item{units}{A character vector specifying the columns that define the units of analysis.}
 
-\item{codes}{character vector}
+\item{codes}{A character vector specifying the columns that contain the codes for co-occurrence analysis.}
 
-\item{horizon}{character vector}
+\item{horizon}{A character vector specifying the columns that define the conversational boundaries (horizon).}
 
-\item{...}{arguments passed along to other functions}
+\item{...}{Additional arguments passed to underlying accumulation functions.}
 
-\item{ordered}{logical defaults to FALSE for creating unordered networks}
+\item{ordered}{A logical value. If TRUE, creates ordered networks (A -> B is different from B -> A). Defaults to FALSE.}
+
+\item{binary}{A logical value. If TRUE, connection counts are binarized (0 or 1). Defaults to TRUE.}
 }
 \value{
-ena object
+An ena.set object containing the accumulated connection counts and metadata.
 }
 \description{
-Title
+This function takes a data.frame and accumulates co-occurrences of codes within specified units and conversations (horizon), preparing it for ENA. It's designed to be used with pipes (`|>`)..
 }
 \examples{
 data(RS.data)

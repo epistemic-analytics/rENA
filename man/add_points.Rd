@@ -4,7 +4,7 @@
 \alias{add_points}
 \title{Add points to an ENA plot}
 \usage{
-add_points(x, wh = NULL, ..., name = "plot", mean = NULL, colors = NULL)
+add_points(x, wh = NULL, ..., colors = NULL)
 }
 \arguments{
 \item{x}{An `ENAplot` object or an ENA set containing plots.}
@@ -12,10 +12,6 @@ add_points(x, wh = NULL, ..., name = "plot", mean = NULL, colors = NULL)
 \item{wh}{Specifies the points to plot. Can be an unevaluated expression or a language object.}
 
 \item{...}{Additional parameters passed to the plotting functions.}
-
-\item{name}{A character string specifying the name of the plot. Default is "plot".}
-
-\item{mean}{Logical; if `TRUE`, includes a mean point for the provided points. Default is `NULL`.}
 
 \item{colors}{A vector of colors for the plotted points. Default is `NULL`.}
 }
@@ -51,14 +47,13 @@ newset <- ena.make.set(accum);
 
 # Simple plot for a set of points, and their mean
 newplot <- plot(newset) |> 
-  add_points(Condition$FirstGame, colors = "blue") |>
-  add_group(Condition$FirstGame, colors = "blue") |> 
-  add_network() |>
-  show();
+  add_points(Condition$FirstGame, mean = TRUE, colors = "blue") |> 
+  add_network();
 
 # Plot a single unit's point and it's line.weights
-unit_to_plot <- newset$points[1,];
-plot(newset) |> add_points(unit_to_plot) |> add_network();
+plot(newset) |> 
+  add_points(UserName$`steven z`) |> 
+  add_network();
 
 # Trajectory accumulation and plotting
 trajectory_accumulation <- rENA:::ena.accumulate.data.file(

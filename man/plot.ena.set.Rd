@@ -4,7 +4,7 @@
 \alias{plot.ena.set}
 \title{Plot an ena.set object}
 \usage{
-\method{plot}{ena.set}(x, y, ...)
+\method{plot}{ena.set}(x, y, ..., empty = TRUE, title = "ENA Plot")
 }
 \arguments{
 \item{x}{ena.set to plot}
@@ -12,6 +12,10 @@
 \item{y}{ignored.}
 
 \item{...}{Additional parameters passed along to ena.plot functions}
+
+\item{empty}{Logical; if TRUE, creates an empty plot without points. Default is TRUE.}
+
+\item{title}{Character; title for the plot. Default is "ENA Plot".}
 }
 \value{
 ena.plot.object
@@ -72,14 +76,13 @@ newset <- ena.make.set(accum);
 
 # Simple plot for a set of points, and their mean
 newplot <- plot(newset) |> 
-  add_points(Condition$FirstGame, colors = "blue") |>
-  add_group(Condition$FirstGame, colors = "blue") |> 
-  add_network() |>
-  show();
+  add_points(Condition$FirstGame, mean = TRUE, colors = "blue") |> 
+  add_network();
 
 # Plot a single unit's point and it's line.weights
-unit_to_plot <- newset$points[1,];
-plot(newset) |> add_points(unit_to_plot) |> add_network();
+plot(newset) |> 
+  add_points(UserName$`steven z`) |> 
+  add_network();
 
 # Trajectory accumulation and plotting
 trajectory_accumulation <- rENA:::ena.accumulate.data.file(

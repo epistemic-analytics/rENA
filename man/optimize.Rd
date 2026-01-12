@@ -4,10 +4,12 @@
 \alias{optimize}
 \title{Optimize Node and Centroid Positions in ENA Set}
 \usage{
-optimize(x)
+optimize(x, weights = NULL)
 }
 \arguments{
 \item{x}{An \code{ena.set} object for which to optimize node and centroid positions.}
+
+\item{weights}{Optional. A numeric matrix of connection weights. If provided, the function will use this matrix instead of the connection counts from the \code{ena.set}.}
 }
 \value{
 The input \code{ena.set} object with updated node and centroid positions.

@@ -4,7 +4,7 @@
 \alias{ena.rotate.by.mean}
 \title{ENA Rotate by mean}
 \usage{
-ena.rotate.by.mean(enaset, groups)
+ena.rotate.by.mean(enaset, groups = NULL, params = groups)
 }
 \arguments{
 \item{enaset}{An \code{\link{ENAset}}}

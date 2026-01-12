@@ -4,70 +4,53 @@
 \alias{add_network}
 \title{Add a network to an ENA plot}
 \usage{
-add_network(x, wh = NULL, ..., with.mean = F, edge.multiplier = 1)
+add_network(
+  x,
+  wh = NULL,
+  ...,
+  with.mean = F,
+  edge.multiplier = 1,
+  colors = NULL
+)
 }
 \arguments{
 \item{x}{An `ENAplot` object or an ENA set containing plots.}
 
-\item{wh}{Specifies the network to plot. Can be an unevaluated expression, a numeric matrix, or a language object.}
+\item{wh}{Specifies the network to plot. Can be:
+\itemize{
+  \item An unevaluated expression (e.g., `Condition$FirstGame - Condition$SecondGame`)
+  \item A numeric matrix or data.frame of edge weights
+  \item A language object
+  \item NULL (defaults to the mean network)
+}}
 
 \item{...}{Additional parameters passed to the plotting functions.}
 
-\item{with.mean}{Logical; if `TRUE`, plots the mean for the points in the network.}
+\item{with.mean}{Logical; if `TRUE`, also plots the mean for the points in the network. Default is `FALSE`.}
 
-\item{edge.multiplier}{Numeric scalar used to multiply the edge weights.}
+\item{edge.multiplier}{Numeric scalar to multiply the edge weights. Useful for scaling the network visualization. Default is 1.}
+
+\item{colors}{Optional vector of colors for the network. If not specified, colors are chosen from the plot palette.}
 }
 \value{
-Invisibly returns the modified ENA set.
+The modified ENAplot object with the new network added.
 }
 \description{
-This function adds a network to an existing ENA plot or ENA set. It supports various input types for the `wh` parameter, including unevaluated expressions, numeric matrices, and language objects.
+Adds a network (set of edges) to an existing ENA plot or ENA set. The network can be specified in several ways, including as an unevaluated expression, a numeric matrix, or a language object. This function is typically used to visualize group means, differences between groups, or custom networks on an ENA plot.
 }
 \details{
 The function determines the type of the `wh` parameter and processes it accordingly:
-- If `wh` is an unevaluated expression, it is captured and evaluated in the parent frame.
-- If `wh` is a numeric matrix, it is used directly as the network data.
-- If `wh` is a language object, it is processed to extract the relevant network information.
-
-The function updates the plot with the new network and stores the updated plot back in the ENA set.
+\itemize{
+  \item If `wh` is an unevaluated expression, it is captured and evaluated in the parent frame. This allows for flexible specification of group means or differences.
+  \item If `wh` is a numeric matrix or data.frame, it is used directly as the network data.
+  \item If `wh` is a language object, it is processed to extract the relevant network information.
+  \item If `wh` is NULL, the mean network is plotted.
 }
-\examples{
-# Load test data
-data(RS.data);
 
-# Define codenames for the test
-codenames <- c("Data", "Technical.Constraints", "Performance.Parameters",
-  "Client.and.Consultant.Requests", "Design.Reasoning", "Collaboration");
-
-# Standard ENA accumulation
-accum <- rENA:::ena.accumulate.data.file(
-  RS.data, units.by = c("UserName", "Condition"),
-  conversations.by = c("ActivityNumber", "GroupName"),
-  codes = codenames
-);
-# Create a standard ENA set 
-newset <- ena.make.set(accum);
-
-# Simple plot for a set of points, and their mean
-newplot <- plot(newset) |> 
-  add_points(Condition$FirstGame, colors = "blue") |>
-  add_group(Condition$FirstGame, colors = "blue") |> 
-  add_network() |>
-  show();
-
-# Plot a single unit's point and it's line.weights
-unit_to_plot <- newset$points[1,];
-plot(newset) |> add_points(unit_to_plot) |> add_network();
-
-# Trajectory accumulation and plotting
-trajectory_accumulation <- rENA:::ena.accumulate.data.file(
-  RS.data, units.by = c("UserName", "Condition"),
-  conversations.by = c("ActivityNumber", "GroupName"),
-  codes = codenames,
-  model = "A"
-);
-trajectory_model <- ena.make.set(trajectory_accumulation);
-
-newplot3 <- plot(trajectory_model) |> 
-  add_trajectory(Condition$FirstGame);
+The function updates the plot with the new network and returns the modified plot object. The ENA set is not modified in-place.
 }
+\section{Examples}{
+
+  See `inst/examples/example-plot-piping.R` for usage examples.
+}
+

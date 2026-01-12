@@ -4,10 +4,12 @@
 \alias{project}
 \title{Project ENA Points onto Rotated Space}
 \usage{
-project(x, add.meta = TRUE)
+project(x, rotation = NULL, add.meta = TRUE)
 }
 \arguments{
 \item{x}{An \code{ena.set} object containing the points for projection and rotation matrix.}
+
+\item{rotation}{Optional. A rotation matrix to use for projection if \code{x} is not an \code{ena.set}.}
 
 \item{add.meta}{Logical. If \code{TRUE} (default), metadata will be included in the output.}
 }

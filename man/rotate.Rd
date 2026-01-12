@@ -4,18 +4,14 @@
 \alias{rotate}
 \title{Rotate ENA Data}
 \usage{
-rotate(x, ..., by = NULL, wh = ena.svd, add.meta = TRUE)
+rotate(x, ..., wh = ena.rotate.by.generalized)
 }
 \arguments{
 \item{x}{An \code{ena.set} object to be rotated.}
 
 \item{...}{Optional formulas or additional arguments for rotation.}
 
-\item{by}{Optional. A variable name or grouping variable for rotation.}
-
 \item{wh}{Function to use for rotation (default: \code{ena.svd}).}
-
-\item{add.meta}{Logical. If \code{TRUE} (default), metadata will be included in the output.}
 }
 \value{
 The rotated \code{ena.set} object with updated rotation matrices.

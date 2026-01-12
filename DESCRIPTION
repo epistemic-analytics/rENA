@@ -13,7 +13,6 @@ License: GPL-3 | file LICENSE
 URL: https://gitlab.com/epistemic-analytics/qe-packages/rENA
 BugReports: https://gitlab.com/epistemic-analytics/qe-packages/rENA/-/issues
 LinkingTo: Rcpp, RcppArmadillo
-Additional_repositories: https://cran.qe-libs.org
 Imports: 
     data.table,
     Rcpp,
@@ -27,5 +26,5 @@ Imports:
     glmnet,
     tma
 Suggests: testthat (>= 2.1.0), knitr, rmarkdown
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 NeedsCompilation: yes

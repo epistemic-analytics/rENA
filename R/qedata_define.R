@@ -111,10 +111,10 @@ codes <- function(x, ...) {
     dot_args$v <- as.qe.code;
     x <- do.call(reclassify, dot_args);
 
-    invisible(x);
+    return(x);
   }
   else {
-    colnames(x)[sapply(x, is.qe.code)]
+    return(colnames(x)[sapply(x, is.qe.code)]);
   }
 }
 
@@ -145,10 +145,10 @@ metadata <- function(x, ...) {
     dot_args$v <- as.qe.metadata;
     x <- do.call(reclassify, dot_args);
 
-    invisible(x);
+    return(x);
   }
   else {
-    colnames(x)[sapply(x, is.qe.metadata)]
+    return(colnames(x)[sapply(x, is.qe.metadata)]);
   }
 }
 
@@ -178,11 +178,10 @@ units <- function(x, ...) {
     dot_args$x <- x;
     dot_args$v <- as.qe.unit;
     x <- do.call(reclassify, dot_args);
-
-    invisible(x);
+    return(x);
   }
   else {
-    colnames(x)[sapply(x, is.qe.unit)]
+    return(colnames(x)[sapply(x, is.qe.unit)]);
   }
 }
 
@@ -213,10 +212,10 @@ horizon <- function(x, ...) {
     dot_args$v <- as.qe.horizon;
     x <- do.call(reclassify, dot_args);
 
-    invisible(x);
+    return(x);
   }
   else {
-    colnames(x)[sapply(x, is.qe.horizon)]
+    return(colnames(x)[sapply(x, is.qe.horizon)]);
   }
 }
 
@@ -243,5 +242,5 @@ reclassify <- function(x, v, ...) {
     data.table::set(x, j = i, value = v(x[[i]]))
   }
 
-  invisible(x);
+  return(x);
 }

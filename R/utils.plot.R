@@ -3,6 +3,8 @@
 #' @param x ena.set to plot
 #' @param y ignored.
 #' @param ... Additional parameters passed along to ena.plot functions
+#' @param empty Logical; if TRUE, creates an empty plot without points. Default is TRUE.
+#' @param title Character; title for the plot. Default is "ENA Plot".
 #'
 #' @examples
 #'
@@ -43,17 +45,19 @@
 #' 
 #' @return ena.plot.object
 #' @export
-plot.ena.set <- function(x, y, ...) {
-  p = ena.plot(x, ...)
-  # p
-  # p$enaset = NULL
-  x$plots[[length(x$plots) + 1]] = p
-  args = list(...)
-  if(!is.null(args$title)) {
-    names(x$plots)[length(x$plots)] = args$title
+plot.ena.set <- function(x, y, ..., empty = TRUE, title = "ENA Plot") {
+  args <- list(...);
+
+  if(is(x, "ena.ordered.set")) {
+    stop("Plotting of ena.ordered.set objects requires using the 'ona' package.");
   }
 
-  .return(x, from_plot = T, invisible = F)
+  p = ena.plot(enaset = x, title = title, ...);
+  if (isFALSE(empty)) {
+    add_points(p, ...);
+  }
+
+  return(p)
 }
 
 
@@ -64,8 +68,6 @@ plot.ena.set <- function(x, y, ...) {
 #' @param x An `ENAplot` object or an ENA set containing plots.
 #' @param wh Specifies the points to plot. Can be an unevaluated expression or a language object.
 #' @param ... Additional parameters passed to the plotting functions.
-#' @param name A character string specifying the name of the plot. Default is "plot".
-#' @param mean Logical; if `TRUE`, includes a mean point for the provided points. Default is `NULL`.
 #' @param colors A vector of colors for the plotted points. Default is `NULL`.
 #'
 #' @details
@@ -83,16 +85,26 @@ plot.ena.set <- function(x, y, ...) {
 add_points <- function(
   x,
   wh = NULL, ...,
-  name = "plot",
-  mean = NULL,
   colors = NULL
 ) {
-  set <- x
-  plot <- set$plots[[length(set$plots)]]
+  plot <- x;
+  set <- plot$enaset;
+
+  if(is.null(plot)) {
+    stop("No existing plot found in the ENA set. Did you call plot(set) first?")
+  }
+  # plot <- set$plots[[length(set$plots)]]
   more.args <- list(...)
 
-  wh_subbed <- as.character(substitute(wh))
-  if (!is.null(wh_subbed) && length(wh_subbed) > 0) {
+  wh_subbed <- substitute(wh)
+  if (is.language(wh_subbed)) {
+    # points <- list(do.call(`[`, list(x = set$points, i = wh)));
+    points <- list(eval(str2lang(paste0(c("set$points", wh_subbed), collapse = "$"))));
+    colors <- ifelse(is.null(colors), plot$palette[length(plot$plotted$points) + 1], colors);
+    named <- paste(as.character(wh_subbed)[-1], collapse = " ");
+  }
+  else if (!is.null(wh_subbed) && length(wh_subbed) > 0) {
+    wh_subbed <- as.character(wh_subbed);
     if (length(wh_subbed) > 1 && wh_subbed[[2]] %in% colnames(set$points)) {
       cc <- call(wh_subbed[[1]], set$points, wh_subbed[[2]])
       part1 <- eval(cc);
@@ -119,50 +131,103 @@ add_points <- function(
       }
     }
     else {
-      more.args$points = points <- wh
+      points <- wh
       colors = ifelse(is.null(colors), plot$palette[length(plot$plotted$points) + 1], colors)
     }
   }
   else {
-    more.args$points = points = set$points
-    name <- "all.points"
-    colors = ifelse(is.null(colors), plot$palette[length(plot$plotted$points) + 1], colors)
+    # first_meta <- setdiff(colnames(set$connection.counts)[find_meta_cols(set$connection.counts)], c("QEUNIT", "ENA_UNIT"))[1]
+    # meta_grps <- split(set$points, by = first_meta)
+    
+    # points = meta_grps
+    # named <- paste0(names(points), ".Points")
+    # # colors = ifelse(is.null(colors), plot$palette[length(plot$plotted$points) + 1], colors)
+    # colors <- plot$palette[seq.int(from=length(plot$plotted$points)+1,length.out=length(meta_grps))];
+    points <- list(set$points);
+    named <- "all.points";
+    colors <- ifelse(is.null(colors), plot$palette[length(plot$plotted$points) + 1], colors);
   }
 
+  mean <- ifelse(!is.null(more.args$mean), more.args$mean, FALSE);
   more.args$enaplot = plot
-  more.args$legend.name = name
-  if(!is.null(colors)) {
-    more.args$colors = colors
-  }
-  else {
-    more.args$colors = plot$palette[length(plot$plotted$points) + 1]
-  }
-  plot <- do.call(ena.plot.points, more.args)
+  for(i in seq_along(colors)) {
+    color <- colors[i];
+    name <- named[i];
+    pts <- points[[i]];
+    more.args$colors <- color;
+    more.args$legend.name <- name;
+    more.args$points <- pts;
+    plot <- do.call(ena.plot.points, more.args);
 
-  for(color in unique(more.args$colors)) {
     plot$plotted$points[[length(plot$plotted$points) + 1]] <- list(
-      data = more.args$points[color == more.args$colors,],
+      data = points,
       color = color
     )
-    if(!is.null(name)) {
-      names(plot$plotted$points)[length(plot$plotted$points)] = name
+    names(plot$plotted$points)[length(plot$plotted$points)] <- name;
+
+    if(isTRUE(mean) && nrow(pts) > 1) {
+      more.args$labels <- name;
+      plot <- do.call(ena.plot.group, more.args);
     }
   }
+  # if(!is.null(colors)) {
+  #   more.args$colors = colors
+  # }
+  # else {
+  #   more.args$colors = plot$palette[length(plot$plotted$points) + 1]
+  # }
+  
 
-  if(!is.null(mean) && (is.list(mean) || mean == T)) {
-    # if (is.list(mean)) {
-    #   more.args <- c(mean, more.args[!names(more.args) %in% names(mean)])
-    # }
-    # more.args$enaplot <- plot
-    # more.args$points <- points
-    # more.args$labels <- name
-    #
-    # plot <- do.call(ena.plot.group, more.args).
-    set <- add_group(set, substitute(wh), ...);
+  # if(!is.null(mean) && (is.list(mean) || mean == T)) {
+  #   # if (is.list(mean)) {
+  #   #   more.args <- c(mean, more.args[!names(more.args) %in% names(mean)])
+  #   # }
+  #   # more.args$enaplot <- plot
+  #   # more.args$points <- points
+  #   # more.args$labels <- name
+  #   #
+  #   # plot <- do.call(ena.plot.group, more.args).
+  #   set <- add_group(set, substitute(wh), ...);
+  # }
+
+  # set$plots[[length(set$plots)]] <- plot
+
+  return(plot);
+}
+
+#' Add all groups to an ENA plot
+#'
+#' This function iterates over all unique values of the first metadata column (excluding 'QEUNIT' and 'ENA_UNIT')
+#' in the ENA set and adds each group as a set of points to the ENA plot. This is useful for quickly visualizing
+#' all groups in a categorical variable on the same plot.
+#'
+#' @param x An `ENAplot` object (as returned by `plot.ena.set`).
+#' @param wh (Ignored) Included for compatibility with other plotting functions.
+#'
+#' @details
+#' The function finds the first metadata column in the ENA set (excluding 'QEUNIT' and 'ENA_UNIT'),
+#' and for each unique value in that column, calls `add_points()` to add the group's points to the plot.
+#'
+#' @return The modified `ENAplot` object with all groups added as points.
+#' 
+#' @example inst/examples/example-plot-piping.R
+#'
+#' @export
+group <- function(x, wh = NULL) {
+  plot <- x;
+  set <- plot$enaset;
+
+  first_meta <- setdiff(colnames(set$connection.counts)[find_meta_cols(set$connection.counts)], c("QEUNIT", "ENA_UNIT"))[1]
+  
+  plot$plotted$points <- list();
+  # meta_grps <- split(set$points, by = first_meta);
+  meta_grps <- unique(set$points[[first_meta]]);
+  for(grp in meta_grps) {
+    add_points(plot, wh = call("==", as.name(first_meta), grp));
   }
 
-  set$plots[[length(set$plots)]] <- plot
-  invisible(set)
+  # points = meta_grps
+  return(plot);
 }
 
 #' Add a trajectory to an ENA plot
@@ -187,9 +252,8 @@ add_points <- function(
 #'
 #' @export
 add_trajectory <- function(x, wh = NULL, ..., name = "plot") {
-  set <- x
-  # plot <- set$model$plot
-  plot <- set$plots[[length(set$plots)]]
+  plot <- x;
+  set <- plot$enaset;
 
   subbed <- substitute(wh)
   args_list <- as.character(subbed)
@@ -213,8 +277,10 @@ add_trajectory <- function(x, wh = NULL, ..., name = "plot") {
   plot <- ena.plot.trajectory(plot, points = points, by = by)
 
   # set$model$plot <- plot
-  set$plots[[length(x$plots)]] <- plot
-  invisible(set)
+  # set$plots[[length(x$plots)]] <- plot
+  
+  # .return(set, from_plot = T, invisible = F)
+  return(plot)
 }
 
 
@@ -239,6 +305,9 @@ add_trajectory <- function(x, wh = NULL, ..., name = "plot") {
 #'
 #' @export
 add_group <- function(x, wh = NULL, ...) {
+  plot <- x;
+  set <- plot$enaset;
+
   # Capture the expression passed to wh
   wh.expr <- substitute(wh)
 
@@ -253,11 +322,9 @@ add_group <- function(x, wh = NULL, ...) {
     wh.clean <- wh.expr
   }
 
-  set <- x
-  # plot <- set$model$plot
-  plot <- set$plots[[length(set$plots)]]
-
-  arg_list <- list(...)
+  # set <- x
+  # # plot <- set$model$plot
+  # # plot <- set$plots[[length(set$plots)]]
 
   if (
     identical(as.character(wh.clean), "wh.clean") ||
@@ -309,147 +376,105 @@ add_group <- function(x, wh = NULL, ...) {
     color = more_args$colors
   )
 
-  set$plots[[length(set$plots)]] <- plot
-  invisible(set)
+  # set$plots[[length(set$plots)]] <- plot
+  
+  # .return(plot, from_plot = T, invisible = F)
+  return(plot)
 }
 
 
-#' Add a network to an ENA plot
+##' Add a network to an ENA plot
 #'
-#' This function adds a network to an existing ENA plot or ENA set. It supports various input types for the `wh` parameter, including unevaluated expressions, numeric matrices, and language objects.
+#' Adds a network (set of edges) to an existing ENA plot or ENA set. The network can be specified in several ways, including as an unevaluated expression, a numeric matrix, or a language object. This function is typically used to visualize group means, differences between groups, or custom networks on an ENA plot.
 #'
 #' @param x An `ENAplot` object or an ENA set containing plots.
-#' @param wh Specifies the network to plot. Can be an unevaluated expression, a numeric matrix, or a language object.
-#' @param with.mean Logical; if `TRUE`, plots the mean for the points in the network.
-#' @param edge.multiplier Numeric scalar used to multiply the edge weights.
+#' @param wh Specifies the network to plot. Can be:
+#'   \itemize{
+#'     \item An unevaluated expression (e.g., `Condition$FirstGame - Condition$SecondGame`)
+#'     \item A numeric matrix or data.frame of edge weights
+#'     \item A language object
+#'     \item NULL (defaults to the mean network)
+#'   }
 #' @param ... Additional parameters passed to the plotting functions.
+#' @param with.mean Logical; if `TRUE`, also plots the mean for the points in the network. Default is `FALSE`.
+#' @param edge.multiplier Numeric scalar to multiply the edge weights. Useful for scaling the network visualization. Default is 1.
+#' @param colors Optional vector of colors for the network. If not specified, colors are chosen from the plot palette.
 #'
 #' @details
 #' The function determines the type of the `wh` parameter and processes it accordingly:
-#' - If `wh` is an unevaluated expression, it is captured and evaluated in the parent frame.
-#' - If `wh` is a numeric matrix, it is used directly as the network data.
-#' - If `wh` is a language object, it is processed to extract the relevant network information.
+#' \itemize{
+#'   \item If `wh` is an unevaluated expression, it is captured and evaluated in the parent frame. This allows for flexible specification of group means or differences.
+#'   \item If `wh` is a numeric matrix or data.frame, it is used directly as the network data.
+#'   \item If `wh` is a language object, it is processed to extract the relevant network information.
+#'   \item If `wh` is NULL, the mean network is plotted.
+#' }
 #'
-#' The function updates the plot with the new network and stores the updated plot back in the ENA set.
+#' The function updates the plot with the new network and returns the modified plot object. The ENA set is not modified in-place.
 #'
-#' @example inst/examples/example-plot-piping.R
-#' 
-#' @return Invisibly returns the modified ENA set.
+#' @section Examples:
+#'   See `inst/examples/example-plot-piping.R` for usage examples.
+#'
+#' @return The modified ENAplot object with the new network added.
 #'
 #' @export
-add_network <- function(x, wh = NULL, ..., with.mean = F, edge.multiplier = 1) {
-  wh.expr <- substitute(wh);
+add_network <- function(
+  x, wh = NULL, 
+  ..., 
+  with.mean = F, 
+  edge.multiplier = 1,
+  colors = NULL
+) {
+  plot <- x;
+  set <- plot$enaset;
 
-  # Check if the expression is a call to `substitute()`
-  if (is.call(wh.expr) && deparse(wh.expr[[1]]) == "substitute") {
-    wh.clean <- eval(wh.expr, parent.frame())
-  } 
-  else {
-    # Evaluate safely to check if it's numeric
-    wh.evaluated <- try(eval(wh.expr, parent.frame()), silent = TRUE)
-    if (is.numeric(wh.evaluated)) {
-      wh.clean <- wh.evaluated
-    } 
-    else {
-      wh.clean <- wh.expr
-    }
-  }
+  more_args <- list(...);
 
-  set <- x
+  wh_subbed <- substitute(wh)
+  network <- colMeans(set$line.weights) * edge.multiplier;
   
-  # plot <- set$model$plot
-  plot <- set$plots[[length(set$plots)]];
-
-  arg_list <- list(...);
-
-  if(is.null(wh.clean)) {
-    line_weights <- NULL;
-    colors <- c(plot$palette[1], plot$palette[2]);
-
-    means_plotted <- length(plot$plotted$means);
-    if(means_plotted > 0) {
-      line_weights <- colMeans(set$line.weights[plot$plotted$means[[1]]$rows,]);
-      colors <- c(plot$plotted$means[[1]]$color);
-      if(means_plotted > 1) {
-        line_weights <- line_weights - colMeans(set$line.weights[plot$plotted$means[[2]]$rows,]);
-        colors <- c(colors, plot$plotted$means[[2]]$color);
-      }
-    }
-    else if(length(plot$plotted$points) && length(plot$plotted$points$plot$data) && nrow(plot$plotted$points$plot$data) == 1) {
-      line_weights <- as.matrix(set$line.weights[set$line.weights$ENA_UNIT == plot$plotted$points$plot$data$ENA_UNIT,])
-    }
-    else {
-      line_weights <- colMeans(set$line.weights)
-    }
-
-    plot <- ena.plot.network(
-      plot,
-      network = line_weights * edge.multiplier,
-      points = as.matrix(set$rotation$nodes)[, 1:2],
-      labels = set$rotation$nodes$code,
-      ...
-    )
-    
-    if (with.mean) {
-      set <- add_group(set, points = set$points, ...)
-      plot <- set$plots[[length(set$plots)]]
-    }
-  }
-  else {
-    if(is.numeric(wh.clean)) {
-      plot <- ena.plot.network(
-        plot,
-        network = colMeans(as.matrix(wh.clean)) * edge.multiplier,
-        labels = set$rotation$nodes$code,
-        ...
-      )
-    }
-    else {
-      parts <- as.character(wh.clean)
-
-      if (length(wh.clean) > 1 && is.call(wh.clean[[2]])) {
-        means <- sapply(c(wh.clean[[2]], wh.clean[[3]]), function(y) {
-          parts <- as.character(y)
-
-          if(with.mean) {
-            set <- add_group(set, y,
-                  colors = plot$palette[length(attr(plot, "means")) + 1], ...)
-            plot <- set$plots[[length(set$plots)]]
-          }
-
-          colMeans(set$line.weights[set$line.weights[[parts[2]]] == parts[3], ])
+  if (is.language(wh_subbed)) {
+    network <- try(eval(wh_subbed, parent.frame()), silent = TRUE)
+    if(inherits(network, "try-error")) {
+      if(wh_subbed[[1]] == "-") {
+        means <- sapply(c(wh_subbed[[2]], wh_subbed[[3]]), function(y) {
+          colMeans(eval(str2lang(paste0(c("set$line.weights", y), collapse = "$"))));
         })
 
-        group.means <- means[, 1] - means[, 2]
-      }
-      else {
-        if (parts[2] %in% colnames(set$line.weights)) {
-          group.means <- colMeans(
-            as.matrix(set$line.weights[set$line.weights[[parts[2]]] == parts[3], ])
-          )
-
-          if (with.mean) {
-            set <- add_group(set, wh.clean, ...)
-            plot <- set$plots[[length(set$plots)]]
+        network <- means[,1] - means[,2];
+        named <- as.character(enquote(wh_subbed))[2];
+        colors <- if(is.null(colors)) {
+          plot$palette[seq.int(length(plot$plotted$points) + 1, 2)]
+        } else {
+          if(length(colors) < 2) {
+            stop("Please provide two colors for the two groups being compared.")
+          } else {
+            colors
           }
         }
-        else {
-          wgts <- get(as.character(wh.clean), envir = parent.frame())
-          group.means <- colMeans(wgts)
-          if (with.mean) warning("Not able to determine mean automatically")
-        }
       }
-
-      plot <- ena.plot.network(plot,
-          network = group.means * edge.multiplier,
-          labels = set$rotation$nodes$code,
-          node.positions = as.matrix(set$rotation$nodes)[, 1:2], ...)
+      else {
+        network <- colMeans(eval(str2lang(paste0(c("set$line.weights", wh_subbed), collapse = "$"))));
+        colors <- ifelse(is.null(colors), plot$palette[length(plot$plotted$points) + 1], colors);
+        named <- paste(as.character(wh_subbed)[-1], collapse = " ");
+      }
+    }
+    else if (is.matrix(network) || is.data.frame(network) || is.numeric(network)) {
+      network <- colMeans(network);
+      colors <- ifelse(is.null(colors), plot$palette[length(plot$plotted$points) + 1], colors);
+      named <- paste(as.character(wh_subbed)[-1], collapse = " ");
     }
   }
 
-  # set$model$plot <- plot
-  set$plots[[length(set$plots)]] <- plot
-  invisible(set)
+  more_args$enaplot = plot;
+  more_args$colors = colors;
+  if(is.data.frame(network) || is.matrix(network) || is.numeric(network)) {
+    more_args$network = network * edge.multiplier;
+    plot <- do.call(ena.plot.network, more_args);
+  }
+
+  
+  # .return(set, from_plot = T, invisible = F)
+  return(plot);
 }
 
 
@@ -472,17 +497,10 @@ add_network <- function(x, wh = NULL, ..., with.mean = F, edge.multiplier = 1) {
 #'
 #' @example inst/examples/example-plot-piping.R
 #'
-#' @seealso \code{\link{ena.plot.points}}
 #' @export
 add_nodes <- function(x, ..., return_plot = FALSE) {
-  if(is(x, "ENAplot")) {
-    set <- x$enaset;
-    plot <- x;
-  }
-  else {
-    set <- x;
-    plot <- set$plots[[length(set$plots)]]
-  }
+  plot <- x;
+  set <- plot$enaset;
 
   dot_args <- list(...);
   if(!is.null(dot_args$nodes)) {
@@ -510,14 +528,9 @@ add_nodes <- function(x, ..., return_plot = FALSE) {
     color = NULL
   );
 
-  set$plots[[length(set$plots)]] <- plot
+  # set$plots[[length(set$plots)]] <- plot
 
-  if(!isTRUE(return_plot)) {
-    invisible(plot);
-  }
-  else {
-    invisible(set);
-  }
+  return(plot);
 }
 
 #' Adds group means to the ENA plot.
@@ -532,22 +545,19 @@ add_nodes <- function(x, ..., return_plot = FALSE) {
 #'
 #' @export
 with_means <- function(x) {
-  set <- x
-  # plot <- set$model$plot
-  plot <- set$plots[[length(set$plots)]]
+  plot <- x;
+  set <- plot$enaset;
 
   for(point_group in plot$plotted$points) {
-    plot <- ena.plot.group(plot, point_group$data, colors = point_group$color[1])
+    plot <- ena.plot.group(plot, point_group$data[[1]], colors = point_group$color[1])
 
     plot$plotted$means[[length(plot$plotted$means) + 1]] <- list(
-      data = colMeans(point_group$data),
+      data = colMeans(point_group$data[[1]]),
       color = point_group$color[1]
     )
   }
 
-  # set$model$plot <- plot
-  set$plots[[length(set$plots)]] <- plot
-  invisible(set)
+  return(plot)
 }
 
 
@@ -775,47 +785,31 @@ clear <- function(x, wh = seq(x$plots)) {
   invisible(x)
 }
 
-#' Scales the points and means in an ENA set.
+#' Scales the points in an ENA set.
 #'
-#' This function adjusts the scale of the points and means in the ENA set to match the range of the network.
+#' This function adjusts the scale of the points in the ENA set to match the range of the network.
 #'
-#' @param x An ENA set object containing the plots.
-#' @param center Logical; if `TRUE`, centers the data before scaling. Default is `TRUE`.
-#' @param scale Logical; if `TRUE`, scales the data. Default is `TRUE`.
+#' @param x An ENAplot object containing the set to scale.
+#' @param center Unused parameter, included for compatibility.
+#' @param scale A numeric value specifying the scaling factor. If `NULL`, the function will determine the scale based on the data.
 #'
-#' @return Invisibly returns the modified ENA set object with scaled points and means.
-#' 
+#' @return The modified ENAplot object with scaled points.
+#'
 #' @export
-scale.ena.set <- function(x, center = TRUE, scale = TRUE) {
-  set <- x
-  plot <- set$plots[[length(set$plots)]]
+scale.ENAplot <- function(x, center = NULL, scale = NULL) {
+  plot <- x
+  set <- plot$enaset;
 
-  dims <- 1:2
-  point_range <- range(sapply(plot$plotted$points, function(d) range(as.matrix(d$data)[,dims])))
-  network_range <-range(sapply(plot$plotted$networks, function(n) range(as.matrix(n$nodes)[,dims])))
+  point_range <- range(set$points);
+  network_range <- range(set$rotation$nodes);
 
-  scale_factor <- min(abs(network_range) / abs(point_range))
-
-  for( points in plot$plotted$points) {
-    dim_cols = colnames(points$data)[find_dimension_cols(points$data)]
-    points$data[, c(dim_cols) := lapply(.SD, function(x) x * scale_factor), .SDcols = c(dim_cols)]
-    more_args = list()
-    more_args$enaplot <- plot
-    more_args$points <- points$data
-    more_args$colors <- points$color
-    plot <- do.call(ena.plot.points, more_args)
-  }
-  for(means in plot$plotted$means) {
-    more_args <- list()
-    more_args$enaplot <- plot
-    more_args$points <- means$data * scale_factor
-    more_args$colors <- means$color
-    plot <- do.call(ena.plot.group, more_args)
+  if(is.null(scale)) {
+    scale <- min(abs(network_range) / abs(point_range));
   }
 
-  set$plots[[length(set$plots)]] <- plot
+  set$points <- set$points * scale;
 
-  invisible(set)
+  return(plot)
 }
 
 #' Updates the axis ranges of an ENA plot based on the plotted data.
@@ -879,6 +873,7 @@ check_range <- function(x) {
 #'
 #' @export
 show <- function(x, ...) {
+  # browser()
   x$plots <- lapply(x$plots, check_range)
   print(x, ..., plot = T, set = F)
   invisible(x)

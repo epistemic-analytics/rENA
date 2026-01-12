@@ -81,7 +81,7 @@ gmr <- function(V,X) {
   r <- NULL; # return direction
   Vx1 <- NULL; # main effect of X1 without adjustment
   target <- X[[1]]          # always returns the column itself
-  print(colnames(X)[1])
+  
   if (is.list(target)) {    # flatten if it's a list-column
     target <- unlist(target, recursive = FALSE)
   }

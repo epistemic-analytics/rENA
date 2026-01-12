@@ -1,13 +1,16 @@
-#' Title
+#' Accumulate Connection Counts for ENA
 #'
-#' @param x data.frame
-#' @param units character vector
-#' @param codes character vector
-#' @param horizon character vector
-#' @param ... arguments passed along to other functions
-#' @param ordered logical defaults to FALSE for creating unordered networks
+#' This function takes a data.frame and accumulates co-occurrences of codes within specified units and conversations (horizon), preparing it for ENA. It's designed to be used with pipes (`|>`)..
 #'
-#' @return ena object
+#' @param x A data.frame or similar object containing the data to be analyzed.
+#' @param units A character vector specifying the columns that define the units of analysis.
+#' @param codes A character vector specifying the columns that contain the codes for co-occurrence analysis.
+#' @param horizon A character vector specifying the columns that define the conversational boundaries (horizon).
+#' @param ... Additional arguments passed to underlying accumulation functions.
+#' @param ordered A logical value. If TRUE, creates ordered networks (A -> B is different from B -> A). Defaults to FALSE.
+#' @param binary A logical value. If TRUE, connection counts are binarized (0 or 1). Defaults to TRUE.
+#'
+#' @return An ena.set object containing the accumulated connection counts and metadata.
 #' @export
 #'
 #' @examples
@@ -23,11 +26,12 @@
 #'
 accumulate <- function(
     x,
-    units = units(x),
-    codes = codes(x),
-    horizon = horizon(x),
+    units = rENA::units(x),
+    codes = rENA::codes(x),
+    horizon = rENA::horizon(x),
     ...,
-    ordered = FALSE
+    ordered = FALSE,
+    binary = TRUE
 ) {
   # set <- ena.accumulate.data.file(
   #   file = x,
@@ -53,23 +57,32 @@ accumulate <- function(
     }
   )
 
-  args$default_window <- if (is.null(args$default_window)) 1 else args$default_window
-  args$default_weight <- if (is.null(args$default_weight)) 1 else args$default_weight
-  win_wgts <- tma::context_tensor(
-    df = x,
-    sender_cols = args$tma_ground_cols,
-    receiver_cols = args$tma_response_cols,
-    mode_column = args$mode_column,
-    ...
-  )
+  win_wgts <- if(is.null(args$tensor)) {
+    args$default_window <- if (is.null(args$default_window)) 1 else args$default_window;
+    args$default_weight <- if (is.null(args$default_weight)) 1 else args$default_weight;
+    tma::context_tensor(
+      df = x,
+      sender_cols = args$tma_ground_cols,
+      receiver_cols = args$tma_response_cols,
+      mode_column = ifelse(is.null(args$mode_column), tma::ATTR_NAMES$CONTEXT_ID, args$mode_column),
+      default_window = args$default_window,
+      default_weight = args$default_weight
+    )
+  }
+  else {
+    args$tensor
+  }
 
   # args$ordered <- if (is.null(args$ordered)) TRUE else FALSE
+  # browser()
   set <- tma::accumulate(
     context_model = contexts,
     # multidim_arr = multidim_arr,
+    tensor = win_wgts,
     # time_column = args$time_column,
     codes = make.names(codes),
-    ordered = ordered
+    ordered = ordered,
+    binary = binary
   )
 
   set$rotation <- list(
@@ -84,47 +97,21 @@ accumulate <- function(
   return(set)
 }
 
-#' Reclassify specified columns as units in a data.table
-#'
-#' This function reclassifies specified columns of a data.table to the 'qe.unit' format.
-#' If the input is not already of class 'qe.data', it is first converted to 'qe.data'.
-#'
-#' @param x A data.table. The data.table containing the columns to be reclassified.
-#' @param ... Additional arguments specifying the names of the columns to be reclassified.
-#'
-#' @return The modified data.table with specified columns reclassified as 'qe.unit'.
-#' @examples
-#' library(data.table)
-#' dt <- data.table(a = 1:5, b = 6:10)
-#' dt <- units(dt, "a", "b")
-#' @export
-unit_cols <- function(x, ...) {
-  if (!is.qe.data(x)) {
-    x <- as.qe.data(x)
-  }
-
-  wh <- list(...)
-  return(units(x, wh))
-}
-
-
-
 ##' Build a Complete ENA Model
 #'
-#' This function applies a full ENA modeling pipeline to accumulated data, including normalization, centering, rotation, projection, and optional optimization.
-#' Each step can be customized by supplying alternative functions. Additional rotation parameters can be passed via `rotate_params`.
+#' This function applies a full ENA modeling pipeline to accumulated data. It is a convenience wrapper that chains together normalization, centering, rotation, projection, and optional optimization. Each step can be customized by supplying an alternative function.
 #'
-#' @param data An accumulated ENA data object (typically the result of `accumulate`).
-#' @param ... Additional arguments passed to the rotation function.
-#' @param normalize Function to use for normalization (default: `sphere_norm`).
-#' @param center_with Function to use for centering (default: `center`).
-#' @param rotate_with Function to use for rotation (default: `rotate`).
-#' @param project_with Function to use for projection (default: `project`).
-#' @param optimize_with Function to use for optimization (default: `optimize`).
-#' @param rotate_fun Function to use for rotation (default: `ena.svd`).
-#' @param rotate_params List of additional parameters to pass to the rotation function.
+#' @param data An `ena.set` object, typically the result of `accumulate()`.
+#' @param ... Additional arguments passed to the rotation function specified by `rotate_fun`.
+#' @param normalize A function to normalize the connection counts. Defaults to `sphere_norm`.
+#' @param center_with A function to center the normalized data. Defaults to `center`.
+#' @param rotate_with A function to perform the rotation (e.g., SVD). Defaults to `rotate`.
+#' @param project_with A function to project the points into the rotated space. Defaults to `project`.
+#' @param optimize_with A function to optimize node positions. Defaults to `optimize`. Can be set to `NULL` or `FALSE` to skip.
+#' @param rotate_fun The specific rotation function to be used by `rotate_with`. Defaults to `ena.rotate.by.generalized`.
+#' @param rotate_params A list of additional parameters to pass to the `rotate_fun`.
 #'
-#' @return An ENA set object with all modeling steps applied.
+#' @return An `ena.set` object with a complete ENA model, including projected points and node positions.
 #' @export
 #'
 #' @examples
@@ -146,40 +133,48 @@ model <- function(
   project_with = project,
   optimize_with = optimize,
   # Rotation specific parameters
-  rotate_fun = ena.svd, 
+  rotate_fun = ena.rotate.by.generalized,
   rotate_params = list()
 ) {
-  x <- normalize(data)
-  x <- center_with(x)
+  # if(is(data, "ena.ordered.set")) {
+  #   if(requireNamespace("ona", quietly = TRUE)) {
+  #     x <- ona::model(data, ...);
+  #   } else {
+  #     stop("The 'ona' package is required for ordered ENA modeling. Please install it from CRAN.");
+  #   }
+  # }
+  # else {
+    x <- normalize(data)
+    x <- center_with(x)
 
-  if (length(rotate_params) > 0) {
-    x <- do.call(rotate_with, list(x, wh = rotate_fun, by = unlist(rotate_params)))
-  } else {
-    x <- rotate_with(x, wh = rotate_fun, by = rotate_params)
-  }
+    if (length(rotate_params) > 1) {
+      x <- do.call(rotate_with, list(x, wh = rotate_fun, by = unlist(rotate_params)))
+    }
+    else {
+      x <- rotate_with(x, wh = rotate_fun, by = rotate_params)
+    }
 
-  x <- project_with(x)
+    x <- project_with(x)
 
-  if (!is.null(optimize_with) && !isFALSE(optimize_with)) {
-    x <- optimize_with(x)
-  }
+    if (!is.null(optimize_with) && !isFALSE(optimize_with)) {
+      x <- optimize_with(x)
+    }
+  # }
 
   return(x)
 }
 
-#' Apply Spherical Normalization to ENA Data
+##' Apply Spherical Normalization to ENA Data
 #'
-#' This function applies spherical normalization to an ENA set or a matrix of connection counts.
-#' It computes normalized line weights and updates the center vector of the rotation.
+#' This function applies spherical normalization to the connection counts in an `ena.set` object or to a raw matrix of connection counts. Normalization is a key step before centering and rotation in ENA.
 #'
-#' @param x An \code{ena.set} object or a matrix of connection counts to be normalized.
-#' @param add.meta Logical. If \code{TRUE} (default), metadata will be included in the output.
+#' @param x An `ena.set` object or a numeric matrix of connection counts.
+#' @param add.meta A logical value. If `TRUE` (the default), metadata from the `ena.set` is preserved and included in the output. This parameter is ignored if `x` is a matrix.
 #'
-#' @return The input \code{ena.set} object with normalized line weights and updated center vector.
+#' @return If `x` is an `ena.set`, it returns the modified `ena.set` with a new `line.weights` matrix and an updated `centervec` in the `rotation` object. If `x` is a matrix, it returns a matrix of normalized line weights.
 #' @export
 #'
 #' @examples
-#' # Assuming 'set' is an ena.set object:
 #' data(RS.data)
 #'
 #' codes <- c("Data", "Technical.Constraints", "Performance.Parameters",
@@ -195,24 +190,31 @@ sphere_norm <- function(x, add.meta = TRUE) {
   names_ <- NULL
   meta_ <- NULL
 
+  # verify that the connection.counts exist
+
   if (is(x, "ena.set")) {
+    if (is.null(x$connection.counts)) {
+      stop("Connection counts are missing.")
+    }
+
     x_ <- as.matrix(x$connection.counts)
-    # names_ <- svector_to_ut(x$rotation$codes);
-    # names_ <- apply(x$rotation$adjacency.key, 2, paste, collapse = " & ");
-    names_ <- colnames(x_) # sapply(colnames(x_), function(y) strsplit(y, "\\s?&\\s?")[[1]], simplify = T);
+    names_ <- colnames(x_)
     if (isTRUE(add.meta)) {
       meta_ <- x$meta.data
     }
-  } else {
-    x_ <- x
-    names_ <- colnames(as.matrix(x))
+
+    x$line.weights <- fun_sphere_norm(x_)
+    colnames(x$line.weights) <- names_
+
+    x$line.weights <- as_line_weights_matrix(x$line.weights, meta_)
+    x$rotation$centervec <- colMeans(x$line.weights)
   }
-
-  x$line.weights <- fun_sphere_norm(as.matrix(x_))
-  colnames(x$line.weights) <- names_
-
-  x$line.weights <- as_line_weights_matrix(x$line.weights, meta_)
-  x$rotation$centervec <- colMeans(x$line.weights)
+  else {
+    x_ <- as.matrix(x);
+    names_ <- colnames(x_);
+    x <- fun_sphere_norm(x_);
+    colnames(x) <- names_;
+  }
 
   return(x)
 }
@@ -292,17 +294,15 @@ as_nodes_matrix <- function(x, rows, cols = NULL, cls = "ena.matrix") {
 
 ##' Center ENA Data
 #'
-#' This function centers ENA data by subtracting the mean from each dimension of the line weights or input matrix.
-#' The result is stored in the model's points for projection. Optionally, metadata can be included in the output.
+#' This function centers the line weights of an `ena.set` by subtracting the mean of each connection from all units. This is a standard step in preparing data for rotation.
 #'
-#' @param x An \code{ena.set} object or a matrix to be centered.
-#' @param add.meta Logical. If \code{TRUE} (default), metadata will be included in the output.
+#' @param x An `ena.set` object (typically after `sphere_norm()`) or a numeric matrix.
+#' @param add.meta A logical value. If `TRUE` (the default), metadata is preserved. Ignored if `x` is a matrix.
 #'
-#' @return The input \code{ena.set} object with centered points for projection (and metadata if requested).
+#' @return If `x` is an `ena.set`, it returns the modified `ena.set` with the centered data stored in `x$model$points.for.projection`. If `x` is a matrix, it returns a centered matrix.
 #' @export
 #'
 #' @examples
-#' # Assuming 'set' is an ena.set object:
 #' data(RS.data)
 #'
 #' codes <- c("Data", "Technical.Constraints", "Performance.Parameters",
@@ -320,22 +320,30 @@ center <- function(x, add.meta = TRUE) {
   meta_ <- NULL
 
   if (is(x, "ena.set")) {
-    # x_ <- x$line.weights;
+    # make sure the line weights exist and are a matrix
+    if (is.null(x$line.weights)) {
+      stop("Missing line.weights on the provided ENA set. This is typically created using the 'accumulate' and 'sphere_norm' functions.")
+    }
+
     x_ <- as.matrix(x$line.weights)
-    # names_ <- svector_to_ut(x$rotation$codes);
-    names_ <- apply(x$rotation$adjacency.key, 2, paste, collapse = " & ")
+    is_unordered_set <- ncol(x_) == choose(length(x$rotation$codes), 2)
+    names_ <- apply(tma::adjacency_key(x$rotation$codes, is_unordered_set), 2, paste, collapse = " & ")
     if (isTRUE(add.meta)) {
       meta_ <- x$meta.data
     }
-  } else {
-    x_ <- x
-    names_ <- colnames(as.matrix(x_))
+
+    x$model$points.for.projection <- center_data_c(as.matrix(x_))
+    colnames(x$model$points.for.projection) <- names_
+
+    x$model$points.for.projection <- as_points_matrix(x$model$points.for.projection, meta_)
+  }
+  else {
+    x_ <- as.matrix(x);
+    names_ <- colnames(x_);
+    x <- center_data_c(x_);
+    colnames(x) <- names_;
   }
 
-  x$model$points.for.projection <- center_data_c(as.matrix(x_))
-  colnames(x$model$points.for.projection) <- names_
-
-  x$model$points.for.projection <- as_points_matrix(x$model$points.for.projection, meta_)
 
   return(x)
 }
@@ -346,9 +354,7 @@ center <- function(x, add.meta = TRUE) {
 #'
 #' @param x An \code{ena.set} object to be rotated.
 #' @param ... Optional formulas or additional arguments for rotation.
-#' @param by Optional. A variable name or grouping variable for rotation.
 #' @param wh Function to use for rotation (default: \code{ena.svd}).
-#' @param add.meta Logical. If \code{TRUE} (default), metadata will be included in the output.
 #'
 #' @return The rotated \code{ena.set} object with updated rotation matrices.
 #' @export
@@ -368,40 +374,48 @@ center <- function(x, add.meta = TRUE) {
 #'   center() |>
 #'   rotate()
 rotate <- function(
-  x, 
+  x,
   ...,
-  by = NULL, 
-  wh = ena.svd, 
-  add.meta = TRUE
+  wh = ena.rotate.by.generalized
 ) {
   x_ <- NULL
   names_ <- NULL
   codes_ <- NULL
   meta_ <- NULL
+  dot_args <- list(...)
 
   if (is(x, "ena.set")) {
-    x_ <- as.matrix(x$line.weights)
-    codes_ <- as.matrix(x$rotation$codes)
-    # names_ <- svector_to_ut(x$rotation$codes);
-    names_ <- apply(x$rotation$adjacency.key, 2, paste, collapse = " & ")
+    # Make sure points.for.projection exists
+    if (is.null(x$model$points.for.projection)) {
+      stop("Missing `points.for.projection` on the provided ENA set. This is typically created using ?center()")
+    }
 
-    if (isTRUE(add.meta)) {
+    if (!is.null(dot_args$add.meta) && isTRUE(dot_args$add.meta)) {
       meta_ <- x$meta.data
     }
-  } else {
-    stop("Rotate by matrix alone is not implemented.")
-    # x_ <- x;
-    # browser();
-    # # Need codes from the matrix!
-    # names_ <- colnames(as.matrix(x_));
+  }
+  else {
+    # Construct ENAset-like list from provided matrix
+    x_ <- as.matrix(x);
+    names_ <- colnames(as.matrix(x_));
+    codes_ <- unique(unlist(strsplit(names_, " & ")));
+
+    x <- list(
+      model = list(
+        points.for.projection = x_
+      ),
+      rotation = list(
+        codes = codes_
+      )
+    )
   }
 
   by_vals <- NULL
 
-  dot_args <- list(...)
-  if (length(dot_args) == 0) {
-    wh <- ena.svd
-  } else {
+  # if (length(dot_args) == 0) {
+  #   wh <- ena.svd
+  # }
+  # else {
     dot_formulas <- sapply(dot_args, function(d) {
       d2 <- tryCatch(
         {
@@ -417,23 +431,40 @@ rotate <- function(
         wh <- ena.rotate.by.hena.regression_2
         by_vals <- list(params = dot_args)
         names(by_vals$params) <- c("x_var", "y_var")[seq_along(by_vals)]
-      } else {
+      }
+      else {
         stop("If rotating using a formula, all must be formulas")
       }
-    } else {
-      # Means rotation?
-      browser()
     }
-  }
+    else {
+      # Means rotation?
+      by_vals <- list();
+      if (!is.null(dot_args$params)) {
+        by_vals <- dot_args$params
+      }
+      else if (!is.null(dot_args$by$params)) {
+        by_vals <- dot_args$by$params
+      }
+      else {
+        by_vals <- list(
+          x_var = NULL,
+          y_var = NULL
+        )
 
-  # if(!is.null(dot_args$rotate_params)) {
-  #   by_vals <- list(params = dot_args$rotate_params);
+        first_meta <- setdiff(colnames(x$connection.counts)[find_meta_cols(x$connection.counts)], c("QEUNIT", "ENA_UNIT"))[1]
+        # args$rotate.by is a list of columns to subset from accum$connection.counts
+        by_vals$x_var <- x$connection.counts[, ..first_meta, drop = FALSE];
+      }
+    }
   # }
-  x$rotation <- do.call(wh, c(list(enaset = x, as_object = FALSE), by_vals))
+
+  x$rotation <- do.call(wh, list(enaset = x, params = by_vals))
+
   # Ensure x$rotation is a list with required elements
   if (!is.list(x$rotation)) {
     stop("Rotation function did not return a list as expected.")
   }
+
   # Only extract elements that exist in the returned list
   rotation_elements <- c("eigenvalues", "codes", "node.positions", "rotation")
   x$rotation <- x$rotation[intersect(rotation_elements, names(x$rotation))]
@@ -442,7 +473,8 @@ rotate <- function(
     x$rotation.matrix <- as_rotation_matrix(x$rotation$rotation)
     x$rotation$rotation.matrix <- x$rotation.matrix
     x$rotation$rotation <- NULL
-  } else {
+  }
+  else {
     x$rotation.matrix <- NULL
     x$rotation$rotation.matrix <- NULL
   }
@@ -460,6 +492,7 @@ rotate <- function(
 #' Optionally, metadata can be included in the resulting points matrix.
 #'
 #' @param x An \code{ena.set} object containing the points for projection and rotation matrix.
+#' @param rotation Optional. A rotation matrix to use for projection if \code{x} is not an \code{ena.set}.
 #' @param add.meta Logical. If \code{TRUE} (default), metadata will be included in the output.
 #'
 #' @return The input \code{ena.set} object with the projected points matrix (and metadata if requested).
@@ -480,17 +513,32 @@ rotate <- function(
 #'   center() |>
 #'   rotate() |>
 #'   project()
-project <- function(x, add.meta = TRUE) {
+project <- function(x, rotation = NULL, add.meta = TRUE) {
   meta_ <- NULL
 
-  points <- as.matrix(x$model$points.for.projection) %*% as.matrix(x$rotation.matrix)
+  if (is(x, "ena.set")) {
+    points <- as.matrix(x$model$points.for.projection) %*% as.matrix(x$rotation.matrix);
 
-  if (isTRUE(add.meta)) {
-    meta_ <- x$meta.data
+    if (isTRUE(add.meta)) {
+      meta_ <- x$meta.data;
+    }
+    x$points <- as_points_matrix(points, meta_);
+
+    var_rot_data <- var(points)
+    diagonal_variance <- as.vector(diag(var_rot_data))
+    x$model$variance <- diagonal_variance / sum(diagonal_variance)
+    names(x$model$variance) <- colnames(x$rotation$rotation.matrix)[-1]
+
+    return(x)
   }
-  x$points <- as_points_matrix(points, meta_)
+  else {
+    if(is.null(rotation)) {
+      stop("When providing a matrix, a rotation matrix must also be provided")
+    }
 
-  return(x)
+    points <- as.matrix(x) %*% as.matrix(rotation);
+    return(points);
+  }
 }
 
 
@@ -500,6 +548,7 @@ project <- function(x, add.meta = TRUE) {
 #' using the current points and rotation information.
 #'
 #' @param x An \code{ena.set} object for which to optimize node and centroid positions.
+#' @param weights Optional. A numeric matrix of connection weights. If provided, the function will use this matrix instead of the connection counts from the \code{ena.set}.
 #'
 #' @return The input \code{ena.set} object with updated node and centroid positions.
 #' @export
@@ -520,10 +569,34 @@ project <- function(x, add.meta = TRUE) {
 #'   rotate() |>
 #'   project() |>
 #'   optimize()
-optimize <- function(x) {
-  positions <- lws.positions.sq(x)
+optimize <- function(x, weights = NULL) {
+  if(!is(x, "ena.set")) {
+    if(is.null(weights)) {
+      stop("When providing a matrix, weights must also be provided")
+    }
 
-  x$rotation$nodes <- as_nodes_matrix(positions$node.positions, list("code" = x$rotation$codes), cols = colnames(as.matrix(x$points)), cls = "ena.nodes")
+    x_ <- x;
+    x <- list(
+      points = x_,
+      line.weights = weights,
+      rotation = list(
+        codes = unique(unlist(strsplit(colnames(as.matrix(weights)), " & ")))
+      )
+    )
+  }
+
+  points = as.matrix(x$points);
+  weights = as.matrix(x$line.weights);
+  if(is(x, "ena.ordered.set")) {
+    positions <- directed_node_positions(weights, points, ncol(points));
+    x$rotation$nodes <- as_nodes_matrix(positions$nodes, list("code" = x$rotation$codes), cols = colnames(as.matrix(x$points)), cls = "ena.nodes")
+  }
+  else {
+    # browser()
+    positions <- lws_lsq_positions(weights, points, ncol(points));
+    x$rotation$nodes <- as_nodes_matrix(positions$nodes, list("code" = x$rotation$codes), cols = colnames(as.matrix(x$points)), cls = "ena.nodes")
+  }
+
   x$model$centroids <- as_nodes_matrix(positions$centroids, rows = list("ENA_UNIT" = x$points$ENA_UNIT), cols = colnames(as.matrix(x$points)))
 
   return(x)

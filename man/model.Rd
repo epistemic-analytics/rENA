@@ -12,35 +12,34 @@ model(
   rotate_with = rotate,
   project_with = project,
   optimize_with = optimize,
-  rotate_fun = ena.svd,
+  rotate_fun = ena.rotate.by.generalized,
   rotate_params = list()
 )
 }
 \arguments{
-\item{data}{An accumulated ENA data object (typically the result of `accumulate`).}
+\item{data}{An `ena.set` object, typically the result of `accumulate()`.}
 
-\item{...}{Additional arguments passed to the rotation function.}
+\item{...}{Additional arguments passed to the rotation function specified by `rotate_fun`.}
 
-\item{normalize}{Function to use for normalization (default: `sphere_norm`).}
+\item{normalize}{A function to normalize the connection counts. Defaults to `sphere_norm`.}
 
-\item{center_with}{Function to use for centering (default: `center`).}
+\item{center_with}{A function to center the normalized data. Defaults to `center`.}
 
-\item{rotate_with}{Function to use for rotation (default: `rotate`).}
+\item{rotate_with}{A function to perform the rotation (e.g., SVD). Defaults to `rotate`.}
 
-\item{project_with}{Function to use for projection (default: `project`).}
+\item{project_with}{A function to project the points into the rotated space. Defaults to `project`.}
 
-\item{optimize_with}{Function to use for optimization (default: `optimize`).}
+\item{optimize_with}{A function to optimize node positions. Defaults to `optimize`. Can be set to `NULL` or `FALSE` to skip.}
 
-\item{rotate_fun}{Function to use for rotation (default: `ena.svd`).}
+\item{rotate_fun}{The specific rotation function to be used by `rotate_with`. Defaults to `ena.rotate.by.generalized`.}
 
-\item{rotate_params}{List of additional parameters to pass to the rotation function.}
+\item{rotate_params}{A list of additional parameters to pass to the `rotate_fun`.}
 }
 \value{
-An ENA set object with all modeling steps applied.
+An `ena.set` object with a complete ENA model, including projected points and node positions.
 }
 \description{
-This function applies a full ENA modeling pipeline to accumulated data, including normalization, centering, rotation, projection, and optional optimization.
-Each step can be customized by supplying alternative functions. Additional rotation parameters can be passed via `rotate_params`.
+This function applies a full ENA modeling pipeline to accumulated data. It is a convenience wrapper that chains together normalization, centering, rotation, projection, and optional optimization. Each step can be customized by supplying an alternative function.
 }
 \examples{
 data(RS.data)

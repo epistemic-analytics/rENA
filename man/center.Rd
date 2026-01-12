@@ -7,19 +7,17 @@
 center(x, add.meta = TRUE)
 }
 \arguments{
-\item{x}{An \code{ena.set} object or a matrix to be centered.}
+\item{x}{An `ena.set` object (typically after `sphere_norm()`) or a numeric matrix.}
 
-\item{add.meta}{Logical. If \code{TRUE} (default), metadata will be included in the output.}
+\item{add.meta}{A logical value. If `TRUE` (the default), metadata is preserved. Ignored if `x` is a matrix.}
 }
 \value{
-The input \code{ena.set} object with centered points for projection (and metadata if requested).
+If `x` is an `ena.set`, it returns the modified `ena.set` with the centered data stored in `x$model$points.for.projection`. If `x` is a matrix, it returns a centered matrix.
 }
 \description{
-This function centers ENA data by subtracting the mean from each dimension of the line weights or input matrix.
-The result is stored in the model's points for projection. Optionally, metadata can be included in the output.
+This function centers the line weights of an `ena.set` by subtracting the mean of each connection from all units. This is a standard step in preparing data for rotation.
 }
 \examples{
-# Assuming 'set' is an ena.set object:
 data(RS.data)
 
 codes <- c("Data", "Technical.Constraints", "Performance.Parameters",

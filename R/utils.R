@@ -115,6 +115,29 @@ remove_meta_data <- function(x) {
 
    vals
 }
+
+#' Multiply ena.matrix objects
+#' Element-wise multiplication of dimension columns in an ena.matrix by another ena.matrix or numeric matrix.
+#' If e2 is an ena.matrix, it is converted to a standard matrix before multiplication.
+#' The multiplication is applied only to the dimension columns of e1, while other columns remain
+#' unchanged.
+#' 
+#' @param e1 An ena.matrix object whose dimension columns will be multiplied.
+#' @param e2 An ena.matrix or numeric matrix to multiply with the dimension columns of
+#' e1.
+#' 
+#' @return An ena.matrix object with the dimension columns of e1 multiplied by e2.
+#' @exportS3Method "*" ena.matrix
+"*.ena.matrix" <- function (e1, e2) {
+   e2m <- e2
+   if(is(e2, "ena.matrix")) {
+      e2m <- as.matrix(e2)
+   }
+   
+   dim_cols <- colnames(e1)[find_dimension_cols(e1)]
+   e1[, (dim_cols) := Map(function(col, mult) col * mult, .SD, as.data.frame(e2m)), .SDcols = dim_cols]
+}
+
 # "$.ena.plot" <- function(x, i) {
 #  browser()
 # }
@@ -314,15 +337,15 @@ means_rotate <- function(x, on = NULL) {
 }
 
 .return <- function(x, invisible = T, from_plot = F) {
-   # browser()
    x$`_plot_op` = from_plot
-# if() {
-#       print(x$plots)
-#    }
+   if(isTRUE(from_plot)) {
+      
+   }
 
    if(invisible == T) {
       invisible(x)
-   } else {
+   }
+   else {
       return(x)
    }
 }

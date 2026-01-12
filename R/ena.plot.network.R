@@ -179,8 +179,15 @@ ena.plot.network = function(
   scale.weights = F,
   ...
 ) {
-  if(choose(nrow(node.positions), 2) != length(network)) {
-    stop(paste0("Network vector needs to be of length ", choose(nrow(node.positions), 2)))
+  expected_codes <- choose(nrow(node.positions), 2)
+  if(expected_codes != length(network)) {
+    # browser()
+    if(is.data.frame(network) && ncol(as.matrix(network)) == expected_codes) {
+      network = as.vector(as.matrix(network))
+    }
+    else {
+      stop(paste0("Network vector needs to be of length ", choose(nrow(node.positions), 2)))
+    }
   }
   node.rows <- NULL
   if(is(node.positions, "ena.nodes")) {

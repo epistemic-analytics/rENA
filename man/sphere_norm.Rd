@@ -7,19 +7,17 @@
 sphere_norm(x, add.meta = TRUE)
 }
 \arguments{
-\item{x}{An \code{ena.set} object or a matrix of connection counts to be normalized.}
+\item{x}{An `ena.set` object or a numeric matrix of connection counts.}
 
-\item{add.meta}{Logical. If \code{TRUE} (default), metadata will be included in the output.}
+\item{add.meta}{A logical value. If `TRUE` (the default), metadata from the `ena.set` is preserved and included in the output. This parameter is ignored if `x` is a matrix.}
 }
 \value{
-The input \code{ena.set} object with normalized line weights and updated center vector.
+If `x` is an `ena.set`, it returns the modified `ena.set` with a new `line.weights` matrix and an updated `centervec` in the `rotation` object. If `x` is a matrix, it returns a matrix of normalized line weights.
 }
 \description{
-This function applies spherical normalization to an ENA set or a matrix of connection counts.
-It computes normalized line weights and updates the center vector of the rotation.
+This function applies spherical normalization to the connection counts in an `ena.set` object or to a raw matrix of connection counts. Normalization is a key step before centering and rotation in ENA.
 }
 \examples{
-# Assuming 'set' is an ena.set object:
 data(RS.data)
 
 codes <- c("Data", "Technical.Constraints", "Performance.Parameters",

@@ -36,3 +36,5 @@ rENA/*
 pkgdown/*
 
 .vscode/
+
+gitleaks.json

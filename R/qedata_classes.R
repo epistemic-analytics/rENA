@@ -50,7 +50,8 @@ as.qe.data <- function(x) {
     }
   }
 
-  return(data.table::copy(x));
+  # return(data.table::copy(x));
+  return(x);
 }
 
 #' Convert a vector to 'qe.code' class

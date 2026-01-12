@@ -31,3 +31,6 @@ pkgdown/
 .vscode
 
 ^data-raw$
+
+.gitleaksignore
+gitleaks.json
