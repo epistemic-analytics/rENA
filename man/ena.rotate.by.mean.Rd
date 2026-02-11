@@ -12,6 +12,8 @@ ena.rotate.by.mean(enaset, groups = NULL, params = groups)
 \item{groups}{A list containing two logical vectors of length \code{nrow(ENA.set$ena.data$units)},
 where each vector defines whether a unit is in one of the two groups whose means
 are used to determine the dimensional reduction}
+
+\item{params}{A list containing two vectors of length \code{nrow(ENA.set$ena.data$units)},}
 }
 \value{
 \code{\link{ENARotationSet}}
