@@ -15,12 +15,18 @@ ena.rotate.by.generalized = function( enaset, params ) {
   }
 
   # x should be a data.frame with colnames
-  x <- params$x_var;
 
 
   # check if x is a data.frame
-  if (!is.data.frame(x)) {
-    stop("x_var must be a data.frame with column names");
+  if (!is.data.frame(params$x_var)) {
+    if(all(params$x_var %in% colnames(enaset$meta.data))) {
+      x <- enaset$meta.data[, params$x_var, with = FALSE];
+    } else {
+      stop(paste("x_var incorrect: ", paste(params$x_var, collapse = ", ")));
+    }
+  }
+  else {
+    x <- params$x_var;
   }
 
   if (is.null(enaset$points.normed.centered)) {
@@ -64,37 +70,41 @@ ena.rotate.by.generalized = function( enaset, params ) {
       }
     }
   }
-  if(is.null(x1))
-  {
+
+  if(is.null(x1)) {
     x1 = svd(Vx1)$v[,1]; # the leading eigenvector of Vx1
   }
   #orthogonalize x1 with x_vector
   p = as.numeric(t(x1)%*%x_vector);
-  if(abs(p)<0.99)
-  {
+  if(abs(p)<0.99) {
     x1 = x1 - p * x_vector;
     # re-normalize x1
     x1 <- x1 / sqrt(sum(x1^2));
     # deflate again
     defA <- defA - defA %*% x1 %*% t(x1); # this deflation should put the means back to x-axis (if the grouping variable is binary)
   }
+
   y_vector <-NULL;
   y_name = "";
   # if y is given as a data.frame, gmr on y
-  if (!is.null(params$y_var) && is.data.frame(params$y_var)) {
+  if (!is.null(params$y_var)) {
+    if(!is.data.frame(params$y_var)) {
+      if(all(params$y_var %in% colnames(enaset$meta.data))) {
+        params$y_var <- enaset$meta.data[, params$y_var, with = FALSE];
+      }
+      else {
+        stop("y_var must be a data.frame or a column name in enaset$meta.data");
+      }
+    } 
     y <- params$y_var;
     V <- defA;
     y_result <- gmr(V = defA, X = y);
     y_vector = y_result;
     y_name = "RR2";
-
-  }else
-  {
-
+  }
+  else {
     y_vector = svd(defA)$v[,1];
     y_name = "SVD2";
-
-
   }
 
   R <- matrix(c(x_vector, y_vector), ncol = 2);
