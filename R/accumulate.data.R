@@ -112,7 +112,7 @@ accumulate.data <- function(enadata) {
     # browser()
     dfDT.co.occurrences <- dfDT.conv.sum[,{
         ocs = data.table::as.data.table(rows_to_co_occurrences(.SD[,.SD,.SDcols=codes, with=T], binary = binary));
-        data.table::data.table(.SD,ocs, ENA_UNIT=merge_columns_c(.SD, cols = units.by, sep="."))
+        data.table::data.table(.SD,ocs, ENA_UNIT=merge_columns_c(.SD, cols = units.by, sep="::"))
       },
       .SDcols=unique(c(codes, conversations.by, trajectory.by, units.by)),
       with=T
