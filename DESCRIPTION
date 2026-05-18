@@ -12,10 +12,8 @@ Depends: R (>= 4.1.0)
 License: GPL-3 | file LICENSE
 URL: https://gitlab.com/epistemic-analytics/qe-packages/rENA
 BugReports: https://gitlab.com/epistemic-analytics/qe-packages/rENA/-/issues
-LinkingTo: Rcpp, RcppArmadillo, libqe
-Imports: 
+Imports:
     data.table,
-    Rcpp,
     R6,
     methods,
     stats,
@@ -24,7 +22,8 @@ Imports:
     parallel,
     scales,
     glmnet,
-    tma
+    tma,
+    libqe
 Suggests: testthat (>= 2.1.0), knitr, rmarkdown
 RoxygenNote: 7.3.3
-NeedsCompilation: yes
+NeedsCompilation: no
