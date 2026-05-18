@@ -12,7 +12,7 @@ Depends: R (>= 4.1.0)
 License: GPL-3 | file LICENSE
 URL: https://gitlab.com/epistemic-analytics/qe-packages/rENA
 BugReports: https://gitlab.com/epistemic-analytics/qe-packages/rENA/-/issues
-LinkingTo: Rcpp, RcppArmadillo
+LinkingTo: Rcpp, RcppArmadillo, libqe
 Imports: 
     data.table,
     Rcpp,

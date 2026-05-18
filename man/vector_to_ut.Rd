@@ -7,10 +7,10 @@
 vector_to_ut(v)
 }
 \arguments{
-\item{v}{[TBD]}
+\item{v}{Numeric matrix (treated as vector)}
 }
 \description{
-TBD
+Compute pairwise products for all j < i.
 }
 \details{
 Upper Triangle from Vector

@@ -7,13 +7,16 @@
 ena_correlation(points, centroids, conf_level = 0.95)
 }
 \arguments{
-\item{points}{TBD}
+\item{points}{Numeric matrix (units x dims)}
 
-\item{centroids}{TBD}
+\item{centroids}{Numeric matrix (units x dims)}
 
-\item{conf_level}{TBD}
+\item{conf_level}{Confidence level (default 0.95)}
 }
 \description{
 Calculate both Pearson correlations for the
-provided points and centorids
+provided points and centroids
+}
+\details{
+Calculate the correlations
 }

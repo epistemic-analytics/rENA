@@ -2,19 +2,19 @@
 % Please edit documentation in R/RcppExports.R
 \name{directed_node_positions}
 \alias{directed_node_positions}
-\title{Multiobjective, Component by Component, with Ellipsoidal Scaling, for directed ENA}
+\title{Directed ENA node positions}
 \usage{
 directed_node_positions(line_weights, points, numDims)
 }
 \arguments{
-\item{line_weights}{TBD}
+\item{line_weights}{Numeric matrix (units x connections)}
 
-\item{points}{TBD}
+\item{points}{Numeric matrix of rotated points (units x dims)}
 
-\item{numDims}{TBD}
+\item{numDims}{Number of dimensions}
 }
 \description{
-TBD
+Least-squares node positions for directed ENA.
 }
 \details{
 Multiobjective, Component by Component, with Ellipsoidal Scaling, for directed ENA

@@ -7,20 +7,14 @@
 fun_sphere_norm(dfM)
 }
 \arguments{
-\item{dfM}{A data.frame or matrix. Each row is treated as a vector to compute its L2 norm.}
+\item{dfM}{A data.frame or matrix}
 }
 \value{
-A numeric matrix with the same dimensions as `dfM`, with each row normalized to unit length (L2 norm = 1), unless the row is all zeros (in which case it remains zeros).
+Numeric matrix with each row normalized to unit length
 }
 \description{
-Normalizes each row of a numeric dataframe or matrix to have unit L2 norm (Euclidean length). Each row is divided by its own length, projecting all rows onto the unit hypersphere. Useful for analyses where direction is important but magnitude should be removed.
+Normalizes each row to unit L2 norm.
 }
 \details{
 Row-wise L2 (Sphere) Normalization
-
-This function computes the L2 norm (Euclidean length) of each row and divides the row by this value. Rows with zero length are left unchanged.
-}
-\examples{
-df <- data.frame(a = c(3, 4), b = c(0, 0))
-fun_sphere_norm(df)
 }

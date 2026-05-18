@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{directed_node_positions_with_ground_response_added}
 \alias{directed_node_positions_with_ground_response_added}
-\title{Node position optimization with ground and response weights/points added}
+\title{Directed node positions with ground+response combined}
 \usage{
 directed_node_positions_with_ground_response_added(
   line_weights,
@@ -11,14 +11,14 @@ directed_node_positions_with_ground_response_added(
 )
 }
 \arguments{
-\item{line_weights}{TBD}
+\item{line_weights}{Numeric matrix (units x connections)}
 
-\item{points}{TBD}
+\item{points}{Numeric matrix of rotated points (units x dims)}
 
-\item{numDims}{TBD}
+\item{numDims}{Number of dimensions}
 }
 \description{
-TBD
+Directed node positions with paired ground+response rows combined.
 }
 \details{
 Node position optimization with ground and response weights/points added

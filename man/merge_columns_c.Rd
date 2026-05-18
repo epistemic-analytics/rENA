@@ -9,12 +9,13 @@ merge_columns_c(df, cols, sep = "::")
 \arguments{
 \item{df}{Dataframe}
 
-\item{cols}{Vector}
+\item{cols}{Character vector of column names to merge}
 
-\item{sep}{Character seperator}
+\item{sep}{Separator string (default "::")}
 }
 \description{
-TBD
+Paste together multiple DataFrame columns with a separator,
+  used internally to construct unit-ID strings.
 }
 \details{
 Merge data frame columns
