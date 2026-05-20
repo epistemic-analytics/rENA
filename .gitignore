@@ -38,3 +38,4 @@ pkgdown/*
 .vscode/
 
 gitleaks.json
+/.claude
