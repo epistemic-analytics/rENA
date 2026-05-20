@@ -25,17 +25,17 @@ namespace rENA {
         }
     }
 
-    inline arma::umat combn_c2(double n) {
-        typedef SEXP(*Ptr_combn_c2)(SEXP);
-        static Ptr_combn_c2 p_combn_c2 = NULL;
-        if (p_combn_c2 == NULL) {
-            validateSignature("arma::umat(*combn_c2)(double)");
-            p_combn_c2 = (Ptr_combn_c2)R_GetCCallable("rENA", "_rENA_combn_c2");
+    inline std::vector<std::string> merge_columns_c(Rcpp::DataFrame df, Rcpp::CharacterVector cols, std::string sep = "::") {
+        typedef SEXP(*Ptr_merge_columns_c)(SEXP,SEXP,SEXP);
+        static Ptr_merge_columns_c p_merge_columns_c = NULL;
+        if (p_merge_columns_c == NULL) {
+            validateSignature("std::vector<std::string>(*merge_columns_c)(Rcpp::DataFrame,Rcpp::CharacterVector,std::string)");
+            p_merge_columns_c = (Ptr_merge_columns_c)R_GetCCallable("rENA", "_rENA_merge_columns_c");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_combn_c2(Shield<SEXP>(Rcpp::wrap(n)));
+            rcpp_result_gen = p_merge_columns_c(Shield<SEXP>(Rcpp::wrap(df)), Shield<SEXP>(Rcpp::wrap(cols)), Shield<SEXP>(Rcpp::wrap(sep)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
@@ -43,7 +43,7 @@ namespace rENA {
             throw Rcpp::LongjumpException(rcpp_result_gen);
         if (rcpp_result_gen.inherits("try-error"))
             throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<arma::umat >(rcpp_result_gen);
+        return Rcpp::as<std::vector<std::string> >(rcpp_result_gen);
     }
 
     inline arma::mat ena_correlation(arma::mat points, arma::mat centroids, double conf_level = 0.95) {
@@ -65,27 +65,6 @@ namespace rENA {
         if (rcpp_result_gen.inherits("try-error"))
             throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<arma::mat >(rcpp_result_gen);
-    }
-
-    inline std::vector<std::string> merge_columns_c(DataFrame df, CharacterVector cols, std::string sep = ".") {
-        typedef SEXP(*Ptr_merge_columns_c)(SEXP,SEXP,SEXP);
-        static Ptr_merge_columns_c p_merge_columns_c = NULL;
-        if (p_merge_columns_c == NULL) {
-            validateSignature("std::vector<std::string>(*merge_columns_c)(DataFrame,CharacterVector,std::string)");
-            p_merge_columns_c = (Ptr_merge_columns_c)R_GetCCallable("rENA", "_rENA_merge_columns_c");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_merge_columns_c(Shield<SEXP>(Rcpp::wrap(df)), Shield<SEXP>(Rcpp::wrap(cols)), Shield<SEXP>(Rcpp::wrap(sep)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
-            throw Rcpp::LongjumpException(rcpp_result_gen);
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<std::vector<std::string> >(rcpp_result_gen);
     }
 
     inline arma::rowvec vector_to_ut(arma::mat v) {
@@ -130,11 +109,11 @@ namespace rENA {
         return Rcpp::as<std::vector<std::string> >(rcpp_result_gen);
     }
 
-    inline arma::mat rows_to_co_occurrences(DataFrame df, bool binary = true) {
+    inline arma::mat rows_to_co_occurrences(Rcpp::DataFrame df, bool binary = true) {
         typedef SEXP(*Ptr_rows_to_co_occurrences)(SEXP,SEXP);
         static Ptr_rows_to_co_occurrences p_rows_to_co_occurrences = NULL;
         if (p_rows_to_co_occurrences == NULL) {
-            validateSignature("arma::mat(*rows_to_co_occurrences)(DataFrame,bool)");
+            validateSignature("arma::mat(*rows_to_co_occurrences)(Rcpp::DataFrame,bool)");
             p_rows_to_co_occurrences = (Ptr_rows_to_co_occurrences)R_GetCCallable("rENA", "_rENA_rows_to_co_occurrences");
         }
         RObject rcpp_result_gen;
@@ -151,11 +130,11 @@ namespace rENA {
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 
-    inline DataFrame ref_window_df(DataFrame df, float windowSize = 1, float windowForward = 0, bool binary = true) {
+    inline Rcpp::DataFrame ref_window_df(Rcpp::DataFrame df, float windowSize = 1, float windowForward = 0, bool binary = true) {
         typedef SEXP(*Ptr_ref_window_df)(SEXP,SEXP,SEXP,SEXP);
         static Ptr_ref_window_df p_ref_window_df = NULL;
         if (p_ref_window_df == NULL) {
-            validateSignature("DataFrame(*ref_window_df)(DataFrame,float,float,bool)");
+            validateSignature("Rcpp::DataFrame(*ref_window_df)(Rcpp::DataFrame,float,float,bool)");
             p_ref_window_df = (Ptr_ref_window_df)R_GetCCallable("rENA", "_rENA_ref_window_df");
         }
         RObject rcpp_result_gen;
@@ -169,14 +148,14 @@ namespace rENA {
             throw Rcpp::LongjumpException(rcpp_result_gen);
         if (rcpp_result_gen.inherits("try-error"))
             throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<DataFrame >(rcpp_result_gen);
+        return Rcpp::as<Rcpp::DataFrame >(rcpp_result_gen);
     }
 
-    inline DataFrame ref_window_lag(DataFrame df, int windowSize = 0, bool binary = true) {
+    inline Rcpp::DataFrame ref_window_lag(Rcpp::DataFrame df, int windowSize = 0, bool binary = true) {
         typedef SEXP(*Ptr_ref_window_lag)(SEXP,SEXP,SEXP);
         static Ptr_ref_window_lag p_ref_window_lag = NULL;
         if (p_ref_window_lag == NULL) {
-            validateSignature("DataFrame(*ref_window_lag)(DataFrame,int,bool)");
+            validateSignature("Rcpp::DataFrame(*ref_window_lag)(Rcpp::DataFrame,int,bool)");
             p_ref_window_lag = (Ptr_ref_window_lag)R_GetCCallable("rENA", "_rENA_ref_window_lag");
         }
         RObject rcpp_result_gen;
@@ -190,14 +169,14 @@ namespace rENA {
             throw Rcpp::LongjumpException(rcpp_result_gen);
         if (rcpp_result_gen.inherits("try-error"))
             throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<DataFrame >(rcpp_result_gen);
+        return Rcpp::as<Rcpp::DataFrame >(rcpp_result_gen);
     }
 
-    inline NumericMatrix fun_sphere_norm(DataFrame dfM) {
+    inline Rcpp::NumericMatrix fun_sphere_norm(Rcpp::DataFrame dfM) {
         typedef SEXP(*Ptr_fun_sphere_norm)(SEXP);
         static Ptr_fun_sphere_norm p_fun_sphere_norm = NULL;
         if (p_fun_sphere_norm == NULL) {
-            validateSignature("NumericMatrix(*fun_sphere_norm)(DataFrame)");
+            validateSignature("Rcpp::NumericMatrix(*fun_sphere_norm)(Rcpp::DataFrame)");
             p_fun_sphere_norm = (Ptr_fun_sphere_norm)R_GetCCallable("rENA", "_rENA_fun_sphere_norm");
         }
         RObject rcpp_result_gen;
@@ -211,14 +190,14 @@ namespace rENA {
             throw Rcpp::LongjumpException(rcpp_result_gen);
         if (rcpp_result_gen.inherits("try-error"))
             throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<NumericMatrix >(rcpp_result_gen);
+        return Rcpp::as<Rcpp::NumericMatrix >(rcpp_result_gen);
     }
 
-    inline NumericMatrix fun_skip_sphere_norm(DataFrame dfM) {
+    inline Rcpp::NumericMatrix fun_skip_sphere_norm(Rcpp::DataFrame dfM) {
         typedef SEXP(*Ptr_fun_skip_sphere_norm)(SEXP);
         static Ptr_fun_skip_sphere_norm p_fun_skip_sphere_norm = NULL;
         if (p_fun_skip_sphere_norm == NULL) {
-            validateSignature("NumericMatrix(*fun_skip_sphere_norm)(DataFrame)");
+            validateSignature("Rcpp::NumericMatrix(*fun_skip_sphere_norm)(Rcpp::DataFrame)");
             p_fun_skip_sphere_norm = (Ptr_fun_skip_sphere_norm)R_GetCCallable("rENA", "_rENA_fun_skip_sphere_norm");
         }
         RObject rcpp_result_gen;
@@ -232,7 +211,7 @@ namespace rENA {
             throw Rcpp::LongjumpException(rcpp_result_gen);
         if (rcpp_result_gen.inherits("try-error"))
             throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<NumericMatrix >(rcpp_result_gen);
+        return Rcpp::as<Rcpp::NumericMatrix >(rcpp_result_gen);
     }
 
     inline Rcpp::NumericMatrix center_data_c(arma::mat values) {
@@ -288,6 +267,48 @@ namespace rENA {
         {
             RNGScope RCPP_rngScope_gen;
             rcpp_result_gen = p_lws_lsq_positions(Shield<SEXP>(Rcpp::wrap(adjMats)), Shield<SEXP>(Rcpp::wrap(t)), Shield<SEXP>(Rcpp::wrap(numDims)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<Rcpp::List >(rcpp_result_gen);
+    }
+
+    inline Rcpp::List directed_node_positions(arma::mat line_weights, arma::mat points, int numDims) {
+        typedef SEXP(*Ptr_directed_node_positions)(SEXP,SEXP,SEXP);
+        static Ptr_directed_node_positions p_directed_node_positions = NULL;
+        if (p_directed_node_positions == NULL) {
+            validateSignature("Rcpp::List(*directed_node_positions)(arma::mat,arma::mat,int)");
+            p_directed_node_positions = (Ptr_directed_node_positions)R_GetCCallable("rENA", "_rENA_directed_node_positions");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_directed_node_positions(Shield<SEXP>(Rcpp::wrap(line_weights)), Shield<SEXP>(Rcpp::wrap(points)), Shield<SEXP>(Rcpp::wrap(numDims)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<Rcpp::List >(rcpp_result_gen);
+    }
+
+    inline Rcpp::List directed_node_positions_with_ground_response_added(arma::mat line_weights, arma::mat points, int numDims) {
+        typedef SEXP(*Ptr_directed_node_positions_with_ground_response_added)(SEXP,SEXP,SEXP);
+        static Ptr_directed_node_positions_with_ground_response_added p_directed_node_positions_with_ground_response_added = NULL;
+        if (p_directed_node_positions_with_ground_response_added == NULL) {
+            validateSignature("Rcpp::List(*directed_node_positions_with_ground_response_added)(arma::mat,arma::mat,int)");
+            p_directed_node_positions_with_ground_response_added = (Ptr_directed_node_positions_with_ground_response_added)R_GetCCallable("rENA", "_rENA_directed_node_positions_with_ground_response_added");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_directed_node_positions_with_ground_response_added(Shield<SEXP>(Rcpp::wrap(line_weights)), Shield<SEXP>(Rcpp::wrap(points)), Shield<SEXP>(Rcpp::wrap(numDims)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
