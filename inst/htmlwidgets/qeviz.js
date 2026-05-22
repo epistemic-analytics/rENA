@@ -1,5 +1,5 @@
 HTMLWidgets.widget({
-  name: "vizena",
+  name: "qeviz",
   type: "output",
 
   factory: function(el, width, height) {

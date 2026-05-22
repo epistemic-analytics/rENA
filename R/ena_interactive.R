@@ -1,30 +1,31 @@
-## ── VizENA htmlwidgets integration ───────────────────────────────────────────
+## ── qeviz interactive plot integration ───────────────────────────────────────
 ##
 ## Public API
-##   ena_plot_vizena()   — create a VizENA htmlwidget from an ena.set
-##   vizenaOutput()      — Shiny output binding
-##   renderVizena()      — Shiny render function
+##   ena.plot.interactive()   — create an interactive qeviz htmlwidget
+##   ena.export.html()        — write a self-contained HTML file
+##   enaInteractiveOutput()   — Shiny output binding
+##   renderEnaInteractive()   — Shiny render function
 ##
 ## Internal helpers
-##   .ena_to_vizena_data()     — convert ena.set to ENAModelData list
-##   .ena_frame()              — build an ENADataFrame list from a data.frame
-##   .vizena_group_ci()        — 95% t-interval boxes per group
-##   .vizena_group_outlier()   — IQR-based outlier boxes per group
+##   .ena_to_model_data()  — convert ena.set to qeviz ModelData list
+##   .ena_frame()          — build a QEFrame list from a data.frame
+##   .ena_group_ci()       — 95% t-interval bounds per group
+##   .ena_group_outlier()  — IQR-based outlier bounds per group
 ## ─────────────────────────────────────────────────────────────────────────────
 
 
 # ── Internal helpers ──────────────────────────────────────────────────────────
 
-#' Build an ENADataFrame list from a plain data.frame.
+#' Build a QEFrame list from a plain data.frame.
 #' @noRd
 .ena_frame <- function(df) {
   list(
     data  = lapply(seq_len(nrow(df)), function(i) as.list(df[i, , drop = FALSE])),
     types = as.list(setNames(
       sapply(df, function(col) {
-        if (is.numeric(col))   "numeric"
+        if (is.numeric(col))      "numeric"
         else if (is.integer(col)) "integer"
-        else                   "character"
+        else                      "character"
       }),
       names(df)
     ))
@@ -34,7 +35,7 @@
 #' Compute per-group 95% CI bounding boxes (t-interval on group mean).
 #' Returns a data.frame with columns: group, {dim}.low, {dim}.high for each dim.
 #' @noRd
-.vizena_group_ci <- function(points_df, group_col, dim_cols, conf_level = 0.95) {
+.ena_group_ci <- function(points_df, group_col, dim_cols, conf_level = 0.95) {
   groups <- unique(points_df[[group_col]])
   rows <- lapply(groups, function(g) {
     sub   <- points_df[points_df[[group_col]] == g, dim_cols, drop = FALSE]
@@ -63,15 +64,15 @@
 #' Compute per-group IQR-based outlier bounding boxes.
 #' Returns a data.frame with columns: group, {dim}.low, {dim}.high for each dim.
 #' @noRd
-.vizena_group_outlier <- function(points_df, group_col, dim_cols, iqr_factor = 1.5) {
+.ena_group_outlier <- function(points_df, group_col, dim_cols, iqr_factor = 1.5) {
   groups <- unique(points_df[[group_col]])
   rows <- lapply(groups, function(g) {
     sub <- points_df[points_df[[group_col]] == g, dim_cols, drop = FALSE]
     if (nrow(sub) < 1L) return(NULL)
     row <- list(group = g)
     for (d in dim_cols) {
-      q1 <- quantile(sub[[d]], 0.25, na.rm = TRUE)
-      q3 <- quantile(sub[[d]], 0.75, na.rm = TRUE)
+      q1  <- quantile(sub[[d]], 0.25, na.rm = TRUE)
+      q3  <- quantile(sub[[d]], 0.75, na.rm = TRUE)
       iqr <- q3 - q1
       row[[paste0(d, ".low")]]  <- as.numeric(q1 - iqr_factor * iqr)
       row[[paste0(d, ".high")]] <- as.numeric(q3 + iqr_factor * iqr)
@@ -84,23 +85,13 @@
 }
 
 #' Convert an ena.set to the ModelData list expected by qeviz.
-#'
-#' @param set        An \code{ena.set} object.
-#' @param group_col  Character. Name of the grouping column present in
-#'                   \code{set$points}. If \code{NULL} no group colouring is applied.
-#' @param dim_cols   Character vector of dimension column names to include.
-#'                   Defaults to \code{c("SVD1","SVD2")}.
-#' @param include_ci Logical. Include 95\% CI bounds in the groups frame. Default TRUE.
-#' @param conf_level Numeric. Confidence level for CI boxes. Default 0.95.
-#' @param iqr_factor Numeric. IQR multiplier for outlier boxes (deprecated). Default 1.5.
-#' @return A named list conforming to qeviz ModelData.
 #' @noRd
-.ena_to_vizena_data <- function(set,
-                                 group_col  = NULL,
-                                 dim_cols   = c("SVD1", "SVD2"),
-                                 include_ci = TRUE,
-                                 conf_level = 0.95,
-                                 iqr_factor = 1.5) {
+.ena_to_model_data <- function(set,
+                                group_col  = NULL,
+                                dim_cols   = c("SVD1", "SVD2"),
+                                include_ci = TRUE,
+                                conf_level = 0.95,
+                                iqr_factor = 1.5) {
 
   # ── nodes ──────────────────────────────────────────────────────────────────
   node_pos <- as.data.frame(set$rotation$nodes)[, c("code", dim_cols), drop = FALSE]
@@ -115,18 +106,14 @@
   edge_cc  <- cc[, is_edge, drop = FALSE]
   names(edge_cc) <- gsub(" & ", ".", names(edge_cc), fixed = TRUE)
   edge_cc$QEUNIT <- as.character(cc$ENA_UNIT)
-  # Ensure QEUNIT is first column
   edge_cc  <- edge_cc[, c("QEUNIT", setdiff(names(edge_cc), "QEUNIT")), drop = FALSE]
   edges    <- .ena_frame(edge_cc)
 
   # ── points ─────────────────────────────────────────────────────────────────
   pts <- as.data.frame(set$points)
-  # Keep only QEUNIT, the group column (if any), and the requested dimensions.
-  # Exclude all other metadata columns to prevent mis-detection of group.
   keep_cols <- c("ENA_UNIT", group_col, dim_cols)
   pts       <- pts[, keep_cols[keep_cols %in% names(pts)], drop = FALSE]
   names(pts)[names(pts) == "ENA_UNIT"] <- "QEUNIT"
-  # Coerce group column to plain character (strips ena.metadata class)
   if (!is.null(group_col) && group_col %in% names(pts)) {
     pts[[group_col]] <- as.character(pts[[group_col]])
   }
@@ -136,11 +123,10 @@
   points <- .ena_frame(pts)
 
   result <- list(
-    nodes   = nodes,
-    edges   = edges,
-    points  = points,
-    updated = as.numeric(Sys.time()) * 1000,  # milliseconds
-    # Column name overrides — qeviz uses these instead of hardcoded column names.
+    nodes       = nodes,
+    edges       = edges,
+    points      = points,
+    updated     = as.numeric(Sys.time()) * 1000,
     id_col      = "QEUNIT",
     node_id_col = "code",
     x_col       = dim_cols[1L],
@@ -148,10 +134,7 @@
     group_col   = group_col
   )
 
-  # ── groups frame (Phase 3 API) ────────────────────────────────────────────
-  # One row per group: mean position in dim_cols space, plus optional CI bounds.
-  # Replaces the deprecated separate confidence frame.
-  # qeviz renders this directly — no statistics are computed in the browser.
+  # ── groups frame — pre-computed means + optional CI bounds ────────────────
   if (!is.null(group_col) && group_col %in% names(pts)) {
     groups_unique <- unique(pts[[group_col]])
 
@@ -165,21 +148,18 @@
     })
     groups_df <- do.call(rbind, Filter(Negate(is.null), means_rows))
 
-    # Merge in CI bounds when requested
     if (include_ci) {
-      ci_df <- .vizena_group_ci(pts, group_col, dim_cols, conf_level)
+      ci_df <- .ena_group_ci(pts, group_col, dim_cols, conf_level)
       if (!is.null(ci_df)) {
         groups_df <- merge(groups_df, ci_df, by = "group", all.x = TRUE)
-        # Restore the original group order (merge may reorder rows)
         groups_df <- groups_df[match(groups_unique, groups_df$group), , drop = FALSE]
       }
     }
 
     result$groups <- .ena_frame(groups_df)
 
-    # @deprecated: outlier frame — kept for adapter versions not yet on Phase 4.
-    # Will be removed once all consumers use the groups frame exclusively.
-    out_df <- .vizena_group_outlier(pts, group_col, dim_cols, iqr_factor)
+    # Deprecated: outlier frame retained for backward compat
+    out_df <- .ena_group_outlier(pts, group_col, dim_cols, iqr_factor)
     if (!is.null(out_df)) result$outlier <- .ena_frame(out_df)
   }
 
@@ -189,19 +169,18 @@
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
-#' Plot an ENA set using the VizENA web component
+#' Interactive ENA plot using qeviz
 #'
 #' Renders an interactive ENA plot inside RStudio, R Markdown / Quarto, and
-#' Shiny using the standalone VizENA visualization library.
+#' Shiny using the qeviz visualization library.
 #'
 #' @param set         An \code{\link{ena.make.set}} result.
 #' @param group_col   Character. Name of the grouping column in \code{set$points}
 #'                    (e.g. \code{"Condition"}).  Controls point colours and group
 #'                    mean networks.
 #' @param group       Character. Which group's mean network to display.  Defaults
-#'                    to the first group (alphabetical order).
-#' @param unit        Character. A specific unit ID (the \code{ENA_UNIT} value,
-#'                    e.g. \code{"steven z::FirstGame"}) to display its individual
+#'                    to the first group.
+#' @param unit        Character. A specific unit ID to display its individual
 #'                    network instead of a group mean.
 #' @param compare     Character. Second group or unit for a subtraction view
 #'                    (\code{group} minus \code{compare}).
@@ -209,19 +188,19 @@
 #'                    drawn simultaneously).
 #' @param dim_cols    Character vector of two dimension names to plot.
 #'                    Default \code{c("SVD1", "SVD2")}.
-#' @param label_nodes  \code{"on"} | \code{"off"} | \code{"auto"} | \code{"click"}.
+#' @param label_nodes \code{"on"} | \code{"off"} | \code{"auto"} | \code{"click"}.
 #'                    Visibility of code-node labels.  Default \code{"on"}.
-#' @param label_means  Visibility of group-mean labels.  Default \code{"on"}.
+#' @param label_means Visibility of group-mean labels.  Default \code{"on"}.
 #' @param label_points Visibility of unit-point labels.  Default \code{"off"}.
-#' @param confidence  Logical. Draw 95\% CI boxes around group means. Default
-#'                    \code{TRUE}.
+#' @param confidence  Logical. Include 95\% CI bounds in the groups frame.
+#'                    Default \code{TRUE}.
 #' @param outlier     Logical. Draw IQR-based outlier boxes. Default \code{TRUE}.
 #' @param scale_points Logical. Rescale unit points to match the node coordinate
 #'                    space.  Default \code{TRUE}.
 #' @param conf_level  Numeric. Confidence level for CI boxes. Default \code{0.95}.
 #' @param iqr_factor  Numeric. IQR multiplier for outlier boxes. Default \code{1.5}.
-#' @param width,height Widget dimensions in pixels.  \code{NULL} uses the
-#'                    htmlwidgets sizing policy defaults (700 × 650).
+#' @param width,height Widget dimensions in pixels.  \code{NULL} uses htmlwidgets
+#'                    sizing policy defaults (700 × 650).
 #'
 #' @return An \code{htmlwidget} object that renders in RStudio Viewer, R Markdown,
 #'   Quarto, and Shiny.
@@ -240,18 +219,18 @@
 #' set <- ena.make.set(enadata = accum)
 #'
 #' # Basic plot coloured by Condition
-#' ena_plot_vizena(set, group_col = "Condition")
+#' ena.plot.interactive(set, group_col = "Condition")
 #'
 #' # Show only FirstGame mean network
-#' ena_plot_vizena(set, group_col = "Condition", group = "FirstGame")
+#' ena.plot.interactive(set, group_col = "Condition", group = "FirstGame")
 #'
 #' # Subtraction: FirstGame minus SecondGame
-#' ena_plot_vizena(set, group_col = "Condition",
-#'                 group = "FirstGame", compare = "SecondGame")
+#' ena.plot.interactive(set, group_col = "Condition",
+#'                      group = "FirstGame", compare = "SecondGame")
 #' }
 #'
 #' @export
-ena_plot_vizena <- function(
+ena.plot.interactive <- function(
   set,
   group_col     = NULL,
   group         = NULL,
@@ -271,10 +250,10 @@ ena_plot_vizena <- function(
   height        = NULL
 ) {
   if (!requireNamespace("htmlwidgets", quietly = TRUE)) {
-    stop("The 'htmlwidgets' package is required. Install it with: install.packages('htmlwidgets')")
+    stop("The 'htmlwidgets' package is required. Install with: install.packages('htmlwidgets')")
   }
 
-  model_data <- .ena_to_vizena_data(
+  model <- .ena_to_model_data(
     set,
     group_col  = group_col,
     dim_cols   = dim_cols,
@@ -284,24 +263,22 @@ ena_plot_vizena <- function(
   )
 
   x <- list(
-    model   = model_data,
+    model   = model,
     options = list(
-      group        = group,
-      unit         = unit,
-      compare      = compare,
-      also         = also,
-      labelNodes   = label_nodes,
-      labelMeans   = label_means,
-      labelPoints  = label_points,
-      # confidence bounds are now in the groups frame, not a separate attribute.
-      # outlier is still a separate deprecated frame; keep the escape-hatch attr.
-      outlier      = if (isFALSE(outlier)) "false" else NULL,
-      scalePoints  = if (isFALSE(scale_points)) "false" else NULL
+      group       = group,
+      unit        = unit,
+      compare     = compare,
+      also        = also,
+      labelNodes  = label_nodes,
+      labelMeans  = label_means,
+      labelPoints = label_points,
+      outlier     = if (isFALSE(outlier))      "false" else NULL,
+      scalePoints = if (isFALSE(scale_points)) "false" else NULL
     )
   )
 
   htmlwidgets::createWidget(
-    name    = "vizena",
+    name    = "qeviz",
     x       = x,
     width   = width,
     height  = height,
@@ -316,22 +293,78 @@ ena_plot_vizena <- function(
   )
 }
 
-#' Shiny output binding for VizENA plots
+
+#' Export a self-contained interactive ENA plot as HTML
+#'
+#' Writes a single \code{.html} file containing the qeviz bundle and embedded
+#' model data.  No R, no Python, and no server are required to open the file —
+#' share it with collaborators, attach it to a paper submission, or archive it
+#' as supplementary material.
+#'
+#' @param set       An \code{\link{ena.make.set}} result.
+#' @param file      Output file path.  Default \code{"ena_plot.html"}.
+#' @param group_col Character. Grouping column in \code{set$points}.
+#' @param ...       Additional arguments passed to \code{\link{ena.plot.interactive}}
+#'                  (e.g. \code{group}, \code{compare}, \code{label_nodes}).
+#' @param width,height Plot dimensions in pixels. Default 700 × 600.
+#' @param selfcontained Logical. Inline the qeviz bundle in the HTML file.
+#'                    Default \code{TRUE}.  Set to \code{FALSE} to reference the
+#'                    bundle via a relative path (smaller file, not portable).
+#'
+#' @return The resolved absolute path of the written file (invisibly).
+#'
+#' @examples
+#' \dontrun{
+#' set <- ena.make.set(enadata = accum)
+#' ena.export.html(set, "model.html", group_col = "Condition")
+#' }
+#'
+#' @export
+ena.export.html <- function(
+  set,
+  file          = "ena_plot.html",
+  group_col     = NULL,
+  ...,
+  width         = 700L,
+  height        = 600L,
+  selfcontained = TRUE
+) {
+  if (!requireNamespace("htmlwidgets", quietly = TRUE)) {
+    stop("The 'htmlwidgets' package is required. Install with: install.packages('htmlwidgets')")
+  }
+
+  widget <- ena.plot.interactive(
+    set,
+    group_col = group_col,
+    width     = width,
+    height    = height,
+    ...
+  )
+
+  abs_file <- normalizePath(file, mustWork = FALSE)
+  htmlwidgets::saveWidget(widget, abs_file, selfcontained = selfcontained)
+  message("Written: ", abs_file)
+  invisible(abs_file)
+}
+
+
+#' Shiny output binding for interactive ENA plots
 #'
 #' @param outputId Shiny output ID.
 #' @param width,height CSS dimensions. Defaults: \code{"100\%"}, \code{"600px"}.
 #' @export
-vizenaOutput <- function(outputId, width = "100%", height = "600px") {
-  htmlwidgets::shinyWidgetOutput(outputId, "vizena", width, height, package = "rENA")
+enaInteractiveOutput <- function(outputId, width = "100%", height = "600px") {
+  htmlwidgets::shinyWidgetOutput(outputId, "qeviz", width, height, package = "rENA")
 }
 
-#' Shiny render function for VizENA plots
+
+#' Shiny render function for interactive ENA plots
 #'
-#' @param expr Expression that returns an \code{\link{ena_plot_vizena}} widget.
-#' @param env  Environment for \code{expr}. Default: \code{parent.frame()}.
-#' @param quoted Logical. Is \code{expr} already quoted? Default \code{FALSE}.
+#' @param expr    Expression that returns an \code{\link{ena.plot.interactive}} widget.
+#' @param env     Environment for \code{expr}. Default: \code{parent.frame()}.
+#' @param quoted  Logical. Is \code{expr} already quoted? Default \code{FALSE}.
 #' @export
-renderVizena <- function(expr, env = parent.frame(), quoted = FALSE) {
+renderEnaInteractive <- function(expr, env = parent.frame(), quoted = FALSE) {
   if (!quoted) expr <- substitute(expr)
-  htmlwidgets::shinyRenderWidget(expr, vizenaOutput, env, quoted = TRUE)
+  htmlwidgets::shinyRenderWidget(expr, enaInteractiveOutput, env, quoted = TRUE)
 }
