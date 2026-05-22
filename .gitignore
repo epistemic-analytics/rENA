@@ -16,7 +16,16 @@ doc
 Meta
 
 inst/coverage/
-docs/
+
+# Ignore pkgdown-generated output inside docs/ but keep handwritten docs
+docs/*
+!docs/*.md
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
 
 \.idea/
 
