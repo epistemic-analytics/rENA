@@ -11,6 +11,12 @@ rENA.Rcheck/
 *.tar.gz
 
 src/symbols\.rds
+
+# Compiled R package artifacts
+src/*.o
+src/*.so
+src/*.dll
+src/*.dylib
 inst/doc
 doc
 Meta
@@ -36,5 +42,7 @@ rENA/*
 pkgdown/*
 
 .vscode/
+
+.claude/
 
 gitleaks.json
