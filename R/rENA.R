@@ -8,8 +8,6 @@
 #' @import stats
 #' @import data.table
 #' @import utils
-#' @import doParallel
-#' @import parallel
 #' @import tma
 #' @importFrom libqe lq_sphere_norm lq_skip_sphere_norm lq_center_data
 #' @importFrom libqe lq_vector_to_upper_tri lq_svector_to_upper_tri

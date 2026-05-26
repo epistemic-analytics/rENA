@@ -17,9 +17,9 @@ Imports:
     R6,
     methods,
     stats,
+    utils,
+    grDevices,
     plotly,
-    doParallel,
-    parallel,
     scales,
     glmnet,
     tma,
@@ -27,4 +27,3 @@ Imports:
 Suggests: testthat (>= 2.1.0), knitr, rmarkdown
 RoxygenNote: 7.3.3
 NeedsCompilation: no
-Encoding: UTF-8
