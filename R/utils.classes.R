@@ -50,6 +50,12 @@ as.ena.co.occurrence <- function(x) {
   class(x) = c("ena.co.occurrence", class(x))
   x
 }
+#' Re-class vector as ena.dimension
+#'
+#' @param x Vector to re-class
+#'
+#' @return re-classed vector
+#' @export
 as.ena.dimension <- function(x) {
   if(is.factor(x)) {
     x = as.character(x)
