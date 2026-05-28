@@ -110,6 +110,10 @@ accumulate <- function(
 #' @param optimize_with A function to optimize node positions. Defaults to `optimize`. Can be set to `NULL` or `FALSE` to skip.
 #' @param rotate_fun The specific rotation function to be used by `rotate_with`. Defaults to `ena.rotate.by.generalized`.
 #' @param rotate_params A list of additional parameters to pass to the `rotate_fun`.
+#' @param exclude_zero_networks A logical value passed to `center_with`. When `TRUE`,
+#'   units with all-zero line weights are excluded from the mean computation during
+#'   centering (but all units are still shifted by that mean). Defaults to `TRUE`
+#'   automatically for ordered sets (`accumulate(ordered = TRUE)`), `FALSE` otherwise.
 #'
 #' @return An `ena.set` object with a complete ENA model, including projected points and node positions.
 #' @export
@@ -134,7 +138,9 @@ model <- function(
   optimize_with = optimize,
   # Rotation specific parameters
   rotate_fun = ena.rotate.by.generalized,
-  rotate_params = list()
+  rotate_params = list(),
+  # Centering options
+  exclude_zero_networks = is(data, "ena.ordered.set")
 ) {
   # if(is(data, "ena.ordered.set")) {
   #   if(requireNamespace("ona", quietly = TRUE)) {
@@ -145,7 +151,7 @@ model <- function(
   # }
   # else {
     x <- normalize(data)
-    x <- center_with(x)
+    x <- center_with(x, exclude_zero_networks = exclude_zero_networks)
 
     if (length(rotate_params) > 1) {
       x <- do.call(rotate_with, list(x, wh = rotate_fun, by = unlist(rotate_params)))
@@ -298,6 +304,13 @@ as_nodes_matrix <- function(x, rows, cols = NULL, cls = "ena.matrix") {
 #'
 #' @param x An `ena.set` object (typically after `sphere_norm()`) or a numeric matrix.
 #' @param add.meta A logical value. If `TRUE` (the default), metadata is preserved. Ignored if `x` is a matrix.
+#' @param exclude_zero_networks A logical value. If `TRUE`, units whose line weights are
+#'   all zero are excluded when computing the column means used for centering. The mean
+#'   is computed from non-zero units only, but all units (including zero-network ones)
+#'   are shifted by that mean. This prevents empty networks from pulling the centroid
+#'   toward zero. Defaults to `FALSE` (standard behaviour: all units contribute to
+#'   the mean). Use `TRUE` for ordered/directed ENA sets produced by
+#'   `accumulate(ordered = TRUE)`.
 #'
 #' @return If `x` is an `ena.set`, it returns the modified `ena.set` with the centered data stored in `x$model$points.for.projection`. If `x` is a matrix, it returns a centered matrix.
 #' @export
@@ -314,10 +327,21 @@ as_nodes_matrix <- function(x, rows, cols = NULL, cls = "ena.matrix") {
 #'   accumulate(units, codes, horizon) |>
 #'   sphere_norm() |>
 #'   center()
-center <- function(x, add.meta = TRUE) {
+center <- function(x, add.meta = TRUE, exclude_zero_networks = FALSE) {
   x_ <- NULL
   names_ <- NULL
   meta_ <- NULL
+
+  # Helper: subtract column means computed from non-zero rows, applied to all rows.
+  center_excluding_zeros <- function(m) {
+    nonzero <- rowSums(m) != 0
+    if (!any(nonzero)) {
+      # All rows are zero — fall back to standard centering (result is all zeros)
+      return(center_data_c(m))
+    }
+    col_means <- colMeans(m[nonzero, , drop = FALSE])
+    sweep(m, 2, col_means, "-")
+  }
 
   if (is(x, "ena.set")) {
     # make sure the line weights exist and are a matrix
@@ -332,18 +356,25 @@ center <- function(x, add.meta = TRUE) {
       meta_ <- x$meta.data
     }
 
-    x$model$points.for.projection <- center_data_c(as.matrix(x_))
-    colnames(x$model$points.for.projection) <- names_
+    centered <- if (isTRUE(exclude_zero_networks)) {
+      center_excluding_zeros(x_)
+    } else {
+      center_data_c(x_)
+    }
 
-    x$model$points.for.projection <- as_points_matrix(x$model$points.for.projection, meta_)
+    colnames(centered) <- names_
+    x$model$points.for.projection <- as_points_matrix(centered, meta_)
   }
   else {
-    x_ <- as.matrix(x);
-    names_ <- colnames(x_);
-    x <- center_data_c(x_);
-    colnames(x) <- names_;
+    x_ <- as.matrix(x)
+    names_ <- colnames(x_)
+    x <- if (isTRUE(exclude_zero_networks)) {
+      center_excluding_zeros(x_)
+    } else {
+      center_data_c(x_)
+    }
+    colnames(x) <- names_
   }
-
 
   return(x)
 }

@@ -9,12 +9,12 @@
 #' @import data.table
 #' @import utils
 #' @import tma
-#' @importFrom libqe lq_sphere_norm lq_skip_sphere_norm lq_center_data
-#' @importFrom libqe lq_vector_to_upper_tri lq_svector_to_upper_tri
-#' @importFrom libqe lq_tri_indices lq_stanza_window
-#' @importFrom libqe lq_rows_to_co_occurrences lq_rolling_window_sum
-#' @importFrom libqe lq_lws_lsq_positions lq_directed_node_positions
-#' @importFrom libqe lq_directed_node_positions_ground_response lq_ena_correlation
+#' @importFrom libqe normalize_networks scale_networks center_points
+#' @importFrom libqe code_connections connection_names
+#' @importFrom libqe connection_indices accumulate_stanza
+#' @importFrom libqe row_connections rolling_window_sum
+#' @importFrom libqe node_positions directed_node_positions
+#' @importFrom libqe directed_node_positions_combine_pairs ena_correlation
 NULL
 
 # @title Default rENA constants

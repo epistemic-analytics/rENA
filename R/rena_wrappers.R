@@ -29,7 +29,7 @@ merge_columns_c <- function(df, cols, sep = "::") {
 #' @return A numeric matrix with each row normalized to unit L2 length
 #' @export
 fun_sphere_norm <- function(dfM) {
-  lq_sphere_norm(as.matrix(dfM))
+  libqe::normalize_networks(as.matrix(dfM))
 }
 
 #' Row-wise Max-Norm Scaling
@@ -41,7 +41,7 @@ fun_sphere_norm <- function(dfM) {
 #' @return A numeric matrix scaled by the largest row L2 norm
 #' @export
 fun_skip_sphere_norm <- function(dfM) {
-  lq_skip_sphere_norm(as.matrix(dfM))
+  libqe::scale_networks(as.matrix(dfM))
 }
 
 #' Upper Triangle from Vector (numeric)
@@ -52,7 +52,7 @@ fun_skip_sphere_norm <- function(dfM) {
 #' @return Numeric row vector of pairwise products
 #' @export
 vector_to_ut <- function(v) {
-  lq_vector_to_upper_tri(as.matrix(v))
+  libqe::code_connections(as.matrix(v))
 }
 
 #' Directed ENA node positions
@@ -65,7 +65,7 @@ vector_to_ut <- function(v) {
 #' @return List with nodes, centroids, weights, points
 #' @export
 directed_node_positions <- function(line_weights, points, numDims) {
-  lq_directed_node_positions(line_weights, points, numDims)
+  libqe::directed_node_positions(line_weights, points, numDims)
 }
 
 #' Directed node positions with ground+response combined
@@ -80,7 +80,7 @@ directed_node_positions <- function(line_weights, points, numDims) {
 directed_node_positions_with_ground_response_added <- function(line_weights,
                                                                 points,
                                                                 numDims) {
-  lq_directed_node_positions_ground_response(line_weights, points, numDims)
+  libqe::directed_node_positions_combine_pairs(line_weights, points, numDims)
 }
 
 #' Calculate ENA correlations
@@ -94,7 +94,7 @@ directed_node_positions_with_ground_response_added <- function(line_weights,
 #' @return Numeric matrix with columns: r, lower CI, upper CI
 #' @export
 ena_correlation <- function(points, centroids, conf_level = 0.95) {
-  lq_ena_correlation(points, centroids, conf_level)
+  libqe::ena_correlation(points, centroids, conf_level)
 }
 
 # ── internal (not exported) ───────────────────────────────────────────────────
@@ -103,7 +103,7 @@ ena_correlation <- function(points, centroids, conf_level = 0.95) {
 # @param df     A data.frame or matrix of code columns
 # @param binary If TRUE, binarise non-zero products
 rows_to_co_occurrences <- function(df, binary = TRUE) {
-  lq_rows_to_co_occurrences(as.matrix(df), binary)
+  libqe::row_connections(as.matrix(df), binary)
 }
 
 # Stanza-window co-occurrence accumulation.
@@ -118,7 +118,7 @@ ref_window_df <- function(df, windowSize = 1, windowForward = 0,
         else as.integer(windowSize)
   wf <- if (is.infinite(windowForward) || windowForward >= INT_MAX) INT_MAX
         else as.integer(windowForward)
-  data.table::as.data.table(lq_stanza_window(as.matrix(df), wb, wf, binary))
+  data.table::as.data.table(libqe::accumulate_stanza(as.matrix(df), wb, wf, binary))
 }
 
 # Rolling backward window sum of code columns.
@@ -126,14 +126,14 @@ ref_window_df <- function(df, windowSize = 1, windowForward = 0,
 # @param windowSize Number of rows to look back (default 0, treated as 1)
 # @param binary     Unused; kept for API compatibility
 ref_window_lag <- function(df, windowSize = 0, binary = TRUE) {
-  lq_rolling_window_sum(as.matrix(df), windowSize)
+  libqe::rolling_window_sum(as.matrix(df), windowSize)
 }
 
 # Upper-triangle index pairs (0-based, +1 before use as R indices).
 # @param len Side length of square code matrix
 # @param row -1 = both rows, 0 = row indices, 1 = col indices
 triIndices <- function(len, row = -1L) {
-  lq_tri_indices(len, row)
+  libqe::connection_indices(len, row)
 }
 
 # Least-squares node positions (undirected ENA).
@@ -141,17 +141,17 @@ triIndices <- function(len, row = -1L) {
 # @param t        Numeric matrix of rotated points (units x dims)
 # @param numDims  Number of dimensions
 lws_lsq_positions <- function(adjMats, t, numDims) {
-  lq_lws_lsq_positions(adjMats, t, numDims)
+  libqe::node_positions(adjMats, t, numDims)
 }
 
 # String upper-triangle pairs: "A" "B" "C" -> "A & B" "A & C" "B & C".
 # @param v Character vector of code names
 svector_to_ut <- function(v) {
-  lq_svector_to_upper_tri(v)
+  libqe::connection_names(v)
 }
 
 # Center data by subtracting column means.
 # @param values Numeric matrix or data.frame
 center_data_c <- function(values) {
-  lq_center_data(as.matrix(values))
+  libqe::center_points(as.matrix(values))
 }
