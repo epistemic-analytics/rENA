@@ -4,12 +4,20 @@
 \alias{center}
 \title{Center ENA Data}
 \usage{
-center(x, add.meta = TRUE)
+center(x, add.meta = TRUE, exclude_zero_networks = FALSE)
 }
 \arguments{
 \item{x}{An `ena.set` object (typically after `sphere_norm()`) or a numeric matrix.}
 
 \item{add.meta}{A logical value. If `TRUE` (the default), metadata is preserved. Ignored if `x` is a matrix.}
+
+\item{exclude_zero_networks}{A logical value. If `TRUE`, units whose line weights are
+all zero are excluded when computing the column means used for centering. The mean
+is computed from non-zero units only, but all units (including zero-network ones)
+are shifted by that mean. This prevents empty networks from pulling the centroid
+toward zero. Defaults to `FALSE` (standard behaviour: all units contribute to
+the mean). Use `TRUE` for ordered/directed ENA sets produced by
+`accumulate(ordered = TRUE)`.}
 }
 \value{
 If `x` is an `ena.set`, it returns the modified `ena.set` with the centered data stored in `x$model$points.for.projection`. If `x` is a matrix, it returns a centered matrix.

@@ -7,20 +7,23 @@
 ena.rotate.by.mean(enaset, groups = NULL, params = groups)
 }
 \arguments{
-\item{enaset}{An \code{\link{ENAset}}}
+\item{enaset}{An \code{\link{ENAset}} or compatible list with
+\code{model$points.for.projection}, \code{connection.counts$ENA_UNIT},
+\code{line.weights}, and \code{rotation$codes}.}
 
-\item{groups}{A list containing two logical vectors of length \code{nrow(ENA.set$ena.data$units)},
-where each vector defines whether a unit is in one of the two groups whose means
-are used to determine the dimensional reduction}
+\item{groups}{A list containing one or more pairs; each pair is a length-2
+list \code{list(a, b)} where \code{a} and \code{b} are either logical
+vectors (length = number of units) or character vectors of unit IDs.}
 
-\item{params}{A list containing two vectors of length \code{nrow(ENA.set$ena.data$units)},}
+\item{params}{Alias for \code{groups}; used when called from the pipe API.}
 }
 \value{
-\code{\link{ENARotationSet}}
+A list with \code{rotation}, \code{codes}, \code{eigenvalues}, and
+  \code{node.positions = NULL}, suitable for use inside \code{rotate()}.
 }
 \description{
-Computes a dimensional reduction from a matrix of points such that
-the first dimension of the projected space passes through the means of two
-groups in a the original space. Subsequent dimensions of the projected space
-are computed using ena.svd
+Computes a dimensional reduction from a matrix of points such
+  that the first dimension of the projected space passes through the means of
+  two groups in the original space. Subsequent dimensions are computed using
+  SVD on the deflated data. Delegates to \code{\link[libqe]{means_rotation}}.
 }
