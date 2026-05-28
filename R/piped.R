@@ -114,6 +114,10 @@ accumulate <- function(
 #'   units with all-zero line weights are excluded from the mean computation during
 #'   centering (but all units are still shifted by that mean). Defaults to `TRUE`
 #'   automatically for ordered sets (`accumulate(ordered = TRUE)`), `FALSE` otherwise.
+#' @param center_to_origin A logical value. When `TRUE`, the mean of all projected
+#'   points is subtracted from both the points and the node positions after
+#'   optimization, placing the centroid of the space at the origin. This is the
+#'   default behavior for ONA (Ordered Network Analysis). Defaults to `FALSE`.
 #'
 #' @return An `ena.set` object with a complete ENA model, including projected points and node positions.
 #' @export
@@ -140,16 +144,9 @@ model <- function(
   rotate_fun = ena.rotate.by.generalized,
   rotate_params = list(),
   # Centering options
-  exclude_zero_networks = is(data, "ena.ordered.set")
+  exclude_zero_networks = is(data, "ena.ordered.set"),
+  center_to_origin = FALSE
 ) {
-  # if(is(data, "ena.ordered.set")) {
-  #   if(requireNamespace("ona", quietly = TRUE)) {
-  #     x <- ona::model(data, ...);
-  #   } else {
-  #     stop("The 'ona' package is required for ordered ENA modeling. Please install it from CRAN.");
-  #   }
-  # }
-  # else {
     x <- normalize(data)
     x <- center_with(x, exclude_zero_networks = exclude_zero_networks)
 
@@ -165,7 +162,19 @@ model <- function(
     if (!is.null(optimize_with) && !isFALSE(optimize_with)) {
       x <- optimize_with(x)
     }
-  # }
+
+    if (isTRUE(center_to_origin) && !is.null(x$points)) {
+      # x$points dimension columns are classed ena.co.occurrence (not ena.dimension),
+      # so use !find_meta_cols to locate them.
+      dim_cols      <- which(!find_meta_cols(x$points))
+      node_dim_cols <- which(find_dimension_cols(x$rotation$nodes))
+      # Compute per-dimension means from the projected points
+      pt_means <- as.list(colMeans(x$points[, dim_cols, with = FALSE]))
+      # Translate points so their centroid is at the origin
+      x$points[, c(dim_cols) := lapply(.SD, function(col) col - mean(col)), .SDcols = dim_cols]
+      # Translate nodes by the same vector
+      x$rotation$nodes[, c(node_dim_cols) := Map(`-`, .SD, pt_means), .SDcols = node_dim_cols]
+    }
 
   return(x)
 }
