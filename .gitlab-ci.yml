@@ -15,13 +15,15 @@ test:r:
   before_script:
     - apt-get update -qq
     - apt-get install -y --no-install-recommends
+        build-essential gfortran
         libxml2-dev libcurl4-openssl-dev libssl-dev
+        libopenblas-dev liblapack-dev
     - Rscript -e "install.packages(
         c('R6', 'data.table', 'glmnet', 'scales',
           'testthat', 'knitr', 'rmarkdown',
           'libqe', 'tma'),
         repos = c(
-          'https://cran.qe-libs.org',
+          'https://qe-libs.org/cran',
           'https://cloud.r-project.org'
         ),
         quiet = TRUE)"
