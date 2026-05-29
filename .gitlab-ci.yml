@@ -1,47 +1,56 @@
-#stages:
-#  - setup
-#  - docker
-#  - build
-#  - check
-#  - package
-#  - release
-#
-#variables:
-#  VERSION: "0.2.5"
-#  PKG: "rENA"
-#  PKGL: "rena"
-#  REG_URL: "${CI_REGISTRY}/epistemic-analytics/qe-packages/${PKGL}"
-#
-#include:
-#  - project: 'epistemic-analytics/qe-packages/cranqe'
-#    ref: main
-#    file:
-#      - '/public/ci_templates/setup_template.yml'
-#      - '/public/ci_templates/rhub_template.yml'
-#      - '/public/ci_templates/build_template.yml'
-
-
 stages:
-  - setup
-  - build
-  - check
-  - publish
-  - release
-  - tag
+  - test
 
+# ── shared pip cache ──────────────────────────────────────────────────────────
+.pip-cache: &pip-cache
+  cache:
+    key: pip-$CI_COMMIT_REF_SLUG
+    paths: [.pip-cache]
+    policy: pull-push
+
+# ── R package tests ───────────────────────────────────────────────────────────
+test:r:
+  stage: test
+  image: rocker/r-ver:4.5.0
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y --no-install-recommends
+        libxml2-dev libcurl4-openssl-dev libssl-dev
+    - Rscript -e "install.packages(
+        c('R6', 'data.table', 'glmnet', 'scales',
+          'testthat', 'knitr', 'rmarkdown',
+          'libqe', 'tma'),
+        repos = c(
+          'https://cran.qe-libs.org',
+          'https://packagemanager.posit.co/cran/__linux__/noble/latest'
+        ),
+        quiet = TRUE)"
+  script:
+    - R CMD INSTALL .
+    - Rscript -e "testthat::test_local('.', reporter = 'progress')"
+
+# ── Python package tests (pyena) ─────────────────────────────────────────────
+test:python:
+  stage: test
+  image: python:3.12-slim
+  <<: *pip-cache
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y --no-install-recommends build-essential cmake libarmadillo-dev
+    - pip install --cache-dir .pip-cache
+        --index-url https://qe-libs.org/py/simple/
+        --extra-index-url https://pypi.org/simple/
+        pylibqe numpy pandas pytest
+  script:
+    - cd python
+    - pip install --cache-dir ../.pip-cache -e ".[dev]"
+    - pytest tests/ -v
+
+# ── cranqe integration ────────────────────────────────────────────────────────
+# verify-tag-version (.pre, tags):  confirm git tag == DESCRIPTION Version
+# trigger-cranqe     (.post, main): request a dev build after every push
+# trigger-cranqe-release (.post, tags): request a release build after a tag
 include:
-  - project: 'cran-ci/ci-templates'
+  - project: 'epistemic-analytics/qe-packages/cranqe'
     ref: main
-    file: '/templates/build/R-build.gitlab-ci.yml'
-  - project: 'cran-ci/ci-templates'
-    ref: main
-    file: '/templates/setup/setup.gitlab-ci.yml'
-  - project: 'cran-ci/ci-templates'
-    ref: main
-    file: '/templates/check/Rhub-checks-updated.gitlab-ci.yml'
-  - project: 'cran-ci/ci-templates'
-    ref: main
-    file: '/templates/release/pkgdown.gitlab-ci.yml'
-  - project: 'cran-ci/ci-templates'
-    ref: main
-    file: '/templates/cran/CRAN.gitlab-ci.yml'
+    file: '/ci-templates/trigger-cranqe.yml'
