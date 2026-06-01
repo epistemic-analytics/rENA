@@ -1,4 +1,4 @@
-destination: rENA/
+destination: public/
 navbar:
   title: "rENA"
   type: inverse
@@ -14,78 +14,115 @@ navbar:
   right:
     - icon: fa-gitlab
       href: https://gitlab.com/epistemic-analytics/qe-packages/rena/
+
 reference:
-  - title: "Creating Models"
+  # ── Pipeline API (new) ────────────────────────────────────────────────────
+  - title: "Pipeline"
     desc: >
-      Functions for the generation of ENA models, all of which will return, by default, an
-      S3 object with the class of `ena.set` that can be supplied to the other
-      functions.
+      The pipe-oriented API for building ENA models step by step.
+      Each function returns an object that can be passed to the next stage.
     contents:
-      - ena
-      - starts_with("ena.accum")
-      - ena.make.set
-  - title: "Plotting Models"
-    desc: Functions to plot an `ena.set`, all of which return an `ena.plot` object that
-      can be supplied to the other functions.
+      - accumulate
+      - sphere_norm
+      - center
+      - rotate
+      - project
+      - optimize
+      - model
+
+  # ── Rotation methods ──────────────────────────────────────────────────────
+  - title: "Rotation Methods"
+    desc: >
+      Rotation strategies that can be passed to `rotate()`. Each returns a
+      rotation matrix aligned to a meaningful axis in ENA space.
     contents:
-      - plot.ena.set
+      - ena.rotate.by.svd
+      - ena.rotate.by.mean
+      - ena.rotate.by.generalized
+      - ena.rotate.by.hena.regression
+      - ena.rotate.by.hena.regression_2
+      - ena.rotation.h
+      - gmr
+      - means_rotate
+
+  # ── Plotting ──────────────────────────────────────────────────────────────
+  - title: "Plotting"
+    desc: Functions for visualising ENA models and networks.
+    contents:
+      - ena.plot
+      - ena.plotter
       - matches("add_")
       - matches("ena.plot")
+      - ena.plot.interactive
+      - enaInteractiveOutput
+      - renderEnaInteractive
+      - ena.export.html
 
+  # ── Legacy API ────────────────────────────────────────────────────────────
+  - title: "Legacy API"
+    desc: >
+      Original single-function API (`ena()`, `ena.accumulate.data()`, etc.).
+      Still supported; prefer the pipeline API for new work.
+    contents:
+      - ena
+      - starts_with("ena.accumulate")
+      - ena.make.set
+      - ena.group
+      - ena.svd
+      - ena.conversations
+      - ena.correlations
+      - ena.tune.window.size
+      - ena.writeup
+      - ena_space_dist_corr
+      - connection.matrix
+
+  # ── Data ──────────────────────────────────────────────────────────────────
+  - title: "Data"
+    contents:
+      - RS.data
+
+  # ── Internal / utilities ──────────────────────────────────────────────────
   - title: internal
     contents:
-    - ENARotationSet
-    - ENAdata
-    - ENAset
-    - ENAplot
-    - RS.data
-    - as.ena.co.occurrence
-    - as.ena.matrix
-    - as.ena.metadata
-    - as.matrix.ena.connections
-    - as.matrix.ena.line.weights
-    - as.matrix.ena.matrix
-    - as.matrix.ena.nodes
-    - as.matrix.ena.points
-    - as.matrix.ena.rotation.matrix
-    - as.matrix.row.connections
-    - as_trajectory
-    - $.ena.matrix
-    - $.ena.metadata
-    - $.ena.points
-    - $.line.weights
-    - clear
-    - combn_c2
-    - connection.matrix
-    - ena.conversations
-    - ena.correlations
-    - ena.group
-    - ena.rotate.by.mean
-    - ena.rotation.h
-    - ena.set.creator
-    - ena.svd
-    - ena.writeup
-    - ena_correlation
-    - find_code_cols
-    - find_dimension_cols
-    - find_meta_cols
-    - fun_cohens.d
-    - fun_skip_sphere_norm
-    - fun_sphere_norm
-    - means_rotate
-    - merge_columns_c
-    - methods_report
-    - methods_report_stream
-    - move_nodes_to_unit_circle
-    - move_nodes_to_unit_circle_with_equal_space
-    - namesToAdjacencyKey
-    - prepare_trajectory_data
-    - print.ena.set
-    - project_in
-    - rENA
-    - remove_meta_data
-    - scale.ena.set
-    - show
-    - vector_to_ut
-    - with_means
-    - with_trajectory
+      - ENARotationSet
+      - ENAdata
+      - ENAset
+      - ENAplot
+      - as.ena.co.occurrence
+      - as.ena.matrix
+      - as.ena.metadata
+      - as.matrix.ena.connections
+      - as.matrix.ena.line.weights
+      - as.matrix.ena.matrix
+      - as.matrix.ena.nodes
+      - as.matrix.ena.points
+      - as.matrix.ena.rotation.matrix
+      - as.matrix.row.connections
+      - as_trajectory
+      - $.ena.matrix
+      - $.ena.metadata
+      - $.ena.points
+      - $.line.weights
+      - clear
+      - directed_node_positions
+      - directed_node_positions_with_ground_response_added
+      - ena_correlation
+      - find_binary_cols
+      - find_code_cols
+      - find_dimension_cols
+      - find_meta_cols
+      - fun_cohens.d
+      - fun_skip_sphere_norm
+      - fun_sphere_norm
+      - merge_columns_c
+      - methods_report
+      - methods_report_stream
+      - move_nodes_to_unit_circle
+      - move_nodes_to_unit_circle_with_equal_space
+      - namesToAdjacencyKey
+      - project_in
+      - remove_meta_data
+      - show
+      - vector_to_ut
+      - with_means
+      - with_trajectory
