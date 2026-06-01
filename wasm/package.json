@@ -1,0 +1,33 @@
+{
+  "name": "@qe-libs/rena-wasm",
+  "version": "0.1.0",
+  "description": "JavaScript/WebAssembly ENA pipeline — thin orchestration layer over @qe-libs/libqe-wasm",
+  "main": "src/index.js",
+  "type": "module",
+  "files": [
+    "src/"
+  ],
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/.bin/jest"
+  },
+  "publishConfig": {
+    "registry": "https://gitlab.com/api/v4/projects/epistemic-analytics%2Fqe-packages%2FrENA/packages/npm/"
+  },
+  "keywords": ["wasm", "ena", "epistemic-network-analysis", "quantitative-ethnography"],
+  "license": "GPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/epistemic-analytics/qe-packages/rENA",
+    "directory": "wasm"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {}
+  },
+  "dependencies": {
+    "@qe-libs/libqe-wasm": "^0.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}
