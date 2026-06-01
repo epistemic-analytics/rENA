@@ -23,7 +23,7 @@ test:r:
           'testthat', 'knitr', 'rmarkdown',
           'libqe', 'tma'),
         repos = c(
-          'https://cran.qe-libs.org',
+          'https://qe-libs.org/cran/',
           'https://packagemanager.posit.co/cran/__linux__/noble/latest'
         ),
         quiet = TRUE)"
