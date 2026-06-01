@@ -11,38 +11,27 @@
 
 Researchers have used ENA to analyze phenomena including: cognitive connections students make while solving complex problems; interactions among brain regions in fMRI data; social gaze coordination; integration of operative skills during surgical procedures; and many others.
 
-This repository provides ENA for both **R** (`rENA`) and **Python** (`pyena`).
+> **Python users:** see [`python/README.md`](python/README.md) for the `pyena` package.
 
 ---
 
 ## Installation
 
-### R — from CRAN
+### From CRAN
 
 ```r
 install.packages("rENA")
 ```
 
-### R — development version
+### Development version
 
 ```r
-install.packages("rENA", repos = c("https://rena.qe-libs.org/cran/", "https://cran.rstudio.org"))
-```
-
-### Python
-
-`pyena` depends on `pylibqe` (the shared C++ math layer). Install both from source:
-
-```bash
-pip install -e path/to/libqe/python    # pylibqe
-pip install -e path/to/rENA/python     # pyena
+install.packages("rENA", repos = c("https://cran.qe-libs.org", "https://cran.rstudio.org"))
 ```
 
 ---
 
 ## Quick Start
-
-### R
 
 ```r
 library(rENA)
@@ -67,104 +56,42 @@ model <- RS.data |>
   optimize()
 ```
 
-### Python
-
-```python
-import pandas as pd
-from pyena import ENA, accumulate
-
-rs = pd.read_csv("inst/extdata/rs.data.csv")
-
-CODES = ["Data", "Technical Constraints", "Performance Parameters",
-         "Client and Consultant Requests", "Design Reasoning", "Collaboration"]
-
-rs["unit_key"] = rs["UserName"] + "_" + rs["Condition"] + "_" + rs["GroupName"]
-rs["convo_key"] = rs["Condition"] + "_" + rs["GroupName"]
-
-# Style 1 — one-liner
-model = ENA().fit(rs, "unit_key", "convo_key", CODES)
-
-# Style 2 — constructor (data up front, options at fit time)
-model = ENA(rs, "unit_key", "convo_key", CODES).fit()
-
-# Style 3 — chain (closest to the R pipe)
-model = ENA().accumulate(rs, "unit_key", "convo_key", CODES).fit()
-```
-
 ---
 
 ## Accessing Results
 
-### R
-
 ```r
-model$line.weights        # normalised adjacency vectors (units × connections)
-model$points.rotated      # unit positions in ENA space
-model$rotation.set$node.positions  # code node positions
-```
-
-### Python
-
-```python
-model.normed_networks_    # normalised adjacency vectors  (n_units × n_connections)
-model.centroids_          # unit positions in ENA space   (n_units × dims)
-model.positions_          # code node positions           (n_codes × dims)
-model.networks_           # raw (un-normalised) adjacency vectors
-model.units_              # unit labels in order
-model.connection_names_   # e.g. ["Data&Technical Constraints", ...]
+model$line.weights                     # normalised adjacency vectors (units × connections)
+model$points.rotated                   # unit positions in ENA space
+model$rotation.set$node.positions      # code node positions
 ```
 
 ---
 
 ## Separate Accumulation
 
-The accumulation step (counting co-occurrences) can be run independently of modeling.
-This is useful when you want to inspect raw networks, export them, or reuse the same
-accumulation with multiple rotation methods.
-
-### R
+The accumulation step can be run independently of modeling — useful for inspecting raw
+networks, exporting them, or reusing the same accumulation with multiple rotation methods.
 
 ```r
 accum <- RS.data |> accumulate(units, codes, conversation, default_window = 4)
-# then pipe into model(), sphere_norm(), etc. separately
-```
 
-### Python
-
-```python
-from pyena import accumulate
-
-accum = accumulate(rs, "unit_key", "convo_key", CODES, window_size=4)
-
-accum.networks_          # (96 × 15) raw co-occurrence matrix
-accum.units_             # unit labels
-accum.connection_names_  # connection labels
-accum.meta               # per-unit metadata DataFrame
-
-# Reuse the same accumulation with different rotations — no re-counting
-from pyena import mean_rotation, generalized_rotation
-
-model_svd = ENA().fit(accum)
-model_mr  = ENA().fit(accum, rotation=mean_rotation(g1_mask, g2_mask))
-model_gmr = ENA().fit(accum, rotation=generalized_rotation(meta["Condition"]))
+# Then pipe into model(), sphere_norm(), etc. separately
+model <- accum |> sphere_norm() |> center() |> rotate() |> project() |> optimize()
 ```
 
 ---
 
 ## Rotation Methods
 
-All rotation methods are available in both R and Python.
-
-| Rotation | R | Python |
-|---|---|---|
-| SVD (default) | `rotate()` | `rotation=None` |
-| Means | `rotate(ena.rotate.by.mean, g1, g2)` | `mean_rotation(g1, g2)` |
-| Generalised (GMR) | `rotate(ena.rotate.by.generalized, x)` | `generalized_rotation(x_var)` |
-| Regression (V ~ x) | `rotate(ena.rotate.by.hena.regression, x)` | `regression_rotation(x_var)` |
-| Regression (x ~ V) | `rotate(ena.rotate.by.hena.regression_2, x)` | `regression_rotation_2(x_var)` |
-| Custom matrix | `rotate(mat)` | `rotation=my_ndarray` |
-
-### R
+| Rotation | Function |
+|---|---|
+| SVD (default) | `rotate()` |
+| Means | `rotate(ena.rotate.by.mean, g1, g2)` |
+| Generalised (GMR) | `rotate(ena.rotate.by.generalized, x)` |
+| Regression (V ~ x) | `rotate(ena.rotate.by.hena.regression, x)` |
+| Regression (x ~ V) | `rotate(ena.rotate.by.hena.regression_2, x)` |
+| Custom matrix | `rotate(mat)` |
 
 ```r
 # Means rotation
@@ -184,53 +111,21 @@ model_gmr <- RS.data |>
   project() |> optimize()
 ```
 
-### Python
-
-```python
-from pyena import ENA, mean_rotation, generalized_rotation, regression_rotation
-
-# Attach unit-level metadata (needed by rotation factories)
-meta = (rs.drop_duplicates("unit_key")
-          .set_index("unit_key")
-          .reindex(model.units_)
-          .reset_index())
-
-# Means rotation
-model_mr = ENA().accumulate(rs, "unit_key", "convo_key", CODES).fit(
-    rotation=mean_rotation(
-        meta["Condition"] == "FirstGame",
-        meta["Condition"] == "SecondGame",
-    )
-)
-
-# Generalised rotation — categorical
-model_gmr = ENA().accumulate(rs, "unit_key", "convo_key", CODES).fit(
-    rotation=generalized_rotation(meta["Condition"])
-)
-
-# Regression rotation
-condition_bin = (meta["Condition"] == "FirstGame").astype(float).to_numpy()
-model_reg = ENA().accumulate(rs, "unit_key", "convo_key", CODES).fit(
-    rotation=regression_rotation(condition_bin)
-)
-```
-
 ---
 
 ## Window Options
 
-| Option | R | Python |
-|---|---|---|
-| Window back | `default_window=4` | `window_size=4` |
-| Window forward | `window_forward=2` | `window_forward=2` |
-| Infinite window | `default_window=Inf` | `window_size=sys.maxsize` |
-| Binary co-occurrence | `weight.by="binary"` | `binary=True` |
-| Weighted co-occurrence | `weight.by="sum"` | `binary=False` |
+| Option | Argument |
+|---|---|
+| Window back | `default_window = 4` |
+| Window forward | `window_forward = 2` |
+| Infinite window | `default_window = Inf` |
+| Binary co-occurrence | `weight.by = "binary"` |
+| Weighted co-occurrence | `weight.by = "sum"` |
 
 ---
 
 ## Further Reading
 
-- Full R/Python side-by-side reference: [`docs/ena-r-python-comparison.md`](docs/ena-r-python-comparison.md)
 - [ENA resources page](https://www.epistemicnetwork.org/resources/)
 - [Epistemic Analytics](https://www.epistemicnetwork.org/)
