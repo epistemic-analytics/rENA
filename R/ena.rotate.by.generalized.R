@@ -1,139 +1,179 @@
 ###
-#' @title ENA Rotate by generalized means rotation (gmr)
+#' @title ENA Rotate by generalized means rotation (GMR)
 #'
-#' @param enaset An \code{\link{ENAset}}
-#' @param params list of parameters, may include:
-#'     x_var: data.frame used for calling gmr() on the first dimension
-#'     y_var: data.frame used for calling gmr() on the second dimension (optional).
+#' @description Computes a dimensional reduction from a matrix of ENA points
+#'   such that the first dimension best represents the contribution of a target
+#'   variable after controlling for covariates via Lasso. An optional second
+#'   GMR axis can be computed for \code{y_var}; remaining dimensions are filled
+#'   by SVD of the doubly-deflated space. Delegates to
+#'   \code{\link[libqe]{generalized_means_rotation}}.
 #'
+#' @param enaset An \code{\link{ENAset}} or compatible list with
+#'   \code{model$points.for.projection} (or \code{points.normed.centered}),
+#'   \code{line.weights}, and \code{rotation$codes}.
+#' @param params A list with the following named elements:
+#'   \describe{
+#'     \item{\code{x_var}}{Required. A \code{data.frame} (or character vector of
+#'       column names in \code{enaset$meta.data}) whose first column is the
+#'       target variable. Additional columns are treated as covariates and
+#'       penalized via Lasso.}
+#'     \item{\code{y_var}}{Optional. Same format as \code{x_var}. When provided
+#'       a second GMR axis is computed.}
+#'     \item{\code{select_2_groups}}{Optional length-2 list/vector of group
+#'       labels. When given, the GMR fit for the x axis uses only rows whose
+#'       target value is in these two groups. The group mean difference for x1
+#'       (the secondary axis that keeps group means on the x-axis) is always
+#'       computed from the full data.}
+#'     \item{\code{interactions}}{Logical; if \code{TRUE} (default) pairwise
+#'       interaction terms are added to the model matrix when covariates are
+#'       present. Set \code{FALSE} for main-effects-only Lasso.}
+#'   }
+#'
+#' @importFrom libqe generalized_means_rotation
+#' @importFrom stats model.matrix as.formula
 #' @export
-#' @return \code{\link{ENARotationSet}}
-ena.rotate.by.generalized = function( enaset, params ) {
-  # check arguments
-  if ( !is.list(params) || is.null(params$x_var) ) {
+#' @return A list with \code{rotation} (q x q matrix, column names GMR1,
+#'   GMR2|SVD2, SVD3, …), \code{codes}, \code{eigenvalues}, and
+#'   \code{node.positions = NULL}, suitable for use inside \code{rotate()}.
+###
+ena.rotate.by.generalized <- function(enaset, params) {
+
+  ## ── Input validation ────────────────────────────────────────────────────────
+  if (!is.list(params) || is.null(params$x_var)) {
     stop("params must be provided as a list() and provide `x_var`")
   }
 
-  # x should be a data.frame with colnames
-
-
-  # check if x is a data.frame
+  ## ── Resolve x_var → data.frame ──────────────────────────────────────────────
   if (!is.data.frame(params$x_var)) {
-    if(all(params$x_var %in% colnames(enaset$meta.data))) {
-      x <- enaset$meta.data[, params$x_var, with = FALSE];
+    if (all(params$x_var %in% colnames(enaset$meta.data))) {
+      x <- enaset$meta.data[, params$x_var, with = FALSE]
     } else {
-      stop(paste("x_var incorrect: ", paste(params$x_var, collapse = ", ")));
+      stop(paste("x_var incorrect:", paste(params$x_var, collapse = ", ")))
     }
-  }
-  else {
-    x <- params$x_var;
-  }
-
-  if (is.null(enaset$points.normed.centered)) {
-    V <- as.matrix(enaset$model$points.for.projection);
-  }
-  else {
-    V <- as.matrix(enaset$points.normed.centered);
+  } else {
+    x <- params$x_var
   }
 
-  # call gmr
-  # if x is a data.frame, we assume the first column is the target variable
-  x_result <- gmr(V = V, X = x);
-  x_vector = x_result;
-  Vx1 = attr(x_result,"Vx1");
-  target = attr(x_result,"target");
+  ## ── ENA point matrix ────────────────────────────────────────────────────────
+  V <- if (!is.null(enaset$points.normed.centered))
+         as.matrix(enaset$points.normed.centered)
+       else
+         as.matrix(enaset$model$points.for.projection)
 
-  R <- matrix(c(x_vector), ncol = 1);
-  colnames(R) <- c("RR1");
-  # deflate matrix by x dimension
-  A <- as.matrix(V);
-  defA <- A - A %*% x_vector %*% t(x_vector);
+  ## ── Target variable & encoding ──────────────────────────────────────────────
+  ## For categorical targets, encode as 0-based integer codes.
+  ## When select_2_groups is provided, the two selected groups are encoded as
+  ## 0 and 1 (required by the C++ x1 computation, which uses labels == 0/1).
+  target_full   <- as.vector(x[[1]])
+  x_categorical <- !is.numeric(target_full)
 
-  # further deflate by the linear effect of target variable of x
-  # the purpose is to put group means (two groups) back to the x-axis
-  x1 <- NULL;
-  if(!is.null(params$select_2_groups)) # deflate for two selected groups
-  {
-    grp = params$select_2_groups;
-    if(length(grp)==2)
-    {
-      m1 <- colMeans(defA[target == grp[[1]], , drop = FALSE]);
-      m2 <- colMeans(defA[target == grp[[2]], , drop = FALSE]);
-
-      # Difference vector
-      diff_vec <- m1 - m2;
-
-      # Normalize if length is not near zero
-      len <- sqrt(sum(diff_vec^2));
-      if (len > 1e-10) {
-        x1 <- diff_vec / len;
-      }
+  if (x_categorical) {
+    grp <- params$select_2_groups
+    if (!is.null(grp) && length(grp) == 2) {
+      all_levels <- c(grp[[1]], grp[[2]],
+                      setdiff(unique(target_full), c(grp[[1]], grp[[2]])))
+    } else {
+      all_levels <- unique(target_full)
     }
+    x_target_enc <- as.numeric(factor(target_full, levels = all_levels)) - 1.0
+    x_n_groups   <- as.integer(length(all_levels))
+  } else {
+    x_target_enc <- as.numeric(target_full)
+    x_n_groups   <- 0L
   }
 
-  if(is.null(x1)) {
-    x1 = svd(Vx1)$v[,1]; # the leading eigenvector of Vx1
-  }
-  #orthogonalize x1 with x_vector
-  p = as.numeric(t(x1)%*%x_vector);
-  if(abs(p)<0.99) {
-    x1 = x1 - p * x_vector;
-    # re-normalize x1
-    x1 <- x1 / sqrt(sum(x1^2));
-    # deflate again
-    defA <- defA - defA %*% x1 %*% t(x1); # this deflation should put the means back to x-axis (if the grouping variable is binary)
+  ## ── Row subset (select_2_groups → 0-based integer indices) ──────────────────
+  if (!is.null(params$select_2_groups) && length(params$select_2_groups) == 2) {
+    subset_rows <- which(target_full %in% params$select_2_groups)
+    if (length(subset_rows) < 2L) {
+      warning("select_2_groups produced < 2 matching rows; using all rows")
+      x_subset <- integer(0)
+    } else {
+      x_subset <- as.integer(subset_rows - 1L)
+    }
+  } else {
+    x_subset <- integer(0)
   }
 
-  y_vector <-NULL;
-  y_name = "";
-  # if y is given as a data.frame, gmr on y
-  if (!is.null(params$y_var)) {
-    if(!is.data.frame(params$y_var)) {
-      if(all(params$y_var %in% colnames(enaset$meta.data))) {
-        params$y_var <- enaset$meta.data[, params$y_var, with = FALSE];
+  ## ── Model matrix for x ──────────────────────────────────────────────────────
+  ## Interaction terms are included by default when covariates are present.
+  interactions <- isTRUE(if (!is.null(params$interactions)) params$interactions else TRUE)
+  fstr_x <- if (ncol(x) > 1L && interactions) "~ .^2" else "~ ."
+  mm_x   <- model.matrix(as.formula(fstr_x), data = x)[, -1L, drop = FALSE]
+
+  ## x1_cols (0-based): columns in mm_x that belong to the target variable
+  ## (main-effect columns only; interaction columns stay penalized)
+  x1_name  <- colnames(x)[1L]
+  safe_x1  <- gsub("([.|()\\^{}+$*?]|\\[|\\])", "\\\\\\1", x1_name)
+  x1_regex <- paste0("^", safe_x1, "[^:]*$")
+  x1_cols  <- as.integer(grep(x1_regex, colnames(mm_x)) - 1L)
+  if (length(x1_cols) == 0L) x1_cols <- 0L  # guard: treat first col as target
+
+  ## ── Y axis ──────────────────────────────────────────────────────────────────
+  has_y <- !is.null(params$y_var)
+
+  if (has_y) {
+    if (!is.data.frame(params$y_var)) {
+      if (all(params$y_var %in% colnames(enaset$meta.data))) {
+        y <- enaset$meta.data[, params$y_var, with = FALSE]
+      } else {
+        stop("y_var must be a data.frame or a column name in enaset$meta.data")
       }
-      else {
-        stop("y_var must be a data.frame or a column name in enaset$meta.data");
-      }
-    } 
-    y <- params$y_var;
-    V <- defA;
-    y_result <- gmr(V = defA, X = y);
-    y_vector = y_result;
-    y_name = "RR2";
+    } else {
+      y <- params$y_var
+    }
+    y_target_raw  <- as.vector(y[[1]])
+    y_categorical <- !is.numeric(y_target_raw)
+    if (y_categorical) {
+      y_levels     <- unique(y_target_raw)
+      y_target_enc <- as.numeric(factor(y_target_raw, levels = y_levels)) - 1.0
+      y_n_groups   <- as.integer(length(y_levels))
+    } else {
+      y_target_enc <- as.numeric(y_target_raw)
+      y_n_groups   <- 0L
+    }
+    fstr_y  <- if (ncol(y) > 1L && interactions) "~ .^2" else "~ ."
+    mm_y    <- model.matrix(as.formula(fstr_y), data = y)[, -1L, drop = FALSE]
+    y1_name  <- colnames(y)[1L]
+    safe_y1  <- gsub("([.|()\\^{}+$*?]|\\[|\\])", "\\\\\\1", y1_name)
+    y1_regex <- paste0("^", safe_y1, "[^:]*$")
+    y1_cols  <- as.integer(grep(y1_regex, colnames(mm_y)) - 1L)
+    if (length(y1_cols) == 0L) y1_cols <- 0L
+  } else {
+    ## Dummy y params — passed but ignored by the C++ when has_y = FALSE
+    mm_y          <- matrix(0.0, nrow(V), 1L)
+    y_target_enc  <- numeric(nrow(V))
+    y1_cols       <- 0L
+    y_categorical <- FALSE
+    y_n_groups    <- 0L
   }
-  else {
-    y_vector = svd(defA)$v[,1];
-    y_name = "SVD2";
-  }
 
-  R <- matrix(c(x_vector, y_vector), ncol = 2);
-
-  colnames(R) <- c("RR1", y_name);
-
-  # now  deflation for x_vector and y_vector
-  defA <- A - A %*% x_vector %*% t(x_vector) - A %*% y_vector %*% t(y_vector);
-
-  # # get svd for deflated points
-  svd_result <- prcomp(defA, retx=FALSE, scale=FALSE, center=FALSE, tol=0);
-  svd_v <- svd_result$rotation;
-
-  # Merge rotation vectors
-  vcount <- ncol(R);
-  colNamesR <- colnames(R);
-  combined <- cbind(R, svd_v[, 1:(ncol(svd_v) - vcount)]);
-  colnames(combined) <- c(
-    colNamesR,
-    paste0("SVD", ((vcount + 1):ncol(combined)))
-  );
-
-  #create rotation set
-  rotation_set <- list(
-    node.positions = NULL,
-    rotation = combined,
-    codes = enaset$rotation$codes,
-    eigenvalues = NULL
+  ## ── Delegate to libqe ───────────────────────────────────────────────────────
+  result <- libqe::generalized_means_rotation(
+    V              = V,
+    x_model_matrix = mm_x,
+    x_target       = x_target_enc,
+    x1_cols        = x1_cols,
+    x_categorical  = x_categorical,
+    x_n_groups     = x_n_groups,
+    x_subset       = x_subset,
+    has_y          = has_y,
+    y_model_matrix = mm_y,
+    y_target       = y_target_enc,
+    y1_cols        = y1_cols,
+    y_categorical  = y_categorical,
+    y_n_groups     = y_n_groups
   )
-  return(rotation_set);
-}
 
+  ## ── Assemble rotation matrix ─────────────────────────────────────────────────
+  rotation <- result$rotation
+  colnames(rotation) <- result$column_names
+  rownames(rotation) <- colnames(as.matrix(enaset$line.weights))
+
+  list(
+    node.positions = NULL,
+    rotation       = rotation,
+    codes          = enaset$rotation$codes,
+    eigenvalues    = result$eigenvalues
+  )
+}

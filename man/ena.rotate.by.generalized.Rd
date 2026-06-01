@@ -2,20 +2,43 @@
 % Please edit documentation in R/ena.rotate.by.generalized.R
 \name{ena.rotate.by.generalized}
 \alias{ena.rotate.by.generalized}
-\title{ENA Rotate by generalized means rotation (gmr)}
+\title{ENA Rotate by generalized means rotation (GMR)}
 \usage{
 ena.rotate.by.generalized(enaset, params)
 }
 \arguments{
-\item{enaset}{An \code{\link{ENAset}}}
+\item{enaset}{An \code{\link{ENAset}} or compatible list with
+\code{model$points.for.projection} (or \code{points.normed.centered}),
+\code{line.weights}, and \code{rotation$codes}.}
 
-\item{params}{list of parameters, may include:
-x_var: data.frame used for calling gmr() on the first dimension
-y_var: data.frame used for calling gmr() on the second dimension (optional).}
+\item{params}{A list with the following named elements:
+\describe{
+  \item{\code{x_var}}{Required. A \code{data.frame} (or character vector of
+    column names in \code{enaset$meta.data}) whose first column is the
+    target variable. Additional columns are treated as covariates and
+    penalized via Lasso.}
+  \item{\code{y_var}}{Optional. Same format as \code{x_var}. When provided
+    a second GMR axis is computed.}
+  \item{\code{select_2_groups}}{Optional length-2 list/vector of group
+    labels. When given, the GMR fit for the x axis uses only rows whose
+    target value is in these two groups. The group mean difference for x1
+    (the secondary axis that keeps group means on the x-axis) is always
+    computed from the full data.}
+  \item{\code{interactions}}{Logical; if \code{TRUE} (default) pairwise
+    interaction terms are added to the model matrix when covariates are
+    present. Set \code{FALSE} for main-effects-only Lasso.}
+}}
 }
 \value{
-\code{\link{ENARotationSet}}
+A list with \code{rotation} (q x q matrix, column names GMR1,
+  GMR2|SVD2, SVD3, …), \code{codes}, \code{eigenvalues}, and
+  \code{node.positions = NULL}, suitable for use inside \code{rotate()}.
 }
 \description{
-ENA Rotate by generalized means rotation (gmr)
+Computes a dimensional reduction from a matrix of ENA points
+  such that the first dimension best represents the contribution of a target
+  variable after controlling for covariates via Lasso. An optional second
+  GMR axis can be computed for \code{y_var}; remaining dimensions are filled
+  by SVD of the doubly-deflated space. Delegates to
+  \code{\link[libqe]{generalized_means_rotation}}.
 }

@@ -203,7 +203,12 @@ ena.make.set <- function(
     #####
     if (!is.null(rotation.by) && is.null(rotation.set)) {
       rotation <- do.call(rotation.by, list(enadata, rotation.params))
-
+      # added by Carl, 2026.1.6
+      if(is.null(rotation))
+      {
+        stop("Unable to create a rotation set")
+      }
+      #
       enadata$rotation.matrix <- as.data.table(rotation$rotation, keep.rownames = "codes")
       for (i in seq(ncol(enadata$rotation.matrix))) {
         if(i == 1) {

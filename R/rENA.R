@@ -1,7 +1,6 @@
 #' @title rENA creates ENA sets
 #' @description rENA is used to create and visualize network models of discourse and other phenomena from coded data using Epistemic Network Analysis (ENA). A more complete description of the methods will be provided with the next release. See also XXXXX
 #' @name rENA
-#' @importFrom Rcpp sourceCpp
 #' @importFrom grDevices col2rgb
 #' @importFrom grDevices hsv
 #' @importFrom grDevices rgb2hsv
@@ -9,10 +8,14 @@
 #' @import stats
 #' @import data.table
 #' @import utils
-#' @import doParallel
-#' @import parallel
 #' @import tma
-#' @useDynLib rENA, .registration = TRUE
+#' @importFrom libqe normalize_networks scale_networks center_points
+#' @importFrom libqe code_connections connection_names
+#' @importFrom libqe connection_indices accumulate_stanza
+#' @importFrom libqe row_connections rolling_window_sum
+#' @importFrom libqe node_positions directed_node_positions
+#' @importFrom libqe directed_node_positions_combine_pairs ena_correlation
+#' @importFrom libqe means_rotation
 NULL
 
 # @title Default rENA constants

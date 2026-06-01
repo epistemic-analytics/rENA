@@ -1,119 +1,61 @@
 ###
 #' @title ENA Rotate by mean
 #'
-#' @description Computes a dimensional reduction from a matrix of points such that
-#' the first dimension of the projected space passes through the means of two
-#' groups in a the original space. Subsequent dimensions of the projected space
-#' are computed using ena.svd
+#' @description Computes a dimensional reduction from a matrix of points such
+#'   that the first dimension of the projected space passes through the means of
+#'   two groups in the original space. Subsequent dimensions are computed using
+#'   SVD on the deflated data. Delegates to \code{\link[libqe]{means_rotation}}.
 #'
-#' @param enaset An \code{\link{ENAset}}
-#' @param groups A list containing two logical vectors of length \code{nrow(ENA.set$ena.data$units)},
-#' where each vector defines whether a unit is in one of the two groups whose means
-#' are used to determine the dimensional reduction
-#' @param params A list containing two vectors of length \code{nrow(ENA.set$ena.data$units)},
+#' @param enaset An \code{\link{ENAset}} or compatible list with
+#'   \code{model$points.for.projection}, \code{connection.counts$ENA_UNIT},
+#'   \code{line.weights}, and \code{rotation$codes}.
+#' @param groups A list containing one or more pairs; each pair is a length-2
+#'   list \code{list(a, b)} where \code{a} and \code{b} are either logical
+#'   vectors (length = number of units) or character vectors of unit IDs.
+#' @param params Alias for \code{groups}; used when called from the pipe API.
 #'
+#' @importFrom libqe means_rotation
 #' @export
-#' @return \code{\link{ENARotationSet}}
+#' @return A list with \code{rotation}, \code{codes}, \code{eigenvalues}, and
+#'   \code{node.positions = NULL}, suitable for use inside \code{rotate()}.
 ###
 ena.rotate.by.mean <- function(enaset, groups = NULL, params = groups) {
-  if(is.null(groups) && !is.null(params)) {
-    groups <- params;
+  if (is.null(groups) && !is.null(params)) {
+    groups <- params
+  } else {
+    groups <- list(groups)[[1]]
+    if (length(groups) < 1) stop("Unable to rotate without 2 groups.")
   }
-  else {
-    groups <- list(groups);
-    groups <- groups[[1]];
+  if (!is(groups[[1]], "list")) groups <- list(groups)
 
-    if (length(groups) < 1) {
-      stop("Unable to rotate without 2 groups.");
-    }
-  }
-
-  if (!is(groups[[1]], "list")) {
-    groups <- list(groups);
-  }
-
-  # data <- as.matrix(enaset$line.weights)
-  if (is.null(enaset$points.normed.centered)) {
-    data <- as.matrix(enaset$model$points.for.projection)
-  }
-  else {
-    data <- as.matrix(enaset$points.normed.centered)
-  }
-  data <- scale(data, scale = F, center = T);
-
-  col <- NULL
-  vals <- NULL
-
-  deflated.data <- data;
-  i <- 1;
-  weights <- matrix(0, nrow = ncol(deflated.data), ncol = length(groups))
-
-  for (group in 1:length(groups)) {
-    col <- group
-    vals <- groups[[group]]
-    if(!is.logical(vals[[1]])) {
-      vals[[1]] <- enaset$connection.counts$ENA_UNIT %in% vals[[1]];
-    }
-    if(!is.logical(vals[[2]])) {
-      vals[[2]] <- enaset$connection.counts$ENA_UNIT %in% vals[[2]];
-    }
-
-    col_one_vals <- deflated.data[vals[[1]], ]
-    col_two_vals <- deflated.data[vals[[2]], ]
-    col_one_means <- colMeans(as.matrix(col_one_vals))
-    col_two_means <- colMeans(as.matrix(col_two_vals))
-    col_mean_diff <- col_one_means - col_two_means
-
-    col_mean_diff_sq <- col_mean_diff / sqrt(sum(col_mean_diff ^ 2))
-
-    deflated.data <- deflated.data - (
-                      deflated.data %*% col_mean_diff_sq
-                    ) %*% t(col_mean_diff_sq)
-
-    weights[, i] <- col_mean_diff_sq
-    i <- i + 1;
+  # Extract the data matrix (as.matrix strips metadata columns for ena.matrix)
+  data <- if (!is.null(enaset$points.normed.centered)) {
+    as.matrix(enaset$points.normed.centered)
+  } else {
+    as.matrix(enaset$model$points.for.projection)
   }
 
-  defalted_data_svd <- orthogonal_svd(deflated.data, weights);
+  # Convert groups (logical or character) to 0-based integer index pairs
+  # required by libqe::means_rotation
+  ena_unit <- enaset$connection.counts$ENA_UNIT
+  group_pairs <- lapply(groups, function(pair) {
+    a <- pair[[1]]
+    b <- pair[[2]]
+    if (!is.logical(a)) a <- ena_unit %in% a
+    if (!is.logical(b)) b <- ena_unit %in% b
+    list(as.integer(which(a) - 1L), as.integer(which(b) - 1L))
+  })
 
-  colnames(defalted_data_svd) <- c(
-    paste0("MR", as.character(1:length(groups))),
-    paste0("SVD", as.character((length(groups) + 1):(ncol(defalted_data_svd))))
-  )
-  rownames(defalted_data_svd) <- colnames(as.matrix(enaset$line.weights))
+  result <- libqe::means_rotation(data, group_pairs)
 
-  # rotation_set <- ENARotationSet$new(
-  #   node.positions = NULL,
-  #   rotation = defalted_data_svd,
-  #   codes = enaset$rotation$codes
-  # )
-  rotation_set <- list(
+  rotation <- result$rotation
+  colnames(rotation) <- result$column_names
+  rownames(rotation) <- colnames(as.matrix(enaset$line.weights))
+
+  list(
     node.positions = NULL,
-    rotation = defalted_data_svd,
-    codes = enaset$rotation$codes
+    rotation       = rotation,
+    codes          = enaset$rotation$codes,
+    eigenvalues    = result$eigenvalues
   )
-  return(rotation_set)
-}
-
-orthogonal_svd <- function(data, weights) {
-  if (!is(data, "matrix")) {
-    message("orthogonalSVD:  converting data to matrix")
-    data <- as.matrix(data)
-  }
-
-  #Find the orthogonal transformation that includes W
-  Q <- qr_ortho(weights)
-  X.bar <- data %*% Q[, (ncol(weights) + 1):ncol(Q)]
-  V <- prcomp(X.bar, scale. = F)$rotation
-
-  to_return <- (cbind(
-    Q[, 1:ncol(weights)],
-    Q[, (ncol(weights) + 1):ncol(Q)] %*% V
-  ))
-
-  return(to_return)
-}
-
-qr_ortho <- function(A) {
-  return(qr.Q(qr(A), complete = T))
 }

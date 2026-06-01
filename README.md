@@ -5,11 +5,13 @@
 [![pipeline status](https://gitlab.com/epistemic-analytics/qe-packages/rENA/badges/main/pipeline.svg)](https://gitlab.com/epistemic-analytics/qe-packages/rENA/-/commits/main)
 [![coverage report](https://gitlab.com/epistemic-analytics/qe-packages/rENA/badges/main/coverage.svg)](https://gitlab.com/epistemic-analytics/qe-packages/rENA/-/commits/main)
 
-## What is ENA
+## What is ENA?
 
-[Epistemic Network Analysis](https://www.epistemicnetwork.org/) (ENA) is a method for identifying and quantifying connections among elements in coded data and representing them in dynamic network models. A key feature of the ENA tool is that it enables researchers compare different networks, both visually and through summary statistics that reflect the weighted structure of connections. The interface also allows users to see the original data that contributed to each of the connections in the network representation. ENA can thus be used to address a wide range of qualitative and quantitative research questions.
+[Epistemic Network Analysis](https://www.epistemicnetwork.org/) (ENA) is a method for identifying and quantifying connections among elements in coded data and representing them in dynamic network models. A key feature of the ENA tool is that it enables researchers to compare different networks, both visually and through summary statistics that reflect the weighted structure of connections.
 
-Researchers have used ENA to analyze and visualize a wide range of phenomena, including: cognitive connections that students make while solving complex problems; interactions among different regions of the brain in fMRI data; social gaze coordination; integration of operative skills during surgical procedures; and many others.
+Researchers have used ENA to analyze phenomena including: cognitive connections students make while solving complex problems; interactions among brain regions in fMRI data; social gaze coordination; integration of operative skills during surgical procedures; and many others.
+
+> **Python users:** see [`python/README.md`](python/README.md) for the `pyena` package.
 
 ---
 
@@ -17,23 +19,113 @@ Researchers have used ENA to analyze and visualize a wide range of phenomena, in
 
 ### From CRAN
 
-[![cran status](https://www.r-pkg.org/badges/version-ago/rENA)](https://cran.r-project.org/package=rENA) 
-[![cran downloads](https://cranlogs.r-pkg.org/badges/grand-total/rENA)](https://cranlogs.r-pkg.org/badges/grand-total/rENA) 
-
-```
+```r
 install.packages("rENA")
 ```
 
-### Development Version
+### Development version
 
-[![pipeline status](https://gitlab.com/epistemic-analytics/qe-packages/rENA/badges/main/pipeline.svg)](https://gitlab.com/epistemic-analytics/qe-packages/rENA/-/commits/main)
-[![coverage report](https://gitlab.com/epistemic-analytics/qe-packages/rENA/badges/main/coverage.svg)](https://gitlab.com/epistemic-analytics/qe-packages/rENA/-/commits/main)
-
-```
-install.packages("rENA", repos = c("https://rena.qe-libs.org/cran/", "https://cran.rstudio.org"))
+```r
+install.packages("rENA", repos = c("https://cran.qe-libs.org", "https://cran.rstudio.org"))
 ```
 
 ---
-## Resources
 
-To learn more about ENA, visit the [resources page](https://www.epistemicnetwork.org/resources/).
+## Quick Start
+
+```r
+library(rENA)
+
+codes        <- c("Data", "Technical.Constraints", "Performance.Parameters",
+                  "Client.and.Consultant.Requests", "Design.Reasoning", "Collaboration")
+units        <- c("UserName", "Condition", "GroupName")
+conversation <- c("Condition", "GroupName")
+
+# Simple form
+model <- RS.data |>
+  accumulate(units, codes, conversation, default_window = 4) |>
+  model()
+
+# Granular form (equivalent)
+model <- RS.data |>
+  accumulate(units, codes, conversation, default_window = 4) |>
+  sphere_norm() |>
+  center() |>
+  rotate() |>
+  project() |>
+  optimize()
+```
+
+---
+
+## Accessing Results
+
+```r
+model$line.weights                     # normalised adjacency vectors (units × connections)
+model$points.rotated                   # unit positions in ENA space
+model$rotation.set$node.positions      # code node positions
+```
+
+---
+
+## Separate Accumulation
+
+The accumulation step can be run independently of modeling — useful for inspecting raw
+networks, exporting them, or reusing the same accumulation with multiple rotation methods.
+
+```r
+accum <- RS.data |> accumulate(units, codes, conversation, default_window = 4)
+
+# Then pipe into model(), sphere_norm(), etc. separately
+model <- accum |> sphere_norm() |> center() |> rotate() |> project() |> optimize()
+```
+
+---
+
+## Rotation Methods
+
+| Rotation | Function |
+|---|---|
+| SVD (default) | `rotate()` |
+| Means | `rotate(ena.rotate.by.mean, g1, g2)` |
+| Generalised (GMR) | `rotate(ena.rotate.by.generalized, x)` |
+| Regression (V ~ x) | `rotate(ena.rotate.by.hena.regression, x)` |
+| Regression (x ~ V) | `rotate(ena.rotate.by.hena.regression_2, x)` |
+| Custom matrix | `rotate(mat)` |
+
+```r
+# Means rotation
+model_mr <- RS.data |>
+  accumulate(units, codes, conversation, default_window = 4) |>
+  sphere_norm() |> center() |>
+  rotate(ena.rotate.by.mean,
+         RS.data$Condition == "FirstGame",
+         RS.data$Condition == "SecondGame") |>
+  project() |> optimize()
+
+# Generalised rotation
+model_gmr <- RS.data |>
+  accumulate(units, codes, conversation, default_window = 4) |>
+  sphere_norm() |> center() |>
+  rotate(ena.rotate.by.generalized, RS.data$Condition) |>
+  project() |> optimize()
+```
+
+---
+
+## Window Options
+
+| Option | Argument |
+|---|---|
+| Window back | `default_window = 4` |
+| Window forward | `window_forward = 2` |
+| Infinite window | `default_window = Inf` |
+| Binary co-occurrence | `weight.by = "binary"` |
+| Weighted co-occurrence | `weight.by = "sum"` |
+
+---
+
+## Further Reading
+
+- [ENA resources page](https://www.epistemicnetwork.org/resources/)
+- [Epistemic Analytics](https://www.epistemicnetwork.org/)

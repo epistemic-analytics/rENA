@@ -2,38 +2,72 @@
 % Please edit documentation in R/gmr.R
 \name{get_x1_main_effect}
 \alias{get_x1_main_effect}
-\title{Extract Main Effect Contribution of the First Predictor Using Elastic Net}
+\title{Extract the Main Effect of X on V with Optional Interactions}
 \usage{
-get_x1_main_effect(V, X, alpha = 1, lambda = "lambda.min")
+get_x1_main_effect(
+  V,
+  X,
+  alpha = 1,
+  lambda = "lambda.min",
+  include_interactions = FALSE
+)
 }
 \arguments{
-\item{V}{A numeric matrix of response variables (dimensions: observations x responses).}
+\item{V}{A numeric matrix (units × connections) of dependent variables.}
 
-\item{X}{A data frame containing all predictor variables. The first column is treated as the target predictor (\code{x1}).}
+\item{X}{A data frame or matrix of predictors / covariates. The **first**
+column is treated as the target variable whose contribution will be extracted.}
 
-\item{alpha}{Elastic net mixing parameter (0 = ridge, 1 = lasso). Default is 1.}
+\item{alpha}{Elastic-net mixing parameter passed to `cv.glmnet`. `alpha = 1`
+(default) is Lasso; `alpha = 0` is ridge.}
 
-\item{lambda}{The value of the regularization parameter to use. Can be \code{"lambda.min"}, \code{"lambda.1se"}, or a specific numeric value. Default is \code{"lambda.min"}.}
+\item{lambda}{Character or numeric. Which lambda from the `cv.glmnet` fit to
+use; e.g. `"lambda.min"` (default) or `"lambda.1se"`, or a numeric value.}
+
+\item{include_interactions}{Logical; if `TRUE`, include main-effect columns
+**and** all interaction columns that begin with the target name (default:
+`FALSE`, only main-effect columns).}
+
+\item{...}{Additional arguments are not used (kept for forward compatibility).}
 }
 \value{
-A numeric matrix of the same dimensions as \code{V}, where each column contains the estimated main effect contribution of \code{x1} for the corresponding response variable.
+A numeric matrix with the same dimensions as `V` containing the
+  estimated contribution of `X[,1]` to each response. If no columns are
+  matched or all coefficients are zero, a zero matrix is returned and a
+  warning is issued.
 }
 \description{
-This function fits a multivariate elastic net regression model (using \code{glmnet})
-to estimate the main effect contribution of the first predictor variable (\code{x1})
-in the provided data frame \code{X} for each response variable in \code{V}.
-The main effect is forced into the model by setting its penalty factor to zero.
+Computes the main-effect contribution of the first column of `X` (the
+"target") to the multivariate ENA matrix `V`. The function fits penalized
+regression models (via glmnet) and can optionally include interactions
+between the target and other covariates. It returns the fitted contribution
+matrix (units × connections).
 }
 \details{
-The function constructs a model matrix including all main effects and two-way interactions.
-It then fits a multivariate elastic net model using \code{cv.glmnet}, forcing the inclusion of the main effect of \code{x1} by setting its penalty factor to zero.
-The resulting coefficients for \code{x1} are used to compute its contribution to the fitted values for each response variable.
+The function can compute contributions using either only main-effect columns
+(no interactions) or main-effect plus all interaction columns that start
+with the target name. If no matching columns are found or all fitted
+coefficients are zero, the function returns a zero matrix and emits a
+warning.
+
+
+Internally this function builds `model.matrix(~ .^2, data = X)` to obtain
+main effects and pairwise interactions. It sets a `penalty.factor` that
+leaves the target-related columns unpenalized (0) and fits a multivariate
+`glmnet` (`family = "mgaussian"`). The returned matrix is dense (numeric).
 }
 \examples{
 \dontrun{
-set.seed(123)
-V <- matrix(rnorm(100 * 2), ncol = 2)
-X <- data.frame(x1 = rnorm(100), x2 = sample(letters[1:3], 100, TRUE))
-result <- get_x1_main_effect(V, X)
+set.seed(1)
+V <- matrix(rnorm(50), ncol = 5)
+X <- data.frame(CONFIDENCE = rnorm(10), Condition = factor(rep(1:2, 5)))
+# main effects only
+Vx_main <- get_x1_main_effect(V, X, include_interactions = FALSE)
+# include interactions
+Vx_full <- get_x1_main_effect(V, X, include_interactions = TRUE, alpha = 0) # ridge
 }
+
+}
+\seealso{
+[gmr2()] for the rotation routine that uses this function.
 }

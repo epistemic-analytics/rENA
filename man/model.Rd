@@ -13,7 +13,9 @@ model(
   project_with = project,
   optimize_with = optimize,
   rotate_fun = ena.rotate.by.generalized,
-  rotate_params = list()
+  rotate_params = list(),
+  exclude_zero_networks = is(data, "ena.ordered.set"),
+  center_to_origin = FALSE
 )
 }
 \arguments{
@@ -34,6 +36,16 @@ model(
 \item{rotate_fun}{The specific rotation function to be used by `rotate_with`. Defaults to `ena.rotate.by.generalized`.}
 
 \item{rotate_params}{A list of additional parameters to pass to the `rotate_fun`.}
+
+\item{exclude_zero_networks}{A logical value passed to `center_with`. When `TRUE`,
+units with all-zero line weights are excluded from the mean computation during
+centering (but all units are still shifted by that mean). Defaults to `TRUE`
+automatically for ordered sets (`accumulate(ordered = TRUE)`), `FALSE` otherwise.}
+
+\item{center_to_origin}{A logical value. When `TRUE`, the mean of all projected
+points is subtracted from both the points and the node positions after
+optimization, placing the centroid of the space at the origin. This is the
+default behavior for ONA (Ordered Network Analysis). Defaults to `FALSE`.}
 }
 \value{
 An `ena.set` object with a complete ENA model, including projected points and node positions.
