@@ -56,3 +56,6 @@ include:
   - project: 'epistemic-analytics/qe-packages/cranqe'
     ref: main
     file: '/ci-templates/trigger-cranqe.yml'
+  - project: 'epistemic-analytics/qe-packages/cranqe'
+    ref: main
+    file: '/ci-templates/npm-registry.yml'
