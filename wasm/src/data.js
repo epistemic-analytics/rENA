@@ -70,6 +70,7 @@ export function parseData(rows, codes, unitCols, convoCols) {
     }
 
     const unitLabels = Array.from(unitIndex.keys());
+    const nUnits     = unitLabels.length;
 
-    return { codeMatrix, nRows, nCodes, unitLabels, unitOf, convoOf, convoGroups };
+    return { codeMatrix, nRows, nCodes, nUnits, unitLabels, unitOf, convoOf, convoGroups };
 }
