@@ -11,7 +11,7 @@
     "test": "node --experimental-vm-modules node_modules/.bin/jest"
   },
   "publishConfig": {
-    "registry": "https://gitlab.com/api/v4/projects/epistemic-analytics%2Fqe-packages%2FrENA/packages/npm/"
+    "registry": "https://gitlab.com/api/v4/projects/22522458/packages/npm/"
   },
   "keywords": ["wasm", "ena", "epistemic-network-analysis", "quantitative-ethnography"],
   "license": "GPL-3.0-only",
