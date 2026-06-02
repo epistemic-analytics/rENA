@@ -25,7 +25,7 @@
     "transform": {}
   },
   "dependencies": {
-    "@qe-libs/libqe-wasm": "^0.1.0"
+    "@qe-libs/libqe-wasm": "file:../../libqe/wasm"
   },
   "devDependencies": {
     "jest": "^29.0.0"
