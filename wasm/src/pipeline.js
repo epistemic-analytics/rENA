@@ -101,7 +101,7 @@ export function accumulate(qe, codeMatrix, nRows, nCodes, nUnits,
  */
 export function sphereNorm(qe, networks, nUnits, nConnections) {
     const result = qe.normalize_networks(networks, nUnits, nConnections);
-    return result.data;
+    return new Float64Array(result.data);
 }
 
 // ── centering ─────────────────────────────────────────────────────────────────
@@ -190,9 +190,9 @@ export function project(centered, nUnits, nConnections, rotation, rotRows, rotCo
  * @returns {{ nodes: Float64Array, nodeRows: number, nodeCols: number }}
  */
 export function nodePositions(qe, networks, nUnits, nConnections, points, nDims) {
-    const r = qe.node_positions(networks, nUnits, nConnections, points, nDims);
+    const r = qe.node_positions(networks, nUnits, nConnections, points, nUnits, nDims);
     return {
-        nodes:     r.nodes.data,
+        nodes:     new Float64Array(r.nodes.data),
         nodeRows:  r.nodes.rows,
         nodeCols:  r.nodes.cols,
     };
