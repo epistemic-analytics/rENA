@@ -6,53 +6,36 @@
  * unit/conversation grouping, and the full accumulate→normalize→center→
  * rotate→project→node-positions pipeline.
  *
- * Usage (simple windowed):
+ * Output structure mirrors R's ena.set object (without R-specific S3 class
+ * attributes and without metadata columns prepended to every matrix).
+ * Metadata lives in metaData / model.metaData instead.
  *
- *   import loadENA from '@qe-libs/rena-wasm';
- *   const ena = await loadENA();
+ * Top-level fields (= R's set$...):
+ *   connectionCounts  Float64Array  (nUnits × nConnections) — raw accumulation
+ *   lineWeights       Float64Array  (nUnits × nConnections) — sphere-normed
+ *   points            Float64Array  (nUnits × dims)         — projected positions
+ *   rotationMatrix    Float64Array  (nConnections × dims)   — rotation vectors
+ *   metaData          Object[]      one object per unit, non-code/unit/convo cols
+ *   connectionNames   string[]
+ *   columnClasses     Object        matrix name → R column class string
+ *   nUnits            number
+ *   nConnections      number
+ *   dims              number
  *
- *   const model = ena.fit(rows, {
- *     codes:         ['Data', 'Technical.Constraints', ...],
- *     units:         ['UserName', 'Condition'],
- *     conversations: ['Condition', 'GroupName'],
- *     window:        4,
- *     rotation:      'svd',   // 'svd' | 'mean'
- *     dims:          2,
- *   });
+ * model sub-object (= R's set$model$...):
+ *   model.centroids           Float64Array  (nUnits × dims) — LWS centroids
+ *   model.variance            number[]      variance explained per dim
+ *   model.unitLabels          string[]
+ *   model.pointsForProjection Float64Array  (nUnits × nConnections) — centered normed
  *
- * Usage (context tensor — advanced):
- *
- *   const model = ena.fit(rows, {
- *     codes, units, conversations,
- *     ordered: true,
- *     tensor: {
- *       // Tensor shape: [nSenderVals, nReceiverVals, 2].
- *       // Last entry is always 2 (index 0 = weight, index 1 = window).
- *       dims: [3, 3, 2],
- *       dimsSender:   [0],   // axis 0 = sender factor
- *       dimsReceiver: [1],   // axis 1 = receiver factor
- *       dimsMode:     [],
- *       // Factor column names (one per non-weight/window axis, in order).
- *       factors: ['SenderType', 'ReceiverType'],
- *       // Optional: explicit value → index mapping.  Inferred if omitted.
- *       factorLevels: {
- *         SenderType:   { 'A': 0, 'B': 1, 'C': 2 },
- *         ReceiverType: { 'X': 0, 'Y': 1, 'Z': 2 },
- *       },
- *       // Flat column-major tensor: weight and window per factor combination.
- *       // Length = product(dims).
- *       data: new Float64Array([...]),
- *       // Optional timestamp column.  Defaults to row index.
- *       timesCol: 'timestamp',
- *     },
- *   });
- *
- *   // model.centroids       Float64Array  (nUnits × dims)
- *   // model.networks        Float64Array  (nUnits × nConnections) — normed
- *   // model.positions       Float64Array  (nCodes × dims)
- *   // model.connectionNames string[]
- *   // model.unitLabels      string[]
- *   // model.dims            number
+ * rotation sub-object (= R's set$rotation$...):
+ *   rotation.rotationMatrix  Float64Array  same reference as top-level rotationMatrix
+ *   rotation.nodes           Float64Array  (nCodes × dims) — code positions
+ *   rotation.columnNames     string[]      axis labels e.g. ['SVD1','SVD2']
+ *   rotation.eigenvalues     number[]
+ *   rotation.centerVec       Float64Array  (nConnections) — centering vector
+ *   rotation.codes           string[]
+ *   rotation.adjacencyKey    string[][]    [[codeA,codeB], ...] per connection
  */
 
 import loadLibQE from '@qe-libs/libqe-wasm';
@@ -64,52 +47,151 @@ import {
 } from './pipeline.js';
 import { accumulateTensor, defaultTensor } from './tensor.js';
 
+// ── helpers ───────────────────────────────────────────────────────────────────
+
+/**
+ * Compute per-dimension variance explained from projected unit positions.
+ * Matches R: diagonal(var(points)) / sum(diagonal(var(points)))
+ *
+ * @param {Float64Array} points  nUnits × dims, row-major
+ * @param {number}       nUnits
+ * @param {number}       dims
+ * @returns {number[]}  length dims, sums to 1
+ */
+function computeVariance(points, nUnits, dims) {
+    if (nUnits < 2) return Array.from({ length: dims }, () => 1 / dims);
+
+    // Column means
+    const means = new Float64Array(dims);
+    for (let u = 0; u < nUnits; u++)
+        for (let d = 0; d < dims; d++)
+            means[d] += points[u * dims + d];
+    for (let d = 0; d < dims; d++) means[d] /= nUnits;
+
+    // Sample variance (n-1 denominator, matching R's var())
+    const variances = new Float64Array(dims);
+    for (let u = 0; u < nUnits; u++)
+        for (let d = 0; d < dims; d++) {
+            const diff = points[u * dims + d] - means[d];
+            variances[d] += diff * diff;
+        }
+    for (let d = 0; d < dims; d++) variances[d] /= (nUnits - 1);
+
+    const total = Array.from(variances).reduce((a, b) => a + b, 0);
+    if (total === 0) return Array.from({ length: dims }, () => 1 / dims);
+    return Array.from(variances).map(v => v / total);
+}
+
+/**
+ * Build the adjacency key — list of [codeA, codeB] pairs for each connection.
+ * Matches R's enadata$adjacency.matrix (column-major upper triangle order).
+ *
+ * @param {string[]} codes
+ * @returns {string[][]}  length nConnections, each entry is [codeI, codeJ]
+ */
+function buildAdjacencyKey(codes) {
+    const key = [];
+    for (let j = 1; j < codes.length; j++)
+        for (let i = 0; i < j; i++)
+            key.push([codes[i], codes[j]]);
+    return key;
+}
+
 // ── ENA result object ─────────────────────────────────────────────────────────
 
 class ENAModel {
-    /**
-     * @param {object} opts
-     * @param {Float64Array} opts.networks        normed adjacency vectors (nUnits × nConnections)
-     * @param {Float64Array} opts.centroids        unit positions (nUnits × dims)
-     * @param {Float64Array} opts.positions        node positions (nCodes × dims)
-     * @param {string[]}     opts.connectionNames  e.g. ['Data & Technical.Constraints', ...]
-     * @param {string[]}     opts.unitLabels
-     * @param {string[]}     opts.columnNames      rotation axis labels e.g. ['SVD1', 'SVD2']
-     * @param {number[]}     opts.eigenvalues
-     * @param {number}       opts.dims
-     * @param {number}       opts.nUnits
-     * @param {number}       opts.nConnections
-     */
     constructor(opts) {
-        Object.assign(this, opts);
+        // ── top-level fields (= R's set$...) ────────────────────────────────
+        this.connectionCounts = opts.connectionCounts;  // raw networks
+        this.lineWeights      = opts.lineWeights;       // sphere-normed networks
+        this.points           = opts.points;            // projected unit positions
+        this.rotationMatrix   = opts.rotationMatrix;    // n_connections × dims
+        this.metaData         = opts.metaData;          // array of unit metadata objects
+        this.connectionNames  = opts.connectionNames;
+        this.nUnits           = opts.nUnits;
+        this.nConnections     = opts.nConnections;
+        this.dims             = opts.dims;
+
+        // ── model sub-object (= R's set$model$...) ───────────────────────────
+        this.model = {
+            centroids:           opts.centroids,           // LWS positions
+            variance:            opts.variance,            // variance explained
+            unitLabels:          opts.unitLabels,
+            pointsForProjection: opts.pointsForProjection, // centered normed networks
+        };
+
+        // ── rotation sub-object (= R's set$rotation$...) ────────────────────
+        this.rotation = {
+            rotationMatrix: opts.rotationMatrix,  // same reference as top-level
+            nodes:          opts.nodes,           // code positions
+            columnNames:    opts.columnNames,     // axis labels ['SVD1','SVD2']
+            eigenvalues:    opts.eigenvalues,
+            centerVec:      opts.centerVec,
+            codes:          opts.codes,
+            adjacencyKey:   opts.adjacencyKey,
+        };
+
+        // ── column class annotations (mirrors R's S3 class tags) ─────────────
+        this.columnClasses = {
+            connectionCounts:    'ena.co.occurrence',
+            lineWeights:         'ena.co.occurrence',
+            points:              'ena.dimension',
+            pointsForProjection: 'ena.co.occurrence',
+            rotationMatrix:      'ena.dimension',
+            nodes:               'ena.dimension',
+        };
     }
 
-    /** Centroid for a single unit by label. */
+    /**
+     * Projected position for a single unit (= R's set$points[unit,]).
+     * @param {string} unitLabel
+     * @returns {number[]}
+     */
+    point(unitLabel) {
+        const idx = this.model.unitLabels.indexOf(unitLabel);
+        if (idx < 0) throw new Error(`Unknown unit: ${unitLabel}`);
+        return Array.from(this.points.subarray(idx * this.dims, (idx + 1) * this.dims));
+    }
+
+    /**
+     * LWS centroid for a single unit (= R's set$model$centroids[unit,]).
+     * @param {string} unitLabel
+     * @returns {number[]}
+     */
     centroid(unitLabel) {
-        const idx = this.unitLabels.indexOf(unitLabel);
+        const idx = this.model.unitLabels.indexOf(unitLabel);
         if (idx < 0) throw new Error(`Unknown unit: ${unitLabel}`);
-        return Array.from(this.centroids.subarray(idx * this.dims, (idx + 1) * this.dims));
+        if (!this.model.centroids) throw new Error('LWS centroids not available from libqe');
+        return Array.from(this.model.centroids.subarray(idx * this.dims, (idx + 1) * this.dims));
     }
 
-    /** Network vector for a single unit by label. */
+    /**
+     * Normed network vector for a single unit (= R's set$line.weights[unit,]).
+     * @param {string} unitLabel
+     * @returns {number[]}
+     */
     network(unitLabel) {
-        const idx = this.unitLabels.indexOf(unitLabel);
+        const idx = this.model.unitLabels.indexOf(unitLabel);
         if (idx < 0) throw new Error(`Unknown unit: ${unitLabel}`);
-        return Array.from(this.networks.subarray(idx * this.nConnections, (idx + 1) * this.nConnections));
+        return Array.from(this.lineWeights.subarray(
+            idx * this.nConnections, (idx + 1) * this.nConnections
+        ));
     }
 }
 
 // ── shared pipeline (post-accumulation) ──────────────────────────────────────
 
 function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
-                     rotMethod, groupA, groupB, dims) {
+                     metaData, rotMethod, groupA, groupB, dims) {
     const connectionNames = qe.connection_names(codes);
 
-    // Sphere norm
-    const normed = sphereNorm(qe, rawNetworks, nUnits, nConnections);
+    // Sphere norm → lineWeights (= R's set$line.weights)
+    const lineWeights = sphereNorm(qe, rawNetworks, nUnits, nConnections);
 
-    // Center (zero-network rows excluded from mean)
-    const centered = center(qe, normed, nUnits, nConnections);
+    // Center → pointsForProjection (= R's model$points.for.projection)
+    //          centerVec             (= R's rotation$center.vec)
+    const { centered: pointsForProjection, centerVec } =
+        center(qe, lineWeights, nUnits, nConnections);
 
     // Rotate
     let rot;
@@ -117,33 +199,59 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
         if (!groupA || !groupB) throw new Error(
             'opts.groupA and opts.groupB are required for means rotation'
         );
-        rot = rotateMeans(qe, centered, nUnits, nConnections, groupA, groupB);
+        rot = rotateMeans(qe, pointsForProjection, nUnits, nConnections, groupA, groupB);
     } else {
-        rot = rotateSVD(qe, centered, nUnits, nConnections);
+        rot = rotateSVD(qe, pointsForProjection, nUnits, nConnections);
     }
 
-    // Project
-    const centroids = project(
-        centered, nUnits, nConnections,
+    // Truncate rotation matrix to dims columns (= R's set$rotation.matrix)
+    const rotationMatrix = new Float64Array(rot.rotRows * dims);
+    for (let r = 0; r < rot.rotRows; r++)
+        for (let d = 0; d < dims; d++)
+            rotationMatrix[r * dims + d] = rot.rotation[r * rot.rotCols + d];
+
+    const columnNames = rot.columnNames.slice(0, dims);
+
+    // Project → points (= R's set$points)
+    const points = project(
+        pointsForProjection, nUnits, nConnections,
         rot.rotation, rot.rotRows, rot.rotCols, dims
     );
 
-    // Node positions
-    const { nodes: positions } = nodePositions(
-        qe, normed, nUnits, nConnections, centroids, dims
+    // Node positions (LWS) → rotation.nodes + model.centroids
+    const { nodes, centroids } = nodePositions(
+        qe, lineWeights, nUnits, nConnections, points, dims
     );
 
+    // Variance explained (= R's model$variance)
+    const variance = computeVariance(points, nUnits, dims);
+
+    // Adjacency key (= R's rotation$adjacency.key)
+    const adjacencyKey = buildAdjacencyKey(codes);
+
     return new ENAModel({
-        networks:     normed,
-        centroids,
-        positions,
+        // top-level
+        connectionCounts:     rawNetworks,
+        lineWeights,
+        points,
+        rotationMatrix,
+        metaData,
         connectionNames,
-        unitLabels,
-        columnNames:  rot.columnNames.slice(0, dims),
-        eigenvalues:  rot.eigenvalues,
-        dims,
         nUnits,
         nConnections,
+        dims,
+        // model sub
+        centroids,
+        variance,
+        unitLabels,
+        pointsForProjection,
+        // rotation sub
+        nodes,
+        columnNames,
+        eigenvalues:  rot.eigenvalues,
+        centerVec,
+        codes,
+        adjacencyKey,
     });
 }
 
@@ -169,7 +277,7 @@ export default async function loadENA() {
          * @param {number}   [opts.window=4]       - Backward window (simple path; ignored when tensor provided)
          * @param {boolean}  [opts.binary=true]    - Binarise co-occurrences (simple path only)
          * @param {boolean}  [opts.ordered=false]  - Directed networks (tensor path only)
-         * @param {object}   [opts.tensor]         - Context tensor definition (see module docstring)
+         * @param {object}   [opts.tensor]         - Context tensor definition
          * @param {string}   [opts.rotation='svd'] - 'svd' or 'mean'
          * @param {number[]} [opts.groupA]         - Unit indices for means rotation group A
          * @param {number[]} [opts.groupB]         - Unit indices for means rotation group B
@@ -197,19 +305,18 @@ export default async function loadENA() {
             if (!conversations?.length) throw new Error('opts.conversations is required');
 
             const { codeMatrix, nRows, nCodes, nUnits, unitLabels,
-                    unitOf, convoGroups } = parseData(rows, codes, units, conversations);
+                    unitOf, convoGroups, metaData } =
+                parseData(rows, codes, units, conversations);
 
             let rawNetworks, nConnections;
 
             if (tensorDef) {
-                // Advanced: context-tensor accumulation
                 rawNetworks  = accumulateTensor(
                     qe, rows, codeMatrix, nRows, nCodes, nUnits,
                     unitOf, convoGroups, tensorDef, ordered
                 );
                 nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
             } else {
-                // Simple: windowed stanza accumulation
                 rawNetworks  = accumulate(
                     qe, codeMatrix, nRows, nCodes, nUnits,
                     unitOf, convoGroups, windowSize, binary
@@ -218,17 +325,23 @@ export default async function loadENA() {
             }
 
             return runPipeline(qe, rawNetworks, nUnits, nConnections, codes,
-                               unitLabels, rotMethod, groupA, groupB, dims);
+                               unitLabels, metaData, rotMethod, groupA, groupB, dims);
         },
 
         /**
-         * Run only the accumulation step.
+         * Run only the accumulation step (= R's ena.accumulate.data()).
          * Returns raw (un-normalised) network vectors.
          *
          * @param {Object[]} rows
          * @param {object}   opts  - codes, units, conversations, window, binary, ordered, tensor
-         * @returns {{ networks: Float64Array, unitLabels: string[],
-         *             connectionNames: string[], nUnits: number, nConnections: number }}
+         * @returns {{
+         *   connectionCounts: Float64Array,
+         *   unitLabels:       string[],
+         *   connectionNames:  string[],
+         *   metaData:         Object[],
+         *   nUnits:           number,
+         *   nConnections:     number,
+         * }}
          */
         accumulate(rows, opts = {}) {
             const {
@@ -240,7 +353,8 @@ export default async function loadENA() {
             } = opts;
 
             const { codeMatrix, nRows, nCodes, nUnits, unitLabels,
-                    unitOf, convoGroups } = parseData(rows, codes, units, conversations);
+                    unitOf, convoGroups, metaData } =
+                parseData(rows, codes, units, conversations);
 
             let networks, nConnections;
 
@@ -259,7 +373,8 @@ export default async function loadENA() {
             }
 
             const connectionNames = qe.connection_names(codes);
-            return { networks, unitLabels, connectionNames, nUnits, nConnections };
+            return { connectionCounts: networks, unitLabels, connectionNames,
+                     metaData, nUnits, nConnections };
         },
 
         /**

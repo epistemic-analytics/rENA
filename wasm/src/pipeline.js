@@ -109,6 +109,10 @@ export function sphereNorm(qe, networks, nUnits, nConnections) {
 /**
  * Subtract column means (center the network space).
  * Excludes all-zero rows from the mean calculation (zero-network exclusion).
+ *
+ * @returns {{ centered: Float64Array, centerVec: Float64Array }}
+ *   centered  — mean-subtracted networks (zero-network rows left at zero)
+ *   centerVec — the column means used for centering (= R's rotation$center.vec)
  */
 export function center(qe, networks, nUnits, nConnections) {
     // Identify non-zero rows
@@ -119,7 +123,7 @@ export function center(qe, networks, nUnits, nConnections) {
         if (rowSum > 0) active.push(u);
     }
 
-    // Compute column means over active rows only
+    // Compute column means over active rows only (= R's rotation$center.vec)
     const means = new Float64Array(nConnections);
     for (const u of active) {
         for (let c = 0; c < nConnections; c++) means[c] += networks[u * nConnections + c];
@@ -128,15 +132,18 @@ export function center(qe, networks, nUnits, nConnections) {
         for (let c = 0; c < nConnections; c++) means[c] /= active.length;
     }
 
-    // Subtract means from all rows
-    const centered = new Float64Array(networks.length);
+    // Subtract means from non-zero rows only.
+    // Zero-network rows remain at zero (R: center.align.to.origin = TRUE default).
+    const activeSet = new Set(active);
+    const centered  = new Float64Array(networks.length);
     for (let u = 0; u < nUnits; u++) {
+        if (!activeSet.has(u)) continue;          // leave zero-network row as zero
         for (let c = 0; c < nConnections; c++) {
             centered[u * nConnections + c] = networks[u * nConnections + c] - means[c];
         }
     }
 
-    return centered;
+    return { centered, centerVec: means };
 }
 
 // ── rotation ──────────────────────────────────────────────────────────────────
@@ -186,8 +193,13 @@ export function project(centered, nUnits, nConnections, rotation, rotRows, rotCo
 }
 
 /**
- * Compute code node positions via least-squares.
- * @returns {{ nodes: Float64Array, nodeRows: number, nodeCols: number }}
+ * Compute code node positions via least-squares (LWS).
+ *
+ * @returns {{ nodes: Float64Array, nodeRows: number, nodeCols: number,
+ *             centroids: Float64Array|null }}
+ *   nodes     — code positions in ENA space (= R's rotation$nodes)
+ *   centroids — LWS unit centroid positions (= R's model$centroids), or null
+ *               if libqe does not expose them
  */
 export function nodePositions(qe, networks, nUnits, nConnections, points, nDims) {
     const r = qe.node_positions(networks, nUnits, nConnections, points, nUnits, nDims);
@@ -195,5 +207,6 @@ export function nodePositions(qe, networks, nUnits, nConnections, points, nDims)
         nodes:     new Float64Array(r.nodes.data),
         nodeRows:  r.nodes.rows,
         nodeCols:  r.nodes.cols,
+        centroids: r.centroids ? new Float64Array(r.centroids.data) : null,
     };
 }

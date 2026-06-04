@@ -17,11 +17,11 @@ to a particular rotation or normalization approach.
         binary        = True,
     )
 
-    accum.networks_          # (n_units × n_connections) raw adjacency matrix
-    accum.units_             # unit labels in first-appearance order
-    accum.codes_             # code names
-    accum.connection_names_  # e.g. ["Data&Technical Constraints", ...]
-    accum.meta               # DataFrame: one row per unit, unit-level columns
+    accum.connection_counts_  # (n_units × n_connections) raw adjacency matrix
+    accum.unit_labels_        # unit labels in first-appearance order
+    accum.codes_              # code names
+    accum.connection_names_   # e.g. ["Data & Technical Constraints", ...]
+    accum.meta                # DataFrame: one row per unit, unit-level columns
 """
 
 from __future__ import annotations
@@ -39,19 +39,22 @@ class ENAAccumulation:
 
     Attributes
     ----------
-    networks_ : np.ndarray, shape (n_units, n_connections)
+    connection_counts_ : np.ndarray, shape (n_units, n_connections)
         Raw (un-normalised) co-occurrence counts summed per unit.
-    units_ : list[str]
+        Corresponds to R's ``enadata$adjacency.vectors`` /
+        ``set$connection.counts``.
+    unit_labels_ : list[str]
         Unit labels in first-appearance order.
+        Corresponds to R's ``set$model$unit.labels``.
     codes_ : list[str]
         Code names in model order.
     connection_names_ : list[str]
-        Labels for each connection column, e.g. ``"Data&Technical Constraints"``.
+        Labels for each connection column, e.g. ``"Data & Technical Constraints"``.
         Order matches the column-major upper-triangle used by ``stanza_window``.
     meta : pd.DataFrame
         One row per unit (unit label as index).  Contains all non-code,
         non-unit-key columns from the original data, deduplicated per unit.
-        Useful for attaching condition/group metadata to downstream models.
+        Corresponds to R's ``set$meta.data``.
     """
 
     def __init__(
@@ -62,15 +65,15 @@ class ENAAccumulation:
         connection_names: List[str],
         meta: pd.DataFrame,
     ) -> None:
-        self.networks_         = networks
-        self.units_            = units
-        self.codes_            = codes
-        self.connection_names_ = connection_names
-        self.meta              = meta
+        self.connection_counts_ = networks
+        self.unit_labels_       = units
+        self.codes_             = codes
+        self.connection_names_  = connection_names
+        self.meta               = meta
 
     def __repr__(self) -> str:
         return (
-            f"<ENAAccumulation {len(self.units_)} units × "
+            f"<ENAAccumulation {len(self.unit_labels_)} units × "
             f"{len(self.connection_names_)} connections>"
         )
 
@@ -116,13 +119,13 @@ def accumulate(
     Basic accumulation::
 
         accum = accumulate(rs, "unit_key", "convo_key", CODES, window_size=4)
-        print(accum.networks_.shape)   # (96, 15)
+        print(accum.connection_counts_.shape)   # (48, 15)
 
     Inspect raw networks before modeling::
 
         import pandas as pd
-        df = pd.DataFrame(accum.networks_,
-                          index=accum.units_,
+        df = pd.DataFrame(accum.connection_counts_,
+                          index=accum.unit_labels_,
                           columns=accum.connection_names_)
 
     Pass to ENA for modeling::
@@ -146,9 +149,10 @@ def accumulate(
         for row_idx, unit_label in enumerate(conv_df[units].tolist()):
             raw_networks[unit_index[unit_label]] += co_occ[row_idx]
 
-    # column-major upper-triangle order matching stanza_window output
+    # Column-major upper-triangle order matching stanza_window output.
+    # Separator is " & " (with spaces) to match R's paste(..., collapse = " & ").
     connection_names = [
-        f"{codes[i]}&{codes[j]}"
+        f"{codes[i]} & {codes[j]}"
         for j in range(1, n_codes)
         for i in range(j)
     ]
