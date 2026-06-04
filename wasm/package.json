@@ -23,9 +23,7 @@
   "jest": {
     "testEnvironment": "node",
     "transform": {},
-    "moduleNameMapper": {
-      "^@qe-libs/libqe-wasm$": "<rootDir>/node_modules/@qe-libs/libqe-wasm/js/index.js"
-    }
+    "resolver": "<rootDir>/jest-resolver.cjs"
   },
   "dependencies": {
     "@qe-libs/libqe-wasm": "file:../../libqe/wasm"
