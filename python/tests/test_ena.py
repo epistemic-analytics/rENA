@@ -24,12 +24,12 @@ class TestBasicShape:
     def test_networks_shape(self):
         df = make_df(n_units=2, n_convos=1, n_codes=3)
         m = ENA().fit(df, "unit", "convo", CODES)
-        assert m.networks_.shape == (2, 3)
+        assert m.connection_counts_.shape == (2, 3)
 
     def test_positions_shape(self):
         df = make_df(n_units=2, n_convos=1, n_codes=3)
         m = ENA().fit(df, "unit", "convo", CODES)
-        assert m.positions_.shape == (3, 2)
+        assert m.rotation_nodes_.shape == (3, 2)
 
     def test_centroids_shape(self):
         df = make_df(n_units=2, n_convos=1, n_codes=3)
@@ -39,7 +39,7 @@ class TestBasicShape:
     def test_normed_networks_shape(self):
         df = make_df(n_units=2, n_convos=1, n_codes=3)
         m = ENA().fit(df, "unit", "convo", CODES)
-        assert m.normed_networks_.shape == (2, 3)
+        assert m.line_weights_.shape == (2, 3)
 
 
 class TestZeroNetwork:
@@ -52,14 +52,14 @@ class TestZeroNetwork:
             "c3": [0.0, 0.0, 0.0, 0.0],
         })
         m = ENA().fit(df, "unit", "convo", ["c1", "c2", "c3"])
-        assert np.all(m.networks_[m.units_.index("B")] == 0)
+        assert np.all(m.connection_counts_[m.unit_labels_.index("B")] == 0)
 
 
 class TestSingleConversation:
     def test_single_conversation_runs(self):
         df = make_df(n_units=3, n_convos=1, n_codes=3)
         m = ENA().fit(df, "unit", "convo", CODES)
-        assert m.networks_.shape[0] == 3
+        assert m.connection_counts_.shape[0] == 3
 
 
 class TestMultiConversation:
@@ -68,7 +68,7 @@ class TestMultiConversation:
         df2 = make_df(n_units=2, n_convos=2, n_codes=3, seed=1)
         m1 = ENA().fit(df1, "unit", "convo", CODES)
         m2 = ENA().fit(df2, "unit", "convo", CODES)
-        assert m2.networks_.sum() >= m1.networks_.sum()
+        assert m2.connection_counts_.sum() >= m1.connection_counts_.sum()
 
     def test_units_list_order_preserved(self):
         df = pd.DataFrame({
@@ -79,34 +79,34 @@ class TestMultiConversation:
             "c3": [0.0, 1.0, 1.0, 0.0],
         })
         m = ENA().fit(df, "unit", "convo", ["c1", "c2", "c3"])
-        assert m.units_[0] == "Z"
-        assert m.units_[1] == "A"
+        assert m.unit_labels_[0] == "Z"
+        assert m.unit_labels_[1] == "A"
 
 
 class TestConnectionNamesOrder:
     def test_three_codes_order(self):
         df = make_df(n_codes=3)
         m = ENA().fit(df, "unit", "convo", ["A", "B", "C"])
-        assert m.connection_names_ == ["A&B", "A&C", "B&C"]
+        assert m.connection_names_ == ["A & B", "A & C", "B & C"]
 
     def test_four_codes_order(self):
         df = make_df(n_codes=4)
         m = ENA().fit(df, "unit", "convo", ["A", "B", "C", "D"])
-        assert m.connection_names_ == ["A&B", "A&C", "B&C", "A&D", "B&D", "C&D"]
+        assert m.connection_names_ == ["A & B", "A & C", "B & C", "A & D", "B & D", "C & D"]
 
 
 class TestNormalizationParity:
     def test_sphere_rows_have_unit_norm(self):
         df = make_df(n_units=3, n_codes=3, seed=7)
         m = ENA().fit(df, "unit", "convo", CODES, norm="sphere")
-        for row in m.normed_networks_:
+        for row in m.line_weights_:
             n = np.linalg.norm(row)
             assert n == pytest.approx(1.0, abs=1e-10) or n == pytest.approx(0.0, abs=1e-10)
 
     def test_skip_sphere_runs(self):
         df = make_df(n_units=2, n_codes=3)
         m = ENA().fit(df, "unit", "convo", CODES, norm="skip_sphere")
-        assert m.normed_networks_.shape == (2, 3)
+        assert m.line_weights_.shape == (2, 3)
 
     def test_invalid_norm_raises(self):
         df = make_df()
@@ -118,13 +118,13 @@ class TestDimsParameter:
     def test_dims_2(self):
         df = make_df(n_units=3, n_codes=3)
         m = ENA().fit(df, "unit", "convo", CODES, dims=2)
-        assert m.positions_.shape[1] == 2
+        assert m.rotation_nodes_.shape[1] == 2
         assert m.centroids_.shape[1] == 2
 
     def test_dims_1(self):
         df = make_df(n_units=3, n_codes=3)
         m = ENA().fit(df, "unit", "convo", CODES, dims=1)
-        assert m.positions_.shape[1] == 1
+        assert m.rotation_nodes_.shape[1] == 1
         assert m.centroids_.shape[1] == 1
 
 
@@ -138,7 +138,7 @@ class TestMethodChaining:
     def test_constructor_chain(self):
         df = make_df()
         m = ENA().fit(df, "unit", "convo", CODES)
-        assert hasattr(m, "positions_")
+        assert hasattr(m, "rotation_nodes_")
 
 
 class TestRotations:
@@ -161,15 +161,15 @@ class TestRotations:
         m1 = ENA().fit(df, "unit", "convo", CODES)
         m2 = ENA().fit(df, "unit", "convo", CODES, rotation=None)
         np.testing.assert_allclose(
-            np.abs(m1.positions_), np.abs(m2.positions_), atol=1e-10
+            np.abs(m1.rotation_nodes_), np.abs(m2.rotation_nodes_), atol=1e-10
         )
 
     def test_full_rotation_stored(self):
         df = make_df()
         m = ENA().fit(df, "unit", "convo", CODES)
         assert hasattr(m, "full_rotation_")
-        assert hasattr(m, "rotation_")
-        assert m.rotation_.shape[1] == 2
+        assert hasattr(m, "rotation_matrix_")
+        assert m.rotation_matrix_.shape[1] == 2
 
     # ------------------------------------------------------------------
     # mean_rotation
@@ -183,7 +183,7 @@ class TestRotations:
         g2 = ~g1
         m_svd = ENA().fit(df, "unit", "convo", CODES)
         m_mr = ENA().fit(df, "unit", "convo", CODES, rotation=mean_rotation(g1, g2))
-        assert m_svd.positions_.shape == m_mr.positions_.shape
+        assert m_svd.rotation_nodes_.shape == m_mr.rotation_nodes_.shape
         # Allow that SVD and mean-rotation may coincidentally align (very unlikely)
         # but shapes must match and both must run without error.
 
@@ -194,7 +194,7 @@ class TestRotations:
         g1 = np.array([u in unit_labels[:2] for u in unit_labels])
         g2 = ~g1
         m = ENA().fit(df, "unit", "convo", CODES, rotation=mean_rotation(g1, g2))
-        assert m.positions_.shape == (3, 2)
+        assert m.rotation_nodes_.shape == (3, 2)
         assert m.centroids_.shape == (4, 2)
 
     # ------------------------------------------------------------------
@@ -208,7 +208,7 @@ class TestRotations:
         x_var = np.array([float(i) for i in range(len(unit_labels))])
         m = ENA().fit(df, "unit", "convo", CODES,
                       rotation=generalized_rotation(x_var))
-        assert m.positions_.shape == (3, 2)
+        assert m.rotation_nodes_.shape == (3, 2)
 
     def test_generalized_rotation_categorical(self):
         from pyena.rotations import generalized_rotation
@@ -216,7 +216,7 @@ class TestRotations:
         x_var = np.array(["A", "A", "B", "B"])
         m = ENA().fit(df, "unit", "convo", CODES,
                       rotation=generalized_rotation(x_var))
-        assert m.positions_.shape == (3, 2)
+        assert m.rotation_nodes_.shape == (3, 2)
 
     def test_generalized_rotation_select_2_groups(self):
         from pyena.rotations import generalized_rotation
@@ -226,7 +226,7 @@ class TestRotations:
             df, "unit", "convo", CODES,
             rotation=generalized_rotation(x_var, select_2_groups=("A", "B")),
         )
-        assert m.positions_.shape == (3, 2)
+        assert m.rotation_nodes_.shape == (3, 2)
 
     # ------------------------------------------------------------------
     # regression_rotation
@@ -238,7 +238,7 @@ class TestRotations:
         x_var = np.array([1.0, 1.0, 0.0, 0.0])
         m = ENA().fit(df, "unit", "convo", CODES,
                       rotation=regression_rotation(x_var))
-        assert m.positions_.shape == (3, 2)
+        assert m.rotation_nodes_.shape == (3, 2)
 
     # ------------------------------------------------------------------
     # regression_rotation_2
@@ -250,7 +250,7 @@ class TestRotations:
         x_var = np.array([1.0, 1.0, 0.0, 0.0])
         m = ENA().fit(df, "unit", "convo", CODES,
                       rotation=regression_rotation_2(x_var))
-        assert m.positions_.shape == (3, 2)
+        assert m.rotation_nodes_.shape == (3, 2)
 
     # ------------------------------------------------------------------
     # Pre-computed numpy matrix
@@ -301,7 +301,7 @@ class TestAccumulate:
     def test_networks_shape(self):
         df = make_df(n_units=3, n_codes=3)
         accum = accumulate(df, "unit", "convo", CODES)
-        assert accum.networks_.shape == (3, 3)   # 3 units × choose_two(3)=3
+        assert accum.connection_counts_.shape == (3, 3)   # 3 units × choose_two(3)=3
 
     def test_units_order_preserved(self):
         df = pd.DataFrame({
@@ -312,27 +312,27 @@ class TestAccumulate:
             "c3": [0., 1., 1., 0.],
         })
         accum = accumulate(df, "unit", "convo", ["c1", "c2", "c3"])
-        assert accum.units_[0] == "Z"
-        assert accum.units_[1] == "A"
+        assert accum.unit_labels_[0] == "Z"
+        assert accum.unit_labels_[1] == "A"
 
     def test_connection_names(self):
         df = make_df(n_codes=3)
         accum = accumulate(df, "unit", "convo", CODES)
-        assert accum.connection_names_ == ["A&B", "A&C", "B&C"]
+        assert accum.connection_names_ == ["A & B", "A & C", "B & C"]
 
     def test_meta_index_matches_units(self):
         df = make_df(n_units=3)
         pattern = (["X", "Y", "X"] * (len(df) // 3 + 1))[:len(df)]
         df["condition"] = pattern
         accum = accumulate(df, "unit", "convo", CODES)
-        assert list(accum.meta.index) == accum.units_
+        assert list(accum.meta.index) == accum.unit_labels_
 
     def test_networks_match_full_fit(self):
         """accumulate() networks must match ENA.fit() networks_ exactly."""
         df = make_df(n_units=4, n_codes=3, seed=99)
         accum = accumulate(df, "unit", "convo", CODES)
         model = ENA().fit(df, "unit", "convo", CODES)
-        np.testing.assert_array_equal(accum.networks_, model.networks_)
+        np.testing.assert_array_equal(accum.connection_counts_, model.connection_counts_)
 
     def test_fit_from_accumulation_matches_direct_fit(self):
         """ENA().fit(accum) must produce identical results to ENA().fit(df, ...)."""
@@ -340,9 +340,9 @@ class TestAccumulate:
         m_direct = ENA().fit(df, "unit", "convo", CODES)
         accum    = accumulate(df, "unit", "convo", CODES)
         m_accum  = ENA().fit(accum)
-        np.testing.assert_allclose(m_direct.centroids_,      m_accum.centroids_,      atol=1e-12)
-        np.testing.assert_allclose(m_direct.normed_networks_, m_accum.normed_networks_, atol=1e-12)
-        np.testing.assert_allclose(m_direct.positions_,      m_accum.positions_,      atol=1e-12)
+        np.testing.assert_allclose(m_direct.centroids_,     m_accum.centroids_,     atol=1e-12)
+        np.testing.assert_allclose(m_direct.line_weights_,  m_accum.line_weights_,  atol=1e-12)
+        np.testing.assert_allclose(m_direct.rotation_nodes_, m_accum.rotation_nodes_, atol=1e-12)
 
     def test_fit_from_accumulation_stores_accum(self):
         df = make_df()
@@ -355,11 +355,11 @@ class TestAccumulate:
         from pyena.rotations import mean_rotation
         df = make_df(n_units=4, n_codes=3, seed=7)
         accum = accumulate(df, "unit", "convo", CODES)
-        unit_labels = accum.units_
+        unit_labels = accum.unit_labels_
         g1 = np.array([u in unit_labels[:2] for u in unit_labels])
         g2 = ~g1
         model = ENA().fit(accum, rotation=mean_rotation(g1, g2))
-        assert model.positions_.shape == (3, 2)
+        assert model.rotation_nodes_.shape == (3, 2)
 
     def test_fit_missing_args_raises(self):
         """Passing a DataFrame without units/conversations/codes must raise."""
@@ -385,7 +385,7 @@ class TestConstructorAndChainStyles:
         df = make_df(n_units=3, n_codes=3, seed=5)
         m1 = ENA().fit(df, "unit", "convo", CODES)
         m2 = ENA().accumulate(df, "unit", "convo", CODES).fit()
-        np.testing.assert_allclose(m1.centroids_, m2.centroids_, atol=1e-12)
+        np.testing.assert_allclose(m1.centroids_, m2.centroids_, atol=1e-12)  # LWS centroids
 
     def test_constructor_with_fit_options(self):
         """Constructor takes accumulation params; fit() takes modeling params."""
@@ -395,7 +395,7 @@ class TestConstructorAndChainStyles:
         g1 = np.array([u in unit_labels[:2] for u in unit_labels])
         g2 = ~g1
         model = ENA(df, "unit", "convo", CODES).fit(rotation=mean_rotation(g1, g2))
-        assert model.positions_.shape == (3, 2)
+        assert model.rotation_nodes_.shape == (3, 2)
 
     def test_chain_with_fit_options(self):
         """accumulate() takes window params; fit() takes modeling params."""
