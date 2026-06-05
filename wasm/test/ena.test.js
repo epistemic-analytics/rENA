@@ -210,3 +210,108 @@ test('fit throws for means rotation without groups', () => {
     expect(() => ena.fit(ROWS, { ...OPTS, rotation: 'mean' }))
         .toThrow('opts.groupA and opts.groupB are required');
 });
+
+// ── stat helpers: confInts / outlierInts / compareGroups ─────────────────────
+
+// 8 rows, 4 units (A1 A2 in group A; B1 B2 in group B), 3 codes
+const ROWS_STAT = [
+    { G: 'A', U: 'A1', C: 'C1', X: 1, Y: 1, Z: 0 },
+    { G: 'A', U: 'A1', C: 'C1', X: 1, Y: 0, Z: 1 },
+    { G: 'A', U: 'A2', C: 'C2', X: 0, Y: 1, Z: 1 },
+    { G: 'A', U: 'A2', C: 'C2', X: 1, Y: 1, Z: 0 },
+    { G: 'B', U: 'B1', C: 'C3', X: 0, Y: 0, Z: 1 },
+    { G: 'B', U: 'B1', C: 'C3', X: 1, Y: 0, Z: 0 },
+    { G: 'B', U: 'B2', C: 'C4', X: 0, Y: 1, Z: 0 },
+    { G: 'B', U: 'B2', C: 'C4', X: 0, Y: 0, Z: 1 },
+];
+const OPTS_STAT = { codes: ['X', 'Y', 'Z'], units: ['U'], conversations: ['G', 'C'], dims: 2 };
+
+test('confInts: output shape is { rows: dims, cols: 3 }', () => {
+    const model = ena.fit(ROWS_STAT, OPTS_STAT);
+    const ci = ena.confInts(model.points, model.nUnits, model.dims);
+    expect(ci.rows).toBe(model.dims);
+    expect(ci.cols).toBe(3);
+    expect(ci.data.length).toBe(model.dims * 3);
+});
+
+test('confInts: lower <= mean <= upper for each dim', () => {
+    const model = ena.fit(ROWS_STAT, OPTS_STAT);
+    const ci = ena.confInts(model.points, model.nUnits, model.dims);
+    for (let d = 0; d < model.dims; d++) {
+        const mean  = ci.data[d * 3];
+        const lower = ci.data[d * 3 + 1];
+        const upper = ci.data[d * 3 + 2];
+        expect(lower).toBeLessThanOrEqual(mean + 1e-12);
+        expect(upper).toBeGreaterThanOrEqual(mean - 1e-12);
+    }
+});
+
+test('confInts: all values are finite', () => {
+    const model = ena.fit(ROWS_STAT, OPTS_STAT);
+    const ci = ena.confInts(model.points, model.nUnits, model.dims);
+    expect(ci.data.every(isFinite)).toBe(true);
+});
+
+test('confInts: wider CI at higher confidence level', () => {
+    const model = ena.fit(ROWS_STAT, OPTS_STAT);
+    const ci95 = ena.confInts(model.points, model.nUnits, model.dims, 0.95);
+    const ci80 = ena.confInts(model.points, model.nUnits, model.dims, 0.80);
+    // dim 0: upper - lower should be strictly wider at 0.95 than 0.80
+    const width95 = ci95.data[2] - ci95.data[1];
+    const width80 = ci80.data[2] - ci80.data[1];
+    expect(width95).toBeGreaterThan(width80);
+});
+
+test('outlierInts: output shape is { rows: dims, cols: 2 }', () => {
+    const model = ena.fit(ROWS_STAT, OPTS_STAT);
+    const oi = ena.outlierInts(model.points, model.nUnits, model.dims);
+    expect(oi.rows).toBe(model.dims);
+    expect(oi.cols).toBe(2);
+    expect(oi.data.length).toBe(model.dims * 2);
+});
+
+test('outlierInts: lower <= upper for each dim', () => {
+    const model = ena.fit(ROWS_STAT, OPTS_STAT);
+    const oi = ena.outlierInts(model.points, model.nUnits, model.dims);
+    for (let d = 0; d < model.dims; d++) {
+        expect(oi.data[d * 2]).toBeLessThanOrEqual(oi.data[d * 2 + 1] + 1e-12);
+    }
+});
+
+test('outlierInts: larger iqrFactor gives wider bounds', () => {
+    const model = ena.fit(ROWS_STAT, OPTS_STAT);
+    const oi15 = ena.outlierInts(model.points, model.nUnits, model.dims, 1.5);
+    const oi30 = ena.outlierInts(model.points, model.nUnits, model.dims, 3.0);
+    // upper bound of dim 0 should be strictly wider at factor 3.0
+    expect(Math.abs(oi30.data[1])).toBeGreaterThan(Math.abs(oi15.data[1]) - 1e-12);
+});
+
+test('compareGroups: result has expected fields', () => {
+    const model = ena.fit(ROWS_STAT, OPTS_STAT);
+    // A1, A2 = indices 0,1  (unitLabels are sorted by first appearance)
+    const g1Idx = [0, 1];
+    const g2Idx = [2, 3];
+    const g1 = new Float64Array(g1Idx.flatMap(i =>
+        Array.from(model.points.subarray(i * model.dims, (i + 1) * model.dims))));
+    const g2 = new Float64Array(g2Idx.flatMap(i =>
+        Array.from(model.points.subarray(i * model.dims, (i + 1) * model.dims))));
+    const stats = ena.compareGroups(g1, g1Idx.length, g2, g2Idx.length, model.dims);
+    expect(stats.n1).toBe(2);
+    expect(stats.n2).toBe(2);
+    for (const key of ['t', 'df', 'pvalue_t', 'cohens_d', 'U', 'pvalue_u', 'effect_r']) {
+        expect(stats[key]).toHaveLength(model.dims);
+    }
+    expect(stats.means.rows).toBe(2);
+    expect(stats.means.cols).toBe(model.dims);
+});
+
+test('compareGroups: p-values are in [0, 1]', () => {
+    const model = ena.fit(ROWS_STAT, OPTS_STAT);
+    const g1 = model.points.subarray(0, 2 * model.dims);
+    const g2 = model.points.subarray(2 * model.dims);
+    const stats = ena.compareGroups(g1, 2, g2, 2, model.dims);
+    for (const p of [...stats.pvalue_t, ...stats.pvalue_u]) {
+        expect(p).toBeGreaterThanOrEqual(0);
+        expect(p).toBeLessThanOrEqual(1);
+    }
+});

@@ -97,6 +97,45 @@ ena_correlation <- function(points, centroids, conf_level = 0.95) {
   libqe::ena_correlation(points, centroids, conf_level)
 }
 
+#' Confidence intervals around group mean positions
+#'
+#' Per-dimension t-based confidence intervals around the column means of a
+#' numeric matrix of ENA points.
+#'
+#' @param points     Numeric matrix (units x dims)
+#' @param conf_level Confidence level (default 0.95)
+#' @return Numeric matrix (dims x 3): mean, lower CI, upper CI
+#' @export
+ena_mean_ci <- function(points, conf_level = 0.95) {
+  libqe::mean_ci(as.matrix(points), conf_level)
+}
+
+#' Outlier (Tukey-fence) intervals for group positions
+#'
+#' Per-dimension Tukey-fence intervals: Q1 - k*IQR to Q3 + k*IQR.
+#'
+#' @param points     Numeric matrix (units x dims)
+#' @param iqr_factor IQR multiplier (default 1.5)
+#' @return Numeric matrix (dims x 2): lower fence, upper fence
+#' @export
+ena_outlier_ci <- function(points, iqr_factor = 1.5) {
+  libqe::outlier_ci(as.matrix(points), iqr_factor)
+}
+
+#' Two-group comparison statistics for ENA points
+#'
+#' Per-dimension parametric (Welch t-test, Cohen's d) and non-parametric
+#' (Wilcoxon rank-sum, rank-biserial r) statistics comparing two groups.
+#'
+#' @param g1 Numeric matrix of group 1 points (units x dims)
+#' @param g2 Numeric matrix of group 2 points (units x dims)
+#' @return List with: n1, n2, t, df, pvalue_t, cohens_d, means, sds,
+#'   U, pvalue_u, effect_r, medians — each a vector/matrix of length dims
+#' @export
+ena_group_stats <- function(g1, g2) {
+  libqe::group_stats(as.matrix(g1), as.matrix(g2))
+}
+
 # ── internal (not exported) ───────────────────────────────────────────────────
 
 # Per-row upper-triangle co-occurrence.

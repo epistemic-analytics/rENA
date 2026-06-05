@@ -378,6 +378,52 @@ export default async function loadENA() {
         },
 
         /**
+         * Per-dimension t-based confidence intervals around the column means.
+         * Matches R's conf.ints / libqe::mean_ci.
+         *
+         * @param {Float64Array} points     nUnits × dims, row-major
+         * @param {number}       nUnits
+         * @param {number}       dims
+         * @param {number}       [confLevel=0.95]
+         * @returns {{ data: Float64Array, rows: number, cols: number }}
+         *   rows=dims, cols=3 — columns: mean, lower CI, upper CI
+         */
+        confInts(points, nUnits, dims, confLevel = 0.95) {
+            return qe.mean_ci(points, nUnits, dims, confLevel);
+        },
+
+        /**
+         * Per-dimension Tukey-fence outlier intervals (Q1-k*IQR, Q3+k*IQR).
+         * Matches R's outlier.ints / libqe::outlier_ci.
+         *
+         * @param {Float64Array} points     nUnits × dims, row-major
+         * @param {number}       nUnits
+         * @param {number}       dims
+         * @param {number}       [iqrFactor=1.5]
+         * @returns {{ data: Float64Array, rows: number, cols: number }}
+         *   rows=dims, cols=2 — columns: lower fence, upper fence
+         */
+        outlierInts(points, nUnits, dims, iqrFactor = 1.5) {
+            return qe.outlier_ci(points, nUnits, dims, iqrFactor);
+        },
+
+        /**
+         * Per-dimension parametric and non-parametric two-group statistics.
+         * Matches R's set$tests / libqe::group_stats.
+         *
+         * @param {Float64Array} g1Points  group 1 points, nG1 × dims, row-major
+         * @param {number}       nG1
+         * @param {Float64Array} g2Points  group 2 points, nG2 × dims, row-major
+         * @param {number}       nG2
+         * @param {number}       dims
+         * @returns {{ n1, n2, t, df, pvalue_t, cohens_d, means, sds,
+         *             U, pvalue_u, effect_r, medians }}
+         */
+        compareGroups(g1Points, nG1, g2Points, nG2, dims) {
+            return qe.group_stats(g1Points, nG1, dims, g2Points, nG2, dims);
+        },
+
+        /**
          * Helpers re-exported for consumers who want to build their own pipeline.
          */
         defaultTensor,

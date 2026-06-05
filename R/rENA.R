@@ -16,6 +16,7 @@
 #' @importFrom libqe node_positions directed_node_positions
 #' @importFrom libqe directed_node_positions_combine_pairs ena_correlation
 #' @importFrom libqe means_rotation
+#' @importFrom libqe mean_ci outlier_ci group_stats
 NULL
 
 # @title Default rENA constants

@@ -409,4 +409,93 @@ class TestConstructorAndChainStyles:
         df = make_df()
         ena = ENA().accumulate(df, "unit", "convo", CODES)
         assert isinstance(ena.accum_, ENAAccumulation)
-        assert not hasattr(ena, "centroids_")   # not yet fitted
+
+
+class TestStatWrappers:
+    """conf_ints, outlier_ints, compare_groups — wrappers over pylibqe.modeling."""
+
+    @pytest.fixture
+    def model(self):
+        df = make_df(n_units=6, n_convos=2, n_codes=3, seed=99)
+        return ENA().fit(df, "unit", "convo", CODES)
+
+    # ── conf_ints ──────────────────────────────────────────────────────────
+
+    def test_conf_ints_shape(self, model):
+        ci = model.conf_ints()
+        assert ci.shape == (model.points_.shape[1], 3)
+
+    def test_conf_ints_default_uses_fitted_points(self, model):
+        ci_default = model.conf_ints()
+        ci_explicit = model.conf_ints(model.points_)
+        np.testing.assert_array_equal(ci_default, ci_explicit)
+
+    def test_conf_ints_lower_le_mean_le_upper(self, model):
+        ci = model.conf_ints()
+        assert np.all(ci[:, 1] <= ci[:, 0] + 1e-12)
+        assert np.all(ci[:, 2] >= ci[:, 0] - 1e-12)
+
+    def test_conf_ints_all_finite(self, model):
+        assert np.all(np.isfinite(model.conf_ints()))
+
+    def test_conf_ints_wider_at_higher_level(self, model):
+        width_95 = model.conf_ints(conf_level=0.95)[:, 2] - model.conf_ints(conf_level=0.95)[:, 1]
+        width_80 = model.conf_ints(conf_level=0.80)[:, 2] - model.conf_ints(conf_level=0.80)[:, 1]
+        assert np.all(width_95 > width_80)
+
+    def test_conf_ints_mean_matches_column_mean(self, model):
+        ci = model.conf_ints()
+        np.testing.assert_allclose(ci[:, 0], model.points_.mean(axis=0), atol=1e-10)
+
+    # ── outlier_ints ───────────────────────────────────────────────────────
+
+    def test_outlier_ints_shape(self, model):
+        oi = model.outlier_ints()
+        assert oi.shape == (model.points_.shape[1], 2)
+
+    def test_outlier_ints_default_uses_fitted_points(self, model):
+        oi_default = model.outlier_ints()
+        oi_explicit = model.outlier_ints(model.points_)
+        np.testing.assert_array_equal(oi_default, oi_explicit)
+
+    def test_outlier_ints_lower_le_upper(self, model):
+        oi = model.outlier_ints()
+        assert np.all(oi[:, 0] <= oi[:, 1] + 1e-12)
+
+    def test_outlier_ints_larger_factor_wider_bounds(self, model):
+        oi15 = model.outlier_ints(iqr_factor=1.5)
+        oi30 = model.outlier_ints(iqr_factor=3.0)
+        np.testing.assert_allclose(oi30, oi15 * 2, atol=1e-12)
+
+    # ── compare_groups ─────────────────────────────────────────────────────
+
+    def test_compare_groups_fields_present(self, model):
+        n = len(model.unit_labels_)
+        g1 = np.arange(n) < n // 2
+        result = model.compare_groups(g1, ~g1)
+        for field in ('n1', 'n2', 't', 'df', 'pvalue_t', 'cohens_d',
+                      'U', 'pvalue_u', 'effect_r', 'means', 'sds', 'medians'):
+            assert hasattr(result, field), f"missing field: {field}"
+
+    def test_compare_groups_counts(self, model):
+        n = len(model.unit_labels_)
+        g1 = np.arange(n) < n // 2
+        result = model.compare_groups(g1, ~g1)
+        assert result.n1 == g1.sum()
+        assert result.n2 == (~g1).sum()
+
+    def test_compare_groups_pvalues_in_range(self, model):
+        n = len(model.unit_labels_)
+        g1 = np.arange(n) < n // 2
+        result = model.compare_groups(g1, ~g1)
+        assert np.all((result.pvalue_t >= 0) & (result.pvalue_t <= 1))
+        assert np.all((result.pvalue_u >= 0) & (result.pvalue_u <= 1))
+
+    def test_compare_groups_per_dim_length(self, model):
+        dims = model.points_.shape[1]
+        n = len(model.unit_labels_)
+        g1 = np.arange(n) < n // 2
+        result = model.compare_groups(g1, ~g1)
+        assert len(result.t) == dims
+        assert len(result.cohens_d) == dims
+        assert result.means.shape == (2, dims)

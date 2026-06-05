@@ -247,9 +247,9 @@ class ENA:
 
         # ── normalization ────────────────────────────────────────────────────
         if norm == "sphere":
-            normed = normalization.sphere_norm(raw_networks)
+            normed = normalization.normalize_networks(raw_networks)
         else:
-            normed = normalization.skip_sphere_norm(raw_networks)
+            normed = normalization.scale_networks(raw_networks)
 
         # ── centering ────────────────────────────────────────────────────────
         # Center only non-zero rows (rENA center.align.to.origin=TRUE default).
@@ -259,7 +259,7 @@ class ENA:
 
         centered = np.zeros_like(normed)
         if non_zero.any():
-            centered[non_zero] = modeling.center_data(
+            centered[non_zero] = modeling.center_points(
                 np.ascontiguousarray(normed[non_zero])
             )
 
@@ -283,7 +283,7 @@ class ENA:
         t = centered @ rotation_matrix   # projected unit positions (= R's set$points)
 
         # ── node positions (LWS) ─────────────────────────────────────────────
-        node_positions = modeling.lws_lsq_positions(
+        node_positions = modeling.node_positions(
             np.ascontiguousarray(normed), np.ascontiguousarray(t), dims
         )
 
@@ -328,5 +328,67 @@ class ENA:
             'rotation_matrix':            'ena.dimension',
             'rotation_nodes':             'ena.dimension',
         }
+        return self
+
+    def conf_ints(self, points: Optional[np.ndarray] = None,
+                  conf_level: float = 0.95) -> np.ndarray:
+        """Per-dimension t-based confidence intervals around the column means.
+
+        Parameters
+        ----------
+        points : np.ndarray | None
+            Units × dims matrix. Defaults to ``self.points_``.
+        conf_level : float
+            Confidence level (default 0.95).
+
+        Returns
+        -------
+        np.ndarray, shape (dims, 3)
+            Columns: mean, lower CI, upper CI — one row per dimension.
+        """
+        pts = self.points_ if points is None else points
+        return modeling.mean_ci(np.ascontiguousarray(pts, dtype=np.float64),
+                                conf_level)
+
+    def outlier_ints(self, points: Optional[np.ndarray] = None,
+                     iqr_factor: float = 1.5) -> np.ndarray:
+        """Per-dimension Tukey-fence outlier intervals (Q1-k*IQR, Q3+k*IQR).
+
+        Parameters
+        ----------
+        points : np.ndarray | None
+            Units × dims matrix. Defaults to ``self.points_``.
+        iqr_factor : float
+            IQR multiplier k (default 1.5).
+
+        Returns
+        -------
+        np.ndarray, shape (dims, 2)
+            Columns: lower fence, upper fence — one row per dimension.
+        """
+        pts = self.points_ if points is None else points
+        return modeling.outlier_ci(np.ascontiguousarray(pts, dtype=np.float64),
+                                   iqr_factor)
+
+    def compare_groups(self, g1_mask: np.ndarray,
+                       g2_mask: np.ndarray) -> "modeling.GroupStatsResult":
+        """Per-dimension parametric and non-parametric two-group statistics.
+
+        Parameters
+        ----------
+        g1_mask : np.ndarray of bool
+            Boolean index selecting group 1 rows from ``self.points_``.
+        g2_mask : np.ndarray of bool
+            Boolean index selecting group 2 rows from ``self.points_``.
+
+        Returns
+        -------
+        GroupStatsResult
+            Fields: n1, n2, t, df, pvalue_t, cohens_d, means, sds,
+            U, pvalue_u, effect_r, medians — each length dims.
+        """
+        g1 = np.ascontiguousarray(self.points_[g1_mask], dtype=np.float64)
+        g2 = np.ascontiguousarray(self.points_[g2_mask], dtype=np.float64)
+        return modeling.group_stats(g1, g2)
 
         return self

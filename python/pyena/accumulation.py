@@ -145,7 +145,7 @@ def accumulate(
         codes_mat = np.ascontiguousarray(
             conv_df[codes].to_numpy(dtype=np.float64)
         )
-        co_occ = _acc.stanza_window(codes_mat, window_size, window_forward, binary)
+        co_occ = _acc.accumulate_stanza(codes_mat, window_size, window_forward, binary)
         for row_idx, unit_label in enumerate(conv_df[units].tolist()):
             raw_networks[unit_index[unit_label]] += co_occ[row_idx]
 
