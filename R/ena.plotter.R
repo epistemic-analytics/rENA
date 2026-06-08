@@ -56,7 +56,7 @@ ena.plotter = function(
     set$plots[[length(set$plots) + 1]] <- plot
 
     if(print.plots == TRUE) {
-      print(set$plots)
+      print(set$plots[[length(set$plots)]])
     }
 
     return(set)
@@ -203,7 +203,7 @@ ena.plotter = function(
 
     groups.missing = groups[which(!groups %in% data[[groupVar]])]
     if(length(groups.missing) > 0) {
-      stop(paste0("Group column does not contain group value(s): ", groups[groups.missing]))
+      stop(paste0("Group column does not contain group value(s): ", groups.missing))
     }
 
     set = ena.plot.subtraction(
