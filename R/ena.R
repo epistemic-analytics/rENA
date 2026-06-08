@@ -23,7 +23,7 @@
 #' @param units vector, numeric or character, of columns representing units
 #' @param conversation  vector, numeric or character, of columns to segment conversations by
 #' @param metadata  vector, numeric or character, of columns with additional meta information for units
-#' @param model character: EndPoint (default), AccumulatedTrajectory, SeparateTrajectory
+#' @param model character, the ENA model to construct: \code{EndPoint} (default) produces a single adjacency vector per unit summing co-occurrences across all lines; \code{AccumulatedTrajectory} produces one adjacency vector per unit per conversation, where each successive conversation accumulates prior ones; \code{SeparateTrajectory} produces one adjacency vector per unit per conversation, each modeled independently
 #' @param weight.by "binary" is default, can supply a function to call (e.g. sum)
 #' @param window MovingStanzaWindow (default) or Conversation
 #' @param window.size.back integer, number of lines back from each line to include in the stanza window (default: 1)
@@ -109,7 +109,6 @@ ena <- function(
     groupVar = groupVar,
     groups = groups,
     runTest = runTest,
-    # testType = testType,
     ...
   )
 
