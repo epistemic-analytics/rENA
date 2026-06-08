@@ -22,13 +22,14 @@
 #' @param model character: EndPoint (default), AccumulatedTrajectory, SeparateTrajectory
 #' @param weight.by "binary" is default, can supply a function to call (e.g. sum)
 #' @param window MovingStanzaWindow (default) or Conversation
-#' @param window.size.back Number of lines in the stanza window (default: 1)
+#' @param window.size.back integer, number of lines back from each line to include in the stanza window (default: 1)
+#' @param window.size.forward integer, number of lines forward from each line to include in the stanza window (default: 0). Set to model bidirectional co-occurrence within a window.
 #' @param include.meta logical, if TRUE (default) unit metadata is attached to the resulting ENAdata object and accessible via the set; set to FALSE to omit metadata from the model output
 #' @param groupVar vector, character, of column name containing group identifiers.
 #' If column contains at least two unique values, will generate model using a means rotation (a dimensional reduction maximizing the variance between the means of the two groups)
 #' @param groups vector, character, of values of groupVar column used for means rotation or statistical tests
 #' @param runTest logical, TRUE will run a Student's t-Test and a Wilcoxon test for groups defined by the groups argument
-#' @param ... Additional parameters passed to model generation
+#' @param ... Additional parameters passed to model generation, including \code{mask} (an optional binary matrix of size ncol(codes) x ncol(codes) where 0 suppresses co-occurrence modeling between a pair of codes; see \code{\link{ena.accumulate.data}})
 #'
 #'
 #' @return ena.set object
@@ -43,7 +44,7 @@ ena.set.creator = function(
   weight.by = "binary",
   window = c("MovingStanzaWindow", "Conversation"),
   window.size.back = 1,
-  # window.size.forward = 0,
+  window.size.forward = 0,
   include.meta = TRUE,
   groupVar = NULL,
   groups = NULL,
@@ -63,10 +64,9 @@ ena.set.creator = function(
     codes = data[, ..codes, drop = FALSE],
     window = window,
     window.size.back = window.size.back,
-    # window.size.forward = window.size.forward,
+    window.size.forward = window.size.forward,
     weight.by = weight.by,
     model = model,
-    # mask = mask,
     include.meta = include.meta,
     ...
   );

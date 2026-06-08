@@ -26,7 +26,8 @@
 #' @param model character: EndPoint (default), AccumulatedTrajectory, SeparateTrajectory
 #' @param weight.by "binary" is default, can supply a function to call (e.g. sum)
 #' @param window MovingStanzaWindow (default) or Conversation
-#' @param window.size.back Number of lines in the stanza window (default: 1)
+#' @param window.size.back integer, number of lines back from each line to include in the stanza window (default: 1)
+#' @param window.size.forward integer, number of lines forward from each line to include in the stanza window (default: 0). Set to model bidirectional co-occurrence within a window.
 #' @param include.meta logical, if TRUE (default) unit metadata is attached to the resulting ENAdata object and accessible via the set; set to FALSE to omit metadata from the model output
 #' @param groupVar vector, character, of column name containing group identifiers.
 #' If column contains at least two unique values, will generate model using a means rotation (a dimensional reduction maximizing the variance between the means of the two groups)
@@ -42,7 +43,7 @@
 #' @param confidence.interval character, style of confidence interval shown on mean points: "box" (default), "crosshairs", or "none"
 #' @param include.plots logical, TRUE will generate plots based on the model (default: TRUE)
 #' @param print.plots logical, TRUE will show plots in the Viewer(default: FALSE)
-#' @param ... Additional parameters passed to set creation and plotting functions
+#' @param ... Additional parameters passed to set creation and plotting functions, including \code{mask} (an optional binary matrix of size ncol(codes) x ncol(codes) where 0 suppresses co-occurrence modeling between a pair of codes; see \code{\link{ena.accumulate.data}})
 #'
 #' @examples
 #' data(RS.data)
@@ -76,6 +77,7 @@ ena <- function(
   weight.by = "binary",
   window = c("MovingStanzaWindow", "Conversation"),
   window.size.back = 1,
+  window.size.forward = 0,
   include.meta = TRUE,
   groupVar = NULL,
   groups = NULL,
@@ -102,6 +104,7 @@ ena <- function(
     weight.by = weight.by,
     window = window,
     window.size.back = window.size.back,
+    window.size.forward = window.size.forward,
     include.meta = include.meta,
     groupVar = groupVar,
     groups = groups,
