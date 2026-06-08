@@ -10,6 +10,9 @@ ena.plot.subtraction = function(
   network = TRUE,
   networkMultiplier = 1,
   subtractionMultiplier = 1,
+  group1.color = "blue",
+  group2.color = "red",
+  confidence.interval = "box",
   ...
 ) {
   group1.rows = set$points[[groupVar]] == group1
@@ -28,8 +31,8 @@ ena.plot.subtraction = function(
 
     sub = (g1.mean.lw - g2.mean.lw) * subtractionMultiplier
 
-    g1.plot = ena.plot.network(g1.plot, network = g1.mean.lw, colors = "blue")
-    g2.plot = ena.plot.network(g2.plot, network = g2.mean.lw, colors = "red")
+    g1.plot = ena.plot.network(g1.plot, network = g1.mean.lw, colors = group1.color)
+    g2.plot = ena.plot.network(g2.plot, network = g2.mean.lw, colors = group2.color)
     sub.plot = ena.plot.network(sub.plot, network = sub)
   }
 
@@ -37,20 +40,20 @@ ena.plot.subtraction = function(
     g1.points.for.plot = as.matrix(set$points)[group1.rows,,drop=FALSE]
     g2.points.for.plot = as.matrix(set$points)[group2.rows,,drop=FALSE]
 
-    g1.plot = ena.plot.points(enaplot = g1.plot, points = g1.points.for.plot, colors = "blue")
-    g2.plot = ena.plot.points(enaplot = g2.plot, points = g2.points.for.plot, colors = "red")
-    sub.plot = ena.plot.points(enaplot = sub.plot, points = g1.points.for.plot, colors = "blue")
-    sub.plot = ena.plot.points(enaplot = sub.plot, points = g2.points.for.plot, colors = "red")
+    g1.plot = ena.plot.points(enaplot = g1.plot, points = g1.points.for.plot, colors = group1.color)
+    g2.plot = ena.plot.points(enaplot = g2.plot, points = g2.points.for.plot, colors = group2.color)
+    sub.plot = ena.plot.points(enaplot = sub.plot, points = g1.points.for.plot, colors = group1.color)
+    sub.plot = ena.plot.points(enaplot = sub.plot, points = g2.points.for.plot, colors = group2.color)
   }
 
   if(mean == TRUE) {
     g1.points.for.plot = as.matrix(set$points)[group1.rows,,drop=FALSE]
     g2.points.for.plot = as.matrix(set$points)[group2.rows,,drop=FALSE]
 
-    g1.plot = ena.plot.group(g1.plot, g1.points.for.plot, colors = "blue", labels = group1,confidence.interval = "box")
-    g2.plot = ena.plot.group(g2.plot, g2.points.for.plot, colors = "red", labels = group2,confidence.interval = "box")
-    sub.plot = ena.plot.group(sub.plot, g1.points.for.plot, colors = "blue", labels = group1,confidence.interval = "box")
-    sub.plot = ena.plot.group(sub.plot, g2.points.for.plot, colors = "red", labels = group2,confidence.interval = "box")
+    g1.plot = ena.plot.group(g1.plot, g1.points.for.plot, colors = group1.color, labels = group1, confidence.interval = confidence.interval)
+    g2.plot = ena.plot.group(g2.plot, g2.points.for.plot, colors = group2.color, labels = group2, confidence.interval = confidence.interval)
+    sub.plot = ena.plot.group(sub.plot, g1.points.for.plot, colors = group1.color, labels = group1, confidence.interval = confidence.interval)
+    sub.plot = ena.plot.group(sub.plot, g2.points.for.plot, colors = group2.color, labels = group2, confidence.interval = confidence.interval)
   }
 
   else if(TRUE %in% c(network,points, mean) == FALSE) {

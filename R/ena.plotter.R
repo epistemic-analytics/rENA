@@ -17,6 +17,8 @@
 #' @param networkMultiplier numeric, scaling factor for non-subtracted networks (default: 1)
 #' @param subtractionMultiplier numeric, scaling factor for subtracted networks (default: 1)
 #' @param unit vector, character, name of a single unit to plot
+#' @param colors vector, character, of colors for groups or points. For two-group models supply two values (group1, group2); for single-group or no-group models supply one value. Defaults to "blue"/"red" for two groups and "black" otherwise.
+#' @param confidence.interval character, style of confidence interval shown on mean points: "box" (default), "crosshairs", or "none"
 #' @param print.plots logical, TRUE will show plots in the Viewer (default: FALSE)
 #' @param ... Additional parameters passed to set creation and plotting functions
 #' @export
@@ -32,6 +34,8 @@ ena.plotter = function(
   networkMultiplier = 1,
   subtractionMultiplier = 1,
   unit = NULL,
+  colors = NULL,
+  confidence.interval = "box",
   print.plots = F,
   ...
 ) {
@@ -50,8 +54,9 @@ ena.plotter = function(
     point = as.matrix(set$points)[point.row,]
     point.lw = as.matrix(set$line.weights)[point.row,]*networkMultiplier
 
-    plot = ena.plot.points(enaplot = plot,points = point, colors = "black")
-    plot = ena.plot.network(enaplot = plot, network = point.lw, colors = "black")
+    unit.color = if (!is.null(colors)) colors[1] else "black"
+    plot = ena.plot.points(enaplot = plot,points = point, colors = unit.color)
+    plot = ena.plot.network(enaplot = plot, network = point.lw, colors = unit.color)
 
     set$plots[[length(set$plots) + 1]] <- plot
 
@@ -64,24 +69,25 @@ ena.plotter = function(
 
   if(is.null(groupVar) == TRUE) {
     plot = ena.plot(enaset = set, title = "All Units")
+    base.color = if (!is.null(colors)) colors[1] else "black"
 
     if(network == TRUE) {
       lineweights = as.matrix(set$line.weights)
       mean.lineweights = colMeans(lineweights) * networkMultiplier
 
-      plot = ena.plot.network(plot, network = mean.lineweights, colors = "black")
+      plot = ena.plot.network(plot, network = mean.lineweights, colors = base.color)
     }
 
     if(points == TRUE) {
       points.for.plot = as.matrix(set$points)
 
-      plot = ena.plot.points(enaplot = plot,points = points.for.plot,colors = "black")
+      plot = ena.plot.points(enaplot = plot,points = points.for.plot,colors = base.color)
     }
 
     if(mean == TRUE) {
       points.for.plot = as.matrix(set$points)
 
-      plot = ena.plot.group(plot, points.for.plot, colors = "black", labels = "Mean",confidence.interval = "box")
+      plot = ena.plot.group(plot, points.for.plot, colors = base.color, labels = "Mean", confidence.interval = confidence.interval)
     }
 
     else if(TRUE %in% c(network,points, mean) == FALSE) {
@@ -106,21 +112,22 @@ ena.plotter = function(
 
       group.rows = set$points[[groupVar]] == group
       g.plot = ena.plot(enaset = set, title = group)
+      base.color = if (!is.null(colors)) colors[1] else "black"
 
       if(network == TRUE) {
         g.lw = as.matrix(set$line.weights)[group.rows, , drop = FALSE]
         g.mean.lw = colMeans(g.lw) * networkMultiplier
-        g.plot = ena.plot.network(g.plot, network = g.mean.lw, colors = "black")
+        g.plot = ena.plot.network(g.plot, network = g.mean.lw, colors = base.color)
       }
 
       if(points == TRUE) {
         g.points.for.plot = as.matrix(set$points)[group.rows, , drop = FALSE]
-        g.plot = ena.plot.points(enaplot = g.plot,points = g.points.for.plot,colors = "black")
+        g.plot = ena.plot.points(enaplot = g.plot,points = g.points.for.plot,colors = base.color)
       }
 
       if(mean == TRUE) {
         g.points.for.plot = as.matrix(set$points)[group.rows, , drop = FALSE]
-        g.plot = ena.plot.group(g.plot, g.points.for.plot, colors = "black", labels = group,confidence.interval = "box")
+        g.plot = ena.plot.group(g.plot, g.points.for.plot, colors = base.color, labels = group, confidence.interval = confidence.interval)
       }
 
       else if(TRUE %in% c(network,points, mean) == FALSE) {
@@ -148,7 +155,10 @@ ena.plotter = function(
                mean = mean,
                network = network,
                networkMultiplier = networkMultiplier,
-               subtractionMultiplier = subtractionMultiplier)
+               subtractionMultiplier = subtractionMultiplier,
+               group1.color = if (!is.null(colors)) colors[1] else "blue",
+               group2.color = if (!is.null(colors)) colors[2] else "red",
+               confidence.interval = confidence.interval)
 
 
       if(print.plots == TRUE) {
@@ -167,22 +177,23 @@ ena.plotter = function(
 
     group.rows = set$points[[groupVar]] == group
     g.plot = ena.plot(enaset = set, title = group)
+    base.color = if (!is.null(colors)) colors[1] else "black"
 
     if(network == TRUE) {
       g.lw = as.matrix(set$line.weights)[group.rows, , drop = FALSE]
       g.mean.lw = colMeans(g.lw) * networkMultiplier
 
-      g.plot = ena.plot.network(g.plot, network = g.mean.lw, colors = "black")
+      g.plot = ena.plot.network(g.plot, network = g.mean.lw, colors = base.color)
     }
 
     if(points == TRUE) {
       g.points.for.plot = as.matrix(set$points)[group.rows, , drop = FALSE]
-      g.plot = ena.plot.points(enaplot = g.plot,points = g.points.for.plot,colors = "black")
+      g.plot = ena.plot.points(enaplot = g.plot,points = g.points.for.plot,colors = base.color)
     }
 
     if(mean == TRUE) {
       g.points.for.plot = as.matrix(set$points)[group.rows, , drop = FALSE]
-      g.plot = ena.plot.group(g.plot, g.points.for.plot, colors = "black", labels = group,confidence.interval = "box")
+      g.plot = ena.plot.group(g.plot, g.points.for.plot, colors = base.color, labels = group, confidence.interval = confidence.interval)
     }
 
     else if(TRUE %in% c(network,points, mean) == FALSE) {
@@ -216,6 +227,9 @@ ena.plotter = function(
       network = network,
       networkMultiplier = networkMultiplier,
       subtractionMultiplier = subtractionMultiplier,
+      group1.color = if (!is.null(colors)) colors[1] else "blue",
+      group2.color = if (!is.null(colors)) colors[2] else "red",
+      confidence.interval = confidence.interval,
       ...
     )
 

@@ -38,6 +38,8 @@
 #' @param networkMultiplier numeric, scaling factor for non-subtracted networks (default: 1)
 #' @param subtractionMultiplier numeric, scaling factor for subtracted networks (default: 1)
 #' @param unit vector, character, name of a single unit to plot
+#' @param colors vector, character, of colors for groups or points. For two-group models, supply two values (group1, group2); for single-group or no-group models, supply one value. Defaults to "blue"/"red" for two groups and "black" otherwise.
+#' @param confidence.interval character, style of confidence interval shown on mean points: "box" (default), "crosshairs", or "none"
 #' @param include.plots logical, TRUE will generate plots based on the model (default: TRUE)
 #' @param print.plots logical, TRUE will show plots in the Viewer(default: FALSE)
 #' @param ... Additional parameters passed to set creation and plotting functions
@@ -84,6 +86,8 @@ ena <- function(
   networkMultiplier = 1,
   subtractionMultiplier = 1,
   unit = NULL,
+  colors = NULL,
+  confidence.interval = "box",
   include.plots = T,
   print.plots = F,
   ...
@@ -117,6 +121,8 @@ ena <- function(
       networkMultiplier = networkMultiplier,
       subtractionMultiplier = subtractionMultiplier,
       unit = unit,
+      colors = colors,
+      confidence.interval = confidence.interval,
       print.plots = print.plots,
       ...
     )
