@@ -36,7 +36,7 @@ ENAdata <- R6::R6Class("ENAdata", public = list(
   #' @param window.size.back TBD
   #' @param window.size.forward TBD
   #' @param mask TBD
-  #' @param include.meta TBD
+  #' @param include.meta logical, if TRUE (default) unit metadata is attached to the resulting ENAdata object and accessible via the set; set to FALSE to omit metadata from the model output
   #' @param ... TBD
   #'
   #' @return

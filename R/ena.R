@@ -27,7 +27,7 @@
 #' @param weight.by "binary" is default, can supply a function to call (e.g. sum)
 #' @param window MovingStanzaWindow (default) or Conversation
 #' @param window.size.back Number of lines in the stanza window (default: 1)
-#' @param include.meta [TBD]
+#' @param include.meta logical, if TRUE (default) unit metadata is attached to the resulting ENAdata object and accessible via the set; set to FALSE to omit metadata from the model output
 #' @param groupVar vector, character, of column name containing group identifiers.
 #' If column contains at least two unique values, will generate model using a means rotation (a dimensional reduction maximizing the variance between the means of the two groups)
 #' @param groups vector, character, of values of groupVar column used for means rotation, plotting, or statistical tests
