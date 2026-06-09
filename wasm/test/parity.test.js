@@ -303,3 +303,166 @@ describe('Zero-network invariant — center.align.to.origin=TRUE (mirrors test-z
         pos.forEach(v => expect(v).toBeCloseTo(0, 10));
     });
 });
+
+// ── Stat helpers parity — WASM vs R (dims 1:2 of RS.data) ────────────────────
+//
+// R ground truth generated with:
+//   set  <- ena(RS.data, units=c('UserName','Condition'),
+//               conversation=c('ActivityNumber','GroupName'),
+//               codes=c(...6 codes...), window.size.back=4)
+//   fg2  <- as.matrix(set$points)[set$meta.data$Condition=='FirstGame',  1:2]
+//   sg2  <- as.matrix(set$points)[set$meta.data$Condition=='SecondGame', 1:2]
+//   libqe::mean_ci(fg2, 0.95)
+//   libqe::outlier_ci(fg2, 1.5)
+//   libqe::group_stats(fg2, sg2)
+//
+// IMPORTANT: R's set$points is nUnits × nConnections (full rotation space).
+// WASM's model.points is nUnits × dims (first dims columns only).
+// These tests compare WASM confInts/outlierInts/compareGroups on model.points
+// against R's libqe:: equivalents run on set$points[, 1:dims].
+
+describe('Stat helpers parity — confInts vs R libqe::mean_ci on RS.data', () => {
+    const RS_OPTS = {
+        codes:         RS_CODES,
+        units:         ['UserName', 'Condition'],
+        conversations: ['ActivityNumber', 'GroupName'],
+        window:        4,
+        dims:          2,
+    };
+
+    // Shared state within this describe block
+    let model, fgPoints, sgPoints, nFG, nSG;
+
+    beforeAll(() => {
+        model = ena.fit(rsRows, RS_OPTS);
+
+        // Extract per-group 2D point arrays (mirrors R's set$points[condition,1:2])
+        const fgIdx = model.model.unitLabels
+            .map((l, i) => l.includes('FirstGame')  ? i : -1).filter(i => i >= 0);
+        const sgIdx = model.model.unitLabels
+            .map((l, i) => l.includes('SecondGame') ? i : -1).filter(i => i >= 0);
+
+        nFG = fgIdx.length;
+        nSG = sgIdx.length;
+
+        fgPoints = new Float64Array(fgIdx.flatMap(i =>
+            Array.from(model.points.subarray(i * model.dims, (i + 1) * model.dims))));
+        sgPoints = new Float64Array(sgIdx.flatMap(i =>
+            Array.from(model.points.subarray(i * model.dims, (i + 1) * model.dims))));
+    });
+
+    // ── group sizes ───────────────────────────────────────────────────────────
+
+    test('FirstGame has 26 units, SecondGame has 22', () => {
+        expect(nFG).toBe(26);
+        expect(nSG).toBe(22);
+    });
+
+    // ── confInts vs R libqe::mean_ci(fg2, 0.95) ──────────────────────────────
+    // R values (dims 1:2):
+    //   dim0: mean=-0.0814545, lower=-0.1283847, upper=-0.0345243
+    //   dim1: mean=-0.0085475, lower=-0.0641406, upper= 0.0470456
+    //
+    // NOTE: SVD is unique only up to sign — R and WASM may flip the axis
+    // direction independently.  Tests therefore check |mean| and CI width,
+    // not the raw signed mean.  The CI width is sign-invariant.
+
+    test('confInts: dim0 |mean| matches R |mean_ci[1,1]|', () => {
+        const ci = ena.confInts(fgPoints, nFG, model.dims);
+        expect(Math.abs(ci.data[0])).toBeCloseTo(0.0814545, 5);
+    });
+
+    test('confInts: dim0 CI width matches R (upper-lower)', () => {
+        const ci = ena.confInts(fgPoints, nFG, model.dims);
+        const wasmWidth = Math.abs(ci.data[2] - ci.data[1]);
+        const rWidth    = Math.abs(-0.0345243 - (-0.1283847));  // 0.0938604
+        expect(wasmWidth).toBeCloseTo(rWidth, 5);
+    });
+
+    test('confInts: dim1 |mean| matches R |mean_ci[2,1]|', () => {
+        const ci = ena.confInts(fgPoints, nFG, model.dims);
+        expect(Math.abs(ci.data[3])).toBeCloseTo(0.0085475, 5);
+    });
+
+    test('confInts: dim1 CI width matches R', () => {
+        const ci = ena.confInts(fgPoints, nFG, model.dims);
+        const wasmWidth = Math.abs(ci.data[5] - ci.data[4]);
+        const rWidth    = Math.abs(0.0470456 - (-0.0641406));   // 0.1111862
+        expect(wasmWidth).toBeCloseTo(rWidth, 5);
+    });
+
+    test('confInts: dim1 CI brackets mean (lower <= mean <= upper)', () => {
+        const ci = ena.confInts(fgPoints, nFG, model.dims);
+        expect(ci.data[4]).toBeLessThanOrEqual(ci.data[3] + 1e-10);  // lower ≤ mean
+        expect(ci.data[5]).toBeGreaterThanOrEqual(ci.data[3] - 1e-10); // upper ≥ mean
+    });
+
+    // ── outlierInts vs R libqe::outlier_ci(fg2, 1.5) ─────────────────────────
+    // R values (dims 1:2):
+    //   dim0: lower=-0.1889027, upper=0.1889027
+    //   dim1: lower=-0.2250209, upper=0.2250209
+
+    test('outlierInts: dim0 lower matches R outlier_ci[1,1]', () => {
+        const oi = ena.outlierInts(fgPoints, nFG, model.dims);
+        expect(oi.data[0]).toBeCloseTo(-0.1889027, 5);
+    });
+
+    test('outlierInts: dim0 upper matches R outlier_ci[1,2]', () => {
+        const oi = ena.outlierInts(fgPoints, nFG, model.dims);
+        expect(oi.data[1]).toBeCloseTo(0.1889027, 5);
+    });
+
+    test('outlierInts: dim1 lower matches R outlier_ci[2,1]', () => {
+        const oi = ena.outlierInts(fgPoints, nFG, model.dims);
+        expect(oi.data[2]).toBeCloseTo(-0.2250209, 5);
+    });
+
+    test('outlierInts: dim1 upper matches R outlier_ci[2,2]', () => {
+        const oi = ena.outlierInts(fgPoints, nFG, model.dims);
+        expect(oi.data[3]).toBeCloseTo(0.2250209, 5);
+    });
+
+    // ── compareGroups vs R libqe::group_stats(fg2, sg2) ──────────────────────
+    // R values:
+    //   N = c(26, 22)
+    //   parametric$t      = c(-4.7319737, -0.4719908)
+    //   parametric$pvalue = c(0.0000265352, 0.6392175790)
+    //   nonparametric$pvalue = c(0.0000522757, 0.8280041325)
+
+    test('compareGroups: n1=26, n2=22', () => {
+        const gs = ena.compareGroups(fgPoints, nFG, sgPoints, nSG, model.dims);
+        expect(gs.n1).toBe(26);
+        expect(gs.n2).toBe(22);
+    });
+
+    test('compareGroups: dim0 |t-statistic| matches R |parametric$t[1]|', () => {
+        // Sign depends on SVD axis orientation; magnitude is invariant.
+        const gs = ena.compareGroups(fgPoints, nFG, sgPoints, nSG, model.dims);
+        expect(Math.abs(gs.t[0])).toBeCloseTo(4.7319737, 4);
+    });
+
+    test('compareGroups: dim1 |t-statistic| matches R |parametric$t[2]|', () => {
+        const gs = ena.compareGroups(fgPoints, nFG, sgPoints, nSG, model.dims);
+        expect(Math.abs(gs.t[1])).toBeCloseTo(0.4719908, 4);
+    });
+
+    test('compareGroups: dim0 parametric p-value matches R', () => {
+        const gs = ena.compareGroups(fgPoints, nFG, sgPoints, nSG, model.dims);
+        expect(gs.pvalue_t[0]).toBeCloseTo(0.0000265352, 6);
+    });
+
+    test('compareGroups: dim1 parametric p-value matches R', () => {
+        const gs = ena.compareGroups(fgPoints, nFG, sgPoints, nSG, model.dims);
+        expect(gs.pvalue_t[1]).toBeCloseTo(0.6392175790, 5);
+    });
+
+    test('compareGroups: dim0 Wilcoxon p-value matches R nonparametric$pvalue[1]', () => {
+        const gs = ena.compareGroups(fgPoints, nFG, sgPoints, nSG, model.dims);
+        expect(gs.pvalue_u[0]).toBeCloseTo(0.0000522757, 6);
+    });
+
+    test('compareGroups: dim1 Wilcoxon p-value matches R nonparametric$pvalue[2]', () => {
+        const gs = ena.compareGroups(fgPoints, nFG, sgPoints, nSG, model.dims);
+        expect(gs.pvalue_u[1]).toBeCloseTo(0.8280041325, 5);
+    });
+});
