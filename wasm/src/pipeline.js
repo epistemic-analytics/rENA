@@ -202,7 +202,7 @@ export function project(centered, nUnits, nConnections, rotation, rotRows, rotCo
  *               if libqe does not expose them
  */
 export function nodePositions(qe, networks, nUnits, nConnections, points, nDims) {
-    const r = qe.node_positions(networks, nUnits, nConnections, points, nUnits, nDims);
+    const r = qe.node_positions(networks, nUnits, nConnections, points, nUnits, nDims, nDims);
     return {
         nodes:     new Float64Array(r.nodes.data),
         nodeRows:  r.nodes.rows,
