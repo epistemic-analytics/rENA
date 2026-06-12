@@ -14,6 +14,7 @@ ena.set.creator(
   weight.by = "binary",
   window = c("MovingStanzaWindow", "Conversation"),
   window.size.back = 1,
+  window.size.forward = 0,
   include.meta = TRUE,
   groupVar = NULL,
   groups = NULL,
@@ -32,15 +33,17 @@ ena.set.creator(
 
 \item{metadata}{vector, numeric or character, of columns with additional meta information for units}
 
-\item{model}{character: EndPoint (default), AccumulatedTrajectory, SeparateTrajectory}
+\item{model}{character, the ENA model to construct: \code{EndPoint} (default) produces a single adjacency vector per unit summing co-occurrences across all lines; \code{AccumulatedTrajectory} produces one adjacency vector per unit per conversation, where each successive conversation accumulates prior ones; \code{SeparateTrajectory} produces one adjacency vector per unit per conversation, each modeled independently}
 
 \item{weight.by}{"binary" is default, can supply a function to call (e.g. sum)}
 
 \item{window}{MovingStanzaWindow (default) or Conversation}
 
-\item{window.size.back}{Number of lines in the stanza window (default: 1)}
+\item{window.size.back}{integer, number of lines back from each line to include in the stanza window (default: 1)}
 
-\item{include.meta}{[TBD]}
+\item{window.size.forward}{integer, number of lines forward from each line to include in the stanza window (default: 0). Set to model bidirectional co-occurrence within a window.}
+
+\item{include.meta}{logical, if TRUE (default) unit metadata is attached to the resulting ENAdata object and accessible via the set; set to FALSE to omit metadata from the model output}
 
 \item{groupVar}{vector, character, of column name containing group identifiers.
 If column contains at least two unique values, will generate model using a means rotation (a dimensional reduction maximizing the variance between the means of the two groups)}
@@ -49,7 +52,7 @@ If column contains at least two unique values, will generate model using a means
 
 \item{runTest}{logical, TRUE will run a Student's t-Test and a Wilcoxon test for groups defined by the groups argument}
 
-\item{...}{Additional parameters passed to model generation}
+\item{...}{Additional parameters passed to model generation, including \code{mask} (an optional binary matrix of size ncol(codes) x ncol(codes) where 0 suppresses co-occurrence modeling between a pair of codes; see \code{\link{ena.accumulate.data}})}
 }
 \value{
 ena.set object

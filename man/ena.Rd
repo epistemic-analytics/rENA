@@ -14,6 +14,7 @@ ena(
   weight.by = "binary",
   window = c("MovingStanzaWindow", "Conversation"),
   window.size.back = 1,
+  window.size.forward = 0,
   include.meta = TRUE,
   groupVar = NULL,
   groups = NULL,
@@ -24,92 +25,158 @@ ena(
   networkMultiplier = 1,
   subtractionMultiplier = 1,
   unit = NULL,
+  colors = NULL,
+  confidence.interval = "box",
   include.plots = T,
   print.plots = F,
   ...
 )
 }
 \arguments{
-\item{data}{data.frame with containing metadata and coded columns}
+\item{data}{data.frame containing metadata and coded columns}
 
-\item{codes}{vector, numeric or character, of columns with codes}
+\item{codes}{vector, numeric or character, of column names or indices containing the codes to model}
 
-\item{units}{vector, numeric or character, of columns representing units}
+\item{units}{vector, numeric or character, of column names that together uniquely identify each unit of analysis}
 
-\item{conversation}{vector, numeric or character, of columns to segment conversations by}
+\item{conversation}{vector, numeric or character, of column names used to segment the data into conversations (stanza boundaries reset at each new conversation)}
 
-\item{metadata}{vector, numeric or character, of columns with additional meta information for units}
+\item{metadata}{vector, numeric or character, of column names to carry through as unit-level metadata (default: NULL)}
 
-\item{model}{character: EndPoint (default), AccumulatedTrajectory, SeparateTrajectory}
+\item{model}{character, the ENA model to construct: \code{EndPoint} (default) produces a single adjacency vector per unit summing co-occurrences across all lines; \code{AccumulatedTrajectory} produces one adjacency vector per unit per conversation, where each successive conversation accumulates prior ones; \code{SeparateTrajectory} produces one adjacency vector per unit per conversation, each modeled independently}
 
-\item{weight.by}{"binary" is default, can supply a function to call (e.g. sum)}
+\item{weight.by}{how to weight co-occurrences: \code{"binary"} (default) counts each co-occurrence once per stanza window; supply a function (e.g. \code{sum}) to use raw counts}
 
-\item{window}{MovingStanzaWindow (default) or Conversation}
+\item{window}{stanza window type: \code{"MovingStanzaWindow"} (default) or \code{"Conversation"} (all lines in a conversation form one window)}
 
-\item{window.size.back}{Number of lines in the stanza window (default: 1)}
+\item{window.size.back}{integer, number of lines back from each line to include in the stanza window (default: 1)}
 
-\item{include.meta}{[TBD]}
+\item{window.size.forward}{integer, number of lines forward from each line to include in the stanza window (default: 0). Set to model bidirectional co-occurrence within a window.}
 
-\item{groupVar}{vector, character, of column name containing group identifiers.
-If column contains at least two unique values, will generate model using a means rotation (a dimensional reduction maximizing the variance between the means of the two groups)}
+\item{include.meta}{logical, if TRUE (default) unit metadata is attached to the resulting ENAdata object and accessible via the set; set to FALSE to omit metadata from the model output}
 
-\item{groups}{vector, character, of values of groupVar column used for means rotation, plotting, or statistical tests}
+\item{groupVar}{character, name of the column containing group labels. When supplied with two \code{groups}, the model uses a means rotation that maximises variance between group means.}
 
-\item{runTest}{logical, TRUE will run a Student's t-Test and a Wilcoxon test for groups defined by the groups argument}
+\item{groups}{vector, character, of exactly the group values from \code{groupVar} to use for means rotation, plotting, and statistical tests. If omitted, the first two unique values of \code{groupVar} are used with a warning.}
 
-\item{points}{logical, TRUE will plot points (default: FALSE)}
+\item{runTest}{logical, if TRUE runs a Wilcoxon rank-sum test and a Student's t-test comparing the two groups on dimensions 1 and 2; results stored in \code{set$tests} (default: FALSE)}
 
-\item{mean}{logical, TRUE will plot the mean position of the groups defined in the groups argument (default: FALSE)}
+\item{points}{logical, TRUE will plot individual unit points (default: FALSE)}
 
-\item{network}{logical, TRUE will plot networks (default: TRUE)}
+\item{mean}{logical, TRUE will plot group mean positions with confidence intervals — recommended whenever \code{groupVar} is supplied (default: FALSE)}
 
-\item{networkMultiplier}{numeric, scaling factor for non-subtracted networks (default: 1)}
+\item{network}{logical, TRUE will plot mean networks (default: TRUE)}
 
-\item{subtractionMultiplier}{numeric, scaling factor for subtracted networks (default: 1)}
+\item{networkMultiplier}{numeric, scaling factor applied to edge weights in non-subtracted network plots (default: 1)}
 
-\item{unit}{vector, character, name of a single unit to plot}
+\item{subtractionMultiplier}{numeric, scaling factor applied to edge weights in the subtracted network plot (default: 1)}
 
-\item{include.plots}{logical, TRUE will generate plots based on the model (default: TRUE)}
+\item{unit}{character, name of a single unit to plot in isolation; when supplied, all group plotting is skipped}
 
-\item{print.plots}{logical, TRUE will show plots in the Viewer(default: FALSE)}
+\item{colors}{vector, character, of colors for groups or points. For two-group models, supply two values (group1, group2); for single-group or no-group models, supply one value. Defaults to "blue"/"red" for two groups and "black" otherwise.}
 
-\item{...}{Additional parameters passed to set creation and plotting functions}
+\item{confidence.interval}{character, style of confidence interval shown on mean points: "box" (default), "crosshairs", or "none"}
+
+\item{include.plots}{logical, if TRUE (default) generates and attaches plot objects to the returned set; set to FALSE to skip all plotting for faster programmatic use}
+
+\item{print.plots}{logical, if TRUE renders plots in the Viewer as they are created (default: FALSE)}
+
+\item{...}{Additional parameters passed to set creation and plotting functions, including \code{mask} (an optional binary matrix of size ncol(codes) x ncol(codes) where 0 suppresses co-occurrence modeling between a pair of codes; see \code{\link{ena.accumulate.data}})}
 }
 \value{
-ena.set object
+An \code{ena.set} object. See the Details section for a description
+  of the key fields (\code{$points}, \code{$line.weights}, \code{$plots},
+  \code{$tests}, etc.).
 }
 \description{
-Generates an ENA model by constructing a dimensional reduction
-of adjacency (co-occurrence) vectors as defined by the supplied
-conversations, units, and codes.
+Convenience entry point for constructing an ENA model from a
+coded data frame. Handles accumulation, dimensional reduction, and optional
+plot generation in a single call, returning an \code{ena.set} object that
+contains unit positions, network weights, node positions, and plots.
 }
 \details{
-This function generates an ena.set object given a data.frame, units,
-conversations, and codes. After accumulating the adjacency (co-occurrence)
-vectors, computes a dimensional reduction (projection), and calculates node
-positions in the projected ENA space. Returns location of the units in the
-projected space, as well as locations for node positions, and normalized
-adjacency (co-occurrence) vectors to construct network graphs. Includes options
-for returning statistical tests between groups of units, as well as plots of units,
-groups, and networks.
+\code{ena()} runs three phases internally:
+
+\strong{1. Accumulation} — co-occurrence counts are computed for each unit
+across stanza windows defined by \code{window}, \code{window.size.back}, and
+\code{window.size.forward}.
+
+\strong{2. Dimensional reduction} — accumulated vectors are normed, centered,
+and rotated into a low-dimensional ENA space. When \code{groupVar} and two
+\code{groups} are supplied the rotation maximises separation between the group
+means (means rotation); otherwise SVD is used.
+
+\strong{3. Plotting} — plots are built and stored on the returned set in
+\code{set$plots}. Pass \code{include.plots = FALSE} to skip this phase
+entirely, which is useful for programmatic use (simulations, parameter
+sweeps) where plot objects are not needed.
+
+\strong{Plot defaults:} \code{network = TRUE} but \code{points = FALSE} and
+\code{mean = FALSE}. For a two-group comparison you almost always want
+\code{mean = TRUE} as well, to show group centroids and confidence intervals
+alongside the network.
+
+\strong{Accessing results:} the returned \code{ena.set} object contains:
+\describe{
+  \item{\code{$points}}{unit positions in the rotated ENA space (rows = units)}
+  \item{\code{$line.weights}}{normed co-occurrence weights per unit (rows = units, cols = code pairs)}
+  \item{\code{$node.positions}}{positions of each code node in the ENA space}
+  \item{\code{$plots}}{named list of \code{ENAplot} objects; two-group models
+    produce three plots keyed by \code{group1}, \code{group2}, and
+    \code{"group1-group2"}}
+  \item{\code{$tests}}{list of Wilcoxon and t-test results on dimensions 1
+    and 2, populated when \code{runTest = TRUE}}
+  \item{\code{$variance}}{proportion of variance explained by each dimension}
+}
 }
 \examples{
 data(RS.data)
 
+codes = c('Data',
+          'Technical.Constraints',
+          'Performance.Parameters',
+          'Client.and.Consultant.Requests',
+          'Design.Reasoning',
+          'Collaboration')
+
+# Minimal call: fit a model with no group comparison
 rs = ena(
   data = RS.data,
-  units = c("UserName","Condition", "GroupName"),
-  conversation = c("Condition","GroupName"),
-  codes = c('Data',
-            'Technical.Constraints',
-            'Performance.Parameters',
-            'Client.and.Consultant.Requests',
-            'Design.Reasoning',
-            'Collaboration'),
+  units = c("UserName", "Condition", "GroupName"),
+  conversation = c("Condition", "GroupName"),
+  codes = codes,
+  window.size.back = 4
+)
+# Access results
+rs$points        # unit positions
+rs$line.weights  # co-occurrence weights
+rs$plots[[1]]    # mean network plot
+
+# Two-group comparison with means rotation, centroids, and statistical tests
+rs = ena(
+  data = RS.data,
+  units = c("UserName", "Condition", "GroupName"),
+  conversation = c("Condition", "GroupName"),
+  codes = codes,
   window.size.back = 4,
-  print.plots = FALSE,
   groupVar = "Condition",
-  groups = c("FirstGame", "SecondGame")
+  groups = c("FirstGame", "SecondGame"),
+  mean = TRUE,
+  runTest = TRUE,
+  print.plots = FALSE
+)
+rs$plots[["FirstGame"]]            # group 1 mean network
+rs$plots[["FirstGame-SecondGame"]] # subtracted network
+rs$tests$wilcox.test               # Wilcoxon results on dim 1 and 2
+
+# Model fitting only, no plots (faster for programmatic use)
+rs = ena(
+  data = RS.data,
+  units = c("UserName", "Condition", "GroupName"),
+  conversation = c("Condition", "GroupName"),
+  codes = codes,
+  window.size.back = 4,
+  include.plots = FALSE
 )
 
 }

@@ -14,6 +14,8 @@ ena.plotter(
   networkMultiplier = 1,
   subtractionMultiplier = 1,
   unit = NULL,
+  colors = NULL,
+  confidence.interval = "box",
   print.plots = F,
   ...
 )
@@ -36,6 +38,10 @@ ena.plotter(
 \item{subtractionMultiplier}{numeric, scaling factor for subtracted networks (default: 1)}
 
 \item{unit}{vector, character, name of a single unit to plot}
+
+\item{colors}{vector, character, of colors for groups or points. For two-group models supply two values (group1, group2); for single-group or no-group models supply one value. Defaults to "blue"/"red" for two groups and "black" otherwise.}
+
+\item{confidence.interval}{character, style of confidence interval shown on mean points: "box" (default), "crosshairs", or "none"}
 
 \item{print.plots}{logical, TRUE will show plots in the Viewer (default: FALSE)}
 

@@ -98,7 +98,7 @@ Construct ENAdata}
 
 \item{\code{mask}}{TBD}
 
-\item{\code{include.meta}}{TBD}
+\item{\code{include.meta}}{logical, if TRUE (default) unit metadata is attached to the resulting ENAdata object and accessible via the set; set to FALSE to omit metadata from the model output}
 
 \item{\code{...}}{TBD}
 }
