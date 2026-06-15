@@ -85,10 +85,6 @@
 #'   codes = codes,
 #'   window.size.back = 4
 #' )
-#' # Access results
-#' rs$points        # unit positions
-#' rs$line.weights  # co-occurrence weights
-#' rs$plots[[1]]    # mean network plot
 #'
 #' # Two-group comparison with means rotation, centroids, and statistical tests
 #' rs = ena(
@@ -103,9 +99,6 @@
 #'   runTest = TRUE,
 #'   print.plots = FALSE
 #' )
-#' rs$plots[["FirstGame"]]            # group 1 mean network
-#' rs$plots[["FirstGame-SecondGame"]] # subtracted network
-#' rs$tests$wilcox.test               # Wilcoxon results on dim 1 and 2
 #'
 #' # Model fitting only, no plots (faster for programmatic use)
 #' rs = ena(
