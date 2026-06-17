@@ -219,8 +219,10 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
     );
 
     // Node positions (LWS) → rotation.nodes + model.centroids
+    // libqe.node_positions expects centered-normed networks (pointsForProjection),
+    // not sphere-normed (lineWeights). Using lineWeights places code nodes in wrong locations.
     const { nodes, centroids } = nodePositions(
-        qe, lineWeights, nUnits, nConnections, points, dims
+        qe, pointsForProjection, nUnits, nConnections, points, dims
     );
 
     // Variance explained (= R's model$variance)
