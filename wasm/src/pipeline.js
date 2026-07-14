@@ -35,6 +35,87 @@ export function sliceCols(data, nRows, nCols, nDims) {
     return out;
 }
 
+/**
+ * Pearson correlation of two paired numeric vectors.
+ * Returns NaN if either vector has zero variance.
+ */
+function pearson(x, y) {
+    const n = x.length;
+    if (n === 0) return NaN;
+    let mx = 0, my = 0;
+    for (let i = 0; i < n; i++) { mx += x[i]; my += y[i]; }
+    mx /= n; my /= n;
+    let sxy = 0, sxx = 0, syy = 0;
+    for (let i = 0; i < n; i++) {
+        const dx = x[i] - mx, dy = y[i] - my;
+        sxy += dx * dy; sxx += dx * dx; syy += dy * dy;
+    }
+    const denom = Math.sqrt(sxx * syy);
+    return denom === 0 ? NaN : sxy / denom;
+}
+
+/**
+ * Pearson correlation between the pairwise distances of two ENA spaces.
+ *
+ * Computes the Euclidean distance between every pair of points within `A` and
+ * within `B` (same pairing for both), then correlates the two distance vectors.
+ * Because pairwise distances are invariant to rotation/reflection of a space,
+ * this measures configuration similarity up to an orthogonal transform — the
+ * right tool for comparing ENA solutions across window sizes whose SVD axes may
+ * flip sign. Mirrors R's ena_space_dist_corr: exact for small spaces, sampled
+ * (with replacement, self-pairs dropped) once unique pairs exceed the limit.
+ *
+ * @param {Float64Array} A               m × d, row-major
+ * @param {Float64Array} B               m × d, row-major
+ * @param {number}       m               number of points (rows)
+ * @param {number}       d               dimensions (cols)
+ * @param {number}       [maxSampleSize=100000]
+ * @param {() => number} [rand=Math.random]  RNG for the sampled path
+ * @returns {number}  Pearson correlation of the paired distance vectors
+ */
+export function spaceDistCorr(A, B, m, d, maxSampleSize = 100000, rand = Math.random) {
+    if (!m || m === 0) throw new Error('The spaces must have a non-zero number of rows.');
+
+    const dist = (M, p, q) => {
+        let s = 0;
+        for (let c = 0; c < d; c++) {
+            const diff = M[p * d + c] - M[q * d + c];
+            s += diff * diff;
+        }
+        return Math.sqrt(s);
+    };
+
+    const totalPairs = (m * (m - 1)) / 2;
+
+    let distA, distB;
+    if (totalPairs <= maxSampleSize) {
+        // Exact: all unique i<j pairs.
+        distA = new Float64Array(totalPairs);
+        distB = new Float64Array(totalPairs);
+        let k = 0;
+        for (let i = 0; i < m; i++)
+            for (let j = i + 1; j < m; j++) {
+                distA[k] = dist(A, i, j);
+                distB[k] = dist(B, i, j);
+                k++;
+            }
+    } else {
+        // Sample pairs with replacement, drop self-pairs.
+        const a = [], b = [];
+        for (let s = 0; s < maxSampleSize; s++) {
+            const i = Math.floor(rand() * m);
+            const j = Math.floor(rand() * m);
+            if (i === j) continue;
+            a.push(dist(A, i, j));
+            b.push(dist(B, i, j));
+        }
+        distA = Float64Array.from(a);
+        distB = Float64Array.from(b);
+    }
+
+    return pearson(distA, distB);
+}
+
 // ── accumulation ─────────────────────────────────────────────────────────────
 
 /**

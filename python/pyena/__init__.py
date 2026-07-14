@@ -6,6 +6,7 @@ from .rotations import (
     regression_rotation,
     regression_rotation_2,
 )
+from .tuning import ena_space_dist_corr, tune_window_size
 
 __all__ = [
     "accumulate",
@@ -15,4 +16,6 @@ __all__ = [
     "generalized_rotation",
     "regression_rotation",
     "regression_rotation_2",
+    "ena_space_dist_corr",
+    "tune_window_size",
 ]

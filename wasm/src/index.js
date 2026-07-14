@@ -43,7 +43,7 @@ import { parseData } from './data.js';
 import {
     accumulate, sphereNorm, center,
     rotateSVD, rotateMeans,
-    project, nodePositions,
+    project, nodePositions, spaceDistCorr,
 } from './pipeline.js';
 import { accumulateTensor, defaultTensor } from './tensor.js';
 
@@ -267,7 +267,7 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
 export default async function loadENA() {
     const qe = await loadLibQE();
 
-    return {
+    const api = {
         /**
          * Run the full ENA pipeline.
          *
@@ -343,6 +343,7 @@ export default async function loadENA() {
          *   metaData:         Object[],
          *   nUnits:           number,
          *   nConnections:     number,
+         *   _call:            object,   // args used to build this accumulation (for tuneWindowSize)
          * }}
          */
         accumulate(rows, opts = {}) {
@@ -375,8 +376,92 @@ export default async function loadENA() {
             }
 
             const connectionNames = qe.connection_names(codes);
-            return { connectionCounts: networks, unitLabels, connectionNames,
-                     metaData, nUnits, nConnections };
+            return {
+                connectionCounts: networks, unitLabels, connectionNames,
+                metaData, nUnits, nConnections,
+                // Retained so tuneWindowSize() can rebuild at other window sizes
+                // (= R's ENAAccumulation$`_function.call`).
+                _call: { rows, codes, units, conversations,
+                         window: windowSize, binary, ordered, tensor: tensorDef },
+            };
+        },
+
+        /**
+         * Tune the stanza window size (= R's ena.tune.window.size).
+         *
+         * Rebuilds the accumulation and fits a default SVD model for every
+         * window from `minSize` to `maxSize`, correlates the unit-distance
+         * geometry of adjacent window sizes via spaceDistCorr, and selects the
+         * smallest window whose adjacent correlation reaches
+         * `cutoff * max(correlation)`. Mirrors R by returning a fresh
+         * accumulation rebuilt at the selected window size.
+         *
+         * @param {object} accum  - an accumulation returned by accumulate()
+         * @param {object} [opts]
+         * @param {number} [opts.minSize=1]
+         * @param {number} [opts.maxSize=20]
+         * @param {number} [opts.cutoff=0.95]
+         * @returns {object}  accumulation rebuilt at the selected window
+         *                    (selected size available as result._call.window)
+         */
+        tuneWindowSize(accum, opts = {}) {
+            const { minSize = 1, maxSize = 20, cutoff = 0.95 } = opts;
+            const call = accum && accum._call;
+            if (!call) throw new Error(
+                'accum has no stored _call; build it with accumulate() to enable tuning.'
+            );
+            if (call.tensor) throw new Error(
+                'window-size tuning is only supported for the simple (window) accumulation path.'
+            );
+
+            const windowRange = [];
+            for (let w = minSize; w <= maxSize; w++) windowRange.push(w);
+            if (windowRange.length < 2) throw new Error(
+                'maxSize must be greater than minSize to compare windows.'
+            );
+
+            const { rows, codes, units, conversations, binary } = call;
+
+            // Parse once; only the window size changes between iterations.
+            const { codeMatrix, nRows, nCodes, nUnits, unitLabels,
+                    unitOf, convoGroups, metaData } =
+                parseData(rows, codes, units, conversations);
+            const nConnections = qe.choose_two(nCodes);
+
+            // 1. Rebuild + fit at each window, collecting unit points.
+            const dims = 2;
+            const allPoints = [];
+            for (const w of windowRange) {
+                const raw = accumulate(
+                    qe, codeMatrix, nRows, nCodes, nUnits,
+                    unitOf, convoGroups, w, binary
+                );
+                const model = runPipeline(
+                    qe, raw, nUnits, nConnections, codes,
+                    unitLabels, metaData, 'svd', undefined, undefined, dims
+                );
+                allPoints.push(model.points);
+            }
+
+            // 2. Adjacent-window distance-space correlations.
+            const nSteps = windowRange.length - 1;
+            const corr = new Array(nSteps);
+            for (let i = 0; i < nSteps; i++) {
+                corr[i] = spaceDistCorr(allPoints[i], allPoints[i + 1], nUnits, dims);
+            }
+
+            // 3. Smallest window crossing cutoff * max correlation.
+            const finite = corr.filter(v => !Number.isNaN(v));
+            const maxCorr = finite.length ? Math.max(...finite) : NaN;
+            const threshold = cutoff * maxCorr;
+            let bestIdx = corr.findIndex(v => v >= threshold);
+            if (bestIdx < 0) bestIdx = 0;
+            const bestWindow = windowRange[bestIdx];
+
+            // 4. Rebuild the accumulation at the selected window size.
+            return api.accumulate(rows, {
+                codes, units, conversations, window: bestWindow, binary,
+            });
         },
 
         /**
@@ -430,4 +515,6 @@ export default async function loadENA() {
          */
         defaultTensor,
     };
+
+    return api;
 }

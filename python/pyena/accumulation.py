@@ -55,6 +55,14 @@ class ENAAccumulation:
         One row per unit (unit label as index).  Contains all non-code,
         non-unit-key columns from the original data, deduplicated per unit.
         Corresponds to R's ``set$meta.data``.
+    source_call : dict | None
+        The keyword arguments passed to :func:`accumulate` that produced this
+        object (``data``, ``units``, ``conversations``, ``codes``,
+        ``window_size``, ``window_forward``, ``binary``).  Corresponds to R's
+        ``ENAAccumulation$`_function.call```; retained so the accumulation can
+        be rebuilt at other window sizes (see :func:`pyena.tune_window_size`).
+        ``None`` when the object was constructed directly rather than via
+        :func:`accumulate`.
     """
 
     def __init__(
@@ -64,12 +72,14 @@ class ENAAccumulation:
         codes: List[str],
         connection_names: List[str],
         meta: pd.DataFrame,
+        source_call: Optional[dict] = None,
     ) -> None:
         self.connection_counts_ = networks
         self.unit_labels_       = units
         self.codes_             = codes
         self.connection_names_  = connection_names
         self.meta               = meta
+        self.source_call        = source_call
 
     def __repr__(self) -> str:
         return (
@@ -172,4 +182,13 @@ def accumulate(
         codes=list(codes),
         connection_names=connection_names,
         meta=meta,
+        source_call={
+            "data":           data,
+            "units":          units,
+            "conversations":  conversations,
+            "codes":          list(codes),
+            "window_size":    window_size,
+            "window_forward": window_forward,
+            "binary":         binary,
+        },
     )
