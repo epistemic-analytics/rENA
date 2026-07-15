@@ -1,3 +1,12 @@
+## rENA 0.4.0
+
+#### Features
+
+  * Ground-diversity window-size suggestion, see `?ena.gd.window` and
+    `?ena.ground.diversity` (R/ena.ground.diversity.R). Suggests a sliding
+    window size by locating the peak normalized Shannon entropy of "ground
+    types" (bit-encoded combinations of active codes) across window sizes.
+
 ## rENA 0.3.1
 
 #### Patch

@@ -8,7 +8,9 @@
     "label.font.color","label.font.family","label.font.size",
     "label.offset","legend.include.edges","legend.name",
     "network.edges.shapes","nodes","rows.to.keep","show.legend",
-    "..connection_name", "..dimension_names", "..first_meta"
+    "..connection_name", "..dimension_names", "..first_meta",
+    "count","window","entropy","ground_type","n_obs","n_unique",
+    "method","n_conversations",".group"
   ))
 #   op <- options()
 #   op.rENA <- list(
