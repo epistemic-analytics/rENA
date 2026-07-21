@@ -98,7 +98,16 @@ remove_meta_data <- function(x) {
 #' @return [TBD]
 #' @export
 "$.ena.points" <- function (x, i) {
-   vals <- x[[which(colnames(x) == i)]]
+   # Match base `$`: an absent column is NULL, not an error. Without this,
+   # which() returns integer(0) and x[[integer(0)]] raises "attempt to select
+   # less than one element in get1index", so callers cannot test for an
+   # optional column (e.g. ENA_DIRECTION) the ordinary way. Duplicate column
+   # names take the first match rather than recursively indexing on a vector.
+   idx <- which(colnames(x) == i)
+   if (length(idx) == 0) {
+     return(NULL)
+   }
+   vals <- x[[idx[1]]]
 
    vals
 }
@@ -111,7 +120,12 @@ remove_meta_data <- function(x) {
 #' @return [TBD]
 #' @export
 "$.ena.matrix" <- function (x, i) {
-   vals <- x[[which(colnames(x) == i)]]
+   # See `$.ena.points` above: absent column is NULL, duplicates take the first.
+   idx <- which(colnames(x) == i)
+   if (length(idx) == 0) {
+     return(NULL)
+   }
+   vals <- x[[idx[1]]]
 
    vals
 }

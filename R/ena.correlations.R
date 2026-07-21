@@ -22,8 +22,12 @@ ena.correlations <- function(enaset, dims = c(1:2)) {
   svdDiff = matrix(points[point1, dims] - points[point2, dims], ncol=length(dims), nrow=length(point1))
   optDiff = matrix(centroids[point1, dims] - centroids[point2, dims], ncol=length(dims), nrow=length(point1))
 
+  # svdDiff/optDiff were built with one column per requested dimension, so they
+  # are indexed by position, not by the caller's dimension number. Indexing by
+  # `dims` only happens to work for the default c(1,2); any other pair (e.g.
+  # c(1,3)) reads past the end and errors with "subscript out of bounds".
   correlations = as.data.frame(mapply(function(method) {
-    lapply(dims, function(dim) {
+    lapply(seq_along(dims), function(dim) {
       cor(as.numeric(svdDiff[,dim]), as.numeric(optDiff[,dim]), method=method)
     });
   }, c("pearson","spearman")))

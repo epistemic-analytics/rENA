@@ -1,3 +1,17 @@
+## rENA 0.4.1
+
+#### Patch
+
+  * `$.ena.points` and `$.ena.matrix` return `NULL` for a column that is not
+    present, matching base `$`, instead of raising "attempt to select less than
+    one element in get1index". Callers can now test for an optional column
+    (e.g. `ENA_DIRECTION`) the ordinary way. Duplicate column names take the
+    first match rather than recursively indexing on a vector.
+  * `ena.correlations` indexes its per-dimension difference matrices by
+    position. They are built with one column per requested dimension, so
+    indexing by the caller's dimension numbers only worked for the default
+    `c(1,2)`; any other pair errored with "subscript out of bounds".
+
 ## rENA 0.4.0
 
 #### Features
