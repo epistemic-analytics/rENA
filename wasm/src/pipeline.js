@@ -262,6 +262,81 @@ export function rotateMeans(qe, centered, nUnits, nConnections, groupA, groupB) 
     };
 }
 
+/**
+ * Generalized Means Rotation (GMR).
+ *
+ * Mirrors R's ena.rotate.by.generalized() / libqe::generalized_means_rotation().
+ * Handles Lasso-adjusted OLS covariate control, between-group scatter for
+ * categorical targets, optional Y axis, and SVD completion.
+ *
+ * All matrix inputs are row-major Float64Arrays; all index arrays are Int32Arrays.
+ *
+ * @param {object}       qe
+ * @param {Float64Array} centered         nUnits × nConnections, row-major
+ * @param {number}       nUnits
+ * @param {number}       nConnections
+ * @param {object}       p                Pre-built GMR parameters
+ * @param {Float64Array} p.xModelMatrix   nUnits × xmCols row-major model matrix
+ *                                        (treatment coding, reference = level[0])
+ * @param {number}       p.xmRows         must equal nUnits
+ * @param {number}       p.xmCols         number of dummy columns (nGroups - 1)
+ * @param {Float64Array} p.xTarget        nUnits — 0-based integer codes for target
+ * @param {Int32Array}   p.x1Cols         0-based column indices in xModelMatrix for the target
+ * @param {boolean}      p.xCategorical
+ * @param {number}       p.xNGroups       number of distinct levels
+ * @param {Int32Array}   p.xSubset        0-based unit-row indices used for GMR fit
+ * @param {boolean}      [p.hasY=false]   whether a Y-axis GMR target is provided
+ * @param {Float64Array} [p.yModelMatrix] (ignored when hasY=false)
+ * @param {number}       [p.ymRows]
+ * @param {number}       [p.ymCols]
+ * @param {Float64Array} [p.yTarget]
+ * @param {Int32Array}   [p.y1Cols]
+ * @param {boolean}      [p.yCategorical=false]
+ * @param {number}       [p.yNGroups=0]
+ * @param {number}       [p.nLambda=50]
+ * @param {number}       [p.kFolds=5]
+ * @param {number}       [p.lassoEps=0.01]
+ * @returns {{ rotation, rotRows, rotCols, eigenvalues, columnNames }}
+ */
+export function rotateGeneralized(qe, centered, nUnits, nConnections, p) {
+    const hasY    = !!p.hasY;
+    const nLambda = (p.nLambda  ?? 50)   | 0;
+    const kFolds  = (p.kFolds   ?? 5)    | 0;
+    const lassoEps = p.lassoEps ?? 0.01;
+
+    // Stub Y params when hasY=false — C++ ignores them but still needs valid arrays.
+    const yMM   = hasY ? p.yModelMatrix : new Float64Array(nUnits);
+    const ymR   = hasY ? (p.ymRows | 0) : nUnits;
+    const ymC   = hasY ? (p.ymCols | 0) : 1;
+    const yTgt  = hasY ? p.yTarget      : new Float64Array(nUnits);
+    const y1C   = hasY ? p.y1Cols       : new Int32Array([0]);
+    const yCat  = hasY ? !!p.yCategorical : false;
+    const yNGrp = hasY ? ((p.yNGroups || 0) | 0) : 0;
+
+    const r = qe.generalized_means_rotation(
+        centered,        nUnits,        nConnections,
+        p.xModelMatrix,  p.xmRows | 0,  p.xmCols | 0,
+        p.xTarget,
+        p.x1Cols,
+        !!p.xCategorical, (p.xNGroups | 0),
+        p.xSubset,
+        hasY,
+        yMM,  ymR,  ymC,
+        yTgt,
+        y1C,
+        yCat,  yNGrp,
+        nLambda, kFolds, lassoEps
+    );
+
+    return {
+        rotation:    r.rotation.data,
+        rotRows:     r.rotation.rows,
+        rotCols:     r.rotation.cols,
+        eigenvalues: r.eigenvalues,
+        columnNames: r.column_names,
+    };
+}
+
 // ── projection & node positions ───────────────────────────────────────────────
 
 /**

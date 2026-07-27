@@ -42,7 +42,7 @@ import loadLibQE from '@qe-libs/libqe-wasm';
 import { parseData } from './data.js';
 import {
     accumulate, sphereNorm, center,
-    rotateSVD, rotateMeans,
+    rotateSVD, rotateMeans, rotateGeneralized,
     project, nodePositions, spaceDistCorr,
 } from './pipeline.js';
 import { accumulateTensor, defaultTensor } from './tensor.js';
@@ -182,7 +182,7 @@ class ENAModel {
 // ── shared pipeline (post-accumulation) ──────────────────────────────────────
 
 function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
-                     metaData, rotMethod, groupA, groupB, dims) {
+                     metaData, rotMethod, groupA, groupB, dims, gParams) {
     const connectionNames = qe.connection_names(codes);
 
     // Sphere norm → lineWeights (= R's set$line.weights)
@@ -195,7 +195,12 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
 
     // Rotate
     let rot;
-    if (rotMethod === 'mean') {
+    if (rotMethod === 'generalized') {
+        if (!gParams) throw new Error(
+            'opts.gParams is required for generalized (GMR) rotation'
+        );
+        rot = rotateGeneralized(qe, pointsForProjection, nUnits, nConnections, gParams);
+    } else if (rotMethod === 'mean') {
         if (!groupA || !groupB) throw new Error(
             'opts.groupA and opts.groupB are required for means rotation'
         );
@@ -280,9 +285,10 @@ export default async function loadENA() {
          * @param {boolean}  [opts.binary=true]    - Binarise co-occurrences (simple path only)
          * @param {boolean}  [opts.ordered=false]  - Directed networks (tensor path only)
          * @param {object}   [opts.tensor]         - Context tensor definition
-         * @param {string}   [opts.rotation='svd'] - 'svd' or 'mean'
+         * @param {string}   [opts.rotation='svd'] - 'svd', 'mean', or 'generalized'
          * @param {number[]} [opts.groupA]         - Unit indices for means rotation group A
          * @param {number[]} [opts.groupB]         - Unit indices for means rotation group B
+         * @param {object}   [opts.gParams]        - Pre-built GMR parameters for 'generalized' rotation
          * @param {number}   [opts.dims=2]         - Number of dimensions to return
          *
          * @returns {ENAModel}
@@ -299,6 +305,7 @@ export default async function loadENA() {
                 rotation: rotMethod  = 'svd',
                 groupA,
                 groupB,
+                gParams,
                 dims                 = 2,
             } = opts;
 
@@ -327,7 +334,7 @@ export default async function loadENA() {
             }
 
             return runPipeline(qe, rawNetworks, nUnits, nConnections, codes,
-                               unitLabels, metaData, rotMethod, groupA, groupB, dims);
+                               unitLabels, metaData, rotMethod, groupA, groupB, dims, gParams);
         },
 
         /**
