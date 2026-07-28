@@ -47,6 +47,10 @@ import {
 } from './pipeline.js';
 import { accumulateTensor, defaultTensor } from './tensor.js';
 
+// Heuristic model-parameter detection (units / conversations / codes).
+// Pure JS — re-exported synchronously so callers don't need to load WASM.
+export { detectParams, isBinary, scoreUnit, scoreConvo } from './detect.js';
+
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 /**
