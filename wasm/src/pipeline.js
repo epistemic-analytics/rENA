@@ -313,20 +313,28 @@ export function rotateGeneralized(qe, centered, nUnits, nConnections, p) {
     const yCat  = hasY ? !!p.yCategorical : false;
     const yNGrp = hasY ? ((p.yNGroups || 0) | 0) : 0;
 
-    const r = qe.generalized_means_rotation(
-        centered,        nUnits,        nConnections,
-        p.xModelMatrix,  p.xmRows | 0,  p.xmCols | 0,
-        p.xTarget,
-        p.x1Cols,
-        !!p.xCategorical, (p.xNGroups | 0),
-        p.xSubset,
-        hasY,
-        yMM,  ymR,  ymC,
-        yTgt,
-        y1C,
-        yCat,  yNGrp,
-        nLambda, kFolds, lassoEps
-    );
+    let r;
+    try {
+        r = qe.generalized_means_rotation(
+            centered,        nUnits,        nConnections,
+            p.xModelMatrix,  p.xmRows | 0,  p.xmCols | 0,
+            p.xTarget,
+            p.x1Cols,
+            !!p.xCategorical, (p.xNGroups | 0),
+            p.xSubset,
+            hasY,
+            yMM,  ymR,  ymC,
+            yTgt,
+            y1C,
+            yCat,  yNGrp,
+            nLambda, kFolds, lassoEps
+        );
+    } catch (err) {
+        throw new Error(
+            'Rotation by Regression failed: the target variable or group selection ' +
+            'has zero variance or insufficient rank across units.'
+        );
+    }
 
     return {
         rotation:    r.rotation.data,
