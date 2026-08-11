@@ -311,6 +311,7 @@ export default async function loadENA() {
                 groupB,
                 gParams,
                 dims                 = 2,
+                codeMask,
             } = opts;
 
             if (!codes?.length)         throw new Error('opts.codes is required');
@@ -335,6 +336,35 @@ export default async function loadENA() {
                     unitOf, convoGroups, windowSize, binary
                 );
                 nConnections = qe.choose_two(nCodes);
+            }
+
+            // Apply code masking by zeroing out the masked connection columns across all units
+            if (codeMask && codeMask.length === codes.length) {
+                console.log('[rena-wasm] Applying code mask to raw networks...');
+                if (ordered) {
+                    for (let j = 0; j < codes.length; j++) {
+                        for (let i = 0; i < codes.length; i++) {
+                            if (codeMask[j] && codeMask[j][i] === 0) {
+                                const k = j * codes.length + i;
+                                for (let u = 0; u < nUnits; u++) {
+                                    rawNetworks[u * nConnections + k] = 0;
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    let k = 0;
+                    for (let j = 1; j < codes.length; j++) {
+                        for (let i = 0; i < j; i++) {
+                            if (codeMask[j] && codeMask[j][i] === 0) {
+                                for (let u = 0; u < nUnits; u++) {
+                                    rawNetworks[u * nConnections + k] = 0;
+                                }
+                            }
+                            k++;
+                        }
+                    }
+                }
             }
 
             return runPipeline(qe, rawNetworks, nUnits, nConnections, codes,
@@ -364,6 +394,7 @@ export default async function loadENA() {
                 binary               = true,
                 ordered              = false,
                 tensor:  tensorDef,
+                codeMask,
             } = opts;
 
             const { codeMatrix, nRows, nCodes, nUnits, unitLabels,
@@ -384,6 +415,35 @@ export default async function loadENA() {
                     unitOf, convoGroups, windowSize, binary
                 );
                 nConnections = qe.choose_two(nCodes);
+            }
+
+            // Apply code masking by zeroing out the masked connection columns across all units
+            if (codeMask && codeMask.length === codes.length) {
+                console.log('[rena-wasm] Applying code mask to accumulated networks...');
+                if (ordered) {
+                    for (let j = 0; j < codes.length; j++) {
+                        for (let i = 0; i < codes.length; i++) {
+                            if (codeMask[j] && codeMask[j][i] === 0) {
+                                const k = j * codes.length + i;
+                                for (let u = 0; u < nUnits; u++) {
+                                    networks[u * nConnections + k] = 0;
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    let k = 0;
+                    for (let j = 1; j < codes.length; j++) {
+                        for (let i = 0; i < j; i++) {
+                            if (codeMask[j] && codeMask[j][i] === 0) {
+                                for (let u = 0; u < nUnits; u++) {
+                                    networks[u * nConnections + k] = 0;
+                                }
+                            }
+                            k++;
+                        }
+                    }
+                }
             }
 
             const connectionNames = qe.connection_names(codes);
