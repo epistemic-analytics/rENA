@@ -354,9 +354,9 @@ export default async function loadENA() {
                     }
                 } else {
                     let k = 0;
-                    for (let i = 0; i < codes.length - 1; i++) {
-                        for (let j = i + 1; j < codes.length; j++) {
-                            if ((codeMask[i] && codeMask[i][j] === 0) || (codeMask[j] && codeMask[j][i] === 0)) {
+                    for (let col = 1; col < codes.length; col++) {
+                        for (let row = 0; row < col; row++) {
+                            if ((codeMask[row] && codeMask[row][col] === 0) || (codeMask[col] && codeMask[col][row] === 0)) {
                                 for (let u = 0; u < nUnits; u++) {
                                     rawNetworks[u * nConnections + k] = 0;
                                 }
@@ -433,9 +433,9 @@ export default async function loadENA() {
                     }
                 } else {
                     let k = 0;
-                    for (let i = 0; i < codes.length - 1; i++) {
-                        for (let j = i + 1; j < codes.length; j++) {
-                            if ((codeMask[i] && codeMask[i][j] === 0) || (codeMask[j] && codeMask[j][i] === 0)) {
+                    for (let col = 1; col < codes.length; col++) {
+                        for (let row = 0; row < col; row++) {
+                            if ((codeMask[row] && codeMask[row][col] === 0) || (codeMask[col] && codeMask[col][row] === 0)) {
                                 for (let u = 0; u < nUnits; u++) {
                                     networks[u * nConnections + k] = 0;
                                 }
