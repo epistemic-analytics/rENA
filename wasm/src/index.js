@@ -345,7 +345,7 @@ export default async function loadENA() {
                     for (let j = 0; j < codes.length; j++) {
                         for (let i = 0; i < codes.length; i++) {
                             if (codeMask[j] && codeMask[j][i] === 0) {
-                                const k = j * codes.length + i;
+                                const k = i * codes.length + j;
                                 for (let u = 0; u < nUnits; u++) {
                                     rawNetworks[u * nConnections + k] = 0;
                                 }
@@ -424,7 +424,7 @@ export default async function loadENA() {
                     for (let j = 0; j < codes.length; j++) {
                         for (let i = 0; i < codes.length; i++) {
                             if (codeMask[j] && codeMask[j][i] === 0) {
-                                const k = j * codes.length + i;
+                                const k = i * codes.length + j;
                                 for (let u = 0; u < nUnits; u++) {
                                     networks[u * nConnections + k] = 0;
                                 }
