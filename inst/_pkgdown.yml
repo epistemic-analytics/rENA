@@ -58,6 +58,16 @@ reference:
       - renderEnaInteractive
       - ena.export.html
 
+  # ── Window Size Estimation ────────────────────────────────────────────────
+  - title: "Window Size Estimation"
+    desc: Functions for estimating and tuning moving conversation window sizes.
+    contents:
+      - ena.ccd.window
+      - ena.ccd
+      - ena.gd.window
+      - ena.ground.diversity
+      - ena.tune.window.size
+
   # ── Legacy API ────────────────────────────────────────────────────────────
   - title: "Legacy API"
     desc: >
@@ -71,7 +81,6 @@ reference:
       - ena.svd
       - ena.conversations
       - ena.correlations
-      - ena.tune.window.size
       - ena.writeup
       - ena_space_dist_corr
       - connection.matrix

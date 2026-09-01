@@ -4,39 +4,63 @@
 \alias{ena.tune.window.size}
 \title{Tune Window Size for ENA Accumulation}
 \usage{
-ena.tune.window.size(accum_object, min_size = 1, max_size = 20, cutoff = 0.95)
+ena.tune.window.size(
+  accum_object,
+  min_size = 1,
+  max_size = 20,
+  method = c("ccd", "stability"),
+  cutoff = 0.95,
+  min_overlap = 10,
+  ...
+)
 }
 \arguments{
-\item{accum_object}{An \code{ENAAccumulation} object or a call that can be
-re-evaluated to create one.}
+\item{accum_object}{An \code{ENAAccumulation}/\code{ENAdata}/\code{ena.set} object.}
 
 \item{min_size}{Integer. The minimum window size (default=1) to test.}
 
 \item{max_size}{Integer. The maximum window size (default=20) to test.}
 
-\item{cutoff}{Numeric. The threshold (default 0.95) of the maximum correlation
-used to determine the "best" window size.}
+\item{method}{Character. Window estimation method: \code{"ccd"} (default, Cross-Covariance Decay)
+or \code{"stability"} (legacy SVD stability plateau).}
+
+\item{cutoff}{Numeric. The threshold (default 0.95) of the maximum correlation used when
+\code{method = "stability"}.}
+
+\item{min_overlap}{Integer. Minimum required overlapping rows per conversation when
+\code{method = "ccd"} (default=10).}
+
+\item{...}{Additional arguments passed to the underlying window estimation function.}
 }
 \value{
-A new \code{ENAAccumulation} object generated with the
-\code{best_window_size}.
+A new \code{ENAdata}/\code{ena.set} object accumulated with the \code{best_window_size}.
 }
 \description{
-This function iterates through a range of window sizes to find the optimal size
-for a discourse accumulation. It identifies the "stability plateau" by calculating
-the correlation between adjacent window sizes and selecting the smallest size
-that meets a specified threshold of the maximum observed stability.
+Estimates the optimal moving window size for discourse accumulation and returns a new
+accumulation object constructed with the tuned window size. By default, uses Cross-Covariance
+Decay (CCD; \code{method = "ccd"}) to estimate the discourse coherence length.
+Alternatively, the legacy SVD projection stability heuristic (\code{method = "stability"})
+can be used.
 }
 \details{
-The function uses the internal \code{_function.call} from the \code{accum_object}
-to iteratively rebuild the accumulation. For each window size, it generates an
-ENA set and extracts the unit points and compute the correlations between ENA points with
-adjacent window sizes.
-The best window size is the lowest with correlation higher than cutoff*max_correlation
+When \code{method = "ccd"} (default), the function uses \code{\link{ena.ccd.window}} to calculate
+the discourse coherence half-life decay lag directly from the conversation stream.
+
+When \code{method = "stability"}, the function iteratively rebuilds accumulation objects across
+candidate window sizes, generates ENA sets, and computes distance-space correlations
+between adjacent window sizes until reaching \code{cutoff * max_correlation}.
 }
 \examples{
 \dontrun{
-# Assuming 'accum' is your existing accumulation object
-tuned_accum <- tune_window_size(accum, min_size = 1, max_size = 20, cutoff = 0.95)
+data(RS.data)
+codeNames <- c("Data", "Technical.Constraints", "Performance.Parameters",
+               "Client.and.Consultant.Requests", "Design.Reasoning", "Collaboration")
+accum <- ena.accumulate.data(
+  units = RS.data[, c("UserName", "Condition")],
+  conversation = RS.data[, c("Condition", "GroupName")],
+  codes = RS.data[, codeNames],
+  window.size.back = 4
+)
+tuned_accum <- ena.tune.window.size(accum, method = "ccd")
 }
 }

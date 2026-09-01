@@ -13,7 +13,7 @@ get_x1_main_effect(
 )
 }
 \arguments{
-\item{V}{A numeric matrix (units × connections) of dependent variables.}
+\item{V}{A numeric matrix (units x connections) of dependent variables.}
 
 \item{X}{A data frame or matrix of predictors / covariates. The **first**
 column is treated as the target variable whose contribution will be extracted.}
@@ -27,8 +27,6 @@ use; e.g. `"lambda.min"` (default) or `"lambda.1se"`, or a numeric value.}
 \item{include_interactions}{Logical; if `TRUE`, include main-effect columns
 **and** all interaction columns that begin with the target name (default:
 `FALSE`, only main-effect columns).}
-
-\item{...}{Additional arguments are not used (kept for forward compatibility).}
 }
 \value{
 A numeric matrix with the same dimensions as `V` containing the
@@ -41,7 +39,7 @@ Computes the main-effect contribution of the first column of `X` (the
 "target") to the multivariate ENA matrix `V`. The function fits penalized
 regression models (via glmnet) and can optionally include interactions
 between the target and other covariates. It returns the fitted contribution
-matrix (units × connections).
+matrix (units x connections).
 }
 \details{
 The function can compute contributions using either only main-effect columns

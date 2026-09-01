@@ -1,3 +1,28 @@
+## rENA 0.4.3
+
+#### Bug Fixes & Improvements
+
+  * **Window Size Estimation (`ena.tune.window.size`)**:
+    - Fixed inaccurate window size estimation by replacing the heuristic SVD
+      stability plateau method with the Cross-Covariance Decay (CCD) algorithm
+      (Shaffer & Cai, 2026). The function's outward-facing API and usage remain
+      unchanged.
+    - Added helper functions `ena.ccd.window()` and `ena.ccd()` along with S3
+      methods (`plot.ena.ccd`, `print.ena.ccd`) for direct window estimation and
+      diagnostic curve plotting.
+    - Preserved legacy SVD stability behavior via `method = "stability"`.
+    - Fixed issue where accumulation call re-evaluation failed when
+      `ena.tune.window.size()` was called in scripted or nested evaluation environments.
+  * Corrected `@importFrom stats` declarations in `ena_space_dist_corr.R`.
+  * Updated `ENAplot` documentation and internal variable bindings in `zzz.R`.
+
+## rENA 0.4.2
+
+#### Improvements
+
+  * Synchronized ENA pipeline and parameter detection with WebAssembly runtime.
+  * Undirected code masking index mapping updates.
+
 ## rENA 0.4.1
 
 #### Patch

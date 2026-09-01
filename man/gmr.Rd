@@ -15,7 +15,7 @@ gmr(
 )
 }
 \arguments{
-\item{V}{Numeric ENA matrix (units × connections) ready for rotation.}
+\item{V}{Numeric ENA matrix (units x connections) ready for rotation.}
 
 \item{X}{Data frame or matrix of predictors; the first column is the target.}
 
@@ -23,7 +23,7 @@ gmr(
 (default), all rows are used.}
 
 \item{alpha}{Elastic-net mixing parameter forwarded to `get_x1_main_effect`
-(default `1` — Lasso).}
+(default `1` - Lasso).}
 
 \item{lambda}{Lambda selection for `cv.glmnet` forwarded to
 `get_x1_main_effect` (default `"lambda.min"`).}

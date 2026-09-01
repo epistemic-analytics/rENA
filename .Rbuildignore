@@ -10,6 +10,8 @@
 ^\.git/.*
 ^\.github/
 ^.idea
+^\.claude
+^ENA_rotation_test_report
 ^docs
 /\.DS_Store$
 ^src/optimTests/
@@ -34,3 +36,5 @@ pkgdown/
 
 .gitleaksignore
 gitleaks.json
+^wasm$
+^python$

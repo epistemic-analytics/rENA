@@ -40,6 +40,8 @@ It encapsulates the ENAset data, the plotly visualization, and related plotting 
 
 \item{\code{plotted}}{A logical or status indicator showing whether the plot has been rendered or updated.}
 
+\item{\code{title}}{Character. The title of the plot.}
+
 \item{\code{showticklabels}}{Logical. Indicates whether to show tick labels on the axes.}
 
 \item{\code{autosize}}{Logical. Indicates whether the plot should automatically resize.}

@@ -17,7 +17,14 @@ ena.plot.trajectory(
   label.font.family = c("Arial", "Courier New", "Times New Roman"),
   shape = c("circle", "square", "triangle-up", "diamond"),
   colors = NULL,
-  default.hidden = F
+  default.hidden = FALSE,
+  smooth = c("none", "poly"),
+  poly.degree = NULL,
+  poly.max.degree = 3L,
+  poly.criterion = c("loocv", "aic"),
+  poly.n.eval = 200L,
+  show.points = TRUE,
+  show.curve = TRUE
 )
 }
 \arguments{
@@ -49,9 +56,24 @@ trajectories, otherwise the length of the supplied color vector should be equal
 to the length of the supplied names (i.e a color for each trajectory being plotted)}
 
 \item{default.hidden}{A logical indicating if the trajectories should start hidden (click on the legend to show them) Default: FALSE}
+
+\item{smooth}{Character choice: "none" (connect discrete points) or "poly" (fit orthogonal polynomial curve with LOOCV-2D). Default: "none"}
+
+\item{poly.degree}{Fixed integer polynomial degree (default NULL = auto-select via LOOCV-2D / AIC)}
+
+\item{poly.max.degree}{Maximum polynomial degree to search when auto-selecting (default: 3)}
+
+\item{poly.criterion}{Criterion for polynomial degree selection: "loocv" or "aic"}
+
+\item{poly.n.eval}{Number of evaluation points along the curve (default: 200)}
+
+\item{show.points}{Logical: whether to display original discrete points when smooth = "poly" (default: TRUE)}
+
+\item{show.curve}{Logical: whether to display smooth polynomial curve when smooth = "poly" (default: TRUE)}
 }
 \value{
 The \code{\link{ENAplot}} provided to the function, with its plot updated to include the trajectories
+#####
 }
 \description{
 Function used to plot trajectories

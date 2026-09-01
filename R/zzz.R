@@ -9,6 +9,7 @@
     "label.offset","legend.include.edges","legend.name",
     "network.edges.shapes","nodes","rows.to.keep","show.legend",
     "..connection_name", "..dimension_names", "..first_meta",
+    "..codeNames", "..conversation_cols",
     "count","window","entropy","ground_type","n_obs","n_unique",
     "method","n_conversations",".group"
   ))

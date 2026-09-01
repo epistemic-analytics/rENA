@@ -29,6 +29,7 @@
 #' @field point A structure representing the data points to be plotted, including coordinates and visual properties.
 #' @field palette A set of colors or a function defining the color scheme used for plotting elements in the ENA plot.
 #' @field plotted A logical or status indicator showing whether the plot has been rendered or updated.
+#' @field title Character. The title of the plot.
 #' @field showticklabels Logical. Indicates whether to show tick labels on the axes.
 #' @field autosize Logical. Indicates whether the plot should automatically resize.
 #' @field automargin Logical. Indicates whether the plot should automatically adjust margins.

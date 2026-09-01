@@ -53,12 +53,12 @@ compute_SB <- function(A, g) {
 #' subsetting by `groups`, optional inclusion of interaction terms when
 #' computing adjusted contributions.
 #'
-#' @param V Numeric ENA matrix (units × connections) ready for rotation.
+#' @param V Numeric ENA matrix (units x connections) ready for rotation.
 #' @param X Data frame or matrix of predictors; the first column is the target.
 #' @param groups Optional vector specifying target groups to subset. If `NULL`
 #'   (default), all rows are used.
 #' @param alpha Elastic-net mixing parameter forwarded to `get_x1_main_effect`
-#'   (default `1` — Lasso).
+#'   (default `1` - Lasso).
 #' @param lambda Lambda selection for `cv.glmnet` forwarded to
 #'   `get_x1_main_effect` (default `"lambda.min"`).
 #' @param interactions Logical; if `TRUE` (default) interactions are included when computing the adjusted contribution.
@@ -250,7 +250,7 @@ gmr_with_fallbacks <- function(V, X, groups = NULL, alpha = 1, lambda = "lambda.
     Vx_sub <- get_x1_main_effect(V_sub, X_sub, alpha = alpha,
                                  lambda = lambda, include_interactions = interactions)
     if (is_zero(Vx_sub)) {
-      if (verbose) message("⚠️ Lasso with interactions gave zero contribution; trying without interactions.")
+      if (verbose) message("Lasso with interactions gave zero contribution; trying without interactions.")
       Vx_sub <- get_x1_main_effect(V_sub, X_sub, alpha = alpha,
                                    lambda = lambda, include_interactions = FALSE)
       fallback_stage <- "no interactions"
@@ -259,7 +259,7 @@ gmr_with_fallbacks <- function(V, X, groups = NULL, alpha = 1, lambda = "lambda.
     }
 
     if (is_zero(Vx_sub)) {
-      if (verbose) message("⚠️ Lasso without interactions gave zero contribution; falling back to simple model.")
+      if (verbose) message("Lasso without interactions gave zero contribution; falling back to simple model.")
       Vx_sub <- Vx1_sub
       fallback_stage <- "no covariates"
     }
@@ -271,7 +271,7 @@ gmr_with_fallbacks <- function(V, X, groups = NULL, alpha = 1, lambda = "lambda.
     model =  model <- lm(Vx_sub ~ target_sub)
     beta <- model$coefficients[2,]
     if (is_zero(beta)) {
-      if (verbose) message("⚠️ Beta is zero; falling back to SVD(V_sub).")
+      if (verbose) message("Beta is zero; falling back to SVD(V_sub).")
       r <- tryCatch(svd(Vx_sub)$v[, 1], error = function(e) NULL)
       fallback_stage <- "SVD fallback"
     } else {
@@ -286,13 +286,13 @@ gmr_with_fallbacks <- function(V, X, groups = NULL, alpha = 1, lambda = "lambda.
 
   # --- Final SVD fallback if r is NULL or zero ---
   if (is.null(r) || all(r == 0)) {
-    warning("⚠️ All levels failed; using SVD(V_sub)$v[,1] as final fallback.")
+    warning("All levels failed; using SVD(V_sub)$v[,1] as final fallback.")
     r <- tryCatch(svd(V_sub)$v[, 1], error = function(e) NULL)
     fallback_stage <- "final SVD"
   }
 
   if (is.null(r)) {
-    warning("❌ Unable to compute any valid direction; returning NULL.")
+    warning("Unable to compute any valid direction; returning NULL.")
     return(NULL)
   }
 
@@ -309,7 +309,7 @@ gmr_with_fallbacks <- function(V, X, groups = NULL, alpha = 1, lambda = "lambda.
   attr(r, "Vx1") <- Vx1_full
   attr(r, "fallback_stage") <- fallback_stage
 
-  if (verbose) message("✅ gmr completed successfully (", fallback_stage, ").")
+  if (verbose) message("gmr completed successfully (", fallback_stage, ").")
 
   return(r)
 }
@@ -417,7 +417,7 @@ gmr2_bk <- function(V, X, groups = NULL) {
 #' "target") to the multivariate ENA matrix `V`. The function fits penalized
 #' regression models (via glmnet) and can optionally include interactions
 #' between the target and other covariates. It returns the fitted contribution
-#' matrix (units × connections).
+#' matrix (units x connections).
 #'
 #' The function can compute contributions using either only main-effect columns
 #' (no interactions) or main-effect plus all interaction columns that start
@@ -425,7 +425,7 @@ gmr2_bk <- function(V, X, groups = NULL) {
 #' coefficients are zero, the function returns a zero matrix and emits a
 #' warning.
 #'
-#' @param V A numeric matrix (units × connections) of dependent variables.
+#' @param V A numeric matrix (units x connections) of dependent variables.
 #' @param X A data frame or matrix of predictors / covariates. The **first**
 #'   column is treated as the target variable whose contribution will be extracted.
 #' @param alpha Elastic-net mixing parameter passed to `cv.glmnet`. `alpha = 1`
@@ -446,8 +446,6 @@ gmr2_bk <- function(V, X, groups = NULL) {
 #' main effects and pairwise interactions. It sets a `penalty.factor` that
 #' leaves the target-related columns unpenalized (0) and fits a multivariate
 #' `glmnet` (`family = "mgaussian"`). The returned matrix is dense (numeric).
-#'
-#' @param ... Additional arguments are not used (kept for forward compatibility).
 #'
 #' @examples
 #' \dontrun{

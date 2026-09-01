@@ -12,7 +12,7 @@
 #' If the total possible pairs exceeds this value, sampling is used. Default is 100,000.
 #'
 #' @return A numeric value representing the Pearson correlation.
-#' @importFrom stats dist cor sample.int
+#' @importFrom stats dist cor
 #' @export
 ena_space_dist_corr <- function(A, B, max_sample_size = 100000) {
   m <- nrow(A)
