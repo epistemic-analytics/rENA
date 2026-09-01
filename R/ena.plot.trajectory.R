@@ -11,6 +11,10 @@
 #' @param names character vector - labels for each trajectory of points, length length(unique(by))
 #' @param labels character vector - point labels, length nrow(points)
 #' @param labels.show A character choice: Always, Hover, Both.  Default: Both
+# @param confidence.interval A character that determines which confidence interval type to use, choices: none, box, crosshair, default: none
+# @param outlier.interval A character that determines which outlier interval type to use, choices: none, box, crosshair, default: none
+# @param confidence.interval.values A matrix/dataframe where columns are CI x and y values for each point
+# @param outlier.interval.values A matrix/dataframe where columns are OI x and y values for each point
 #' @param colors A character vector, that determines marker color, default NULL results in
 #' alternating random colors. If single color is supplied, it will be used for all
 #' trajectories, otherwise the length of the supplied color vector should be equal
@@ -21,13 +25,6 @@
 #' @param label.font.color A character which determines the color of label font, default: enaplot$font.color
 #' @param label.font.family A character which determines font type, choices: Arial, Courier New, Times New Roman, default: enaplot$font.family
 #' @param default.hidden A logical indicating if the trajectories should start hidden (click on the legend to show them) Default: FALSE
-#' @param smooth Character choice: "none" (connect discrete points) or "poly" (fit orthogonal polynomial curve with LOOCV-2D). Default: "none"
-#' @param poly.degree Fixed integer polynomial degree (default NULL = auto-select via LOOCV-2D / AIC)
-#' @param poly.max.degree Maximum polynomial degree to search when auto-selecting (default: 3)
-#' @param poly.criterion Criterion for polynomial degree selection: "loocv" or "aic"
-#' @param poly.n.eval Number of evaluation points along the curve (default: 200)
-#' @param show.points Logical: whether to display original discrete points when smooth = "poly" (default: TRUE)
-#' @param show.curve Logical: whether to display smooth polynomial curve when smooth = "poly" (default: TRUE)
 #'
 #' @seealso \code{\link{ena.plot}}
 #'
@@ -74,12 +71,12 @@
 #' print(plot)
 #'
 #' @return The \code{\link{ENAplot}} provided to the function, with its plot updated to include the trajectories
-#' #####
+#####
 ena.plot.trajectory = function(
   enaplot,
   points,
   by = NULL,
-  labels = NULL,
+  labels = NULL, #unique(enaplot$enaset$enadata$units),
   labels.show = c("Always","Hover","Both"),
   names = NULL,
   label.offset = NULL,
@@ -88,45 +85,33 @@ ena.plot.trajectory = function(
   label.font.family = c("Arial", "Courier New", "Times New Roman"),
   shape = c("circle", "square", "triangle-up", "diamond"),
   colors = NULL,
-  default.hidden = FALSE,
-  smooth = c("none", "poly"),
-  poly.degree = NULL,
-  poly.max.degree = 3L,
-  poly.criterion = c("loocv", "aic"),
-  poly.n.eval = 200L,
-  show.points = TRUE,
-  show.curve = TRUE
+  default.hidden = F
 ) {
   if(!is.character(label.font.family)) {
     label.font.size = enaplot$get("font.family");
   }
   labels.show <- match.arg(labels.show);
   shape <- match.arg(shape);
-  smooth <- match.arg(smooth);
-  poly.criterion <- match.arg(poly.criterion);
 
   if(is.null(by)) {
-    by <- list(all = rep(TRUE, nrow(points)));
+    by <- list(all = rep(T, nrow(points)));
   }
-  if (is(points, "ena.matrix") || any(find_meta_cols(points))) {
-    clean_points <- remove_meta_data(points)
-  } else {
-    clean_points <- points
+  if(!is(points, "data.table")) {
+    points <- data.table::as.data.table(points);
   }
-
-  if(length(colors) == 1 && !is.null(names))
+  if(length(colors) == 1)
     colors <- rep(colors, length(names))
 
   mode <- "lines+markers+text";
   hoverinfo <- "x+y";
-  tbl <- data.table::as.data.table(clean_points);
+  tbl <- data.table::data.table(points);
   if (!is.null(labels)) {
     if (labels.show %in% c("Always","Both"))
       mode <- paste0(mode,"+text");
     if (labels.show %in% c("Hover","Both"))
       hoverinfo <- paste0(hoverinfo,"+text");
 
-    tbl[, labels := labels]
+    tbl = data.table::data.table(points, labels = labels);
   }
 
   if(!is.null(by)) {
@@ -150,111 +135,39 @@ ena.plot.trajectory = function(
     label.offset = rep(label.offset, nrow(dfdt_trajs))
 
   if (!is.null(colors) &&
-      length(colors) > 1 && !is.null(names) && length(colors) != length(names)
+      length(colors) > 1 && length(colors) != length(names)
   ) {
     stop("Length of the colors must be 1 or the same length as by")
   }
 
   for (x in 1:nrow(dfdt_trajs)) {
-    d <- as.data.frame(dfdt_trajs[x,]$lines[[1]])
+    d <- remove_meta_data(dfdt_trajs[x,]$lines[[1]])
     d.names <- colnames(d)
-    traj_name <- if (!is.null(names) && length(names) >= x) names[x] else paste0("Trajectory ", x)
-    traj_color <- if(!is.null(colors) && length(colors) >= x) colors[x] else NULL
-
-    if (smooth == "poly" && nrow(d) >= 2L && ncol(d) >= 2L) {
-      # Fit parametric polynomial curve using libqe
-      pts_mat <- as.matrix(d[, 1:2, drop = FALSE])
-      fixed_deg <- if (!is.null(poly.degree)) as.integer(poly.degree) else 0L
-
-      fit_res <- libqe::fit_trajectory_poly(
-        points = pts_mat,
-        t = numeric(0),
-        max_degree = as.integer(poly.max.degree),
-        fixed_degree = fixed_deg,
-        criterion = poly.criterion
-      )
-
-      # Smooth curve evaluation
-      if (isTRUE(show.curve)) {
-        t_eval <- seq(0, 1, length.out = as.integer(poly.n.eval))
-        curve_eval <- libqe::eval_trajectory_curve(fit_res$coeffs_x, fit_res$coeffs_y, t_eval)
-        curve_df <- data.frame(
-          x = curve_eval[, 1L],
-          y = curve_eval[, 2L]
-        )
-
-        enaplot$plot = plotly::add_trace(
-          enaplot$plot,
-          data = curve_df,
-          x = ~x,
-          y = ~y,
-          name = paste0(traj_name, " (fit deg ", fit_res$degree, ")"),
-          mode = "lines",
-          hoverinfo = "none",
-          showlegend = !isTRUE(show.points),
-          line = list (
-            color = traj_color,
-            width = 2.5
-          ),
-          visible = ifelse(default.hidden, "legendonly", TRUE)
-        )
-      }
-
-      # Original discrete points
-      if (isTRUE(show.points)) {
-        pts_mode <- if (!is.null(labels) && labels.show %in% c("Always", "Both")) "markers+text" else "markers"
-        enaplot$plot = plotly::add_trace(
-          enaplot$plot,
-          data = d,
-          x = as.formula(paste0("~", d.names[1])),
-          y = as.formula(paste0("~", d.names[2])),
-          name = traj_name,
-          mode = pts_mode,
-          text = dfdt_trajs[x,]$lines[[1]]$labels,
-          textposition = label.offset[x],
-          hoverinfo = hoverinfo,
-          showlegend = TRUE,
-          marker = list (
-            symbol = shape,
-            color = traj_color,
-            size = 6
-          ),
-          textfont = list (
-            family = label.font.family,
-            size = label.font.size,
-            color = label.font.color
-          ),
-          visible = ifelse(default.hidden, "legendonly", TRUE)
-        )
-      }
-    } else {
-      # Standard piecewise linear trajectory
-      enaplot$plot = plotly::add_trace(
-        enaplot$plot,
-        data = d,
-        x = as.formula(paste0("~", d.names[1])),
-        y = as.formula(paste0("~", d.names[2])),
-        name = traj_name,
-        mode = mode,
-        text = dfdt_trajs[x,]$lines[[1]]$labels,
-        textposition = label.offset[x],
-        hoverinfo = hoverinfo,
-        showlegend = TRUE,
-        line = list (
-          color = traj_color
-        ),
-        marker = list (
-          symbol = shape,
-          color = traj_color
-        ),
-        textfont = list (
-          family = label.font.family,
-          size = label.font.size,
-          color = label.font.color
-        ),
-        visible = ifelse(default.hidden, "legendonly", TRUE)
-      );
-    }
+    enaplot$plot = plotly::add_trace(
+      enaplot$plot,
+      data = d,
+      x = as.formula(paste0("~", d.names[1])),
+      y = as.formula(paste0("~", d.names[2])),
+      name = names[x],
+      mode = mode,
+      text = dfdt_trajs[x,]$lines[[1]]$labels,
+      textposition = label.offset[x],
+      hoverinfo = hoverinfo,
+      showlegend = T,
+      line = list (
+        color = if(!is.null(colors)) colors[x] else NULL
+      ),
+      marker = list (
+        symbol = shape
+        ,color = if(!is.null(colors)) colors[x] else NULL
+      ),
+      textfont = list (
+        family = label.font.family,
+        size = label.font.size,
+        color = label.font.color
+      ),
+      visible = ifelse(default.hidden, "legendonly", T)
+    );
   }
 
   enaplot$plotted$trajectories[[
