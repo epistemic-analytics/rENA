@@ -5,6 +5,7 @@ Output field names mirror R's ena.set object (flat — no nested sub-objects).
 
 Top-level (= R's set$...):
   connection_counts_       np.ndarray (n_units × n_connections) — raw accumulation
+  row_connection_counts_   np.ndarray (n_rows × n_connections)  — row-level raw accumulation
   line_weights_            np.ndarray (n_units × n_connections) — sphere-normed
   points_                  np.ndarray (n_units × dims)          — projected positions
   rotation_matrix_         np.ndarray (n_connections × dims)    — rotation vectors
@@ -99,6 +100,7 @@ class ENA:
     Attributes set after fitting (= R's ena.set fields, flat)
     ---------------------------------------------------------
     connection_counts_      raw adjacency vectors (n_units × n_connections)
+    row_connection_counts_  row-level raw adjacency vectors (= R model$row.connection.counts)
     line_weights_           sphere-normed adjacency vectors (= R set$line.weights)
     points_                 projected unit positions (= R set$points)
     rotation_matrix_        rotation matrix truncated to dims (= R set$rotation.matrix)
@@ -296,6 +298,7 @@ class ENA:
 
         # top-level (= R's set$...)
         self.connection_counts_      = raw_networks          # set$connection.counts
+        self.row_connection_counts_  = accum.row_connection_counts_
         self.line_weights_           = normed                # set$line.weights
         self.points_                 = node_positions.points # set$points
         self.rotation_matrix_        = rotation_matrix       # set$rotation.matrix

@@ -302,6 +302,7 @@ class TestAccumulate:
         df = make_df(n_units=3, n_codes=3)
         accum = accumulate(df, "unit", "convo", CODES)
         assert accum.connection_counts_.shape == (3, 3)   # 3 units × choose_two(3)=3
+        assert accum.row_connection_counts_.shape == (len(df), 3)
 
     def test_units_order_preserved(self):
         df = pd.DataFrame({
@@ -333,6 +334,31 @@ class TestAccumulate:
         accum = accumulate(df, "unit", "convo", CODES)
         model = ENA().fit(df, "unit", "convo", CODES)
         np.testing.assert_array_equal(accum.connection_counts_, model.connection_counts_)
+        np.testing.assert_array_equal(accum.row_connection_counts_, model.row_connection_counts_)
+
+    def test_row_networks_roll_up_to_unit_networks(self):
+        df = make_df(n_units=4, n_codes=3, seed=10)
+        accum = accumulate(df, "unit", "convo", CODES)
+        rolled_up = np.zeros_like(accum.connection_counts_)
+        for row_idx, unit_label in enumerate(df["unit"].tolist()):
+            unit_idx = accum.unit_labels_.index(unit_label)
+            rolled_up[unit_idx] += accum.row_connection_counts_[row_idx]
+        np.testing.assert_array_equal(rolled_up, accum.connection_counts_)
+
+    def test_row_networks_capture_window_connections(self):
+        df = pd.DataFrame({
+            "unit":  ["u1", "u1", "u2"],
+            "convo": ["c1", "c1", "c2"],
+            "A": [1.0, 0.0, 1.0],
+            "B": [0.0, 1.0, 1.0],
+            "C": [0.0, 0.0, 0.0],
+        })
+        accum = accumulate(df, "unit", "convo", CODES, window_size=4)
+        ab_idx = accum.connection_names_.index("A & B")
+        raw_same_row = ((df["A"] > 0) & (df["B"] > 0)).astype(int).to_numpy()
+        from_connections = (accum.row_connection_counts_[:, ab_idx] > 0).astype(int)
+        np.testing.assert_array_equal(raw_same_row, np.array([0, 0, 1]))
+        np.testing.assert_array_equal(from_connections, np.array([0, 1, 1]))
 
     def test_fit_from_accumulation_matches_direct_fit(self):
         """ENA().fit(accum) must produce identical results to ENA().fit(df, ...)."""

@@ -17,11 +17,12 @@ to a particular rotation or normalization approach.
         binary        = True,
     )
 
-    accum.connection_counts_  # (n_units × n_connections) raw adjacency matrix
-    accum.unit_labels_        # unit labels in first-appearance order
-    accum.codes_              # code names
-    accum.connection_names_   # e.g. ["Data & Technical Constraints", ...]
-    accum.meta                # DataFrame: one row per unit, unit-level columns
+    accum.connection_counts_      # (n_units × n_connections) raw adjacency matrix
+    accum.row_connection_counts_  # (n_rows × n_connections) raw row adjacency matrix
+    accum.unit_labels_            # unit labels in first-appearance order
+    accum.codes_                  # code names
+    accum.connection_names_       # e.g. ["Data & Technical Constraints", ...]
+    accum.meta                    # DataFrame: one row per unit, unit-level columns
 """
 
 from __future__ import annotations
@@ -43,6 +44,9 @@ class ENAAccumulation:
         Raw (un-normalised) co-occurrence counts summed per unit.
         Corresponds to R's ``enadata$adjacency.vectors`` /
         ``set$connection.counts``.
+    row_connection_counts_ : np.ndarray, shape (n_rows, n_connections)
+        Raw (un-normalised) co-occurrence counts for each source row.
+        Corresponds to R's ``set$model$row.connection.counts`` code columns.
     unit_labels_ : list[str]
         Unit labels in first-appearance order.
         Corresponds to R's ``set$model$unit.labels``.
@@ -72,9 +76,15 @@ class ENAAccumulation:
         codes: List[str],
         connection_names: List[str],
         meta: pd.DataFrame,
+        row_networks: Optional[np.ndarray] = None,
         source_call: Optional[dict] = None,
     ) -> None:
         self.connection_counts_ = networks
+        self.row_connection_counts_ = (
+            row_networks
+            if row_networks is not None
+            else np.zeros((0, networks.shape[1]), dtype=networks.dtype)
+        )
         self.unit_labels_       = units
         self.codes_             = codes
         self.connection_names_  = connection_names
@@ -142,6 +152,7 @@ def accumulate(
 
         model = ENA().fit(accum)
     """
+    data = data.reset_index(drop=True)
     n_codes       = len(codes)
     n_connections = n_codes * (n_codes - 1) // 2
 
@@ -150,6 +161,7 @@ def accumulate(
     unit_index = {label: i for i, label in enumerate(unit_labels)}
 
     raw_networks = np.zeros((n_units, n_connections), dtype=np.float64)
+    row_networks = np.zeros((len(data), n_connections), dtype=np.float64)
 
     for _, conv_df in data.groupby(conversations, sort=False):
         codes_mat = np.ascontiguousarray(
@@ -157,6 +169,8 @@ def accumulate(
         )
         co_occ = _acc.accumulate_stanza(codes_mat, window_size, window_forward, binary)
         for row_idx, unit_label in enumerate(conv_df[units].tolist()):
+            source_idx = conv_df.index[row_idx]
+            row_networks[source_idx] = co_occ[row_idx]
             raw_networks[unit_index[unit_label]] += co_occ[row_idx]
 
     # Column-major upper-triangle order matching stanza_window output.
@@ -178,6 +192,7 @@ def accumulate(
 
     return ENAAccumulation(
         networks=raw_networks,
+        row_networks=row_networks,
         units=unit_labels,
         codes=list(codes),
         connection_names=connection_names,

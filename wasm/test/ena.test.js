@@ -7,6 +7,7 @@
  *
  * Field names match the R ena.set structure:
  *   model.connectionCounts      = R set$connection.counts (raw)
+ *   model.rowConnectionCounts   = R set$model$row.connection.counts (raw)
  *   model.lineWeights           = R set$line.weights (normed)
  *   model.points                = R set$points (projected unit positions)
  *   model.rotationMatrix        = R set$rotation.matrix
@@ -46,19 +47,36 @@ beforeAll(async () => { ena = await loadENA(); });
 // ── accumulate ────────────────────────────────────────────────────────────────
 
 test('accumulate: returns correct shape', () => {
-    const { connectionCounts, nUnits, nConnections, unitLabels, connectionNames } =
+    const { connectionCounts, rowConnectionCounts, nUnits, nConnections, unitLabels, connectionNames } =
         ena.accumulate(ROWS, OPTS);
 
     expect(nUnits).toBe(2);                     // U1, U2
     expect(nConnections).toBe(3);               // choose_two(3) = 3
     expect(connectionCounts.length).toBe(6);    // 2 × 3
+    expect(rowConnectionCounts.length).toBe(18);// 6 × 3
     expect(unitLabels).toEqual(['U1', 'U2']);
     expect(connectionNames).toEqual(['D & T', 'D & P', 'T & P']);
 });
 
 test('accumulate: all values are non-negative', () => {
-    const { connectionCounts } = ena.accumulate(ROWS, OPTS);
+    const { connectionCounts, rowConnectionCounts } = ena.accumulate(ROWS, OPTS);
     expect(Array.from(connectionCounts).every(v => v >= 0)).toBe(true);
+    expect(Array.from(rowConnectionCounts).every(v => v >= 0)).toBe(true);
+});
+
+test('accumulate: rowConnectionCounts roll up to connectionCounts by unit', () => {
+    const { connectionCounts, rowConnectionCounts, nConnections, unitLabels } =
+        ena.accumulate(ROWS, OPTS);
+    const rolledUp = new Float64Array(connectionCounts.length);
+
+    for (let r = 0; r < ROWS.length; r++) {
+        const unitIndex = unitLabels.indexOf(ROWS[r].UserName);
+        for (let c = 0; c < nConnections; c++) {
+            rolledUp[unitIndex * nConnections + c] += rowConnectionCounts[r * nConnections + c];
+        }
+    }
+
+    expect(Array.from(rolledUp)).toEqual(Array.from(connectionCounts));
 });
 
 test('accumulate: metaData has one entry per unit', () => {
@@ -97,6 +115,12 @@ test('fit: lineWeights shape is nUnits × nConnections', () => {
 test('fit: connectionCounts shape is nUnits × nConnections', () => {
     const model = ena.fit(ROWS, OPTS);
     expect(model.connectionCounts.length).toBe(model.nUnits * model.nConnections);
+});
+
+test('fit: rowConnectionCounts shape is nRows × nConnections', () => {
+    const model = ena.fit(ROWS, OPTS);
+    expect(model.rowConnectionCounts.length).toBe(ROWS.length * model.nConnections);
+    expect(model.model.rowConnectionCounts).toBe(model.rowConnectionCounts);
 });
 
 test('fit: rotationMatrix shape is nConnections × dims', () => {

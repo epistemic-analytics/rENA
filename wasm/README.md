@@ -32,12 +32,14 @@ const model = ena.fit(rows, {
   dims:          2,
 });
 
-model.centroids        // Float64Array  nUnits × dims
-model.networks         // Float64Array  nUnits × nConnections (normed)
-model.positions        // Float64Array  nCodes × dims
+model.model.centroids  // Float64Array  nUnits × dims
+model.lineWeights      // Float64Array  nUnits × nConnections (normed)
+model.connectionCounts // Float64Array  nUnits × nConnections (raw unit counts)
+model.rowConnectionCounts // Float64Array nRows × nConnections (raw row counts)
+model.rotation.nodes   // Float64Array  nCodes × dims
 model.connectionNames  // ['Data & Technical.Constraints', ...]
-model.unitLabels       // ['UserName1_ConditionA', ...]
-model.columnNames      // ['SVD1', 'SVD2']
+model.model.unitLabels // ['UserName1_ConditionA', ...]
+model.rotation.columnNames // ['SVD1', 'SVD2']
 
 // Per-unit helpers
 model.centroid('Alice_A')  // number[]  length = dims
@@ -70,7 +72,7 @@ const model = ena.fit(rows, {
 Returns raw (un-normalised) network vectors without running the full pipeline.
 
 ```js
-const { networks, unitLabels, connectionNames, nUnits, nConnections } =
+const { connectionCounts, rowConnectionCounts, unitLabels, connectionNames, nUnits, nConnections } =
   ena.accumulate(rows, { codes, units, conversations, window: 4 });
 ```
 

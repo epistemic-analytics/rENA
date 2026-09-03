@@ -12,6 +12,7 @@
  *
  * Top-level fields (= R's set$...):
  *   connectionCounts  Float64Array  (nUnits × nConnections) — raw accumulation
+ *   rowConnectionCounts Float64Array (nRows × nConnections) — per-row raw accumulation
  *   lineWeights       Float64Array  (nUnits × nConnections) — sphere-normed
  *   points            Float64Array  (nUnits × dims)         — projected positions
  *   rotationMatrix    Float64Array  (nConnections × dims)   — rotation vectors
@@ -23,6 +24,7 @@
  *   dims              number
  *
  * model sub-object (= R's set$model$...):
+ *   model.rowConnectionCounts Float64Array (nRows × nConnections) — per-row raw accumulation
  *   model.centroids           Float64Array  (nUnits × dims) — LWS centroids
  *   model.variance            number[]      variance explained per dim
  *   model.unitLabels          string[]
@@ -41,7 +43,7 @@
 import loadLibQE from '@qe-libs/libqe-wasm';
 import { parseData } from './data.js';
 import {
-    accumulate, sphereNorm, center,
+    accumulate, accumulateWithRows, sphereNorm, center,
     rotateSVD, rotateMeans, rotateGeneralized,
     project, nodePositions, spaceDistCorr,
 } from './pipeline.js';
@@ -107,6 +109,7 @@ class ENAModel {
     constructor(opts) {
         // ── top-level fields (= R's set$...) ────────────────────────────────
         this.connectionCounts = opts.connectionCounts;  // raw networks
+        this.rowConnectionCounts = opts.rowConnectionCounts;
         this.lineWeights      = opts.lineWeights;       // sphere-normed networks
         this.points           = opts.points;            // projected unit positions
         this.rotationMatrix   = opts.rotationMatrix;    // n_connections × dims
@@ -118,6 +121,7 @@ class ENAModel {
 
         // ── model sub-object (= R's set$model$...) ───────────────────────────
         this.model = {
+            rowConnectionCounts: opts.rowConnectionCounts,
             centroids:           opts.centroids,           // LWS positions
             variance:            opts.variance,            // variance explained
             unitLabels:          opts.unitLabels,
@@ -186,7 +190,8 @@ class ENAModel {
 // ── shared pipeline (post-accumulation) ──────────────────────────────────────
 
 function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
-                     metaData, rotMethod, groupA, groupB, dims, gParams) {
+                     metaData, rotMethod, groupA, groupB, dims, gParams,
+                     rowConnectionCounts = null) {
     const connectionNames = qe.connection_names(codes);
 
     // Sphere norm → lineWeights (= R's set$line.weights)
@@ -243,6 +248,7 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
     return new ENAModel({
         // top-level
         connectionCounts:     rawNetworks,
+        rowConnectionCounts,
         lineWeights,
         points,
         rotationMatrix,
@@ -322,7 +328,7 @@ export default async function loadENA() {
                     unitOf, convoGroups, metaData } =
                 parseData(rows, codes, units, conversations);
 
-            let rawNetworks, nConnections;
+            let rawNetworks, rowConnectionCounts = null, nConnections;
 
             if (tensorDef) {
                 rawNetworks  = accumulateTensor(
@@ -331,10 +337,12 @@ export default async function loadENA() {
                 );
                 nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
             } else {
-                rawNetworks  = accumulate(
+                const accumulated = accumulateWithRows(
                     qe, codeMatrix, nRows, nCodes, nUnits,
                     unitOf, convoGroups, windowSize, binary
                 );
+                rawNetworks = accumulated.networks;
+                rowConnectionCounts = accumulated.rowConnectionCounts;
                 nConnections = qe.choose_two(nCodes);
             }
 
@@ -368,7 +376,8 @@ export default async function loadENA() {
             }
 
             return runPipeline(qe, rawNetworks, nUnits, nConnections, codes,
-                               unitLabels, metaData, rotMethod, groupA, groupB, dims, gParams);
+                               unitLabels, metaData, rotMethod, groupA, groupB,
+                               dims, gParams, rowConnectionCounts);
         },
 
         /**
@@ -379,6 +388,7 @@ export default async function loadENA() {
          * @param {object}   opts  - codes, units, conversations, window, binary, ordered, tensor
          * @returns {{
          *   connectionCounts: Float64Array,
+         *   rowConnectionCounts: Float64Array | null,
          *   unitLabels:       string[],
          *   connectionNames:  string[],
          *   metaData:         Object[],
@@ -401,7 +411,7 @@ export default async function loadENA() {
                     unitOf, convoGroups, metaData } =
                 parseData(rows, codes, units, conversations);
 
-            let networks, nConnections;
+            let networks, rowConnectionCounts = null, nConnections;
 
             if (tensorDef) {
                 networks     = accumulateTensor(
@@ -410,10 +420,12 @@ export default async function loadENA() {
                 );
                 nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
             } else {
-                networks     = accumulate(
+                const accumulated = accumulateWithRows(
                     qe, codeMatrix, nRows, nCodes, nUnits,
                     unitOf, convoGroups, windowSize, binary
                 );
+                networks = accumulated.networks;
+                rowConnectionCounts = accumulated.rowConnectionCounts;
                 nConnections = qe.choose_two(nCodes);
             }
 
@@ -448,7 +460,7 @@ export default async function loadENA() {
 
             const connectionNames = qe.connection_names(codes);
             return {
-                connectionCounts: networks, unitLabels, connectionNames,
+                connectionCounts: networks, rowConnectionCounts, unitLabels, connectionNames,
                 metaData, nUnits, nConnections,
                 // Retained so tuneWindowSize() can rebuild at other window sizes
                 // (= R's ENAAccumulation$`_function.call`).

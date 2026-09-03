@@ -174,6 +174,51 @@ export function accumulate(qe, codeMatrix, nRows, nCodes, nUnits,
     return networks;
 }
 
+/**
+ * Accumulate windowed co-occurrences and retain both per-unit and per-row
+ * connection vectors.
+ *
+ * @returns {{ networks: Float64Array, rowConnectionCounts: Float64Array }}
+ */
+export function accumulateWithRows(qe, codeMatrix, nRows, nCodes, nUnits,
+                                   unitOf, convoGroups, windowSize = 4, binary = true) {
+    const nConnections       = qe.choose_two(nCodes);
+    const networks           = new Float64Array(nUnits * nConnections);
+    const rowConnectionCounts = new Float64Array(nRows * nConnections);
+
+    for (const [, rowIndices] of convoGroups) {
+        const nConvo = rowIndices.length;
+
+        const convoCodes = new Float64Array(nConvo * nCodes);
+        for (let r = 0; r < nConvo; r++) {
+            const src = rowIndices[r];
+            convoCodes.set(
+                codeMatrix.subarray(src * nCodes, src * nCodes + nCodes),
+                r * nCodes
+            );
+        }
+
+        const stanza = qe.accumulate_stanza(
+            convoCodes, nConvo, nCodes, windowSize, 0, binary
+        );
+
+        for (let r = 0; r < nConvo; r++) {
+            const src    = rowIndices[r];
+            const unit   = unitOf[src];
+            const offset = r * nConnections;
+            const rowOut = src * nConnections;
+
+            for (let c = 0; c < nConnections; c++) {
+                const value = stanza.data[offset + c];
+                rowConnectionCounts[rowOut + c] = value;
+                networks[unit * nConnections + c] += value;
+            }
+        }
+    }
+
+    return { networks, rowConnectionCounts };
+}
+
 // ── normalization (sphere norm) ───────────────────────────────────────────────
 
 /**

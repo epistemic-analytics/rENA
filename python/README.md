@@ -51,12 +51,13 @@ model = ENA().fit(rs, "unit_key", "convo_key", CODES)
 ## Accessing Results
 
 ```python
-model.normed_networks_    # normalised adjacency vectors  (n_units × n_connections)
-model.centroids_          # unit positions in ENA space   (n_units × dims)
-model.positions_          # code node positions           (n_codes × dims)
-model.networks_           # raw (un-normalised) adjacency vectors
-model.units_              # unit labels in order
-model.connection_names_   # e.g. ["Data&Technical.Constraints", ...]
+model.line_weights_           # normalised adjacency vectors  (n_units × n_connections)
+model.row_connection_counts_  # row-level raw adjacency vectors (n_rows × n_connections)
+model.centroids_              # unit positions in ENA space   (n_units × dims)
+model.rotation_nodes_         # code node positions           (n_codes × dims)
+model.connection_counts_      # raw unit adjacency vectors    (n_units × n_connections)
+model.unit_labels_            # unit labels in order
+model.connection_names_       # e.g. ["Data & Technical.Constraints", ...]
 ```
 
 ---
@@ -68,10 +69,11 @@ from pyena import ENA, accumulate
 
 accum = accumulate(rs, "unit_key", "convo_key", CODES, window_size=4)
 
-accum.networks_          # raw co-occurrence matrix
-accum.units_             # unit labels
-accum.connection_names_  # connection labels
-accum.meta               # per-unit metadata DataFrame
+accum.connection_counts_      # raw unit co-occurrence matrix
+accum.row_connection_counts_  # raw row co-occurrence matrix
+accum.unit_labels_            # unit labels
+accum.connection_names_       # connection labels
+accum.meta                    # per-unit metadata DataFrame
 
 # Reuse the same accumulation with different rotations
 from pyena import mean_rotation, generalized_rotation
