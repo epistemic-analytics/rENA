@@ -108,6 +108,10 @@ ena.plot.trajectory = function(
   if(is.null(by)) {
     by <- list(all = rep(TRUE, nrow(points)));
   }
+  if (is.character(by) && length(by) == 1L && by %in% names(points)) {
+    by <- points[[by]]
+  }
+
   if (is(points, "ena.matrix") || any(find_meta_cols(points))) {
     clean_points <- remove_meta_data(points)
   } else {
@@ -162,33 +166,23 @@ ena.plot.trajectory = function(
     traj_color <- if(!is.null(colors) && length(colors) >= x) colors[x] else NULL
 
     if (smooth == "poly" && nrow(d) >= 2L && ncol(d) >= 2L) {
-      # Fit parametric polynomial curve using libqe
-      pts_mat <- as.matrix(d[, 1:2, drop = FALSE])
-      fixed_deg <- if (!is.null(poly.degree)) as.integer(poly.degree) else 0L
-
-      fit_res <- libqe::fit_trajectory_poly(
-        points = pts_mat,
-        t = numeric(0),
-        max_degree = as.integer(poly.max.degree),
-        fixed_degree = fixed_deg,
+      curve_fit <- .fit_etm_poly_curve(
+        points = d[, 1:2, drop = FALSE],
+        degree = poly.degree,
+        max_degree = poly.max.degree,
         criterion = poly.criterion
       )
 
       # Smooth curve evaluation
       if (isTRUE(show.curve)) {
-        t_eval <- seq(0, 1, length.out = as.integer(poly.n.eval))
-        curve_eval <- libqe::eval_trajectory_curve(fit_res$coeffs_x, fit_res$coeffs_y, t_eval)
-        curve_df <- data.frame(
-          x = curve_eval[, 1L],
-          y = curve_eval[, 2L]
-        )
+        curve_df <- .eval_etm_poly_curve(curve_fit, poly.n.eval)
 
         enaplot$plot = plotly::add_trace(
           enaplot$plot,
           data = curve_df,
           x = ~x,
           y = ~y,
-          name = paste0(traj_name, " (fit deg ", fit_res$degree, ")"),
+          name = paste0(traj_name, " (fit deg ", curve_fit$degree, ")"),
           mode = "lines",
           hoverinfo = "none",
           showlegend = !isTRUE(show.points),

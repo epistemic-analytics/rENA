@@ -1,3 +1,17 @@
+## rENA 0.4.4
+
+#### Bug Fixes & Improvements
+
+  * Restored polynomial trajectory smoothing and animated trajectory plotting
+    against the shared libqe trajectory kernels.
+  * Updated the R package dependencies to require tma 0.3.3 or newer and libqe
+    0.1.2 or newer. rENA now delegates polynomial trajectory fitting for plots
+    to TMA's trajectory wrapper while TMA delegates the shared numerical kernels
+    to libqe.
+  * Separated the legacy ENA trajectory plotting path from the newer ETM-style
+    polynomial curve bridge with internal helper functions and focused
+    documentation.
+
 ## rENA 0.4.3
 
 #### Bug Fixes & Improvements

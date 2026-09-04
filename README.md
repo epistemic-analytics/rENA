@@ -127,5 +127,6 @@ model_gmr <- RS.data |>
 
 ## Further Reading
 
+- [Trajectory models in rENA](docs/trajectory-models.md)
 - [ENA resources page](https://www.epistemicnetwork.org/resources/)
 - [Epistemic Analytics](https://www.epistemicnetwork.org/)

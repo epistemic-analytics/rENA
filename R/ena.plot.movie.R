@@ -91,18 +91,13 @@ ena.plot.movie = function(
       u <- unique_by[b_idx]
       u_pts <- pts_df[by_vec == u, , drop = FALSE]
       if (nrow(u_pts) >= 2L) {
-        pts_mat <- as.matrix(u_pts)
-        fixed_deg <- if (!is.null(poly.degree)) as.integer(poly.degree) else 0L
-        fit_res <- libqe::fit_trajectory_poly(
-          points = pts_mat,
-          t = numeric(0),
-          max_degree = as.integer(poly.max.degree),
-          fixed_degree = fixed_deg,
+        curve_fit <- .fit_etm_poly_curve(
+          points = u_pts[, dim_cols, drop = FALSE],
+          degree = poly.degree,
+          max_degree = poly.max.degree,
           criterion = "loocv"
         )
-        t_eval <- seq(0, 1, length.out = as.integer(poly.eval.points))
-        curve_eval <- libqe::eval_trajectory_curve(fit_res$coeffs_x, fit_res$coeffs_y, t_eval)
-        poly_curves[[u]] <- curve_eval
+        poly_curves[[u]] <- as.matrix(.eval_etm_poly_curve(curve_fit, poly.eval.points))
       }
     }
   }
