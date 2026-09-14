@@ -157,7 +157,6 @@ ena.ccd <- function(
   conv_factor <- interaction(raw_df[conversation_cols], drop = TRUE, lex.order = FALSE)
   x_subsets   <- split.data.frame(code_mat, conv_factor)
 
-  C <- length(codeNames)
   lags <- 0:max_window
 
   # Pre-filter conversation subsets by length
@@ -186,86 +185,38 @@ ena.ccd <- function(
   }
 
   x_subsets <- x_subsets[valid_idx]
-  sub_lens  <- sub_lens[valid_idx]
-  m <- length(x_subsets)
 
-  # 4. Compute cross-covariance curves & noise floor across lags
+  # 4. Delegate the cross-covariance decay computation to the shared libqe
+  #    kernel (qe::ccd_window). The numeric core lives in C++ so that R, the
+  #    WASM build, and pyena all share a single implementation; only the
+  #    data.frame wrangling and S3 assembly stay here.
+  kern <- libqe::ccd_window(
+    lapply(x_subsets, function(s) matrix(as.numeric(s), nrow = nrow(s))),
+    max_window  = max_window,
+    min_overlap = min_overlap
+  )
+
   pooled_out <- data.frame(
-    lag                  = lags,
-    frob                 = NA_real_,
-    frob_sq_unbiased     = NA_real_,
-    frob_unbiased_signed = NA_real_,
-    total_weight         = 0,
+    lag                  = kern$lag,
+    frob                 = kern$frob,
+    frob_sq_unbiased     = kern$frob_sq_unbiased,
+    frob_unbiased_signed = kern$frob_unbiased_signed,
+    total_weight         = kern$total_weight,
     stringsAsFactors     = FALSE
   )
 
-  for (i in seq_along(lags)) {
-    l <- lags[i]
-    Cov_sum <- matrix(0, nrow = C, ncol = C)
-    total_weight <- 0
-    noise_floor_sq_weighted_sum <- 0
+  best_window <- as.integer(kern$window_size)
+  peak_lag    <- as.integer(kern$peak_lag)
 
-    for (k in 1:m) {
-      N_k <- sub_lens[k]
-      weight <- N_k - l
-      if (weight < min_overlap) next
-
-      X_k <- x_subsets[[k]]
-      A <- X_k[(l + 1):N_k, , drop = FALSE]
-      B <- X_k[1:(N_k - l), , drop = FALSE]
-
-      p_A <- colMeans(A)
-      p_B <- colMeans(B)
-
-      Cov_k <- (crossprod(B, A) / weight) - outer(p_B, p_A)
-
-      # Vectorized fast trace variance without memory copying
-      tr_var_A <- sum(colSums((A - rep(p_A, each = weight))^2)) / (weight - 1)
-      tr_var_B <- sum(colSums((B - rep(p_B, each = weight))^2)) / (weight - 1)
-      var_k_sq <- tr_var_A * tr_var_B
-
-      Cov_sum <- Cov_sum + weight * Cov_k
-      total_weight <- total_weight + weight
-      noise_floor_sq_weighted_sum <- noise_floor_sq_weighted_sum + (weight * var_k_sq)
-    }
-
-    if (total_weight > 0) {
-      Cov_pooled <- Cov_sum / total_weight
-      frob_sq_pooled <- sum(Cov_pooled^2)
-      noise_floor_sq_pooled <- noise_floor_sq_weighted_sum / (total_weight^2)
-      frob_sq_unbiased_pooled <- frob_sq_pooled - noise_floor_sq_pooled
-
-      pooled_out$frob[i]                 <- sqrt(frob_sq_pooled)
-      pooled_out$frob_sq_unbiased[i]     <- frob_sq_unbiased_pooled
-      pooled_out$frob_unbiased_signed[i] <- sign(frob_sq_unbiased_pooled) * sqrt(abs(frob_sq_unbiased_pooled))
-      pooled_out$total_weight[i]         <- total_weight
-    }
-  }
-
-  # 5. Half-life decay lag detection
+  # 5. Preserve the informational warnings the pure-R implementation emitted.
+  #    (The window size / peak lag themselves are decided inside the kernel.)
   f <- pooled_out$frob_unbiased_signed
-  post_zero_mask <- lags > 0 & !is.na(f) & f > 0
-
-  if (!any(post_zero_mask)) {
+  if (peak_lag == 0L) {
     warning("Corrected Cross Covariance is non-positive or all NA across evaluated lags. Defaulting to window size = 1.")
-    best_window <- 1L
-    peak_lag <- 0L
   } else {
-    peak_sub_idx <- which.max(f[post_zero_mask])
-    peak_lag     <- lags[post_zero_mask][peak_sub_idx]
-    max_f        <- f[post_zero_mask][peak_sub_idx]
-
-    after_peak_mask <- lags >= peak_lag
-    f_after_peak    <- f[after_peak_mask]
-    lags_after_peak <- lags[after_peak_mask]
-
-    decay_idx <- which(f_after_peak / max_f <= 0.5)
-
-    if (length(decay_idx) > 0) {
-      best_window <- as.integer(lags_after_peak[decay_idx[1]])
-    } else {
-      valid_lags <- lags_after_peak[!is.na(f_after_peak)]
-      best_window <- if (length(valid_lags) > 0) as.integer(tail(valid_lags, 1)) else 1L
+    max_f <- f[pooled_out$lag == peak_lag]
+    after <- pooled_out$lag >= peak_lag
+    if (!any((f[after] / max_f) <= 0.5, na.rm = TRUE)) {
       warning(paste0("Cross-covariance did not decay below half-life (50%) within max_window = ", max_window, "."))
     }
   }
