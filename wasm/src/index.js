@@ -548,6 +548,66 @@ export default async function loadENA() {
         },
 
         /**
+         * Estimate the moving-window size via Cross-Covariance Decay (CCD)
+         * (= R's ena.ccd). Computes the noise-corrected cross-covariance decay
+         * curves over lags and returns the half-life lag as the window size.
+         *
+         * Unlike tuneWindowSize (which rebuilds+fits a full SVD model at each
+         * window), CCD runs directly on the raw code matrix per conversation —
+         * no accumulation/rotation — via the shared libqe kernel.
+         *
+         * @param {Object[]} rows
+         * @param {object}   opts
+         * @param {string[]} opts.codes            - Code column names
+         * @param {string[]} opts.conversations    - Conversation identifier column(s)
+         * @param {number}   [opts.maxWindow=20]   - Maximum lag to evaluate
+         * @param {number}   [opts.minOverlap=10]  - Minimum overlapping rows per conversation at a lag
+         * @returns {{
+         *   window_size:          number,
+         *   peak_lag:             number,
+         *   lag:                  number[],
+         *   frob:                 number[],
+         *   frob_sq_unbiased:     number[],
+         *   frob_unbiased_signed: number[],
+         *   total_weight:         number[],
+         * }}
+         */
+        ccd(rows, opts = {}) {
+            const { codes, conversations, maxWindow = 20, minOverlap = 10 } = opts;
+            if (!codes?.length)         throw new Error('opts.codes is required');
+            if (!conversations?.length) throw new Error('opts.conversations is required');
+
+            // Units are irrelevant to CCD; reuse conversations as a placeholder
+            // so parseData can build codeMatrix + convoGroups.
+            const { codeMatrix, nRows, nCodes, convoGroups } =
+                parseData(rows, codes, conversations, conversations);
+
+            // Flatten conversation row groups into (sizes, indices) for the kernel.
+            const groupSizes = [];
+            const rowIndices = [];
+            for (const rowIdxs of convoGroups.values()) {
+                groupSizes.push(rowIdxs.length);
+                for (const ri of rowIdxs) rowIndices.push(ri);
+            }
+
+            return qe.ccd_window(
+                codeMatrix, nRows, nCodes, groupSizes, rowIndices, maxWindow, minOverlap
+            );
+        },
+
+        /**
+         * Convenience wrapper returning only the estimated window size
+         * (= R's ena.ccd.window).
+         *
+         * @param {Object[]} rows
+         * @param {object}   opts  - see ccd()
+         * @returns {number}  estimated window size
+         */
+        ccdWindow(rows, opts = {}) {
+            return api.ccd(rows, opts).window_size;
+        },
+
+        /**
          * Per-dimension t-based confidence intervals around the column means.
          * Matches R's conf.ints / libqe::mean_ci.
          *
