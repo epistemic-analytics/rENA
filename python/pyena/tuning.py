@@ -18,9 +18,14 @@ observed correlation is chosen as the tuned window size.
 
 from __future__ import annotations
 
-from typing import Optional, Union
+import warnings
+from dataclasses import dataclass
+from typing import List, Optional, Union
 
 import numpy as np
+import pandas as pd
+
+from pylibqe import ccd as _ccd_kernel
 
 from .accumulation import ENAAccumulation, accumulate
 
@@ -173,3 +178,140 @@ def tune_window_size(
         window_forward=call["window_forward"],
         binary=call["binary"],
     )
+
+
+# ── cross-covariance decay (CCD) window-size estimation ────────────────────────
+
+@dataclass
+class CCDResult:
+    """Result of a cross-covariance decay window-size estimation.
+
+    Mirrors R's ``ena.ccd`` S3 object.
+    """
+
+    window_size: int
+    peak_lag: int
+    curves: pd.DataFrame          # lag, frob, frob_sq_unbiased, frob_unbiased_signed, total_weight
+    codes: List[str]
+    conversation_cols: List[str]
+
+    def __repr__(self) -> str:  # pragma: no cover - cosmetic
+        return (f"<CCDResult window_size={self.window_size} "
+                f"peak_lag={self.peak_lag} codes={len(self.codes)}>")
+
+
+def ccd(
+    data: pd.DataFrame,
+    codes: List[str],
+    conversation_cols: Union[str, List[str]],
+    max_window: int = 20,
+    min_overlap: int = 10,
+) -> CCDResult:
+    """Estimate the ENA moving-window size via Cross-Covariance Decay (CCD).
+
+    Port of rENA's ``ena.ccd``. Splits the data into conversations, then defers
+    the numeric core (pooled cross-covariance curves + half-life detection) to
+    the shared libqe kernel ``pylibqe.ccd.ccd_window`` — the same kernel used by
+    the R and WASM builds — so all three surfaces produce identical results.
+
+    Unlike :func:`tune_window_size`, CCD runs directly on the raw code matrix
+    per conversation (no accumulation/rotation).
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Raw coded data, one row per line.
+    codes : list[str]
+        Binary code column names.
+    conversation_cols : str | list[str]
+        Column(s) whose values segment the data into conversations.
+    max_window : int
+        Maximum lag to evaluate (default 20).
+    min_overlap : int
+        Minimum overlapping rows (N - lag) required for a conversation to
+        contribute at a given lag (default 10).
+
+    Returns
+    -------
+    CCDResult
+    """
+    if isinstance(conversation_cols, str):
+        conversation_cols = [conversation_cols]
+    conversation_cols = list(conversation_cols)
+    codes = list(codes)
+
+    missing = [c for c in (*conversation_cols, *codes) if c not in data.columns]
+    if missing:
+        raise KeyError(f"columns not found in data: {missing}")
+
+    # Numeric code matrix (NA -> 0), aligned to data's rows.
+    code_mat = data[codes].apply(pd.to_numeric, errors="coerce").fillna(0.0)
+
+    # Split into conversation subsets, preserving row order; drop subsets shorter
+    # than min_overlap (they can never contribute at lag 0).
+    grouper = data.groupby(conversation_cols, sort=False, observed=True)
+    subsets = []
+    for positions in grouper.indices.values():
+        if len(positions) < min_overlap:
+            continue
+        arr = code_mat.iloc[positions].to_numpy(dtype=np.float64)
+        subsets.append(np.ascontiguousarray(arr))
+
+    if not subsets:
+        warnings.warn(
+            f"No conversation subsets had length >= min_overlap ({min_overlap}). "
+            "Returning window size = 1."
+        )
+
+    kern = _ccd_kernel.ccd_window(subsets, max_window, min_overlap)
+
+    curves = pd.DataFrame({
+        "lag":                  kern["lag"],
+        "frob":                 kern["frob"],
+        "frob_sq_unbiased":     kern["frob_sq_unbiased"],
+        "frob_unbiased_signed": kern["frob_unbiased_signed"],
+        "total_weight":         kern["total_weight"],
+    })
+
+    peak_lag = int(kern["peak_lag"])
+    # Mirror R's informational warnings (the window size itself comes from the kernel).
+    if subsets:
+        f = curves["frob_unbiased_signed"].to_numpy()
+        lag = curves["lag"].to_numpy()
+        if peak_lag == 0:
+            warnings.warn(
+                "Corrected Cross Covariance is non-positive or all NA across "
+                "evaluated lags. Defaulting to window size = 1."
+            )
+        else:
+            max_f = f[lag == peak_lag][0]
+            after = lag >= peak_lag
+            ratios = f[after] / max_f
+            if not np.any(ratios <= 0.5):
+                warnings.warn(
+                    "Cross-covariance did not decay below half-life (50%) within "
+                    f"max_window = {max_window}."
+                )
+
+    return CCDResult(
+        window_size=int(kern["window_size"]),
+        peak_lag=peak_lag,
+        curves=curves,
+        codes=codes,
+        conversation_cols=conversation_cols,
+    )
+
+
+def ccd_window(
+    data: pd.DataFrame,
+    codes: List[str],
+    conversation_cols: Union[str, List[str]],
+    max_window: int = 20,
+    min_overlap: int = 10,
+) -> int:
+    """Estimated CCD window size only (port of R's ``ena.ccd.window``).
+
+    See :func:`ccd` for parameters.
+    """
+    return ccd(data, codes, conversation_cols,
+               max_window=max_window, min_overlap=min_overlap).window_size

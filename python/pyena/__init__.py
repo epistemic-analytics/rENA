@@ -6,7 +6,7 @@ from .rotations import (
     regression_rotation,
     regression_rotation_2,
 )
-from .tuning import ena_space_dist_corr, tune_window_size
+from .tuning import ena_space_dist_corr, tune_window_size, ccd, ccd_window, CCDResult
 
 __all__ = [
     "accumulate",
@@ -18,4 +18,7 @@ __all__ = [
     "regression_rotation_2",
     "ena_space_dist_corr",
     "tune_window_size",
+    "ccd",
+    "ccd_window",
+    "CCDResult",
 ]
