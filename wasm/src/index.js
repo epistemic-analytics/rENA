@@ -233,10 +233,11 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
     );
 
     // Node positions (LWS) → rotation.nodes + model.centroids
-    // libqe.node_positions expects centered-normed networks (pointsForProjection),
-    // not sphere-normed (lineWeights). Using lineWeights places code nodes in wrong locations.
+    // Matches rENA's lws.positions.sq, which regresses the projected points onto
+    // the SPHERE-normed line weights (enaset$line.weights) — not the centered
+    // networks.  Verified node-for-node against R rENA on rs.data.new.csv.
     const { nodes, centroids } = nodePositions(
-        qe, pointsForProjection, nUnits, nConnections, points, dims
+        qe, lineWeights, nUnits, nConnections, points, dims
     );
 
     // Variance explained (= R's model$variance)
@@ -333,7 +334,7 @@ export default async function loadENA() {
             if (tensorDef) {
                 rawNetworks  = accumulateTensor(
                     qe, rows, codeMatrix, nRows, nCodes, nUnits,
-                    unitOf, convoGroups, tensorDef, ordered
+                    unitOf, convoGroups, tensorDef, ordered, binary
                 );
                 nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
             } else {
@@ -416,7 +417,7 @@ export default async function loadENA() {
             if (tensorDef) {
                 networks     = accumulateTensor(
                     qe, rows, codeMatrix, nRows, nCodes, nUnits,
-                    unitOf, convoGroups, tensorDef, ordered
+                    unitOf, convoGroups, tensorDef, ordered, binary
                 );
                 nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
             } else {
@@ -657,6 +658,9 @@ export default async function loadENA() {
          * Helpers re-exported for consumers who want to build their own pipeline.
          */
         defaultTensor,
+
+        /** The underlying libqe WASM module, for custom low-level pipelines. */
+        qe,
     };
 
     return api;

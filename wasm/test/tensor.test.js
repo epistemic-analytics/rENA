@@ -116,6 +116,37 @@ test('accumulate: IS_DEFAULT tensor gives same shape as simple window', () => {
     expect(tensor.connectionCounts.length).toBe(simple.connectionCounts.length);
 });
 
+// Value parity: a default tensor (no factors, weight 1, single window) must
+// reduce to plain binary windowed accumulation — the invariant that regressed
+// when accumulateTensor read the kernel's raw connection_counts instead of
+// folding + binarizing the per-row counts the way tma does in R.
+test('accumulate: IS_DEFAULT tensor VALUE-matches simple binary window', () => {
+    const simple = ena.accumulate(ROWS, { ...BASE_OPTS, window: 4, binary: true });
+    const tensor = ena.accumulate(ROWS, { ...BASE_OPTS, tensor: SIMPLE_TENSOR });
+    expect(Array.from(tensor.connectionCounts))
+        .toEqual(Array.from(simple.connectionCounts));
+});
+
+// aggregate_row_connections mirrors tma's R aggregation of apply_tensor_unit's
+// row_connection_counts (as.unordered + colSums.ena.matrix(binary)).  Golden
+// values hand-verified against libqe::apply_tensor in R on a dense case where a
+// response row sees the same ground code three times.
+test('aggregate_row_connections: fold + per-row binarize + sum (unordered)', () => {
+    // 4 response rows, 3 codes → p²=9 columns (row-major, directed per row).
+    const rowConn = [
+        1, 0, 0, 0, 0, 0, 0, 0, 0,
+        3, 0, 0, 0, 0, 0, 0, 0, 0,
+        5, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 3, 3, 3, 1, 1, 3, 1, 1,
+    ];
+    const bin = ena.qe.aggregate_row_connections(rowConn, 4, 9, 3, false, true);
+    const raw = ena.qe.aggregate_row_connections(rowConn, 4, 9, 3, false, false);
+    const ord = ena.qe.aggregate_row_connections(rowConn, 4, 9, 3, true, false);
+    expect(Array.from(bin)).toEqual([1, 1, 1]);            // per-row binarized
+    expect(Array.from(raw)).toEqual([6, 6, 2]);            // folded, not binarized
+    expect(Array.from(ord)).toEqual([9, 3, 3, 3, 1, 1, 3, 1, 1]);  // directed colSums
+});
+
 test('accumulate: role tensor returns correct shape', () => {
     const result = ena.accumulate(ROWS, { ...BASE_OPTS, tensor: ROLE_TENSOR });
     expect(result.nUnits).toBe(2);

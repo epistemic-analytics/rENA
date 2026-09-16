@@ -136,7 +136,8 @@ export function inferFactorLevels(rows, factors) {
  * @returns {Float64Array}  nUnits × nConnections, row-major
  */
 export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
-                                  unitOf, convoGroups, tensorDef, ordered = false) {
+                                  unitOf, convoGroups, tensorDef, ordered = false,
+                                  binary = true) {
     const {
         dims,
         dimsSender   = [],
@@ -191,6 +192,12 @@ export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
         for (const [unit, localRows] of unitConvoRows) {
             const unitRowsArr = new Int32Array(localRows);
 
+            // Always accumulate the DIRECTED per-response-row counts (ordered
+            // kernel), exactly as tma does — it calls apply_tensor with the
+            // default ordered=TRUE and defers the ordered-vs-unordered decision
+            // to aggregation.  Passing the unordered flag here would make the
+            // kernel emit an already-symmetric matrix that the fold below would
+            // then double-count.
             const result = qe.accumulate_tensor_unit(
                 tensorData, dimsArr,
                 senderArr, receiverArr, modeArr,
@@ -198,12 +205,20 @@ export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
                 unitRowsArr,
                 convoCodes, nConvo, nCodes,
                 times,
-                ordered
+                true
             );
 
-            // Add connection counts to this unit's accumulator
+            // Aggregate the raw per-response-row connections into this unit's
+            // network exactly as tma does in R: fold each row to the upper
+            // triangle and binarize per row (unordered), or plain-sum the
+            // directed rows (ordered).  This lives in the libqe kernel so the
+            // fold/binarize/sum semantics are shared across every binding.
+            const rcc = result.row_connection_counts;
+            const unitVec = qe.aggregate_row_connections(
+                rcc.data, rcc.rows, rcc.cols, nCodes, ordered, binary
+            );
             for (let c = 0; c < nConnections; c++) {
-                networks[unit * nConnections + c] += result.connection_counts[c];
+                networks[unit * nConnections + c] += unitVec[c];
             }
         }
     }
