@@ -7,6 +7,7 @@
  * the transform is applied per line BEFORE the per-unit sum, not after.
  */
 import loadENA from '../src/index.js';
+import { defaultTensor } from '../src/tensor.js';
 
 const ROWS = [
     { Cond: 'A', Grp: 'G1', User: 'U1', D: 1, T: 1, P: 0 },
@@ -53,5 +54,32 @@ test('weight: unknown / binary weight model falls back to binary accumulation', 
     const off = ena.fit(ROWS, { ...BASE, weightModel: 'binary' });
     for (let i = 0; i < bin.lineWeights.length; i++) {
         expect(off.lineWeights[i]).toBeCloseTo(bin.lineWeights[i], 12);
+    }
+});
+
+// A weight model must mean the same thing on the tensor (TMA) path as on the
+// windowed path. defaultTensor(window) routes the windowed computation through
+// the tensor path, so tensor+weight must equal windowed+weight — which is
+// R-parity-proven — for every weight model. (True multi-factor tensors have no
+// R golden since R tma never wired weight.by; the aggregation code is identical
+// regardless of factor count, so this exercises it fully.)
+describe('weight: tensor path matches windowed path', () => {
+    for (const wm of [null, 'sqrt', 'log', 'product']) {
+        test(`weightModel=${wm || 'binary'}`, () => {
+            const opts = wm ? { weightModel: wm } : {};
+            const win = ena.fit(ROWS, { ...BASE, ...opts });
+            const ten = ena.fit(ROWS, { ...BASE, ...opts, tensor: defaultTensor(4) });
+            for (let i = 0; i < win.lineWeights.length; i++) {
+                expect(ten.lineWeights[i]).toBeCloseTo(win.lineWeights[i], 12);
+            }
+        });
+    }
+});
+
+test('weight: product on the tensor path == non-binary tensor identity', () => {
+    const raw  = ena.fit(ROWS, { ...BASE, tensor: defaultTensor(4), binary: false });
+    const prod = ena.fit(ROWS, { ...BASE, tensor: defaultTensor(4), weightModel: 'product' });
+    for (let i = 0; i < raw.lineWeights.length; i++) {
+        expect(prod.lineWeights[i]).toBeCloseTo(raw.lineWeights[i], 12);
     }
 });

@@ -357,9 +357,12 @@ export default async function loadENA() {
             // A non-binary weight model forces non-binary accumulation. `product`
             // keeps the raw counts (identity), matching R where the "product"
             // string is not a function and so falls through untransformed.
-            // Only supported on the non-tensor path.
+            // Applied on BOTH paths, at the same stage, so a weight model means
+            // the same thing whether accumulation is windowed or transmodal:
+            // windowed re-aggregates the per-row co-occurrences below; the
+            // tensor path applies the transform inside accumulateTensor.
             const weightFn = weightModelTransform(weightModel);
-            const effBinary = (weightFn && !tensorDef) ? false : binary;
+            const effBinary = weightFn ? false : binary;
 
             const { codeMatrix, nRows, nCodes, nUnits, unitLabels,
                     unitOf, convoGroups, metaData } =
@@ -370,7 +373,7 @@ export default async function loadENA() {
             if (tensorDef) {
                 rawNetworks  = accumulateTensor(
                     qe, rows, codeMatrix, nRows, nCodes, nUnits,
-                    unitOf, convoGroups, tensorDef, ordered, effBinary
+                    unitOf, convoGroups, tensorDef, ordered, effBinary, weightFn
                 );
                 nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
             } else {

@@ -135,9 +135,57 @@ export function inferFactorLevels(rows, factors) {
  *
  * @returns {Float64Array}  nUnits × nConnections, row-major
  */
+/**
+ * Weighted aggregation of a unit's per-response-row directed connection counts.
+ *
+ * Mirrors the kernel's aggregate_row_connections but applies a weight-model
+ * transform (R's weight.by) per LINE before the per-unit sum, so weight models
+ * behave identically on the tensor path and the windowed path. Non-binary by
+ * construction (the weight replaces the binarize step).
+ *
+ *   unordered: fold each directed row (m + mᵀ, upper triangle, column-major —
+ *              the same order as choose_two/connection_names), weight each
+ *              folded cell, then sum across rows.
+ *   ordered:   weight each directed cell, then sum across rows.
+ *
+ * @param {Float64Array|number[]} data  Row-major (nRccRows × nCodes²) counts.
+ * @param {number}   nRccRows           Number of response rows for this unit.
+ * @param {number}   nCodes
+ * @param {boolean}  ordered
+ * @param {(x:number)=>number} weightFn
+ * @returns {Float64Array}  length nCodes² (ordered) or choose_two(nCodes).
+ */
+function aggregateRowConnectionsWeighted(data, nRccRows, nCodes, ordered, weightFn) {
+    const nSq = nCodes * nCodes;
+    if (ordered) {
+        const out = new Float64Array(nSq);
+        for (let r = 0; r < nRccRows; r++) {
+            const base = r * nSq;
+            for (let c = 0; c < nSq; c++) out[c] += weightFn(data[base + c]);
+        }
+        return out;
+    }
+    const nTri = (nCodes * (nCodes - 1)) / 2;
+    const out = new Float64Array(nTri);
+    for (let r = 0; r < nRccRows; r++) {
+        const base = r * nSq;
+        let k = 0;
+        for (let col = 1; col < nCodes; col++) {
+            for (let row = 0; row < col; row++) {
+                // fold: m(row,col) + m(col,row), column-major reshape of the row
+                const folded = data[base + col * nCodes + row] +
+                               data[base + row * nCodes + col];
+                out[k] += weightFn(folded);
+                k++;
+            }
+        }
+    }
+    return out;
+}
+
 export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
                                   unitOf, convoGroups, tensorDef, ordered = false,
-                                  binary = true) {
+                                  binary = true, weightFn = null) {
     const {
         dims,
         dimsSender   = [],
@@ -214,9 +262,15 @@ export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
             // directed rows (ordered).  This lives in the libqe kernel so the
             // fold/binarize/sum semantics are shared across every binding.
             const rcc = result.row_connection_counts;
-            const unitVec = qe.aggregate_row_connections(
-                rcc.data, rcc.rows, rcc.cols, nCodes, ordered, binary
-            );
+            // A weight model (R's weight.by) applies its transform per line to
+            // the folded connection counts before summing — identical stage to
+            // the windowed path — so weight models behave the same on both
+            // paths. Otherwise defer the fold/binarize/sum to the shared kernel.
+            const unitVec = weightFn
+                ? aggregateRowConnectionsWeighted(rcc.data, rcc.rows, nCodes, ordered, weightFn)
+                : qe.aggregate_row_connections(
+                    rcc.data, rcc.rows, rcc.cols, nCodes, ordered, binary
+                );
             for (let c = 0; c < nConnections; c++) {
                 networks[unit * nConnections + c] += unitVec[c];
             }
