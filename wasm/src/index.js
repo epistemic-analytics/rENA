@@ -187,6 +187,28 @@ class ENAModel {
     }
 }
 
+// ── weight models (= R's `weight.by`) ────────────────────────────────────────
+
+/**
+ * Map a weight-model name to its element-wise transform, matching the webtool's
+ * server.js mapping to R weight.by functions:
+ *   'sqrt'    → Math.sqrt          (R "sqrt")
+ *   'log'     → Math.log1p         (R "log1p", i.e. log(x+1); guards log(0))
+ *   'product' → identity           (raw non-binary counts; R's "product" string
+ *                                    is not a function, so no transform)
+ * A falsy value or 'binary' returns null (binary accumulation, no transform).
+ * @param {string|false|undefined} name
+ * @returns {((x:number)=>number)|null}
+ */
+function weightModelTransform(name) {
+    switch (name) {
+        case 'sqrt':    return Math.sqrt;
+        case 'log':     return Math.log1p;
+        case 'product': return (x) => x;
+        default:        return null;   // binary / off / unknown
+    }
+}
+
 // ── shared pipeline (post-accumulation) ──────────────────────────────────────
 
 function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
@@ -319,11 +341,25 @@ export default async function loadENA() {
                 gParams,
                 dims                 = 2,
                 codeMask,
+                weightModel,
             } = opts;
 
             if (!codes?.length)         throw new Error('opts.codes is required');
             if (!units?.length)         throw new Error('opts.units is required');
             if (!conversations?.length) throw new Error('opts.conversations is required');
+
+            // Weight model = R's `weight.by`. R applies it per LINE (each row's
+            // windowed co-occurrence counts) BEFORE summing per unit, mirroring
+            // accumulate.data.R (lapply(.SD, weight.by) over the per-line
+            // co-occurrence table, then per-unit aggregation). Because
+            // sqrt(Σ) ≠ Σsqrt, the transform must be applied to the per-row
+            // counts and then re-summed — not to the already-unit-summed network.
+            // A non-binary weight model forces non-binary accumulation. `product`
+            // keeps the raw counts (identity), matching R where the "product"
+            // string is not a function and so falls through untransformed.
+            // Only supported on the non-tensor path.
+            const weightFn = weightModelTransform(weightModel);
+            const effBinary = (weightFn && !tensorDef) ? false : binary;
 
             const { codeMatrix, nRows, nCodes, nUnits, unitLabels,
                     unitOf, convoGroups, metaData } =
@@ -334,17 +370,33 @@ export default async function loadENA() {
             if (tensorDef) {
                 rawNetworks  = accumulateTensor(
                     qe, rows, codeMatrix, nRows, nCodes, nUnits,
-                    unitOf, convoGroups, tensorDef, ordered, binary
+                    unitOf, convoGroups, tensorDef, ordered, effBinary
                 );
                 nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
             } else {
                 const accumulated = accumulateWithRows(
                     qe, codeMatrix, nRows, nCodes, nUnits,
-                    unitOf, convoGroups, windowSize, binary
+                    unitOf, convoGroups, windowSize, effBinary
                 );
                 rawNetworks = accumulated.networks;
                 rowConnectionCounts = accumulated.rowConnectionCounts;
                 nConnections = qe.choose_two(nCodes);
+
+                // Line-level weight transform: weight each per-row count, then
+                // re-aggregate per unit (matches R's weight.by ordering).
+                if (weightFn) {
+                    rawNetworks.fill(0);
+                    for (let r = 0; r < nRows; r++) {
+                        const unit = unitOf[r];
+                        const rowOff = r * nConnections;
+                        const unitOff = unit * nConnections;
+                        for (let c = 0; c < nConnections; c++) {
+                            const w = weightFn(rowConnectionCounts[rowOff + c]);
+                            rowConnectionCounts[rowOff + c] = w;
+                            rawNetworks[unitOff + c] += w;
+                        }
+                    }
+                }
             }
 
             // Apply code masking by zeroing out the masked connection columns across all units
