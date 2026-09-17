@@ -655,6 +655,128 @@ export default async function loadENA() {
         },
 
         /**
+         * PRIA — find the largest set of codes (up to removeNum) that can be
+         * removed while keeping the model's goodness-of-fit within `threshold`
+         * of the full model.  Brute-force subset search matching R
+         * PRIA::pria(): for k = 1..removeNum, over every k-subset of codes,
+         * build the reduced model (fit with a codeMask that drops every
+         * connection touching a removed code), gate on
+         * min_d(gof_reduced[d] / gof_full[d]) >= threshold where gof is the
+         * per-dimension ena_correlation(points, centroids), and keep the subset
+         * with the MOST codes removed, then the highest reduced dim-1 variance.
+         *
+         * @returns {{ removed: string[], removedIndices: number[], k: number,
+         *             variance: (number|null) }}
+         */
+        pria(rows, opts = {}) {
+            const {
+                codes, units, conversations,
+                window: windowSize = 4, binary = true, ordered = false,
+                rotation = 'svd', dims = 2, gParams, groupA, groupB,
+                removeNum = 3, threshold = 0.95,
+            } = opts;
+            if (!codes?.length)         throw new Error('opts.codes is required');
+            if (!units?.length)         throw new Error('opts.units is required');
+            if (!conversations?.length) throw new Error('opts.conversations is required');
+
+            const m  = codes.length;
+            const rn = Math.min(removeNum, m - 3);   // never reduce below 3 codes
+            const empty = { removed: [], removedIndices: [], k: 0, variance: null };
+            if (rn < 1) return empty;
+
+            const gofDims  = Math.min(dims, 2);       // R scores on dims 1:2
+            const baseOpts = { codes, units, conversations, window: windowSize,
+                               binary, ordered, rotation, dims, gParams, groupA, groupB };
+
+            const D = gofDims;  // score on the first 2 dims (R's get_pria_scores_2Ds)
+            // Extract a D-column submatrix (given row indices) from a flat
+            // row-major (nRows × dims) array.
+            const sub = (flat, rowIdxs) => {
+                const out = new Float64Array(rowIdxs.length * D);
+                rowIdxs.forEach((r, t) => { for (let d = 0; d < D; d++) out[t * D + d] = flat[r * dims + d]; });
+                return out;
+            };
+            // ena_correlation(A, B) → [r_dim0, r_dim1] (col 0 of the dims×3 result).
+            const corr2 = (Aflat, Bflat, nRows) => {
+                const r = qe.ena_correlation(Array.from(Aflat), nRows, D,
+                                             Array.from(Bflat), nRows, D, 0.95);
+                const out = [];
+                for (let d = 0; d < D; d++) out.push(r.data[d * 3]);
+                return out;
+            };
+            const full   = api.fit(rows, baseOpts);
+            const nUnits = full.nUnits;
+            const unitRows = Array.from({ length: nUnits }, (_, i) => i);
+            const gofOf    = (mdl) => corr2(sub(mdl.points, unitRows), sub(mdl.model.centroids, unitRows), nUnits);
+            const gFull    = gofOf(full);
+            const fullPts2 = sub(full.points, unitRows);
+
+            // All k-subsets of [0..m) as index arrays.
+            const combos = (n, k) => {
+                const res = [], cur = [];
+                const rec = (start) => {
+                    if (cur.length === k) { res.push(cur.slice()); return; }
+                    for (let i = start; i < n; i++) { cur.push(i); rec(i + 1); cur.pop(); }
+                };
+                rec(0);
+                return res;
+            };
+
+            let bestK = 0, bestVar = -Infinity, bestRemoved = [];
+            for (let k = 1; k <= rn; k++) {
+                for (const idxs of combos(m, k)) {
+                    const removedSet = new Set(idxs);
+                    const mask = [];
+                    for (let i = 0; i < m; i++) {
+                        const row = [];
+                        for (let j = 0; j < m; j++) {
+                            row.push((removedSet.has(i) || removedSet.has(j)) ? 0 : 1);
+                        }
+                        mask.push(row);
+                    }
+                    const red = api.fit(rows, { ...baseOpts, codeMask: mask });
+
+                    // Gate 1 — goodness-of-fit ratio vs full, per dim.
+                    const gRed = gofOf(red);
+                    let pass = true;
+                    for (let d = 0; d < D; d++) {
+                        if (gFull[d] === 0 || gRed[d] / gFull[d] < threshold) { pass = false; break; }
+                    }
+                    if (!pass) continue;
+
+                    // Gate 2 — reduced points AND retained-code nodes must each
+                    // correlate >= threshold with the full model (per dim, with a
+                    // per-dim sign flip that negates the node corr alongside it).
+                    const retained = [];
+                    for (let i = 0; i < m; i++) if (!removedSet.has(i)) retained.push(i);
+                    let [pc1, pc2] = corr2(fullPts2, sub(red.points, unitRows), nUnits);
+                    let [nc1, nc2] = corr2(sub(full.rotation.nodes, retained),
+                                           sub(red.rotation.nodes, retained), retained.length);
+                    if (pc1 < 0) { pc1 = -pc1; nc1 = -nc1; }
+                    if (pc2 < 0) { pc2 = -pc2; nc2 = -nc2; }
+                    if (Math.min(pc1, pc2, nc1, nc2) < threshold) continue;
+
+                    // Dim-1 variance proportion over the FULL rotation spectrum
+                    // (= R's set$model$variance[1] = diag(var(points.rotated))/sum);
+                    // NOT model.variance, which is the 2-dim projected ratio.
+                    const ev = red.rotation.eigenvalues;
+                    let evSum = 0; for (let i = 0; i < ev.length; i++) evSum += ev[i];
+                    const vr1 = evSum > 0 ? ev[0] / evSum : 0;
+                    // Prefer more codes removed; tie-break on higher dim-1 variance.
+                    if (k > bestK || (k === bestK && vr1 > bestVar)) {
+                        bestK = k; bestVar = vr1; bestRemoved = idxs.slice();
+                    }
+                }
+            }
+            return {
+                removed:        bestRemoved.map(i => codes[i]),
+                removedIndices: bestRemoved,
+                k:              bestK,
+                variance:       bestVar === -Infinity ? null : bestVar,
+            };
+        },
+
+        /**
          * Helpers re-exported for consumers who want to build their own pipeline.
          */
         defaultTensor,
