@@ -21,7 +21,6 @@ with.ena.matrix <- function(data, expr, ...) {
   # Points
   V <- NULL;
   if(length(dot_args) > 0 && !is.null(dot_args$V)) {
-    print("- using custom V matrix")
     V <- dot_args$V;
   }
   else {

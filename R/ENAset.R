@@ -200,8 +200,6 @@ ENAset = R6::R6Class("ENAset",
         }
         else if (!is.null(self$function.params$rotation.set)) {
           if(is(self$function.params$rotation.set, "ENARotationSet")) {
-            print("Using custom rotation.set.")
-
             self$rotation.set = self$function.params$rotation.set;
           } else {
             stop("Supplied rotation.set is not an instance of ENARotationSet")
