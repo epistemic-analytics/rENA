@@ -136,7 +136,10 @@ columns in the data.
 // dims = [nRoleValues, 2]  →  Teacher uses window=4, Student uses window=2.
 const model = ena.fit(rows, {
   codes, units, conversations,
-  ordered: true,   // directed (n² connections); also works without a tensor
+  ordered: true,   // directed (n² connections); also works without a tensor.
+                   // Ordered models follow ona::model(): zero-network units are
+                   // left out of the centring mean but shifted by it, nodes use
+                   // directed positions, and points/nodes are centred on the origin.
   tensor: {
     dims:         [2, 2],   // [nRoleValues=2, weight/window=2]
     dimsSender:   [0],      // axis 0 is a sender factor

@@ -250,7 +250,7 @@ function applyCodeMask(networks, codeMask, nCodes, nUnits, nConnections, ordered
 
 function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
                      metaData, rotMethod, groupA, groupB, dims, gParams,
-                     rowConnectionCounts = null, directedNodes = false) {
+                     rowConnectionCounts = null, ordered = false) {
     const connectionNames = qe.connection_names(codes);
 
     // Sphere norm → lineWeights (= R's set$line.weights)
@@ -258,8 +258,10 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
 
     // Center → pointsForProjection (= R's model$points.for.projection)
     //          centerVec             (= R's rotation$center.vec)
+    // Ordered (ONA) models follow ona::model(): zero-network units are left
+    // out of the mean but still shifted by it.
     const { centered: pointsForProjection, centerVec } =
-        center(qe, lineWeights, nUnits, nConnections);
+        center(qe, lineWeights, nUnits, nConnections, ordered);
 
     // Rotate
     let rot;
@@ -298,11 +300,24 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
     // Matches rENA's lws.positions.sq, which regresses the projected points onto
     // the SPHERE-normed line weights (enaset$line.weights) — not the centered
     // networks.  Verified node-for-node against R rENA on rs.data.new.csv.
-    // `directedNodes` (ordered networks, used by pria()) solves with libqe's
-    // directed_node_positions, as rENA's optimize() does for ordered sets.
+    // Ordered (ONA) models use libqe's directed_node_positions, as
+    // ona::model() does (via rENA's optimize()).
     const { nodes, centroids } = nodePositions(
-        qe, lineWeights, nUnits, nConnections, points, dims, directedNodes
+        qe, lineWeights, nUnits, nConnections, points, dims, ordered
     );
+
+    // ONA: translate points and nodes so the points' mean is at the origin
+    // (ona::model's center_to_origin; centroids are left as computed, as in R).
+    if (ordered) {
+        const nCodes = nodes.length / dims;
+        for (let d = 0; d < dims; d++) {
+            let mean = 0;
+            for (let u = 0; u < nUnits; u++) mean += points[u * dims + d];
+            mean /= nUnits;
+            for (let u = 0; u < nUnits; u++) points[u * dims + d] -= mean;
+            for (let c = 0; c < nCodes; c++) nodes[c * dims + d] -= mean;
+        }
+    }
 
     // Variance explained (= R's model$variance)
     const variance = computeVariance(points, nUnits, dims);
@@ -416,7 +431,7 @@ export default async function loadENA() {
 
             return runPipeline(qe, rawNetworks, nUnits, nConnections, codes,
                                unitLabels, metaData, rotMethod, groupA, groupB,
-                               dims, gParams, rowConnectionCounts);
+                               dims, gParams, rowConnectionCounts, ordered);
         },
 
         /**
@@ -525,7 +540,8 @@ export default async function loadENA() {
                 );
                 const model = runPipeline(
                     qe, raw, nUnits, nConnections, codes,
-                    unitLabels, metaData, 'svd', undefined, undefined, dims
+                    unitLabels, metaData, 'svd', undefined, undefined, dims,
+                    undefined, null, ordered
                 );
                 allPoints.push(model.points);
             }
@@ -745,8 +761,6 @@ export default async function loadENA() {
                             networks[u * nConn + c] = raw[u * nConnections + cols[c]];
                     keptCodes = codes.filter((_, i) => keep(i));
                 }
-                // Ordered models are scored with directed node positions (R's
-                // ordered pipeline), independent of how fit() places nodes.
                 return runPipeline(qe, networks, nUnits, nConn, keptCodes,
                                    unitLabels, metaData, rotation, groupA, groupB,
                                    nConn, gParams, null, ordered);

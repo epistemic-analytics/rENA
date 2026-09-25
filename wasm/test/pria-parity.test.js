@@ -145,7 +145,9 @@ describe('pria scores the model fit() would build', () => {
 // |> rotate() |> project() |> optimize() (directed node positions for ordered
 // sets), with PRIA::pria(set, remove.num = 3, threshold, rebuild = <same
 // pipeline>) and the accumulation's adjacency key kept on the set, as
-// rENA-api's ena.generate did. The TMA tensor: sender factor GameHalf,
+// rENA-api's ena.generate did. On RS.data (no zero-network units) this equals
+// ona::model(), the ONA standard; ona-model.test.js pins ona::model directly,
+// including a zero-network case. The TMA tensor: sender factor GameHalf,
 // "First" weight 0.5 / window 2, "Second" weight 1 / window 4. (In R,
 // GameHalf is pre-encoded as First = 1, Second = 2: tma < 0.3.5 re-encoded
 // character-valued tensor columns within each unit's context.)

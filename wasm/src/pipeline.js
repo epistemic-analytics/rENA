@@ -133,11 +133,15 @@ export function sphereNorm(qe, networks, nUnits, nConnections) {
  * Subtract column means (center the network space).
  * Excludes all-zero rows from the mean calculation (zero-network exclusion).
  *
+ * @param {boolean} [shiftZeroRows=false]  Also subtract the mean from all-zero
+ *   rows, as rENA's center(exclude_zero_networks = TRUE) does -- the ONA
+ *   convention (ona::model). By default zero-network rows stay at zero, as in
+ *   rENA's ena.make.set().
  * @returns {{ centered: Float64Array, centerVec: Float64Array }}
- *   centered  — mean-subtracted networks (zero-network rows left at zero)
+ *   centered  — mean-subtracted networks
  *   centerVec — the column means used for centering (= R's rotation$center.vec)
  */
-export function center(qe, networks, nUnits, nConnections) {
+export function center(qe, networks, nUnits, nConnections, shiftZeroRows = false) {
     // Identify non-zero rows
     const active = [];
     for (let u = 0; u < nUnits; u++) {
@@ -160,7 +164,7 @@ export function center(qe, networks, nUnits, nConnections) {
     const activeSet = new Set(active);
     const centered  = new Float64Array(networks.length);
     for (let u = 0; u < nUnits; u++) {
-        if (!activeSet.has(u)) continue;          // leave zero-network row as zero
+        if (!shiftZeroRows && !activeSet.has(u)) continue;   // leave zero-network row as zero
         for (let c = 0; c < nConnections; c++) {
             centered[u * nConnections + c] = networks[u * nConnections + c] - means[c];
         }
