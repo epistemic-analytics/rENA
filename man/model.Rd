@@ -35,7 +35,12 @@ model(
 
 \item{rotate_fun}{The specific rotation function to be used by `rotate_with`. Defaults to `ena.rotate.by.generalized`.}
 
-\item{rotate_params}{A list of additional parameters to pass to the `rotate_fun`.}
+\item{rotate_params}{A list of parameters passed to `rotate_fun` as its
+`params` argument -- for example the two group-membership vectors for
+`ena.rotate.by.mean`, or `list(x_var = "Condition")` for
+`ena.rotate.by.generalized`. The nested form `list(params = <params>)` is
+also accepted. When empty (the default), `rotate()` picks its default
+parameters.}
 
 \item{exclude_zero_networks}{A logical value passed to `center_with`. When `TRUE`,
 units with all-zero line weights are excluded from the mean computation during

@@ -116,7 +116,12 @@ accumulate <- function(
 #' @param project_with A function to project the points into the rotated space. Defaults to `project`.
 #' @param optimize_with A function to optimize node positions. Defaults to `optimize`. Can be set to `NULL` or `FALSE` to skip.
 #' @param rotate_fun The specific rotation function to be used by `rotate_with`. Defaults to `ena.rotate.by.generalized`.
-#' @param rotate_params A list of additional parameters to pass to the `rotate_fun`.
+#' @param rotate_params A list of parameters passed to `rotate_fun` as its
+#'   `params` argument -- for example the two group-membership vectors for
+#'   `ena.rotate.by.mean`, or `list(x_var = "Condition")` for
+#'   `ena.rotate.by.generalized`. The nested form `list(params = <params>)` is
+#'   also accepted. When empty (the default), `rotate()` picks its default
+#'   parameters.
 #' @param exclude_zero_networks A logical value passed to `center_with`. When `TRUE`,
 #'   units with all-zero line weights are excluded from the mean computation during
 #'   centering (but all units are still shifted by that mean). Defaults to `TRUE`
@@ -157,11 +162,16 @@ model <- function(
     x <- normalize(data)
     x <- center_with(x, exclude_zero_networks = exclude_zero_networks)
 
-    if (length(rotate_params) > 1) {
-      x <- do.call(rotate_with, list(x, wh = rotate_fun, by = unlist(rotate_params)))
+    # rotate() hands `params` to the rotation function. rotate_params used to
+    # be passed as `by` -- flattened with unlist() when it had more than one
+    # element -- which rotate() either ignored (one element) or failed on
+    # (several), e.g. the two groups of a means rotation.
+    if (length(rotate_params) == 0) {
+      x <- rotate_with(x, wh = rotate_fun, by = rotate_params)
     }
     else {
-      x <- rotate_with(x, wh = rotate_fun, by = rotate_params)
+      params <- if (identical(names(rotate_params), "params")) rotate_params$params else rotate_params
+      x <- rotate_with(x, wh = rotate_fun, params = params)
     }
 
     x <- project_with(x)
