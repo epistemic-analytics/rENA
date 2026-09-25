@@ -1,3 +1,22 @@
+## rENA 0.4.8
+
+#### Bug Fixes & Improvements
+
+  * `model()` now passes `rotate_params` to the rotation function as its
+    `params` argument. It previously flattened lists with more than one
+    element, so the two group vectors of a means rotation failed with
+    "$ operator is invalid for atomic vectors", and a single parameter such as
+    `list(x_var = "GameHalf")` was silently ignored. This also fixes
+    `ona::model(rotate.using = "mean", rotation.params = list(g1, g2))`. The
+    nested form `list(params = ...)` still works.
+  * rena-wasm 0.1.7 (`@qe-libs/rena-wasm`): ordered (ONA) models now match
+    `ona::model()`, the ONA standard. Node positions use directed
+    least-squares positions, units with no connections are left out of the
+    centring mean but shifted by it, and points and nodes are centred on the
+    origin. This changes the node positions (and, when a dataset has units
+    with no connections, the points) of ONA models built with rena-wasm, such
+    as in the webtool. Unordered (ENA) models are unchanged.
+
 ## rENA 0.4.7
 
 #### Bug Fixes & Improvements
