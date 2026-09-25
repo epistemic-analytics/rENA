@@ -120,54 +120,6 @@ export function inferFactorLevels(rows, factors) {
 }
 
 /**
- * Weighted aggregation of a unit's per-response-row directed connection counts.
- *
- * Mirrors the kernel's aggregate_row_connections but applies a weight-model
- * transform (R's weight.by) per LINE before the per-unit sum, so weight models
- * behave identically on the tensor path and the windowed path. Non-binary by
- * construction (the weight replaces the binarize step).
- *
- *   unordered: fold each directed row (m + mᵀ, upper triangle, column-major —
- *              the same order as choose_two/connection_names), weight each
- *              folded cell, then sum across rows.
- *   ordered:   weight each directed cell, then sum across rows.
- *
- * @param {Float64Array|number[]} data  Row-major (nRccRows × nCodes²) counts.
- * @param {number}   nRccRows           Number of response rows for this unit.
- * @param {number}   nCodes
- * @param {boolean}  ordered
- * @param {(x:number)=>number} weightFn
- * @returns {Float64Array}  length nCodes² (ordered) or choose_two(nCodes).
- */
-function aggregateRowConnectionsWeighted(data, nRccRows, nCodes, ordered, weightFn) {
-    const nSq = nCodes * nCodes;
-    if (ordered) {
-        const out = new Float64Array(nSq);
-        for (let r = 0; r < nRccRows; r++) {
-            const base = r * nSq;
-            for (let c = 0; c < nSq; c++) out[c] += weightFn(data[base + c]);
-        }
-        return out;
-    }
-    const nTri = (nCodes * (nCodes - 1)) / 2;
-    const out = new Float64Array(nTri);
-    for (let r = 0; r < nRccRows; r++) {
-        const base = r * nSq;
-        let k = 0;
-        for (let col = 1; col < nCodes; col++) {
-            for (let row = 0; row < col; row++) {
-                // fold: m(row,col) + m(col,row), column-major reshape of the row
-                const folded = data[base + col * nCodes + row] +
-                               data[base + row * nCodes + col];
-                out[k] += weightFn(folded);
-                k++;
-            }
-        }
-    }
-    return out;
-}
-
-/**
  * Accumulate tensor networks for all units across all conversations.
  *
  * Every accumulation — including plain windowed ENA, via defaultTensor(window)
@@ -184,8 +136,11 @@ function aggregateRowConnectionsWeighted(data, nRccRows, nCodes, ordered, weight
  * @param {Map}         convoGroups    convoIdx → [rowIdx, ...]
  * @param {object}      tensorDef      Tensor definition (see module docstring)
  * @param {boolean}     ordered        true → directed (n²); false → undirected
- * @param {boolean}     [binary=true]  binarize each folded row (unordered only)
- * @param {((x:number)=>number)|null} [weightFn=null]  per-line weight transform
+ * @param {boolean}     [binary=true]  binarize each folded row (unordered only);
+ *                                     used when no weight model is given
+ * @param {string|null} [weight=null]  libqe weight model applied per line before
+ *                                     the unit sum: 'binary' | 'product' |
+ *                                     'sqrt' | 'log1p'
  *
  * @returns {{ networks: Float64Array, rowConnectionCounts: Float64Array }}
  *   networks            nUnits × nConnections, row-major
@@ -195,7 +150,7 @@ function aggregateRowConnectionsWeighted(data, nRccRows, nCodes, ordered, weight
  */
 export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
                                   unitOf, convoGroups, tensorDef, ordered = false,
-                                  binary = true, weightFn = null) {
+                                  binary = true, weight = null) {
     const {
         dims,
         dimsSender   = [],
@@ -215,6 +170,9 @@ export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
 
     const networks            = new Float64Array(nUnits * nConnections);
     const rowConnectionCounts = new Float64Array(nRows * nConnections);
+
+    // libqe weight argument: a weight-model name, or the legacy binary flag.
+    const kernelWeight = weight ?? binary;
 
     const dimsArr    = new Int32Array(dims);
     const senderArr  = new Int32Array(dimsSender);
@@ -267,24 +225,23 @@ export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
                 true
             );
 
-            // Finalise each raw per-response-row connection vector exactly as
-            // tma does in R: fold to the upper triangle and binarize per row
-            // (unordered), or keep the directed row (ordered). A weight model
-            // (R's weight.by) replaces the binarize step with its transform,
-            // applied per line before the per-unit sum. Unweighted rows go
-            // through the libqe kernel so fold/binarize semantics are shared
-            // across every binding. Row i of rcc is local row localRows[i].
+            // Finalise each raw per-response-row connection vector with libqe's
+            // shared kernel, exactly as tma does in R: fold to the upper
+            // triangle (unordered) or keep the directed row (ordered), then
+            // apply the weight model per line (binary clamp, product, sqrt,
+            // log1p) before the per-unit sum. Row i is local row localRows[i].
             const rcc = result.row_connection_counts;
-            for (let i = 0; i < rcc.rows; i++) {
-                const one = rcc.data.slice(i * rcc.cols, (i + 1) * rcc.cols);
-                const rowVec = weightFn
-                    ? aggregateRowConnectionsWeighted(one, 1, nCodes, ordered, weightFn)
-                    : qe.aggregate_row_connections(one, 1, rcc.cols, nCodes, ordered, binary);
-                const rowOff  = rowIndices[localRows[i]] * nConnections;
-                const unitOff = unit * nConnections;
+            const fin = qe.finalize_row_connections(
+                rcc.data, rcc.rows, rcc.cols, nCodes, ordered, kernelWeight
+            );
+            const unitOff = unit * nConnections;
+            for (let i = 0; i < fin.rows; i++) {
+                const rowOff = rowIndices[localRows[i]] * nConnections;
+                const finOff = i * fin.cols;
                 for (let c = 0; c < nConnections; c++) {
-                    rowConnectionCounts[rowOff + c] = rowVec[c];
-                    networks[unitOff + c] += rowVec[c];
+                    const v = fin.data[finOff + c];
+                    rowConnectionCounts[rowOff + c] = v;
+                    networks[unitOff + c] += v;
                 }
             }
         }

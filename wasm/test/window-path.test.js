@@ -178,3 +178,36 @@ test('ordered: true without a tensor builds directed (n²) networks', () => {
     expect(m.nConnections).toBe(RS_CODES.length ** 2);
     expect(maxAbsDiff(m.connectionCounts, t.connectionCounts)).toBe(0);
 });
+
+// ── weight models through libqe's finalize_row_connections ───────────────────
+
+test('accumulate() applies weightModel exactly as fit() does', () => {
+    for (const weightModel of ['product', 'sqrt', 'log']) {
+        const opts = { ...RS_BASE, window: 4, weightModel };
+        const acc  = ena.accumulate(rsRows, opts);
+        const m    = ena.fit(rsRows, opts);
+        expect(maxAbsDiff(acc.connectionCounts, m.connectionCounts)).toBe(0);
+        expect(maxAbsDiff(acc.rowConnectionCounts, m.rowConnectionCounts)).toBe(0);
+    }
+    const unweighted = ena.accumulate(rsRows, { ...RS_BASE, window: 4 });
+    const weighted   = ena.accumulate(rsRows, { ...RS_BASE, window: 4, weightModel: 'sqrt' });
+    expect(maxAbsDiff(unweighted.connectionCounts, weighted.connectionCounts)).toBeGreaterThan(0);
+});
+
+test('ordered: binary keeps raw directed counts; sqrt / log weight each directed cell', () => {
+    const base = { ...RS_BASE, window: 4, ordered: true };
+    const raw  = ena.fit(rsRows, { ...base, weightModel: 'product' });
+    const bin  = ena.fit(rsRows, base);
+    expect(maxAbsDiff(bin.connectionCounts, raw.connectionCounts)).toBe(0);
+
+    const { unitOf } = parseData(rsRows, RS_CODES, RS_BASE.units, RS_BASE.conversations);
+    const nConn = raw.nConnections;
+    for (const [weightModel, f] of [['sqrt', Math.sqrt], ['log', Math.log1p]]) {
+        const expected = new Float64Array(raw.nUnits * nConn);
+        for (let r = 0; r < rsRows.length; r++)
+            for (let c = 0; c < nConn; c++)
+                expected[unitOf[r] * nConn + c] += f(raw.rowConnectionCounts[r * nConn + c]);
+        const got = ena.fit(rsRows, { ...base, weightModel });
+        expect(maxAbsDiff(got.connectionCounts, expected)).toBeLessThan(1e-10);
+    }
+});

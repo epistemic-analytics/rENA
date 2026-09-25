@@ -34,8 +34,8 @@ const model = ena.fit(rows, {
 
 model.model.centroids  // Float64Array  nUnits × dims
 model.lineWeights      // Float64Array  nUnits × nConnections (normed)
-model.connectionCounts // Float64Array  nUnits × nConnections (raw unit counts)
-model.rowConnectionCounts // Float64Array nRows × nConnections (raw row counts)
+model.connectionCounts // Float64Array  nUnits × nConnections (unit counts, before normalisation)
+model.rowConnectionCounts // Float64Array nRows × nConnections (each row's counts after binarize / weight; rows sum to connectionCounts)
 model.rotation.nodes   // Float64Array  nCodes × dims
 model.connectionNames  // ['Data & Technical.Constraints', ...]
 model.model.unitLabels // ['UserName1_ConditionA', ...]
@@ -67,6 +67,30 @@ const model = ena.fit(rows, {
 
 ---
 
+## Weight Models
+
+`weightModel` (= R's `weight.by` / tma's `weight_by`) is applied to each line's
+co-occurrence counts **before** they are summed into the unit network, by
+libqe's shared `finalize_row_connections` kernel — the same stage and results
+as rENA's `ena.accumulate.data()` and `tma::accumulate()`.
+
+| `weightModel` | Per line |
+|---|---|
+| — (default) | binary: each positive count becomes 1 (`binary: false` keeps raw counts) |
+| `'product'` | the raw, non-binarized counts |
+| `'sqrt'` | square root of each line's count |
+| `'log'` (alias `'log1p'`) | `log(1 + x)` of each line's count |
+
+For ordered (directed) networks the weight is applied to each directed cell,
+and the default keeps the raw directed counts. `weightModel` works in `fit()`,
+`accumulate()` and `tuneWindowSize()`.
+
+```js
+const model = ena.fit(rows, { codes, units, conversations, window: 4, weightModel: 'sqrt' });
+```
+
+---
+
 ## Accumulation Only
 
 Returns raw (un-normalised) network vectors without running the full pipeline.
@@ -92,7 +116,7 @@ columns in the data.
 // dims = [nRoleValues, 2]  →  Teacher uses window=4, Student uses window=2.
 const model = ena.fit(rows, {
   codes, units, conversations,
-  ordered: true,   // directed (n² connections) when using tensors
+  ordered: true,   // directed (n² connections); also works without a tensor
   tensor: {
     dims:         [2, 2],   // [nRoleValues=2, weight/window=2]
     dimsSender:   [0],      // axis 0 is a sender factor

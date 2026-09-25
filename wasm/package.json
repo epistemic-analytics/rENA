@@ -1,6 +1,6 @@
 {
   "name": "@qe-libs/rena-wasm",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "JavaScript/WebAssembly ENA pipeline — thin orchestration layer over @qe-libs/libqe-wasm",
   "main": "src/index.js",
   "type": "module",
@@ -31,7 +31,7 @@
     "resolver": "<rootDir>/jest-resolver.cjs"
   },
   "dependencies": {
-    "@qe-libs/libqe-wasm": "^0.1.4"
+    "@qe-libs/libqe-wasm": "^0.1.5"
   },
   "devDependencies": {
     "jest": "^29.0.0"

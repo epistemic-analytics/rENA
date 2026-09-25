@@ -190,21 +190,22 @@ class ENAModel {
 // ── weight models (= R's `weight.by`) ────────────────────────────────────────
 
 /**
- * Map a weight-model name to its element-wise transform, matching the webtool's
- * server.js mapping to R weight.by functions:
- *   'sqrt'    → Math.sqrt          (R "sqrt")
- *   'log'     → Math.log1p         (R "log1p", i.e. log(x+1); guards log(0))
- *   'product' → identity           (raw non-binary counts; R's "product" string
- *                                    is not a function, so no transform)
- * A falsy value or 'binary' returns null (binary accumulation, no transform).
+ * Map a rena-wasm weight-model name to the libqe weight model applied per line
+ * (before the per-unit sum) by libqe's finalize_row_connections:
+ *   'sqrt'          → 'sqrt'     (R weight.by = sqrt)
+ *   'log' | 'log1p' → 'log1p'    (log(x+1); guards log(0))
+ *   'product'       → 'product'  (the raw, non-binarized line counts)
+ * A falsy value, 'binary' or an unknown name returns null (binary / `binary`
+ * flag accumulation, no weight model).
  * @param {string|false|undefined} name
- * @returns {((x:number)=>number)|null}
+ * @returns {'sqrt'|'log1p'|'product'|null}
  */
-function weightModelTransform(name) {
+function weightModelName(name) {
     switch (name) {
-        case 'sqrt':    return Math.sqrt;
-        case 'log':     return Math.log1p;
-        case 'product': return (x) => x;
+        case 'sqrt':    return 'sqrt';
+        case 'log':
+        case 'log1p':   return 'log1p';
+        case 'product': return 'product';
         default:        return null;   // binary / off / unknown
     }
 }
@@ -318,7 +319,7 @@ export default async function loadENA() {
          * @param {boolean}  [opts.binary=true]    - Binarise each line's co-occurrences (unordered; ignored when weightModel is set)
          * @param {boolean}  [opts.ordered=false]  - Directed networks
          * @param {object}   [opts.tensor]         - Context tensor definition (overrides window)
-         * @param {string}   [opts.weightModel]    - 'product' | 'sqrt' | 'log' (per-line, before the unit sum)
+         * @param {string}   [opts.weightModel]    - 'product' | 'sqrt' | 'log' (alias 'log1p'); per line, before the unit sum
          * @param {string}   [opts.rotation='svd'] - 'svd', 'mean', or 'generalized'
          * @param {number[]} [opts.groupA]         - Unit indices for means rotation group A
          * @param {number[]} [opts.groupB]         - Unit indices for means rotation group B
@@ -353,12 +354,9 @@ export default async function loadENA() {
             // "product" co-occurrence counts) BEFORE summing per unit, mirroring
             // accumulate.data.R (lapply(.SD, weight.by) over the per-line
             // co-occurrence table, then per-unit aggregation). Because
-            // sqrt(Σ) ≠ Σsqrt, the transform is applied to each row's counts
-            // inside accumulateTensor, not to the unit-summed network.
-            // `product` is the non-binarized row counts themselves (identity);
-            // any weight model therefore forces non-binary accumulation.
-            const weightFn = weightModelTransform(weightModel);
-            const effBinary = weightFn ? false : binary;
+            // sqrt(Σ) ≠ Σsqrt, libqe applies it to each row's counts inside
+            // accumulateTensor, not to the unit-summed network.
+            const weight = weightModelName(weightModel);
 
             const { codeMatrix, nRows, nCodes, nUnits, unitLabels,
                     unitOf, convoGroups, metaData } =
@@ -369,7 +367,7 @@ export default async function loadENA() {
             const { networks: rawNetworks, rowConnectionCounts } = accumulateTensor(
                 qe, rows, codeMatrix, nRows, nCodes, nUnits,
                 unitOf, convoGroups, tensorDef ?? defaultTensor(windowSize),
-                ordered, effBinary, weightFn
+                ordered, binary, weight
             );
             const nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
 
@@ -412,7 +410,7 @@ export default async function loadENA() {
          * Returns raw (un-normalised) network vectors.
          *
          * @param {Object[]} rows
-         * @param {object}   opts  - codes, units, conversations, window, binary, ordered, tensor
+         * @param {object}   opts  - codes, units, conversations, window, binary, ordered, tensor, weightModel
          * @returns {{
          *   connectionCounts: Float64Array,
          *   rowConnectionCounts: Float64Array | null,
@@ -432,6 +430,7 @@ export default async function loadENA() {
                 ordered              = false,
                 tensor:  tensorDef,
                 codeMask,
+                weightModel,
             } = opts;
 
             const { codeMatrix, nRows, nCodes, nUnits, unitLabels,
@@ -441,7 +440,7 @@ export default async function loadENA() {
             const { networks, rowConnectionCounts } = accumulateTensor(
                 qe, rows, codeMatrix, nRows, nCodes, nUnits,
                 unitOf, convoGroups, tensorDef ?? defaultTensor(windowSize),
-                ordered, binary
+                ordered, binary, weightModelName(weightModel)
             );
             const nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
 
@@ -481,7 +480,8 @@ export default async function loadENA() {
                 // Retained so tuneWindowSize() can rebuild at other window sizes
                 // (= R's ENAAccumulation$`_function.call`).
                 _call: { rows, codes, units, conversations,
-                         window: windowSize, binary, ordered, tensor: tensorDef },
+                         window: windowSize, binary, ordered, tensor: tensorDef,
+                         weightModel },
             };
         },
 
@@ -519,7 +519,7 @@ export default async function loadENA() {
                 'maxSize must be greater than minSize to compare windows.'
             );
 
-            const { rows, codes, units, conversations, binary, ordered } = call;
+            const { rows, codes, units, conversations, binary, ordered, weightModel } = call;
 
             // Parse once; only the window size changes between iterations.
             const { codeMatrix, nRows, nCodes, nUnits, unitLabels,
@@ -533,7 +533,8 @@ export default async function loadENA() {
             for (const w of windowRange) {
                 const { networks: raw } = accumulateTensor(
                     qe, rows, codeMatrix, nRows, nCodes, nUnits,
-                    unitOf, convoGroups, defaultTensor(w), ordered, binary
+                    unitOf, convoGroups, defaultTensor(w), ordered, binary,
+                    weightModelName(weightModel)
                 );
                 const model = runPipeline(
                     qe, raw, nUnits, nConnections, codes,
@@ -560,6 +561,7 @@ export default async function loadENA() {
             // 4. Rebuild the accumulation at the selected window size.
             return api.accumulate(rows, {
                 codes, units, conversations, window: bestWindow, binary, ordered,
+                weightModel,
             });
         },
 
