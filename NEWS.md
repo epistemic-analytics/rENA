@@ -16,6 +16,11 @@
     origin. This changes the node positions (and, when a dataset has units
     with no connections, the points) of ONA models built with rena-wasm, such
     as in the webtool. Unordered (ENA) models are unchanged.
+  * rena-wasm 0.1.7: ordered models' `connectionNames` and
+    `rotation.adjacencyKey` now list all n² directed connections in network
+    column order, named as R names them (column `j*n + i` is
+    `"codes[i] & codes[j]"`, ground `codes[i]` → response `codes[j]`).
+    Previously they held the n(n-1)/2 unordered pairs.
 
 ## rENA 0.4.7
 

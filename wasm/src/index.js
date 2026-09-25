@@ -90,17 +90,43 @@ function computeVariance(points, nUnits, dims) {
 
 /**
  * Build the adjacency key — list of [codeA, codeB] pairs for each connection.
- * Matches R's enadata$adjacency.matrix (column-major upper triangle order).
+ * Matches R's rotation$adjacency.key.
+ *
+ * Unordered: the upper triangle in column-major order (choose_two(n) pairs).
+ * Ordered: all n² directed connections in column-major order — column
+ * j*n + i is [codes[i], codes[j]], ground codes[i] → response codes[j]
+ * (as R names it "codes[i] & codes[j]").
  *
  * @param {string[]} codes
+ * @param {boolean}  [ordered=false]
  * @returns {string[][]}  length nConnections, each entry is [codeI, codeJ]
  */
-function buildAdjacencyKey(codes) {
+function buildAdjacencyKey(codes, ordered = false) {
     const key = [];
+    if (ordered) {
+        for (let j = 0; j < codes.length; j++)
+            for (let i = 0; i < codes.length; i++)
+                key.push([codes[i], codes[j]]);
+        return key;
+    }
     for (let j = 1; j < codes.length; j++)
         for (let i = 0; i < j; i++)
             key.push([codes[i], codes[j]]);
     return key;
+}
+
+/**
+ * Connection names, "codeA & codeB" per connection, in network column order
+ * (= R's colnames(set$connection.counts)).
+ *
+ * @param {object}   qe
+ * @param {string[]} codes
+ * @param {boolean}  [ordered=false]
+ * @returns {string[]}
+ */
+function connectionNamesFor(qe, codes, ordered = false) {
+    if (!ordered) return qe.connection_names(codes);
+    return buildAdjacencyKey(codes, true).map(([a, b]) => `${a} & ${b}`);
 }
 
 // ── ENA result object ─────────────────────────────────────────────────────────
@@ -251,7 +277,7 @@ function applyCodeMask(networks, codeMask, nCodes, nUnits, nConnections, ordered
 function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
                      metaData, rotMethod, groupA, groupB, dims, gParams,
                      rowConnectionCounts = null, ordered = false) {
-    const connectionNames = qe.connection_names(codes);
+    const connectionNames = connectionNamesFor(qe, codes, ordered);
 
     // Sphere norm → lineWeights (= R's set$line.weights)
     const lineWeights = sphereNorm(qe, rawNetworks, nUnits, nConnections);
@@ -323,7 +349,7 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
     const variance = computeVariance(points, nUnits, dims);
 
     // Adjacency key (= R's rotation$adjacency.key)
-    const adjacencyKey = buildAdjacencyKey(codes);
+    const adjacencyKey = buildAdjacencyKey(codes, ordered);
 
     return new ENAModel({
         // top-level
@@ -475,7 +501,7 @@ export default async function loadENA() {
 
             applyCodeMask(networks, codeMask, codes.length, nUnits, nConnections, ordered);
 
-            const connectionNames = qe.connection_names(codes);
+            const connectionNames = connectionNamesFor(qe, codes, ordered);
             return {
                 connectionCounts: networks, rowConnectionCounts, unitLabels, connectionNames,
                 metaData, nUnits, nConnections,
