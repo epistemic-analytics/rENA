@@ -11,7 +11,8 @@ accumulate(
   horizon = rENA::horizon(x),
   ...,
   ordered = FALSE,
-  binary = TRUE
+  binary = TRUE,
+  weight_by = NULL
 )
 }
 \arguments{
@@ -27,7 +28,9 @@ accumulate(
 
 \item{ordered}{A logical value. If TRUE, creates ordered networks (A -> B is different from B -> A). Defaults to FALSE.}
 
-\item{binary}{A logical value. If TRUE, connection counts are binarized (0 or 1). Defaults to TRUE.}
+\item{binary}{A logical value. If TRUE, each line's connection counts are binarized (0 or 1) before they are summed per unit (unordered networks; ordered counts are always summed raw). Defaults to TRUE. Ignored when `weight_by` is given.}
+
+\item{weight_by}{Weight model applied to each line's connection counts before they are summed into the unit network (the same stage as `weight.by` in `ena.accumulate.data()`): `"binary"`, `"product"` (the raw, non-binarized counts), `"sqrt"`, or `"log1p"` (alias `"log"`). For unordered networks the weight is applied after each line is folded to the upper triangle; for ordered networks, to each directed cell, and `"binary"` keeps the raw directed counts. Defaults to `"binary"` when `binary = TRUE`, otherwise `"product"`. Passed to [tma::accumulate()].}
 }
 \value{
 An ena.set object containing the accumulated connection counts and metadata.
@@ -45,5 +48,9 @@ units <- c("Condition", "UserName")
 horizon <- c("Condition", "GroupName")
 enaset <- RS.data |>
   accumulate(units, codes, horizon)
+
+# square-root weighting of each line's co-occurrence counts
+enaset_sqrt <- RS.data |>
+  accumulate(units, codes, horizon, weight_by = "sqrt")
 
 }

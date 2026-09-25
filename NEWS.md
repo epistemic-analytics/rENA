@@ -1,3 +1,29 @@
+## rENA 0.4.5
+
+#### New Features
+
+  * `accumulate()` gains `weight_by`, the weight model applied to each line's
+    connection counts before they are summed per unit (the same stage as
+    `weight.by` in `ena.accumulate.data()`): `"binary"`, `"product"` (raw,
+    non-binarized counts), `"sqrt"` or `"log1p"` (alias `"log"`). For ordered
+    networks the weight is applied to each directed cell, and `"binary"` keeps
+    the raw directed counts. It defaults from `binary`, so existing calls are
+    unchanged; on RS.data the results match `ena.accumulate.data(weight.by = ...)`
+    exactly for all four weight models.
+
+#### Bug Fixes & Improvements
+
+  * `ena.ccd()` delegates its cross-covariance decay core to libqe's shared
+    `ccd_window` kernel.
+  * Removed leftover debug output: `"Using custom rotation.set."` when a
+    custom rotation set is supplied, and `"- using custom V matrix"` in
+    `with.ena.matrix()`.
+  * Removed unused internal code (empty stub functions, an entirely
+    commented-out `ena.generate()`, unused `gmr()` backups, and stale Rcpp
+    headers).
+  * Updated the R package dependencies to require tma 0.3.4 or newer (for
+    `weight_by`) and libqe 0.1.3 or newer.
+
 ## rENA 0.4.4
 
 #### Bug Fixes & Improvements
