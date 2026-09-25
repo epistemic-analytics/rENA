@@ -301,14 +301,17 @@ export function project(centered, nUnits, nConnections, rotation, rotRows, rotCo
 /**
  * Compute code node positions via least-squares (LWS).
  *
+ * @param {boolean} [directed=false]  Use libqe's directed_node_positions (for
+ *   ordered n² networks), as rENA's optimize() does for ordered sets.
  * @returns {{ nodes: Float64Array, nodeRows: number, nodeCols: number,
  *             centroids: Float64Array|null }}
  *   nodes     — code positions in ENA space (= R's rotation$nodes)
  *   centroids — LWS unit centroid positions (= R's model$centroids), or null
  *               if libqe does not expose them
  */
-export function nodePositions(qe, networks, nUnits, nConnections, points, nDims) {
-    const r = qe.node_positions(networks, nUnits, nConnections, points, nUnits, nDims, nDims);
+export function nodePositions(qe, networks, nUnits, nConnections, points, nDims, directed = false) {
+    const solve = directed ? qe.directed_node_positions : qe.node_positions;
+    const r = solve(networks, nUnits, nConnections, points, nUnits, nDims, nDims);
     return {
         nodes:     new Float64Array(r.nodes.data),
         nodeRows:  r.nodes.rows,

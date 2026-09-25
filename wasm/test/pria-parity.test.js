@@ -139,3 +139,38 @@ describe('pria scores the model fit() would build', () => {
         expect(res.variance).not.toBeCloseTo(unmasked.variance, 6);
     });
 });
+
+// ── ONA (ordered) and transmodal (TMA) models ────────────────────────────────
+// R reference: rENA's piped pipeline accumulate() |> sphere_norm() |> center()
+// |> rotate() |> project() |> optimize() (directed node positions for ordered
+// sets), with PRIA::pria(set, remove.num = 3, threshold, rebuild = <same
+// pipeline>) and the accumulation's adjacency key kept on the set, as
+// rENA-api's ena.generate did. The TMA tensor: sender factor GameHalf,
+// "First" weight 0.5 / window 2, "Second" weight 1 / window 4. (In R,
+// GameHalf is pre-encoded as First = 1, Second = 2: tma's accumulate()
+// re-encodes text factor columns within each unit's context.)
+describe('pria matches R PRIA::pria for ONA and TMA models', () => {
+    const TMA_TENSOR = {
+        dims: [2, 2], dimsSender: [0], dimsReceiver: [], dimsMode: [],
+        factors: ['GameHalf'], factorLevels: { GameHalf: { First: 0, Second: 1 } },
+        data: Float64Array.from([0.5, 1, 2, 4]),
+    };
+    const ONA_REMOVED = ['Client and Consultant Requests', 'Collaboration'];
+    const R = [
+        // model, rotation, removed codes, reduced dim-1 variance (same at 0.95 and 0.90)
+        ['ona', 'svd',  ONA_REMOVED, 0.2904114172],
+        ['ona', 'mean', ONA_REMOVED, 0.1883372501],
+        ['tma', 'svd',  ['Data'],    0.3632817359],
+        ['tma', 'mean', ['Data'],    0.3435685191],
+    ];
+    for (const threshold of [0.95, 0.90]) {
+        for (const [model, rot, removed, variance] of R) {
+            test(`${model}, ${rot}, threshold ${threshold}`, () => {
+                const opts = model === 'ona' ? { ordered: true } : { tensor: TMA_TENSOR };
+                const res = ena.pria(rows, { ...BASE, threshold, ...opts, ...rotations[rot] });
+                expect(res.removed).toEqual(removed);
+                expect(res.variance).toBeCloseTo(variance, 9);
+            });
+        }
+    }
+});

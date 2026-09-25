@@ -250,7 +250,7 @@ function applyCodeMask(networks, codeMask, nCodes, nUnits, nConnections, ordered
 
 function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
                      metaData, rotMethod, groupA, groupB, dims, gParams,
-                     rowConnectionCounts = null) {
+                     rowConnectionCounts = null, directedNodes = false) {
     const connectionNames = qe.connection_names(codes);
 
     // Sphere norm → lineWeights (= R's set$line.weights)
@@ -298,8 +298,10 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
     // Matches rENA's lws.positions.sq, which regresses the projected points onto
     // the SPHERE-normed line weights (enaset$line.weights) — not the centered
     // networks.  Verified node-for-node against R rENA on rs.data.new.csv.
+    // `directedNodes` (ordered networks, used by pria()) solves with libqe's
+    // directed_node_positions, as rENA's optimize() does for ordered sets.
     const { nodes, centroids } = nodePositions(
-        qe, lineWeights, nUnits, nConnections, points, dims
+        qe, lineWeights, nUnits, nConnections, points, dims, directedNodes
     );
 
     // Variance explained (= R's model$variance)
@@ -743,9 +745,11 @@ export default async function loadENA() {
                             networks[u * nConn + c] = raw[u * nConnections + cols[c]];
                     keptCodes = codes.filter((_, i) => keep(i));
                 }
+                // Ordered models are scored with directed node positions (R's
+                // ordered pipeline), independent of how fit() places nodes.
                 return runPipeline(qe, networks, nUnits, nConn, keptCodes,
                                    unitLabels, metaData, rotation, groupA, groupB,
-                                   nConn, gParams);
+                                   nConn, gParams, null, ordered);
             };
 
             const D = 2;  // score on the first 2 dims (R's get_pria_scores_2Ds)

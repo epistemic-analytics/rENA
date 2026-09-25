@@ -16,6 +16,10 @@
       PRIA about 30 times faster (RS.data: 3.4 s to about 0.1 s).
     - `weightModel`, `tensor` and the caller's `codeMask` are now used, so
       PRIA scores the same model `fit()` builds.
+    - For ordered (ONA) models, PRIA scores candidates with directed node
+      positions, as R's ordered pipeline (`optimize()`) does. PRIA now matches
+      R for ONA and transmodal (TMA) models as well as ENA. Models built by
+      `fit()` are unchanged.
 
 ## rENA 0.4.6
 
