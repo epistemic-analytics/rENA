@@ -120,22 +120,6 @@ export function inferFactorLevels(rows, factors) {
 }
 
 /**
- * Accumulate tensor networks for all units across all conversations.
- *
- * @param {object}      qe             libqe WASM module
- * @param {Object[]}    rows           Full dataset
- * @param {Float64Array} codeMatrix   n_rows × n_codes, row-major
- * @param {number}      nRows
- * @param {number}      nCodes
- * @param {number}      nUnits
- * @param {Int32Array}  unitOf         unit index per row
- * @param {Map}         convoGroups    convoIdx → [rowIdx, ...]
- * @param {object}      tensorDef      Tensor definition (see module docstring)
- * @param {boolean}     ordered        true → directed (n²); false → undirected
- *
- * @returns {Float64Array}  nUnits × nConnections, row-major
- */
-/**
  * Weighted aggregation of a unit's per-response-row directed connection counts.
  *
  * Mirrors the kernel's aggregate_row_connections but applies a weight-model
@@ -183,6 +167,32 @@ function aggregateRowConnectionsWeighted(data, nRccRows, nCodes, ordered, weight
     return out;
 }
 
+/**
+ * Accumulate tensor networks for all units across all conversations.
+ *
+ * Every accumulation — including plain windowed ENA, via defaultTensor(window)
+ * — runs through here, so the per-line finalisation (fold / binarize / weight)
+ * lives in exactly one place.
+ *
+ * @param {object}      qe             libqe WASM module
+ * @param {Object[]}    rows           Full dataset
+ * @param {Float64Array} codeMatrix   n_rows × n_codes, row-major
+ * @param {number}      nRows
+ * @param {number}      nCodes
+ * @param {number}      nUnits
+ * @param {Int32Array}  unitOf         unit index per row
+ * @param {Map}         convoGroups    convoIdx → [rowIdx, ...]
+ * @param {object}      tensorDef      Tensor definition (see module docstring)
+ * @param {boolean}     ordered        true → directed (n²); false → undirected
+ * @param {boolean}     [binary=true]  binarize each folded row (unordered only)
+ * @param {((x:number)=>number)|null} [weightFn=null]  per-line weight transform
+ *
+ * @returns {{ networks: Float64Array, rowConnectionCounts: Float64Array }}
+ *   networks            nUnits × nConnections, row-major
+ *   rowConnectionCounts nRows × nConnections, row-major — each row's finalised
+ *                       (folded / binarized / weighted) connection vector;
+ *                       rows sum by unit to `networks`
+ */
 export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
                                   unitOf, convoGroups, tensorDef, ordered = false,
                                   binary = true, weightFn = null) {
@@ -203,7 +213,8 @@ export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
         ? nCodes * nCodes
         : qe.choose_two(nCodes);
 
-    const networks = new Float64Array(nUnits * nConnections);
+    const networks            = new Float64Array(nUnits * nConnections);
+    const rowConnectionCounts = new Float64Array(nRows * nConnections);
 
     const dimsArr    = new Int32Array(dims);
     const senderArr  = new Int32Array(dimsSender);
@@ -256,28 +267,30 @@ export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
                 true
             );
 
-            // Aggregate the raw per-response-row connections into this unit's
-            // network exactly as tma does in R: fold each row to the upper
-            // triangle and binarize per row (unordered), or plain-sum the
-            // directed rows (ordered).  This lives in the libqe kernel so the
-            // fold/binarize/sum semantics are shared across every binding.
+            // Finalise each raw per-response-row connection vector exactly as
+            // tma does in R: fold to the upper triangle and binarize per row
+            // (unordered), or keep the directed row (ordered). A weight model
+            // (R's weight.by) replaces the binarize step with its transform,
+            // applied per line before the per-unit sum. Unweighted rows go
+            // through the libqe kernel so fold/binarize semantics are shared
+            // across every binding. Row i of rcc is local row localRows[i].
             const rcc = result.row_connection_counts;
-            // A weight model (R's weight.by) applies its transform per line to
-            // the folded connection counts before summing — identical stage to
-            // the windowed path — so weight models behave the same on both
-            // paths. Otherwise defer the fold/binarize/sum to the shared kernel.
-            const unitVec = weightFn
-                ? aggregateRowConnectionsWeighted(rcc.data, rcc.rows, nCodes, ordered, weightFn)
-                : qe.aggregate_row_connections(
-                    rcc.data, rcc.rows, rcc.cols, nCodes, ordered, binary
-                );
-            for (let c = 0; c < nConnections; c++) {
-                networks[unit * nConnections + c] += unitVec[c];
+            for (let i = 0; i < rcc.rows; i++) {
+                const one = rcc.data.slice(i * rcc.cols, (i + 1) * rcc.cols);
+                const rowVec = weightFn
+                    ? aggregateRowConnectionsWeighted(one, 1, nCodes, ordered, weightFn)
+                    : qe.aggregate_row_connections(one, 1, rcc.cols, nCodes, ordered, binary);
+                const rowOff  = rowIndices[localRows[i]] * nConnections;
+                const unitOff = unit * nConnections;
+                for (let c = 0; c < nConnections; c++) {
+                    rowConnectionCounts[rowOff + c] = rowVec[c];
+                    networks[unitOff + c] += rowVec[c];
+                }
             }
         }
     }
 
-    return networks;
+    return { networks, rowConnectionCounts };
 }
 
 /**

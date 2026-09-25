@@ -43,7 +43,7 @@
 import loadLibQE from '@qe-libs/libqe-wasm';
 import { parseData } from './data.js';
 import {
-    accumulate, accumulateWithRows, sphereNorm, center,
+    sphereNorm, center,
     rotateSVD, rotateMeans, rotateGeneralized,
     project, nodePositions, spaceDistCorr,
 } from './pipeline.js';
@@ -314,10 +314,11 @@ export default async function loadENA() {
          * @param {string[]} opts.codes            - Code column names
          * @param {string[]} opts.units            - Unit identifier column(s)
          * @param {string[]} opts.conversations    - Conversation identifier column(s)
-         * @param {number}   [opts.window=4]       - Backward window (simple path; ignored when tensor provided)
-         * @param {boolean}  [opts.binary=true]    - Binarise co-occurrences (simple path only)
-         * @param {boolean}  [opts.ordered=false]  - Directed networks (tensor path only)
-         * @param {object}   [opts.tensor]         - Context tensor definition
+         * @param {number}   [opts.window=4]       - Backward window; builds defaultTensor(window) when no tensor is given
+         * @param {boolean}  [opts.binary=true]    - Binarise each line's co-occurrences (unordered; ignored when weightModel is set)
+         * @param {boolean}  [opts.ordered=false]  - Directed networks
+         * @param {object}   [opts.tensor]         - Context tensor definition (overrides window)
+         * @param {string}   [opts.weightModel]    - 'product' | 'sqrt' | 'log' (per-line, before the unit sum)
          * @param {string}   [opts.rotation='svd'] - 'svd', 'mean', or 'generalized'
          * @param {number[]} [opts.groupA]         - Unit indices for means rotation group A
          * @param {number[]} [opts.groupB]         - Unit indices for means rotation group B
@@ -349,18 +350,13 @@ export default async function loadENA() {
             if (!conversations?.length) throw new Error('opts.conversations is required');
 
             // Weight model = R's `weight.by`. R applies it per LINE (each row's
-            // windowed co-occurrence counts) BEFORE summing per unit, mirroring
+            // "product" co-occurrence counts) BEFORE summing per unit, mirroring
             // accumulate.data.R (lapply(.SD, weight.by) over the per-line
             // co-occurrence table, then per-unit aggregation). Because
-            // sqrt(Σ) ≠ Σsqrt, the transform must be applied to the per-row
-            // counts and then re-summed — not to the already-unit-summed network.
-            // A non-binary weight model forces non-binary accumulation. `product`
-            // keeps the raw counts (identity), matching R where the "product"
-            // string is not a function and so falls through untransformed.
-            // Applied on BOTH paths, at the same stage, so a weight model means
-            // the same thing whether accumulation is windowed or transmodal:
-            // windowed re-aggregates the per-row co-occurrences below; the
-            // tensor path applies the transform inside accumulateTensor.
+            // sqrt(Σ) ≠ Σsqrt, the transform is applied to each row's counts
+            // inside accumulateTensor, not to the unit-summed network.
+            // `product` is the non-binarized row counts themselves (identity);
+            // any weight model therefore forces non-binary accumulation.
             const weightFn = weightModelTransform(weightModel);
             const effBinary = weightFn ? false : binary;
 
@@ -368,39 +364,14 @@ export default async function loadENA() {
                     unitOf, convoGroups, metaData } =
                 parseData(rows, codes, units, conversations);
 
-            let rawNetworks, rowConnectionCounts = null, nConnections;
-
-            if (tensorDef) {
-                rawNetworks  = accumulateTensor(
-                    qe, rows, codeMatrix, nRows, nCodes, nUnits,
-                    unitOf, convoGroups, tensorDef, ordered, effBinary, weightFn
-                );
-                nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
-            } else {
-                const accumulated = accumulateWithRows(
-                    qe, codeMatrix, nRows, nCodes, nUnits,
-                    unitOf, convoGroups, windowSize, effBinary
-                );
-                rawNetworks = accumulated.networks;
-                rowConnectionCounts = accumulated.rowConnectionCounts;
-                nConnections = qe.choose_two(nCodes);
-
-                // Line-level weight transform: weight each per-row count, then
-                // re-aggregate per unit (matches R's weight.by ordering).
-                if (weightFn) {
-                    rawNetworks.fill(0);
-                    for (let r = 0; r < nRows; r++) {
-                        const unit = unitOf[r];
-                        const rowOff = r * nConnections;
-                        const unitOff = unit * nConnections;
-                        for (let c = 0; c < nConnections; c++) {
-                            const w = weightFn(rowConnectionCounts[rowOff + c]);
-                            rowConnectionCounts[rowOff + c] = w;
-                            rawNetworks[unitOff + c] += w;
-                        }
-                    }
-                }
-            }
+            // Every model accumulates through the tensor path; a plain moving
+            // window is expressed as defaultTensor(window).
+            const { networks: rawNetworks, rowConnectionCounts } = accumulateTensor(
+                qe, rows, codeMatrix, nRows, nCodes, nUnits,
+                unitOf, convoGroups, tensorDef ?? defaultTensor(windowSize),
+                ordered, effBinary, weightFn
+            );
+            const nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
 
             // Apply code masking by zeroing out the masked connection columns across all units
             if (codeMask && codeMask.length === codes.length) {
@@ -467,23 +438,12 @@ export default async function loadENA() {
                     unitOf, convoGroups, metaData } =
                 parseData(rows, codes, units, conversations);
 
-            let networks, rowConnectionCounts = null, nConnections;
-
-            if (tensorDef) {
-                networks     = accumulateTensor(
-                    qe, rows, codeMatrix, nRows, nCodes, nUnits,
-                    unitOf, convoGroups, tensorDef, ordered, binary
-                );
-                nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
-            } else {
-                const accumulated = accumulateWithRows(
-                    qe, codeMatrix, nRows, nCodes, nUnits,
-                    unitOf, convoGroups, windowSize, binary
-                );
-                networks = accumulated.networks;
-                rowConnectionCounts = accumulated.rowConnectionCounts;
-                nConnections = qe.choose_two(nCodes);
-            }
+            const { networks, rowConnectionCounts } = accumulateTensor(
+                qe, rows, codeMatrix, nRows, nCodes, nUnits,
+                unitOf, convoGroups, tensorDef ?? defaultTensor(windowSize),
+                ordered, binary
+            );
+            const nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
 
             // Apply code masking by zeroing out the masked connection columns across all units
             if (codeMask && codeMask.length === codes.length) {
@@ -559,21 +519,21 @@ export default async function loadENA() {
                 'maxSize must be greater than minSize to compare windows.'
             );
 
-            const { rows, codes, units, conversations, binary } = call;
+            const { rows, codes, units, conversations, binary, ordered } = call;
 
             // Parse once; only the window size changes between iterations.
             const { codeMatrix, nRows, nCodes, nUnits, unitLabels,
                     unitOf, convoGroups, metaData } =
                 parseData(rows, codes, units, conversations);
-            const nConnections = qe.choose_two(nCodes);
+            const nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
 
             // 1. Rebuild + fit at each window, collecting unit points.
             const dims = 2;
             const allPoints = [];
             for (const w of windowRange) {
-                const raw = accumulate(
-                    qe, codeMatrix, nRows, nCodes, nUnits,
-                    unitOf, convoGroups, w, binary
+                const { networks: raw } = accumulateTensor(
+                    qe, rows, codeMatrix, nRows, nCodes, nUnits,
+                    unitOf, convoGroups, defaultTensor(w), ordered, binary
                 );
                 const model = runPipeline(
                     qe, raw, nUnits, nConnections, codes,
@@ -599,7 +559,7 @@ export default async function loadENA() {
 
             // 4. Rebuild the accumulation at the selected window size.
             return api.accumulate(rows, {
-                codes, units, conversations, window: bestWindow, binary,
+                codes, units, conversations, window: bestWindow, binary, ordered,
             });
         },
 
