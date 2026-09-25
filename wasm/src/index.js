@@ -210,6 +210,42 @@ function weightModelName(name) {
     }
 }
 
+// ── code masking ─────────────────────────────────────────────────────────────
+
+/**
+ * Zero, in place, every connection column the code mask excludes.
+ * codeMask is an nCodes × nCodes 0/1 matrix; a 0 at [a][b] drops the
+ * connection between codes a and b (unordered: either orientation drops the
+ * pair; ordered: codeMask[j][i] === 0 drops the directed column i*n + j).
+ *
+ * @param {Float64Array} networks   nUnits × nConnections, row-major
+ * @param {number[][]}   codeMask
+ * @param {number}       nCodes
+ * @param {number}       nUnits
+ * @param {number}       nConnections
+ * @param {boolean}      ordered
+ */
+function applyCodeMask(networks, codeMask, nCodes, nUnits, nConnections, ordered) {
+    if (!codeMask || codeMask.length !== nCodes) return;
+    const zeroColumn = (k) => {
+        for (let u = 0; u < nUnits; u++) networks[u * nConnections + k] = 0;
+    };
+    if (ordered) {
+        for (let j = 0; j < nCodes; j++)
+            for (let i = 0; i < nCodes; i++)
+                if (codeMask[j] && codeMask[j][i] === 0) zeroColumn(i * nCodes + j);
+        return;
+    }
+    let k = 0;
+    for (let col = 1; col < nCodes; col++) {
+        for (let row = 0; row < col; row++) {
+            if ((codeMask[row] && codeMask[row][col] === 0) ||
+                (codeMask[col] && codeMask[col][row] === 0)) zeroColumn(k);
+            k++;
+        }
+    }
+}
+
 // ── shared pipeline (post-accumulation) ──────────────────────────────────────
 
 function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
@@ -240,6 +276,9 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
     } else {
         rot = rotateSVD(qe, pointsForProjection, nUnits, nConnections);
     }
+
+    // Never ask for more dimensions than the rotation has columns.
+    dims = Math.min(dims, rot.rotCols);
 
     // Truncate rotation matrix to dims columns (= R's set$rotation.matrix)
     const rotationMatrix = new Float64Array(rot.rotRows * dims);
@@ -371,34 +410,7 @@ export default async function loadENA() {
             );
             const nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
 
-            // Apply code masking by zeroing out the masked connection columns across all units
-            if (codeMask && codeMask.length === codes.length) {
-                console.log('[rena-wasm] Applying code mask to raw networks...');
-                if (ordered) {
-                    for (let j = 0; j < codes.length; j++) {
-                        for (let i = 0; i < codes.length; i++) {
-                            if (codeMask[j] && codeMask[j][i] === 0) {
-                                const k = i * codes.length + j;
-                                for (let u = 0; u < nUnits; u++) {
-                                    rawNetworks[u * nConnections + k] = 0;
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    let k = 0;
-                    for (let col = 1; col < codes.length; col++) {
-                        for (let row = 0; row < col; row++) {
-                            if ((codeMask[row] && codeMask[row][col] === 0) || (codeMask[col] && codeMask[col][row] === 0)) {
-                                for (let u = 0; u < nUnits; u++) {
-                                    rawNetworks[u * nConnections + k] = 0;
-                                }
-                            }
-                            k++;
-                        }
-                    }
-                }
-            }
+            applyCodeMask(rawNetworks, codeMask, codes.length, nUnits, nConnections, ordered);
 
             return runPipeline(qe, rawNetworks, nUnits, nConnections, codes,
                                unitLabels, metaData, rotMethod, groupA, groupB,
@@ -444,34 +456,7 @@ export default async function loadENA() {
             );
             const nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
 
-            // Apply code masking by zeroing out the masked connection columns across all units
-            if (codeMask && codeMask.length === codes.length) {
-                console.log('[rena-wasm] Applying code mask to accumulated networks...');
-                if (ordered) {
-                    for (let j = 0; j < codes.length; j++) {
-                        for (let i = 0; i < codes.length; i++) {
-                            if (codeMask[j] && codeMask[j][i] === 0) {
-                                const k = i * codes.length + j;
-                                for (let u = 0; u < nUnits; u++) {
-                                    networks[u * nConnections + k] = 0;
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    let k = 0;
-                    for (let col = 1; col < codes.length; col++) {
-                        for (let row = 0; row < col; row++) {
-                            if ((codeMask[row] && codeMask[row][col] === 0) || (codeMask[col] && codeMask[col][row] === 0)) {
-                                for (let u = 0; u < nUnits; u++) {
-                                    networks[u * nConnections + k] = 0;
-                                }
-                            }
-                            k++;
-                        }
-                    }
-                }
-            }
+            applyCodeMask(networks, codeMask, codes.length, nUnits, nConnections, ordered);
 
             const connectionNames = qe.connection_names(codes);
             return {
@@ -676,12 +661,27 @@ export default async function loadENA() {
          * removed while keeping the model's goodness-of-fit within `threshold`
          * of the full model.  Brute-force subset search matching R
          * PRIA::pria(): for k = 1..removeNum, over every k-subset of codes,
-         * build the reduced model (fit with a codeMask that drops every
-         * connection touching a removed code), gate on
-         * min_d(gof_reduced[d] / gof_full[d]) >= threshold where gof is the
-         * per-dimension ena_correlation(points, centroids), and keep the subset
-         * with the MOST codes removed, then the highest reduced dim-1 variance.
+         * build the reduced model (drop every connection touching a removed
+         * code, as R's remove.codes.from.accum does), gate on min_d(gof_reduced[d] / gof_full[d]) >= threshold where
+         * gof is the per-dimension ena_correlation(points, centroids) on dims
+         * 1:2, then on point and retained-node correlations, and keep the
+         * subset with the MOST codes removed, then the highest reduced dim-1
+         * variance (= R's reduced.set$model$variance[1]).
          *
+         * The full and reduced models are built from the same accumulation as
+         * fit() with the same options — weightModel, tensor and codeMask
+         * included — so PRIA scores the model the caller actually displays.
+         * The data are accumulated once; each candidate only drops the removed
+         * codes' connection columns and re-runs normalize → center → rotate →
+         * project.
+         *
+         * @param {Object[]} rows
+         * @param {object}   opts  - fit() options (codes, units, conversations,
+         *                           window, binary, ordered, tensor, weightModel,
+         *                           codeMask, rotation, groupA, groupB, gParams)
+         *                           plus removeNum (default 3) and threshold
+         *                           (default 0.95). `dims` is ignored: scoring
+         *                           uses dims 1:2 and the variance uses all dims.
          * @returns {{ removed: string[], removedIndices: number[], k: number,
          *             variance: (number|null) }}
          */
@@ -689,7 +689,8 @@ export default async function loadENA() {
             const {
                 codes, units, conversations,
                 window: windowSize = 4, binary = true, ordered = false,
-                rotation = 'svd', dims = 2, gParams, groupA, groupB,
+                tensor: tensorDef, weightModel, codeMask,
+                rotation = 'svd', gParams, groupA, groupB,
                 removeNum = 3, threshold = 0.95,
             } = opts;
             if (!codes?.length)         throw new Error('opts.codes is required');
@@ -701,32 +702,77 @@ export default async function loadENA() {
             const empty = { removed: [], removedIndices: [], k: 0, variance: null };
             if (rn < 1) return empty;
 
-            const gofDims  = Math.min(dims, 2);       // R scores on dims 1:2
-            const baseOpts = { codes, units, conversations, window: windowSize,
-                               binary, ordered, rotation, dims, gParams, groupA, groupB };
+            // Accumulate once, exactly as fit() would for these options.
+            const { codeMatrix, nRows, nCodes, nUnits, unitLabels,
+                    unitOf, convoGroups, metaData } =
+                parseData(rows, codes, units, conversations);
+            const { networks: raw } = accumulateTensor(
+                qe, rows, codeMatrix, nRows, nCodes, nUnits,
+                unitOf, convoGroups, tensorDef ?? defaultTensor(windowSize),
+                ordered, binary, weightModelName(weightModel)
+            );
+            const nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
+            applyCodeMask(raw, codeMask, nCodes, nUnits, nConnections, ordered);
 
-            const D = gofDims;  // score on the first 2 dims (R's get_pria_scores_2Ds)
-            // Extract a D-column submatrix (given row indices) from a flat
-            // row-major (nRows × dims) array.
-            const sub = (flat, rowIdxs) => {
+            // Build a model from the accumulation with `removedSet`'s codes
+            // DROPPED -- their connection columns removed and the code list
+            // shortened -- as R PRIA's remove.codes.from.accum() does. Zeroing
+            // the columns instead is not equivalent: libqe's GMR rotation is
+            // sensitive to all-zero columns. All dimensions are kept so
+            // model.variance is the full-spectrum ratio R uses; the gates read
+            // only dims 1:2.
+            const fitWithout = (removedSet) => {
+                let networks = raw, keptCodes = codes, nConn = nConnections;
+                if (removedSet) {
+                    const keep = (c) => !removedSet.has(c);
+                    const cols = [];
+                    if (ordered) {
+                        for (let i = 0; i < nCodes; i++)
+                            for (let j = 0; j < nCodes; j++)
+                                if (keep(i) && keep(j)) cols.push(i * nCodes + j);
+                    } else {
+                        let k = 0;
+                        for (let col = 1; col < nCodes; col++)
+                            for (let row = 0; row < col; row++, k++)
+                                if (keep(row) && keep(col)) cols.push(k);
+                    }
+                    nConn = cols.length;
+                    networks = new Float64Array(nUnits * nConn);
+                    for (let u = 0; u < nUnits; u++)
+                        for (let c = 0; c < nConn; c++)
+                            networks[u * nConn + c] = raw[u * nConnections + cols[c]];
+                    keptCodes = codes.filter((_, i) => keep(i));
+                }
+                return runPipeline(qe, networks, nUnits, nConn, keptCodes,
+                                   unitLabels, metaData, rotation, groupA, groupB,
+                                   nConn, gParams);
+            };
+
+            const D = 2;  // score on the first 2 dims (R's get_pria_scores_2Ds)
+            // D-column submatrix (given row indices) of a model's flat
+            // row-major (nRows × model.dims) array.
+            const sub = (mdl, flat, rowIdxs) => {
                 const out = new Float64Array(rowIdxs.length * D);
-                rowIdxs.forEach((r, t) => { for (let d = 0; d < D; d++) out[t * D + d] = flat[r * dims + d]; });
+                rowIdxs.forEach((r, t) => {
+                    for (let d = 0; d < D; d++) out[t * D + d] = flat[r * mdl.dims + d];
+                });
                 return out;
             };
             // ena_correlation(A, B) → [r_dim0, r_dim1] (col 0 of the dims×3 result).
-            const corr2 = (Aflat, Bflat, nRows) => {
-                const r = qe.ena_correlation(Array.from(Aflat), nRows, D,
-                                             Array.from(Bflat), nRows, D, 0.95);
+            const corr2 = (Aflat, Bflat, n) => {
+                const r = qe.ena_correlation(Array.from(Aflat), n, D,
+                                             Array.from(Bflat), n, D, 0.95);
                 const out = [];
                 for (let d = 0; d < D; d++) out.push(r.data[d * 3]);
                 return out;
             };
-            const full   = api.fit(rows, baseOpts);
-            const nUnits = full.nUnits;
+
+            const full     = fitWithout(null);
             const unitRows = Array.from({ length: nUnits }, (_, i) => i);
-            const gofOf    = (mdl) => corr2(sub(mdl.points, unitRows), sub(mdl.model.centroids, unitRows), nUnits);
+            const gofOf    = (mdl) => corr2(sub(mdl, mdl.points, unitRows),
+                                            sub(mdl, mdl.model.centroids, unitRows), nUnits);
             const gFull    = gofOf(full);
-            const fullPts2 = sub(full.points, unitRows);
+            const fullPts2 = sub(full, full.points, unitRows);
 
             // All k-subsets of [0..m) as index arrays.
             const combos = (n, k) => {
@@ -743,15 +789,7 @@ export default async function loadENA() {
             for (let k = 1; k <= rn; k++) {
                 for (const idxs of combos(m, k)) {
                     const removedSet = new Set(idxs);
-                    const mask = [];
-                    for (let i = 0; i < m; i++) {
-                        const row = [];
-                        for (let j = 0; j < m; j++) {
-                            row.push((removedSet.has(i) || removedSet.has(j)) ? 0 : 1);
-                        }
-                        mask.push(row);
-                    }
-                    const red = api.fit(rows, { ...baseOpts, codeMask: mask });
+                    const red = fitWithout(removedSet);
 
                     // Gate 1 — goodness-of-fit ratio vs full, per dim.
                     const gRed = gofOf(red);
@@ -764,21 +802,22 @@ export default async function loadENA() {
                     // Gate 2 — reduced points AND retained-code nodes must each
                     // correlate >= threshold with the full model (per dim, with a
                     // per-dim sign flip that negates the node corr alongside it).
+                    // The reduced model's nodes are the retained codes only, in order.
                     const retained = [];
                     for (let i = 0; i < m; i++) if (!removedSet.has(i)) retained.push(i);
-                    let [pc1, pc2] = corr2(fullPts2, sub(red.points, unitRows), nUnits);
-                    let [nc1, nc2] = corr2(sub(full.rotation.nodes, retained),
-                                           sub(red.rotation.nodes, retained), retained.length);
+                    const reducedRows = retained.map((_, t) => t);
+                    let [pc1, pc2] = corr2(fullPts2, sub(red, red.points, unitRows), nUnits);
+                    let [nc1, nc2] = corr2(sub(full, full.rotation.nodes, retained),
+                                           sub(red, red.rotation.nodes, reducedRows), retained.length);
                     if (pc1 < 0) { pc1 = -pc1; nc1 = -nc1; }
                     if (pc2 < 0) { pc2 = -pc2; nc2 = -nc2; }
                     if (Math.min(pc1, pc2, nc1, nc2) < threshold) continue;
 
-                    // Dim-1 variance proportion over the FULL rotation spectrum
-                    // (= R's set$model$variance[1] = diag(var(points.rotated))/sum);
-                    // NOT model.variance, which is the 2-dim projected ratio.
-                    const ev = red.rotation.eigenvalues;
-                    let evSum = 0; for (let i = 0; i < ev.length; i++) evSum += ev[i];
-                    const vr1 = evSum > 0 ? ev[0] / evSum : 0;
+                    // Dim-1 share of the variance of the projected points across
+                    // ALL dimensions (= R's reduced.set$model$variance[1]). Not the
+                    // eigenvalue ratio: means and GMR rotations report a zero
+                    // eigenvalue for their first axis.
+                    const vr1 = red.model.variance[0];
                     // Prefer more codes removed; tie-break on higher dim-1 variance.
                     if (k > bestK || (k === bestK && vr1 > bestVar)) {
                         bestK = k; bestVar = vr1; bestRemoved = idxs.slice();

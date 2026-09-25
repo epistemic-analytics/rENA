@@ -91,6 +91,26 @@ const model = ena.fit(rows, { codes, units, conversations, window: 4, weightMode
 
 ---
 
+## Reduced-Code Search (PRIA)
+
+`pria()` finds the largest set of codes (up to `removeNum`, never leaving
+fewer than 3) whose removal keeps the model within `threshold` of the full
+model — the same search, gates and tie-break as R's `PRIA::pria()`. It takes
+the same options as `fit()` (rotation, `weightModel`, `tensor`, `codeMask`,
+…), so it scores the model you display.
+
+```js
+const { removed, k, variance } = ena.pria(rows, {
+  codes, units, conversations, window: 4,
+  rotation: 'mean', groupA, groupB,
+  removeNum: 3, threshold: 0.95,
+});
+// removed  → code names to drop (most codes first, then highest dim-1 variance)
+// variance → dim-1 share of variance in the chosen reduced model
+```
+
+---
+
 ## Accumulation Only
 
 Returns raw (un-normalised) network vectors without running the full pipeline.
