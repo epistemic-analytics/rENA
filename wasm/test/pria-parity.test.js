@@ -148,7 +148,7 @@ describe('pria scores the model fit() would build', () => {
 // rENA-api's ena.generate did. The TMA tensor: sender factor GameHalf,
 // "First" weight 0.5 / window 2, "Second" weight 1 / window 4. (In R,
 // GameHalf is pre-encoded as First = 1, Second = 2: tma's accumulate()
-// re-encodes text factor columns within each unit's context.)
+// re-encodes character-valued tensor columns within each unit's context.)
 describe('pria matches R PRIA::pria for ONA and TMA models', () => {
     const TMA_TENSOR = {
         dims: [2, 2], dimsSender: [0], dimsReceiver: [], dimsMode: [],
