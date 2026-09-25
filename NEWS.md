@@ -1,3 +1,17 @@
+## rENA 0.4.6
+
+#### Bug Fixes & Improvements
+
+  * No changes to the R package; this release publishes rena-wasm 0.1.5
+    (`@qe-libs/rena-wasm`), which missed the 0.4.5 release:
+    - Weight models (`weightModel`: `"product"`, `"sqrt"`, `"log"`) are now
+      applied by libqe's shared `finalize_row_connections` kernel (requires
+      `@qe-libs/libqe-wasm` 0.1.5 or newer), replacing rena-wasm's own
+      JavaScript copy. Results are unchanged.
+    - `accumulate()` now honours `weightModel` (it was previously ignored), and
+      `tuneWindowSize()` carries it through its rebuilds.
+    - `"log1p"` is accepted as an alias of `"log"`.
+
 ## rENA 0.4.5
 
 #### New Features
