@@ -140,6 +140,9 @@ const model = ena.fit(rows, {
                    // Ordered models follow ona::model(): zero-network units are
                    // left out of the centring mean but shifted by it, nodes use
                    // directed positions, and points/nodes are centred on the origin.
+                   // connectionNames / rotation.adjacencyKey list all n² directed
+                   // connections as R names them: column j*n + i is
+                   // "codes[i] & codes[j]", ground codes[i] → response codes[j].
   tensor: {
     dims:         [2, 2],   // [nRoleValues=2, weight/window=2]
     dimsSender:   [0],      // axis 0 is a sender factor
