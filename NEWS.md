@@ -1,3 +1,22 @@
+## rENA 0.4.7
+
+#### Bug Fixes & Improvements
+
+  * No changes to the R package; this release publishes rena-wasm 0.1.6
+    (`@qe-libs/rena-wasm`) with fixes to `pria()`, which now matches R's
+    `PRIA::pria()`:
+    - The tie-break between candidates that remove the same number of codes
+      now uses the reduced model's dimension-1 share of the points' variance
+      across all dimensions (R's `model$variance[1]`). It previously used the
+      eigenvalue ratio, which is 0 for means and GMR rotations, so the
+      tie-break never applied to them.
+    - Removed codes' connections are dropped rather than zeroed, as in R, so
+      GMR-rotated candidates are scored correctly.
+    - The data are accumulated once rather than once per candidate, making
+      PRIA about 30 times faster (RS.data: 3.4 s to about 0.1 s).
+    - `weightModel`, `tensor` and the caller's `codeMask` are now used, so
+      PRIA scores the same model `fit()` builds.
+
 ## rENA 0.4.6
 
 #### Bug Fixes & Improvements
