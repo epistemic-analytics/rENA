@@ -14,5 +14,6 @@ renderEnaInteractive(expr, env = parent.frame(), quoted = FALSE)
 \item{quoted}{Logical. Is \code{expr} already quoted? Default \code{FALSE}.}
 }
 \description{
-Shiny render function for interactive ENA plots
+Equivalent to \code{qeviz::renderQe()}; \code{expr} may return an
+\code{\link{ena.plot.interactive}} widget or a \code{qeviz::qe_plot()}.
 }

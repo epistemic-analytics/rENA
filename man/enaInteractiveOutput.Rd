@@ -12,5 +12,5 @@ enaInteractiveOutput(outputId, width = "100\%", height = "600px")
 \item{width, height}{CSS dimensions. Defaults: \code{"100\%"}, \code{"600px"}.}
 }
 \description{
-Shiny output binding for interactive ENA plots
+Equivalent to \code{qeviz::qeOutput()}.
 }

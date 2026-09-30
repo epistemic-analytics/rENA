@@ -16,7 +16,7 @@ ena.plot.interactive(
   label_means = "on",
   label_points = "off",
   confidence = TRUE,
-  outlier = TRUE,
+  outlier = FALSE,
   scale_points = TRUE,
   conf_level = 0.95,
   iqr_factor = 1.5,
@@ -53,20 +53,21 @@ Visibility of code-node labels.  Default \code{"on"}.}
 
 \item{label_points}{Visibility of unit-point labels.  Default \code{"off"}.}
 
-\item{confidence}{Logical. Include 95\% CI bounds in the groups frame.
-Default \code{TRUE}.}
+\item{confidence}{Logical. Draw the confidence interval box around each
+shown group mean. Default \code{TRUE}.}
 
-\item{outlier}{Logical. Draw IQR-based outlier boxes. Default \code{TRUE}.}
+\item{outlier}{Logical. Also draw the outlier interval (Q1 - 1.5 IQR to
+Q3 + 1.5 IQR). Default \code{FALSE}.}
 
 \item{scale_points}{Logical. Rescale unit points to match the node coordinate
 space.  Default \code{TRUE}.}
 
 \item{conf_level}{Numeric. Confidence level for CI boxes. Default \code{0.95}.}
 
-\item{iqr_factor}{Numeric. IQR multiplier for outlier boxes. Default \code{1.5}.}
+\item{iqr_factor}{Deprecated; the outlier interval always uses 1.5 IQR.}
 
-\item{width, height}{Widget dimensions in pixels.  \code{NULL} uses htmlwidgets
-sizing policy defaults (700 × 650).}
+\item{width, height}{Widget size in pixels or CSS units.  \code{NULL} uses
+the qeviz defaults (100\% x 440).}
 }
 \value{
 An \code{htmlwidget} object that renders in RStudio Viewer, R Markdown,
@@ -74,7 +75,8 @@ An \code{htmlwidget} object that renders in RStudio Viewer, R Markdown,
 }
 \description{
 Renders an interactive ENA plot inside RStudio, R Markdown / Quarto, and
-Shiny using the qeviz visualization library.
+Shiny using the qeviz visualization library. This is a shortcut for a
+\code{qeviz::qe_plot()} chain; use qeviz directly for full control.
 }
 \examples{
 \dontrun{
