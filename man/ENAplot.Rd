@@ -12,7 +12,10 @@ It encapsulates the ENAset data, the plotly visualization, and related plotting 
 
 \describe{
   \item{enaset}{The \code{\link{ENAset}} object from which the ENAplot was constructed.}
-  \item{plot}{The plotly object used for data visualization.}
+  \item{plot}{The plot as an htmlwidget: a plotly object, or a qeviz widget
+    when the plot was created with \code{backend = "qeviz"}.}
+  \item{qe}{With \code{backend = "qeviz"}, the \code{qeviz::qe_plot()} the
+    layer functions build on; \code{NULL} for plotly.}
   \item{axes}{Axes information for the plot (TBD).}
   \item{point}{Point information for the plot (TBD).}
   \item{palette}{Color palette used for plotting (TBD).}
@@ -30,7 +33,7 @@ It encapsulates the ENAset data, the plotly visualization, and related plotting 
 \describe{
 \item{\code{enaset}}{- The \code{\link{ENAset}} object from which the ENAplot was constructed}
 
-\item{\code{plot}}{- The plotly object used for data visualization}
+\item{\code{qe}}{- The \code{qeviz::qe_plot()} behind a qeviz-backend plot, else \code{NULL}}
 
 \item{\code{axes}}{A list or object specifying the axes configuration for the ENA plot, such as axis labels, limits, or scaling.}
 
@@ -50,6 +53,13 @@ It encapsulates the ENAset data, the plotly visualization, and related plotting 
 
 \item{\code{axispadding}}{Numeric. Padding factor for the axes.
 Create ENApolot}
+}
+\if{html}{\out{</div>}}
+}
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
+\item{\code{plot}}{- The plot as an htmlwidget (plotly, or qeviz with \code{backend = "qeviz"})}
 }
 \if{html}{\out{</div>}}
 }
@@ -75,6 +85,7 @@ Create ENApolot}
   font.color = "#000000",
   font.family = "Arial",
   scale.to = "network",
+  backend = c("plotly", "qeviz"),
   ...
 )}\if{html}{\out{</div>}}
 }

@@ -12,6 +12,7 @@ ena.plot(
   font.color = "#000000",
   font.family = c("Arial", "Courier New", "Times New Roman"),
   scale.to = "network",
+  backend = getOption("rENA.plot.backend", "plotly"),
   ...
 )
 }
@@ -29,6 +30,12 @@ ena.plot(
 \item{font.family}{A character determining the font type, choices: Arial, Courier New, Times New Roman, default: Arial}
 
 \item{scale.to}{"network" (default), "points", or a list with x and y ranges. Network and points both scale to the c(-max, max) of the corresponding data.frame}
+
+\item{backend}{\code{"plotly"} (default) or \code{"qeviz"}. Default:
+\code{getOption("rENA.plot.backend", "plotly")}. With \code{"qeviz"} the
+plot is drawn by the qeviz package (>= 0.5.0) and \code{$plot} is a qeviz
+htmlwidget; \code{scale.to} must be \code{"network"}, \code{"points"} or
+a number.}
 
 \item{...}{additional parameters addressed in inner function}
 }

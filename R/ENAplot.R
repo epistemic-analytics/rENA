@@ -7,7 +7,10 @@
 #' @section Fields:
 #' \describe{
 #'   \item{enaset}{The \code{\link{ENAset}} object from which the ENAplot was constructed.}
-#'   \item{plot}{The plotly object used for data visualization.}
+#'   \item{plot}{The plot as an htmlwidget: a plotly object, or a qeviz widget
+#'     when the plot was created with \code{backend = "qeviz"}.}
+#'   \item{qe}{With \code{backend = "qeviz"}, the \code{qeviz::qe_plot()} the
+#'     layer functions build on; \code{NULL} for plotly.}
 #'   \item{axes}{Axes information for the plot (TBD).}
 #'   \item{point}{Point information for the plot (TBD).}
 #'   \item{palette}{Color palette used for plotting (TBD).}
@@ -24,7 +27,8 @@
 #' @export
 #'
 #' @field enaset - The \code{\link{ENAset}} object from which the ENAplot was constructed
-#' @field plot - The plotly object used for data visualization
+#' @field plot - The plot as an htmlwidget (plotly, or qeviz with \code{backend = "qeviz"})
+#' @field qe - The \code{qeviz::qe_plot()} behind a qeviz-backend plot, else \code{NULL}
 #' @field axes A list or object specifying the axes configuration for the ENA plot, such as axis labels, limits, or scaling.
 #' @field point A structure representing the data points to be plotted, including coordinates and visual properties.
 #' @field palette A set of colors or a function defining the color scheme used for plotting elements in the ENA plot.
@@ -66,8 +70,10 @@ ENAplot = R6::R6Class("ENAplot",
         font.color = "#000000",
         font.family = "Arial",
         scale.to = "network",
+        backend = c("plotly", "qeviz"),
         ...
       ) {
+        backend <- match.arg(backend)
         if (is(enaset, "ENAset")) {
           warning(paste0("Usage of ENAset objects will be deprecated ",
             "and potentially removed altogether in future versions."))
@@ -130,6 +136,15 @@ ENAplot = R6::R6Class("ENAplot",
           color = private$font.color,
           family = private$font.family
         );
+        private$backend <- backend
+        if (backend == "qeviz") {
+          .require_qeviz()
+          self$palette <- qeviz::qe_palette()
+          self$qe <- .qe_base_plot(enaset, title, dimension.labels, scale.to,
+                                   font.size, font.color, font.family)
+          return(invisible(self))
+        }
+
         self$plot <- plotly::plot_ly(
           mode = "markers",
           type ="scatter"
@@ -218,7 +233,7 @@ ENAplot = R6::R6Class("ENAplot",
     ## Public Properties ----
       enaset = NULL,
       title = "ENA Plot",
-      plot = NULL,
+      qe = NULL,
       axes = list(
         x = NULL, y = NULL
       ),
@@ -237,10 +252,28 @@ ENAplot = R6::R6Class("ENAplot",
       )
   ),
 
+  active = list(
+    # plotly: the stored plotly object. qeviz: a widget built from self$qe on
+    # each read, so it always reflects the layers added so far.
+    plot = function(value) {
+      if (missing(value)) {
+        if (identical(private$backend, "qeviz")) return(qeviz::qe_widget(self$qe))
+        return(private$.plot)
+      }
+      if (identical(private$backend, "qeviz"))
+        stop("$plot of a qeviz-backend ENAplot is read-only; add layers with ",
+             "ena.plot.network() / ena.plot.points() / ena.plot.group().", call. = FALSE)
+      private$.plot <- value
+    }
+  ),
+
   private = list(
     ####
     ## Private Properties
     ####
+      backend = "plotly",
+      .plot = NULL,
+
       dimension.labels = c("X","Y"),
 
       font = list(),
@@ -255,3 +288,28 @@ ENAplot = R6::R6Class("ENAplot",
     ####
   )
 )
+
+
+# The empty qeviz plot an ENAplot starts from (backend = "qeviz"). The full
+# set is extracted so colour ramps and widths use model-wide scales; nothing
+# is drawn until the layer functions add networks, points or means.
+.qe_base_plot <- function(enaset, title, dimension.labels, scale.to,
+                          font.size, font.color, font.family) {
+  if (is.list(scale.to))
+    stop("scale.to = list(x =, y =) is not supported on the qeviz backend: ",
+         "qeviz ranges are symmetric. Use \"network\", \"points\" or a number.",
+         call. = FALSE)
+  range <- if (is.numeric(scale.to)) utils::tail(scale.to, 1)
+           else if (identical(scale.to, "points")) "points"
+           else "network"
+  lbl <- function(i) {
+    v <- if (length(dimension.labels) >= i) dimension.labels[i] else ""
+    if (is.null(v) || is.na(v) || !nzchar(v)) FALSE else v
+  }
+  p <- qeviz::qe_plot(enaset, title = if (!is.null(title) && nzchar(title)) title,
+                      group_col = NULL, range = range, scale_points = FALSE)
+  p <- qeviz::qe_group(p, show = FALSE)
+  p <- qeviz::qe_axes(p, x = lbl(1), y = lbl(2))
+  qeviz::qe_labels(p, font_size = font.size, font_family = font.family,
+                   font_color = font.color)
+}

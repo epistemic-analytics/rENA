@@ -14,6 +14,11 @@
 #' @param font.color A character determining the color of label font, default: black
 #' @param font.family A character determining the font type, choices: Arial, Courier New, Times New Roman, default: Arial
 #' @param scale.to "network" (default), "points", or a list with x and y ranges. Network and points both scale to the c(-max, max) of the corresponding data.frame
+#' @param backend \code{"plotly"} (default) or \code{"qeviz"}. Default:
+#'   \code{getOption("rENA.plot.backend", "plotly")}. With \code{"qeviz"} the
+#'   plot is drawn by the qeviz package (>= 0.5.0) and \code{$plot} is a qeviz
+#'   htmlwidget; \code{scale.to} must be \code{"network"}, \code{"points"} or
+#'   a number.
 #' @param ... additional parameters addressed in inner function
 #'
 #'
@@ -57,6 +62,7 @@ ena.plot <- function(
   font.color = "#000000",
   font.family = c("Arial", "Courier New", "Times New Roman"),
   scale.to = "network", #, "points"),
+  backend = getOption("rENA.plot.backend", "plotly"),
   ...
 ) {
   if (is(enaset, "ENAset")) {
@@ -75,6 +81,7 @@ ena.plot <- function(
                      font.color,
                      font.family,
                      scale.to = scale.to,
+                     backend = backend,
                      ...
                    );
 
