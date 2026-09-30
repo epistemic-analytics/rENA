@@ -90,6 +90,12 @@ ena.plot.points = function(
   ###
   # Parameter Checking and Cleaning
   ###
+    if (.qe_backend(enaplot))
+      return(.qe_plot_points(enaplot, supplied = names(match.call())[-1],
+        points = points, point.size = point.size, labels = labels, shape = shape,
+        colors = colors, label.font.size = label.font.size, label.font.color = label.font.color,
+        label.font.family = label.font.family, texts = texts))
+
     env = environment();
     for(n in c("font.size", "font.color", "font.family")) {
       if(is.null(get(paste0("label.",n))))

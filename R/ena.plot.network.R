@@ -179,6 +179,14 @@ ena.plot.network = function(
   scale.weights = F,
   ...
 ) {
+  if (.qe_backend(enaplot))
+    return(.qe_plot_network(enaplot, supplied = names(match.call())[-1],
+      network = network, node.positions = node.positions, adjacency.key = adjacency.key,
+      colors = colors, edge_type = edge_type, show.all.nodes = show.all.nodes,
+      threshold = threshold, thin.lines.in.front = thin.lines.in.front, layers = layers,
+      labels = labels, label.font.size = label.font.size, label.font.color = label.font.color,
+      label.font.family = label.font.family, legend.name = legend.name, dots = list(...)))
+
   expected_codes <- choose(nrow(node.positions), 2)
   if(expected_codes != length(network)) {
     # browser()

@@ -85,6 +85,13 @@ ena.plot.group <- function(
   confidence.interval = match.arg(confidence.interval);
   outlier.interval = match.arg(outlier.interval);
 
+  if (.qe_backend(enaplot))
+    return(.qe_plot_group(enaplot, supplied = names(match.call())[-1],
+      points = points, method = method, labels = labels, colors = colors, shape = shape,
+      confidence.interval = confidence.interval, outlier.interval = outlier.interval,
+      label.font.size = label.font.size, label.font.color = label.font.color,
+      label.font.family = label.font.family))
+
   if(is.null(points)) {
     stop("Points must be provided.");
   }
