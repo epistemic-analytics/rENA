@@ -197,10 +197,13 @@ export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
             ? buildContextLookupWithTimes(rows, rowIndices, factors, factorLevels, timesCol)
             : buildContextLookup(rows, rowIndices, factors, factorLevels);
 
-        // Group response rows by unit (within this conversation)
+        // Group response rows by unit (within this conversation). Rows with
+        // no unit (unitOf = -1, excluded via unitsUsed) are never responses,
+        // but stay in convoCodes as context for the other units' windows.
         const unitConvoRows = new Map();
         for (let r = 0; r < nConvo; r++) {
             const unit = unitOf[rowIndices[r]];
+            if (unit < 0) continue;
             if (!unitConvoRows.has(unit)) unitConvoRows.set(unit, []);
             unitConvoRows.get(unit).push(r);  // local (conversation-relative) index
         }

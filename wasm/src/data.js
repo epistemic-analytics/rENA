@@ -24,6 +24,10 @@ export function rowKey(row, cols) {
  * @param {string[]} codes      - Code column names
  * @param {string[]} unitCols   - Column(s) that identify a unit (e.g. ['UserName', 'Condition'])
  * @param {string[]} convoCols  - Column(s) that identify a conversation (e.g. ['Condition', 'GroupName'])
+ * @param {string[]|null} [unitsUsed=null] - Unit keys (rowKey format) to model
+ *   (= R's `units.used`). Rows of other units stay in their conversations, so
+ *   they still count as context in the included units' windows, but they get
+ *   no unit (unitOf = -1) and so produce no network. null = every unit.
  *
  * @returns {{
  *   codeMatrix:  Float64Array,            // n_rows × n_codes, row-major
@@ -31,14 +35,14 @@ export function rowKey(row, cols) {
  *   nCodes:      number,
  *   nUnits:      number,
  *   unitLabels:  string[],                // unit key for each unit index
- *   unitOf:      Int32Array,              // unit index for each row
+ *   unitOf:      Int32Array,              // unit index for each row (-1 = not a modeled unit)
  *   convoOf:     Int32Array,              // conversation index for each row
  *   convoGroups: Map<number, number[]>,   // convoIdx → [rowIdx, ...]
  *   metaData:    Object[],               // one metadata object per unit (first-row representative)
  *   metaCols:    string[],               // names of metadata columns
  * }}
  */
-export function parseData(rows, codes, unitCols, convoCols) {
+export function parseData(rows, codes, unitCols, convoCols, unitsUsed = null) {
     const nRows  = rows.length;
     const nCodes = codes.length;
 
@@ -58,6 +62,8 @@ export function parseData(rows, codes, unitCols, convoCols) {
     // Per-unit metadata rows — populated on first occurrence of each unit.
     const metaData = [];
 
+    const used = unitsUsed ? new Set(unitsUsed.map(String)) : null;
+
     for (let i = 0; i < nRows; i++) {
         const row = rows[i];
 
@@ -68,7 +74,9 @@ export function parseData(rows, codes, unitCols, convoCols) {
 
         // Unit index
         const uKey = rowKey(row, unitCols);
-        if (!unitIndex.has(uKey)) {
+        if (used && !used.has(uKey)) {
+            unitOf[i] = -1;
+        } else if (!unitIndex.has(uKey)) {
             const uIdx = unitIndex.size;
             unitIndex.set(uKey, uIdx);
             // First row for this unit → representative metadata
@@ -76,7 +84,7 @@ export function parseData(rows, codes, unitCols, convoCols) {
             for (const col of metaCols) meta[col] = row[col];
             metaData[uIdx] = meta;
         }
-        unitOf[i] = unitIndex.get(uKey);
+        if (unitOf[i] !== -1) unitOf[i] = unitIndex.get(uKey);
 
         // Conversation index
         const cKey = rowKey(row, convoCols);
@@ -90,6 +98,9 @@ export function parseData(rows, codes, unitCols, convoCols) {
 
     const unitLabels = Array.from(unitIndex.keys());
     const nUnits     = unitLabels.length;
+    if (used && nUnits === 0) {
+        throw new Error('opts.unitsUsed matched no units in the data');
+    }
 
     return { codeMatrix, nRows, nCodes, nUnits, unitLabels, unitOf, convoOf, convoGroups,
              metaData, metaCols };

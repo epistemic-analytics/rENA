@@ -91,6 +91,26 @@ const model = ena.fit(rows, { codes, units, conversations, window: 4, weightMode
 
 ---
 
+## Modeling a Subset of Units
+
+`unitsUsed` (= R's `units.used`) lists the units to model, as unit keys (the
+unit column values joined with `__`, as in `model.unitLabels`). Every row
+stays in the data: rows of other units still count as context in the modeled
+units' windows, but those units get no network and never reach sphere
+normalization, centering or rotation. Omit it to model every unit.
+
+```js
+// Students' connections to what teachers said are kept; teachers aren't units.
+const model = ena.fit(rows, { codes, units: ['Role', 'Name'], conversations,
+                              window: 4, unitsUsed: studentKeys });
+```
+
+`unitsUsed` works in `fit()`, `accumulate()`, `tuneWindowSize()` and `pria()`.
+This differs from dropping the other units' rows, which also removes them from
+everyone's windows.
+
+---
+
 ## Reduced-Code Search (PRIA)
 
 `pria()` finds the largest set of codes (up to `removeNum`, never leaving
