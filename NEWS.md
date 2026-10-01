@@ -1,7 +1,36 @@
 ## rENA 0.4.9
 
+#### New Features
+
+  * qeviz plotting backend. `ena.plot(backend = "qeviz")`, or
+    `options(rENA.plot.backend = "qeviz")`, draws plots with the qeviz package
+    (>= 0.5.0, from https://cran.qe-libs.org; Suggests) instead of plotly.
+    Existing plotting code works unchanged: `ena.plot.network()`,
+    `ena.plot.points()`, `ena.plot.group()`, `ena.plotter()`,
+    `ena.plot.subtraction()` and the pipe API (`add_network()`, `add_points()`,
+    `add_group()`, `with_means()`, `check_range()`, `show()`) add qeviz layers,
+    and `$plot` is a qeviz htmlwidget. Plotly stays the default.
+    * Widths and colours follow qeviz's model-wide scaling, so separate plots
+      of one model are comparable. `thickness`, `opacity`, `saturation`,
+      `scale.range` and `node.size` are ignored, with a warning once per
+      session.
+    * `ena.plotter()` multipliers become each plot's magnification, labelled
+      "(scaled Nx)", rather than multiplying the weights.
+    * Means drawn with `ena.plot.group()` keep their own confidence interval
+      and outlier interval.
+    * Not available on the qeviz backend: trajectories and movies
+      (`ena.plot.trajectory()`, `add_trajectory()`, `ena.plot.movie()`,
+      `with_trajectory()` warn and leave the plot unchanged), dashed edges,
+      label offsets, legends, and `scale.to = list(x =, y =)`.
+
 #### Bug Fixes & Improvements
 
+  * `ena.plot.interactive()`, `ena.export.html()`, `enaInteractiveOutput()` and
+    `renderEnaInteractive()` now wrap qeviz (>= 0.5.0) instead of a bundled
+    copy of qeviz 0.1.0. Same names and arguments. Means and confidence
+    intervals are now drawn for the groups shown (previously no means were
+    drawn); `outlier` defaults to `FALSE`; `iqr_factor` is deprecated (always
+    1.5 IQR). The bundled `inst/htmlwidgets/` widget is removed.
   * rena-wasm 0.1.8 (`@qe-libs/rena-wasm`): `fit()`, `accumulate()`,
     `tuneWindowSize()` and `pria()` take `unitsUsed`, the unit keys to model
     (= `units.used` in `ena.accumulate.data()`). Other units' rows stay in the
