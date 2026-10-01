@@ -13,6 +13,9 @@
       columns.
     * Custom rotations: `rotationSet` projects into another model's space, as
       `ena.make.set(rotation.set = )` does.
+    * `sphereNorm: false` (= `norm.by = fun_skip_sphere_norm`) and
+      `centerAlignToOrigin: false` (= `center.align.to.origin = FALSE`) for
+      unordered models.
 
 ## rENA 0.4.9
 

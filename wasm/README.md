@@ -123,6 +123,24 @@ const model = ena.fit(rows, { codes, units, conversations, window: Infinity });
 
 ---
 
+## Normalization and Centring
+
+`sphereNorm` (default `true`, = R's `norm.by = fun_sphere_norm`) scales each
+unit's network to length 1. With `false` (= `fun_skip_sphere_norm`) every
+network is scaled by the longest network's length instead, keeping relative
+magnitudes. `centerAlignToOrigin` (default `true`, = `ena.make.set`'s
+`center.align.to.origin`) leaves zero-network units out of the centring mean
+and at the origin; with `false` the mean is taken over, and subtracted from,
+every unit. Both apply to unordered models only — ordered (ONA) models follow
+`ona::model()` — and work in `fit()` and `pria()`.
+
+```js
+const model = ena.fit(rows, { codes, units, conversations, window: 4,
+                              sphereNorm: false, centerAlignToOrigin: false });
+```
+
+---
+
 ## Projecting Into Another Model (Custom Rotation)
 
 `rotationSet` (= R's `rotation.set` in `ena.make.set()`) projects a model into
@@ -310,4 +328,5 @@ npm test
 Tests cover the simple windowed pipeline (`test/ena.test.js`), the
 context-tensor path (`test/tensor.test.js`), and infinite / time-based
 windows, flexible horizons and custom rotations against R
-(`test/windows-horizons-rotation.test.js`).
+(`test/windows-horizons-rotation.test.js`), and the normalization / centring
+options against `ena.make.set()` (`test/norm-center.test.js`).

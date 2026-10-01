@@ -127,6 +127,16 @@ export function sphereNorm(qe, networks, nUnits, nConnections) {
     return new Float64Array(result.data);
 }
 
+/**
+ * Scale every network by the reciprocal of the largest row L2 norm, keeping
+ * relative magnitudes across units (= rENA's fun_skip_sphere_norm, used when
+ * sphere normalization is off).
+ */
+export function scaleNetworks(qe, networks, nUnits, nConnections) {
+    const result = qe.scale_networks(networks, nUnits, nConnections);
+    return new Float64Array(result.data);
+}
+
 // ── centering ─────────────────────────────────────────────────────────────────
 
 /**
@@ -137,17 +147,21 @@ export function sphereNorm(qe, networks, nUnits, nConnections) {
  *   rows, as rENA's center(exclude_zero_networks = TRUE) does -- the ONA
  *   convention (ona::model). By default zero-network rows stay at zero, as in
  *   rENA's ena.make.set().
+ * @param {boolean} [includeZeroRows=false]  Take the mean over every row,
+ *   zero networks included, and shift every row by it: rENA's
+ *   ena.make.set(center.align.to.origin = FALSE). Overrides shiftZeroRows.
  * @returns {{ centered: Float64Array, centerVec: Float64Array }}
  *   centered  — mean-subtracted networks
  *   centerVec — the column means used for centering (= R's rotation$center.vec)
  */
-export function center(qe, networks, nUnits, nConnections, shiftZeroRows = false) {
-    // Identify non-zero rows
+export function center(qe, networks, nUnits, nConnections, shiftZeroRows = false,
+                       includeZeroRows = false) {
+    // Identify non-zero rows (every row when zero networks are included)
     const active = [];
     for (let u = 0; u < nUnits; u++) {
         let rowSum = 0;
         for (let c = 0; c < nConnections; c++) rowSum += Math.abs(networks[u * nConnections + c]);
-        if (rowSum > 0) active.push(u);
+        if (rowSum > 0 || includeZeroRows) active.push(u);
     }
 
     // Compute column means over active rows only (= R's rotation$center.vec)
@@ -164,7 +178,7 @@ export function center(qe, networks, nUnits, nConnections, shiftZeroRows = false
     const activeSet = new Set(active);
     const centered  = new Float64Array(networks.length);
     for (let u = 0; u < nUnits; u++) {
-        if (!shiftZeroRows && !activeSet.has(u)) continue;   // leave zero-network row as zero
+        if (!shiftZeroRows && !includeZeroRows && !activeSet.has(u)) continue;   // leave zero-network row as zero
         for (let c = 0; c < nConnections; c++) {
             centered[u * nConnections + c] = networks[u * nConnections + c] - means[c];
         }

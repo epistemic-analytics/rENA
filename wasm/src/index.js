@@ -43,7 +43,7 @@
 import loadLibQE from '@qe-libs/libqe-wasm';
 import { parseData } from './data.js';
 import {
-    sphereNorm, center,
+    sphereNorm, scaleNetworks, center,
     rotateSVD, rotateMeans, rotateGeneralized,
     project, nodePositions, spaceDistCorr, matmul,
 } from './pipeline.js';
@@ -353,20 +353,32 @@ function resolveRotationSet(rs, codes, nConnections, ordered) {
 
 // ── shared pipeline (post-accumulation) ──────────────────────────────────────
 
+// norm: { sphereNorm = true, centerAlignToOrigin = true } (= R's norm.by and
+// ena.make.set's center.align.to.origin). Unordered models only: ordered
+// (ONA) models always sphere-normalize and centre as ona::model() does, as
+// rENA.api's ordered pipeline did.
 function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
                      metaData, rotMethod, groupA, groupB, dims, gParams,
-                     rowConnectionCounts = null, ordered = false, rotationSet = null) {
+                     rowConnectionCounts = null, ordered = false, rotationSet = null,
+                     norm = {}) {
     const connectionNames = connectionNamesFor(qe, codes, ordered);
+    const useSphereNorm = ordered || norm.sphereNorm !== false;
+    const alignToOrigin = ordered || norm.centerAlignToOrigin !== false;
 
-    // Sphere norm → lineWeights (= R's set$line.weights)
-    const lineWeights = sphereNorm(qe, rawNetworks, nUnits, nConnections);
+    // Sphere norm → lineWeights (= R's set$line.weights). Without it, every
+    // network is scaled by the largest network's length (fun_skip_sphere_norm).
+    const lineWeights = useSphereNorm
+        ? sphereNorm(qe, rawNetworks, nUnits, nConnections)
+        : scaleNetworks(qe, rawNetworks, nUnits, nConnections);
 
     // Center → pointsForProjection (= R's model$points.for.projection)
     //          centerVec             (= R's rotation$center.vec)
-    // Ordered (ONA) models follow ona::model(): zero-network units are left
-    // out of the mean but still shifted by it.
+    // Zero-network units are left out of the mean and stay at the origin,
+    // unless centerAlignToOrigin is false (mean over, and shift of, every
+    // unit). Ordered (ONA) models follow ona::model(): zero-network units are
+    // left out of the mean but still shifted by it.
     const { centered: pointsForProjection, centerVec } =
-        center(qe, lineWeights, nUnits, nConnections, ordered);
+        center(qe, lineWeights, nUnits, nConnections, ordered, !alignToOrigin);
 
     // Custom rotation (= R's rotation.set): project into another model's
     // space -- its rotation matrix and node positions, and, for unordered
@@ -376,7 +388,8 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
         return runCustomRotation(qe, rawNetworks, lineWeights, pointsForProjection,
                                  centerVec, nUnits, nConnections, codes, unitLabels,
                                  metaData, dims, rowConnectionCounts, ordered,
-                                 resolveRotationSet(rotationSet, codes, nConnections, ordered));
+                                 resolveRotationSet(rotationSet, codes, nConnections, ordered),
+                                 alignToOrigin);
     }
 
     // Rotate
@@ -470,18 +483,19 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
 
 function runCustomRotation(qe, rawNetworks, lineWeights, ownCentered, ownCenterVec,
                            nUnits, nConnections, codes, unitLabels, metaData, dims,
-                           rowConnectionCounts, ordered, rs) {
+                           rowConnectionCounts, ordered, rs, alignToOrigin = true) {
     let pointsForProjection = ownCentered;
     let centerVec = ownCenterVec;
     if (!ordered) {
         // rENA center.projection: subtract the rotation set's center vector
-        // (zero-network units stay at the origin, as center() leaves them).
+        // (zero-network units stay at the origin unless centerAlignToOrigin
+        // is false, as center() leaves them).
         centerVec = rs.centerVec;
         pointsForProjection = new Float64Array(lineWeights.length);
         for (let u = 0; u < nUnits; u++) {
             let rowSum = 0;
             for (let c = 0; c < nConnections; c++) rowSum += Math.abs(lineWeights[u * nConnections + c]);
-            if (rowSum === 0) continue;
+            if (rowSum === 0 && alignToOrigin) continue;
             for (let c = 0; c < nConnections; c++) {
                 pointsForProjection[u * nConnections + c] = lineWeights[u * nConnections + c] - centerVec[c];
             }
@@ -575,6 +589,14 @@ export default async function loadENA() {
          *                                           centerVec, codes?, rotationCols?,
          *                                           eigenvalues?, columnNames? }; overrides
          *                                           opts.rotation
+         * @param {boolean}  [opts.sphereNorm=true] - Sphere-normalize each network (= R's
+         *                                           norm.by = fun_sphere_norm); false scales
+         *                                           all networks by the longest one
+         *                                           (fun_skip_sphere_norm). Unordered only.
+         * @param {boolean}  [opts.centerAlignToOrigin=true] - Keep zero-network units at the
+         *                                           origin and out of the centring mean (= R's
+         *                                           center.align.to.origin); false centres on
+         *                                           every unit. Unordered only.
          *
          * @returns {ENAModel}
          */
@@ -597,6 +619,8 @@ export default async function loadENA() {
                 unitsUsed,
                 horizons,
                 rotationSet,
+                sphereNorm:          useSphereNorm       = true,
+                centerAlignToOrigin                       = true,
             } = opts;
 
             if (!codes?.length)         throw new Error('opts.codes is required');
@@ -629,7 +653,7 @@ export default async function loadENA() {
             return runPipeline(qe, rawNetworks, nUnits, nConnections, codes,
                                unitLabels, metaData, rotMethod, groupA, groupB,
                                dims, gParams, rowConnectionCounts, ordered,
-                               rotationSet);
+                               rotationSet, { sphereNorm: useSphereNorm, centerAlignToOrigin });
         },
 
         /**
@@ -899,7 +923,8 @@ export default async function loadENA() {
          * @param {object}   opts  - fit() options (codes, units, conversations,
          *                           window, binary, ordered, tensor, weightModel,
          *                           codeMask, rotation, groupA, groupB, gParams,
-         *                           unitsUsed, horizons). A rotationSet is
+         *                           unitsUsed, horizons, sphereNorm,
+         *                           centerAlignToOrigin). A rotationSet is
          *                           ignored: it cannot rotate the reduced
          *                           models, so every candidate is scored in
          *                           opts.rotation.
@@ -916,6 +941,7 @@ export default async function loadENA() {
                 tensor: tensorDef, weightModel, codeMask,
                 rotation = 'svd', gParams, groupA, groupB,
                 removeNum = 3, threshold = 0.95, unitsUsed, horizons,
+                sphereNorm = true, centerAlignToOrigin = true,
             } = opts;
             if (!codes?.length)         throw new Error('opts.codes is required');
             if (!units?.length)         throw new Error('opts.units is required');
@@ -969,7 +995,8 @@ export default async function loadENA() {
                 }
                 return runPipeline(qe, networks, nUnits, nConn, keptCodes,
                                    unitLabels, metaData, rotation, groupA, groupB,
-                                   nConn, gParams, null, ordered);
+                                   nConn, gParams, null, ordered, null,
+                                   { sphereNorm, centerAlignToOrigin });
             };
 
             const D = 2;  // score on the first 2 dims (R's get_pria_scores_2Ds)
