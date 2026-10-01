@@ -1,5 +1,13 @@
 ## rENA 0.4.10
 
+#### New Features
+
+  * `skip_sphere_norm()`, the piped counterpart of `sphere_norm()` for
+    `fun_skip_sphere_norm`: every network is divided by the length of the
+    longest one instead of being scaled to length 1. Pass it as `normalize` to
+    `model()` (or `ona::model()`, which hands it on) to build a model without
+    sphere normalization, including ordered (ONA) models.
+
 #### Bug Fixes & Improvements
 
   * rena-wasm 0.1.9 (`@qe-libs/rena-wasm`) adds the remaining window and
@@ -13,9 +21,9 @@
       columns.
     * Custom rotations: `rotationSet` projects into another model's space, as
       `ena.make.set(rotation.set = )` does.
-    * `sphereNorm: false` (= `norm.by = fun_skip_sphere_norm`) and
-      `centerAlignToOrigin: false` (= `center.align.to.origin = FALSE`) for
-      unordered models.
+    * `sphereNorm: false` (= `norm.by = fun_skip_sphere_norm`; for ordered
+      models, `ona::model(normalize = skip_sphere_norm)`) and, for unordered
+      models, `centerAlignToOrigin: false` (= `center.align.to.origin = FALSE`).
 
 ## rENA 0.4.9
 

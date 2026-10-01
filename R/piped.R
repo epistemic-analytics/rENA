@@ -252,6 +252,57 @@ sphere_norm <- function(x, add.meta = TRUE) {
 }
 
 
+##' Scale ENA Data Without Spherical Normalization
+#'
+#' The counterpart of [sphere_norm()] for `norm.by = fun_skip_sphere_norm`:
+#' instead of scaling each unit's network to length 1, every network is divided
+#' by the length of the longest one, so relative magnitudes across units are
+#' kept. Pass it as `normalize` to [model()] (or to `ona::model()`, which hands
+#' it on) to build a model without sphere normalization.
+#'
+#' @param x An `ena.set` object or a numeric matrix of connection counts.
+#' @param add.meta A logical value. If `TRUE` (the default), metadata from the `ena.set` is preserved and included in the output. This parameter is ignored if `x` is a matrix.
+#'
+#' @return If `x` is an `ena.set`, it returns the modified `ena.set` with a new `line.weights` matrix and an updated `centervec` in the `rotation` object. If `x` is a matrix, it returns a matrix of scaled line weights.
+#' @export
+#'
+#' @examples
+#' data(RS.data)
+#'
+#' codes <- c("Data", "Technical.Constraints", "Performance.Parameters",
+#'            "Client.and.Consultant.Requests", "Design.Reasoning",
+#'            "Collaboration")
+#' units <- c("Condition", "UserName")
+#' horizon <- c("Condition", "GroupName")
+#' enaset <- RS.data |>
+#'   accumulate(units, codes, horizon) |>
+#'   model(normalize = skip_sphere_norm)
+skip_sphere_norm <- function(x, add.meta = TRUE) {
+  if (is(x, "ena.set")) {
+    if (is.null(x$connection.counts)) {
+      stop("Connection counts are missing.")
+    }
+
+    x_ <- as.matrix(x$connection.counts)
+    names_ <- colnames(x_)
+    meta_ <- if (isTRUE(add.meta)) x$meta.data else NULL
+
+    x$line.weights <- fun_skip_sphere_norm(x_)
+    colnames(x$line.weights) <- names_
+
+    x$line.weights <- as_line_weights_matrix(x$line.weights, meta_)
+    x$rotation$centervec <- colMeans(x$line.weights)
+  }
+  else {
+    x_ <- as.matrix(x)
+    names_ <- colnames(x_)
+    x <- fun_skip_sphere_norm(x_)
+    colnames(x) <- names_
+  }
+
+  return(x)
+}
+
 as_points_matrix <- function(x, metadata = NULL) {
   x_ <- data.table::as.data.table(x)
   for (i in seq(ncol(x_))) {

@@ -128,11 +128,13 @@ const model = ena.fit(rows, { codes, units, conversations, window: Infinity });
 `sphereNorm` (default `true`, = R's `norm.by = fun_sphere_norm`) scales each
 unit's network to length 1. With `false` (= `fun_skip_sphere_norm`) every
 network is scaled by the longest network's length instead, keeping relative
-magnitudes. `centerAlignToOrigin` (default `true`, = `ena.make.set`'s
-`center.align.to.origin`) leaves zero-network units out of the centring mean
-and at the origin; with `false` the mean is taken over, and subtracted from,
-every unit. Both apply to unordered models only — ordered (ONA) models follow
-`ona::model()` — and work in `fit()` and `pria()`.
+magnitudes; for ordered (ONA) models this is
+`ona::model(normalize = skip_sphere_norm)`. `centerAlignToOrigin` (default
+`true`, = `ena.make.set`'s `center.align.to.origin`) leaves zero-network units
+out of the centring mean and at the origin; with `false` the mean is taken
+over, and subtracted from, every unit. It applies to unordered models only —
+ordered models always centre as `ona::model()` does. Both work in `fit()` and
+`pria()`.
 
 ```js
 const model = ena.fit(rows, { codes, units, conversations, window: 4,

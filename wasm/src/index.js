@@ -353,16 +353,16 @@ function resolveRotationSet(rs, codes, nConnections, ordered) {
 
 // ── shared pipeline (post-accumulation) ──────────────────────────────────────
 
-// norm: { sphereNorm = true, centerAlignToOrigin = true } (= R's norm.by and
-// ena.make.set's center.align.to.origin). Unordered models only: ordered
-// (ONA) models always sphere-normalize and centre as ona::model() does, as
-// rENA.api's ordered pipeline did.
+// norm: { sphereNorm = true, centerAlignToOrigin = true } (= R's norm.by /
+// model(normalize =) and ena.make.set's center.align.to.origin). sphereNorm
+// applies to every model; centerAlignToOrigin to unordered models only --
+// ordered (ONA) models always centre as ona::model() does.
 function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
                      metaData, rotMethod, groupA, groupB, dims, gParams,
                      rowConnectionCounts = null, ordered = false, rotationSet = null,
                      norm = {}) {
     const connectionNames = connectionNamesFor(qe, codes, ordered);
-    const useSphereNorm = ordered || norm.sphereNorm !== false;
+    const useSphereNorm = norm.sphereNorm !== false;
     const alignToOrigin = ordered || norm.centerAlignToOrigin !== false;
 
     // Sphere norm → lineWeights (= R's set$line.weights). Without it, every
@@ -592,7 +592,8 @@ export default async function loadENA() {
          * @param {boolean}  [opts.sphereNorm=true] - Sphere-normalize each network (= R's
          *                                           norm.by = fun_sphere_norm); false scales
          *                                           all networks by the longest one
-         *                                           (fun_skip_sphere_norm). Unordered only.
+         *                                           (fun_skip_sphere_norm; for ordered models,
+         *                                           ona::model(normalize = skip_sphere_norm)).
          * @param {boolean}  [opts.centerAlignToOrigin=true] - Keep zero-network units at the
          *                                           origin and out of the centring mean (= R's
          *                                           center.align.to.origin); false centres on

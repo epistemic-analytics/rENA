@@ -121,8 +121,8 @@ test('rotationSet with centerAlignToOrigin=false shifts zero networks by the set
     expect(max).toBeLessThan(1e-12);
 });
 
-test('ordered models ignore both options (ona::model conventions)', () => {
+test('ordered models ignore centerAlignToOrigin (ona::model centring)', () => {
     const a = ena.fit(rows, { ...BASE, window: 4, ordered: true });
-    const b = ena.fit(rows, { ...BASE, window: 4, ordered: true, sphereNorm: false, centerAlignToOrigin: false });
+    const b = ena.fit(rows, { ...BASE, window: 4, ordered: true, centerAlignToOrigin: false });
     expect(Array.from(b.points)).toEqual(Array.from(a.points));
 });
