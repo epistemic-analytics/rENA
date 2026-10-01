@@ -2,6 +2,13 @@
 
 #### Bug Fixes & Improvements
 
+  * GMR (`ena.rotate.by.generalized`, and rena-wasm's `'generalized'`
+    rotation) is orthonormal again on models with a masked (all-zero)
+    connection, through libqe's `complete_rotation` fix (libqe > 0.1.5). One
+    of the SVD axes used to nearly duplicate GMR1, skewing those axes and the
+    variance shares (GMR1 23.7% instead of 29.9% on RS.data with one connection
+    masked). Unmasked models are unchanged.
+
   * rena-wasm: a model projected into another model's space (`rotationSet`)
     reports each dimension's share of the total variance, as
     `ena.make.set(rotation.set = )` does with the full rotation matrix. It
