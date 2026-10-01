@@ -407,6 +407,8 @@ export default async function loadENA() {
          * @param {number[]} [opts.groupB]         - Unit indices for means rotation group B
          * @param {object}   [opts.gParams]        - Pre-built GMR parameters for 'generalized' rotation
          * @param {number}   [opts.dims=2]         - Number of dimensions to return
+         * @param {string[]} [opts.unitsUsed]      - Unit keys to model (= R's units.used);
+         *                                           other units' rows remain as context
          *
          * @returns {ENAModel}
          */
@@ -426,6 +428,7 @@ export default async function loadENA() {
                 dims                 = 2,
                 codeMask,
                 weightModel,
+                unitsUsed,
             } = opts;
 
             if (!codes?.length)         throw new Error('opts.codes is required');
@@ -442,7 +445,7 @@ export default async function loadENA() {
 
             const { codeMatrix, nRows, nCodes, nUnits, unitLabels,
                     unitOf, convoGroups, metaData } =
-                parseData(rows, codes, units, conversations);
+                parseData(rows, codes, units, conversations, unitsUsed);
 
             // Every model accumulates through the tensor path; a plain moving
             // window is expressed as defaultTensor(window).
@@ -486,11 +489,12 @@ export default async function loadENA() {
                 tensor:  tensorDef,
                 codeMask,
                 weightModel,
+                unitsUsed,
             } = opts;
 
             const { codeMatrix, nRows, nCodes, nUnits, unitLabels,
                     unitOf, convoGroups, metaData } =
-                parseData(rows, codes, units, conversations);
+                parseData(rows, codes, units, conversations, unitsUsed);
 
             const { networks, rowConnectionCounts } = accumulateTensor(
                 qe, rows, codeMatrix, nRows, nCodes, nUnits,
@@ -509,7 +513,7 @@ export default async function loadENA() {
                 // (= R's ENAAccumulation$`_function.call`).
                 _call: { rows, codes, units, conversations,
                          window: windowSize, binary, ordered, tensor: tensorDef,
-                         weightModel },
+                         weightModel, unitsUsed },
             };
         },
 
@@ -547,12 +551,12 @@ export default async function loadENA() {
                 'maxSize must be greater than minSize to compare windows.'
             );
 
-            const { rows, codes, units, conversations, binary, ordered, weightModel } = call;
+            const { rows, codes, units, conversations, binary, ordered, weightModel, unitsUsed } = call;
 
             // Parse once; only the window size changes between iterations.
             const { codeMatrix, nRows, nCodes, nUnits, unitLabels,
                     unitOf, convoGroups, metaData } =
-                parseData(rows, codes, units, conversations);
+                parseData(rows, codes, units, conversations, unitsUsed);
             const nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
 
             // 1. Rebuild + fit at each window, collecting unit points.
@@ -590,7 +594,7 @@ export default async function loadENA() {
             // 4. Rebuild the accumulation at the selected window size.
             return api.accumulate(rows, {
                 codes, units, conversations, window: bestWindow, binary, ordered,
-                weightModel,
+                weightModel, unitsUsed,
             });
         },
 
@@ -722,7 +726,8 @@ export default async function loadENA() {
          * @param {Object[]} rows
          * @param {object}   opts  - fit() options (codes, units, conversations,
          *                           window, binary, ordered, tensor, weightModel,
-         *                           codeMask, rotation, groupA, groupB, gParams)
+         *                           codeMask, rotation, groupA, groupB, gParams,
+         *                           unitsUsed)
          *                           plus removeNum (default 3) and threshold
          *                           (default 0.95). `dims` is ignored: scoring
          *                           uses dims 1:2 and the variance uses all dims.
@@ -735,7 +740,7 @@ export default async function loadENA() {
                 window: windowSize = 4, binary = true, ordered = false,
                 tensor: tensorDef, weightModel, codeMask,
                 rotation = 'svd', gParams, groupA, groupB,
-                removeNum = 3, threshold = 0.95,
+                removeNum = 3, threshold = 0.95, unitsUsed,
             } = opts;
             if (!codes?.length)         throw new Error('opts.codes is required');
             if (!units?.length)         throw new Error('opts.units is required');
@@ -749,7 +754,7 @@ export default async function loadENA() {
             // Accumulate once, exactly as fit() would for these options.
             const { codeMatrix, nRows, nCodes, nUnits, unitLabels,
                     unitOf, convoGroups, metaData } =
-                parseData(rows, codes, units, conversations);
+                parseData(rows, codes, units, conversations, unitsUsed);
             const { networks: raw } = accumulateTensor(
                 qe, rows, codeMatrix, nRows, nCodes, nUnits,
                 unitOf, convoGroups, tensorDef ?? defaultTensor(windowSize),
