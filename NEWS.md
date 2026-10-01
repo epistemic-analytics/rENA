@@ -1,3 +1,14 @@
+## rENA (development version)
+
+#### Bug Fixes & Improvements
+
+  * rena-wasm: a model projected into another model's space (`rotationSet`)
+    reports each dimension's share of the total variance, as
+    `ena.make.set(rotation.set = )` does with the full rotation matrix. It
+    previously divided by the variance of only the dimensions the rotation
+    set carries (the webtool stores 6), which inflated the percentages
+    (e.g. 41.5% instead of 28.8% on dimension 1).
+
 ## rENA 0.4.10
 
 #### New Features

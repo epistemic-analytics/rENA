@@ -8,7 +8,8 @@
  * codes:
  *   inf / w4   ena.accumulate.data(..., window.size.back = Inf / 4)
  *   rot        src <- ena.make.set(<w4>, dimensions = 6)
- *              ena.make.set(<window 2>, dimensions = 6, rotation.set = src$rotation)
+ *              tgt <- ena.make.set(<window 2>, dimensions = 6, rotation.set = src$rotation)
+ *              → src rotation/nodes/center, tgt points and tgt$model$variance
  *   tma_*      the tma branch of rENA.api's ena.generate: tma:::contexts()
  *              with hoo_rules + split_rules, tma::context_tensor(mode_column =
  *              "GameHalf", default_window = 4) with the "Second" window set
@@ -216,6 +217,22 @@ test('rotationSet projects into another set, as ena.make.set(rotation.set =)', (
     const order = [3, 0, 5, 1, 4, 2];
     const fit2 = ena.fit(rows, { ...BASE, codes: order.map(i => CODES[i]), window: 2, dims: 6, rotationSet });
     for (let i = 0; i < fit.points.length; i++) expect(fit2.points[i]).toBeCloseTo(fit.points[i], 12);
+});
+
+test('rotationSet variance is the share of total variance, as R reports it', () => {
+    // R stores the full rotation; the webtool keeps only the first 6 columns.
+    // Either way the percentages must be R's (diag(var(points)) / total).
+    const R = FIXTURE.rot;
+    for (const cols of [R.src_rotation[0].length, 6]) {
+        const rotationSet = { rotationMatrix: R.src_rotation.map(r => r.slice(0, cols)),
+                              nodes: R.src_nodes.map(r => r.slice(0, cols)),
+                              centerVec: R.src_center, codes: CODES };
+        const fit = ena.fit(rows, { ...BASE, window: 2, dims: 15, rotationSet });
+        expect(fit.dims).toBe(cols);
+        for (let d = 0; d < Math.min(cols, 6); d++) {
+            expect(fit.model.variance[d]).toBeCloseTo(R.tgt_variance[d], 12);
+        }
+    }
 });
 
 test('rotationSet built from other codes is rejected', () => {

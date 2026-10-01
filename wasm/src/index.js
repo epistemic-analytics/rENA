@@ -64,7 +64,7 @@ export { detectParams, isBinary, scoreUnit, scoreConvo } from './detect.js';
  * @param {number}       dims
  * @returns {number[]}  length dims, sums to 1
  */
-function computeVariance(points, nUnits, dims) {
+function computeVariance(points, nUnits, dims, total = null) {
     if (nUnits < 2) return Array.from({ length: dims }, () => 1 / dims);
 
     // Column means
@@ -83,9 +83,27 @@ function computeVariance(points, nUnits, dims) {
         }
     for (let d = 0; d < dims; d++) variances[d] /= (nUnits - 1);
 
-    const total = Array.from(variances).reduce((a, b) => a + b, 0);
+    if (total == null) total = Array.from(variances).reduce((a, b) => a + b, 0);
     if (total === 0) return Array.from({ length: dims }, () => 1 / dims);
     return Array.from(variances).map(v => v / total);
+}
+
+/**
+ * Sum of the column sample variances of a row-major matrix (n-1 denominator,
+ * as R's var()).
+ */
+function totalVariance(m, nRows, nCols) {
+    if (nRows < 2) return 0;
+    let total = 0;
+    for (let c = 0; c < nCols; c++) {
+        let mean = 0;
+        for (let r = 0; r < nRows; r++) mean += m[r * nCols + c];
+        mean /= nRows;
+        let ss = 0;
+        for (let r = 0; r < nRows; r++) { const d = m[r * nCols + c] - mean; ss += d * d; }
+        total += ss / (nRows - 1);
+    }
+    return total;
 }
 
 /**
@@ -538,7 +556,13 @@ function runCustomRotation(qe, rawNetworks, lineWeights, ownCentered, ownCenterV
         nConnections,
         dims,
         centroids,
-        variance:             computeVariance(points, nUnits, dims),
+        // Share of the TOTAL variance, as R reports it with the full rotation
+        // matrix (ena.make.set: diag(var(points)) / sum over every dimension).
+        // A rotation is a complete basis, so that total is the variance of the
+        // centred, unrotated data -- which keeps the percentages right when the
+        // rotation set carries only the first few dimensions.
+        variance:             computeVariance(points, nUnits, dims,
+                                              totalVariance(pointsForProjection, nUnits, nConnections)),
         unitLabels,
         pointsForProjection,
         nodes,
