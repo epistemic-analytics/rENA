@@ -111,6 +111,47 @@ everyone's windows.
 
 ---
 
+## Infinite Windows
+
+`window: Infinity` (= R's `window.size.back = Inf`) connects each line to
+every earlier line in its conversation. It also works as a window in a
+context tensor.
+
+```js
+const model = ena.fit(rows, { codes, units, conversations, window: Infinity });
+```
+
+---
+
+## Projecting Into Another Model (Custom Rotation)
+
+`rotationSet` (= R's `rotation.set` in `ena.make.set()`) projects a model into
+another model's space instead of rotating it: the units are centred on the
+rotation set's `centerVec` and projected with its `rotationMatrix`, and the
+nodes are the rotation set's. Pass `codes` (the rotation set's code order) to
+have it reordered to the model's codes; a rotation set built from other codes
+is rejected. Centroids use the pinned nodes, so goodness of fit is measured
+against the nodes shown. Ordered models keep their own centring, as
+rENA.api's ordered pipeline does.
+
+```js
+const source = ena.fit(rowsA, { codes, units, conversations, window: 4 });
+const model  = ena.fit(rowsB, { codes, units, conversations, window: 4,
+  rotationSet: {
+    rotationMatrix: source.rotationMatrix, rotationCols: source.dims,
+    nodes:          source.rotation.nodes,
+    centerVec:      source.rotation.centerVec,
+    codes,
+  },
+});
+```
+
+`rotationMatrix` and `nodes` may also be arrays of rows (one per connection
+and per code), as R stores them. `pria()` ignores `rotationSet`: it cannot
+rotate the reduced models.
+
+---
+
 ## Reduced-Code Search (PRIA)
 
 `pria()` finds the largest set of codes (up to `removeNum`, never leaving
@@ -195,6 +236,40 @@ data[a + nA*b + nA*nB*1]  →  window for factor combination (a, b)
 | `dimsReceiver` | These axes use the *response* row's factor values (overrides ground) |
 | `dimsMode` | These axes use a shared mode value |
 
+### Time-based windows
+
+Set `timesCol` to measure windows in time instead of lines, and `timeUnit`
+('secs' (default), 'mins', 'hours', 'days', 'weeks') to give the tensor's
+windows in that unit. Numeric time columns are used as-is; otherwise each
+value is parsed as elapsed time (`MM:SS`, `HH:MM:SS`) or a date-time, in
+seconds, as rENA.api's `parse_date` does. `timesEndCol` uses each row's end
+time instead: a numeric column is a duration added to the start, anything
+else is the end timestamp.
+
+```js
+const tensor = { ...modalityTensor, timesCol: 'Timestamp', timeUnit: 'mins' };
+```
+
+### Flexible horizons
+
+`horizons` gives every unit its own horizon of observation (= tma
+`contexts()` with HOO rules, as rENA.api builds them for flexible horizons).
+`by` is the discriminator column and `rules` maps each of its values to the
+columns that define that value's horizon: a row is in unit U's horizon when
+each of those columns holds a value U has. Each horizon is split on the rules'
+columns — not on the discriminator, which only picks the rule — and windows
+run within each piece. Rows whose discriminator value has no rule are left
+out.
+
+```js
+const model = ena.fit(rows, {
+  codes, units, conversations: ['Modality'], tensor,
+  horizons: { by: 'Modality', rules: { chat: ['GroupName'], log: ['UserName'] } },
+});
+```
+
+`horizons` works in `fit()`, `accumulate()`, `tuneWindowSize()` and `pria()`.
+
 ### `defaultTensor` helper
 
 Express simple windowed accumulation as a tensor (IS_DEFAULT path):
@@ -232,5 +307,7 @@ npm install
 npm test
 ```
 
-Tests cover the simple windowed pipeline (`test/ena.test.js`) and the
-context-tensor path (`test/tensor.test.js`).
+Tests cover the simple windowed pipeline (`test/ena.test.js`), the
+context-tensor path (`test/tensor.test.js`), and infinite / time-based
+windows, flexible horizons and custom rotations against R
+(`test/windows-horizons-rotation.test.js`).

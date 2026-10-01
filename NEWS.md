@@ -1,3 +1,19 @@
+## rENA 0.4.10
+
+#### Bug Fixes & Improvements
+
+  * rena-wasm 0.1.9 (`@qe-libs/rena-wasm`) adds the remaining window and
+    rotation options of the R pipeline, each matching R on RS.data:
+    * `window: Infinity` = `window.size.back = Inf`.
+    * Time-based windows: a tensor's `timesCol` (parsed like rENA.api's
+      `parse_date`), `timeUnit` and `timesEndCol` match `tma::accumulate()`
+      with a time column.
+    * Flexible horizons: `horizons: { by, rules }` builds each unit's
+      contexts as `tma::contexts()` does with HOO rules, split on the horizon
+      columns.
+    * Custom rotations: `rotationSet` projects into another model's space, as
+      `ena.make.set(rotation.set = )` does.
+
 ## rENA 0.4.9
 
 #### New Features

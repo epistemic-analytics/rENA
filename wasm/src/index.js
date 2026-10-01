@@ -45,7 +45,7 @@ import { parseData } from './data.js';
 import {
     sphereNorm, center,
     rotateSVD, rotateMeans, rotateGeneralized,
-    project, nodePositions, spaceDistCorr,
+    project, nodePositions, spaceDistCorr, matmul,
 } from './pipeline.js';
 import { accumulateTensor, defaultTensor } from './tensor.js';
 
@@ -272,11 +272,90 @@ function applyCodeMask(networks, codeMask, nCodes, nUnits, nConnections, ordered
     }
 }
 
+// ── custom rotation (= R's rotation.set) ─────────────────────────────────────
+
+// Rows of a matrix given as an array of row arrays, or as flat row-major data
+// with `cols` columns.
+function matrixRows(m, cols) {
+    if (m == null) return null;
+    if (Array.isArray(m) && (m.length === 0 || Array.isArray(m[0]) || ArrayBuffer.isView(m[0]))) {
+        return m.map(r => Array.from(r, Number));
+    }
+    const flat = Array.from(m, Number);
+    if (!cols) throw new Error('a flat rotation matrix needs its column count');
+    const rows = [];
+    for (let i = 0; i < flat.length; i += cols) rows.push(flat.slice(i, i + cols));
+    return rows;
+}
+
+/**
+ * Validate a supplied rotation set (= R's ena.rotation.set, e.g. another
+ * model's rotation) against this model's codes, and reorder it to this
+ * model's code order. Throws when it cannot rotate this model.
+ *
+ * @param {object}   rs  { rotationMatrix, nodes, centerVec, codes?,
+ *                         rotationCols?, eigenvalues?, columnNames? }
+ *                       rotationMatrix: nConnections rows (array of rows, or
+ *                       flat row-major with rotationCols); nodes: one row per
+ *                       code; centerVec: one entry per connection.
+ * @returns {{ rotation: Float64Array, rotRows: number, rotCols: number,
+ *             nodes: number[][], centerVec: Float64Array,
+ *             eigenvalues: number[]|null, columnNames: string[] }}
+ */
+function resolveRotationSet(rs, codes, nConnections, ordered) {
+    const rot = matrixRows(rs.rotationMatrix, rs.rotationCols);
+    if (!rot || rot.length !== nConnections) {
+        throw new Error(
+            `rotationSet has ${rot ? rot.length : 0} connections but this model has ` +
+            `${nConnections} -- it was built from different codes` +
+            (ordered ? ' or is not an ordered model' : ' or is an ordered model')
+        );
+    }
+    const rotCols = rot[0].length;
+    const nodes   = matrixRows(rs.nodes, rotCols);
+    const center  = rs.centerVec ? Array.from(rs.centerVec, Number) : null;
+    if (!nodes || nodes.length !== codes.length) {
+        throw new Error('rotationSet.nodes must have one row per code');
+    }
+    if (!ordered && (!center || center.length !== nConnections)) {
+        throw new Error('rotationSet.centerVec must have one entry per connection');
+    }
+
+    // Map this model's codes/connections onto the rotation set's order.
+    let codeIdx = codes.map((_, i) => i);
+    let connIdx = Array.from({ length: nConnections }, (_, k) => k);
+    if (rs.codes) {
+        const src = rs.codes.map(String);
+        codeIdx = codes.map(c => src.indexOf(String(c)));
+        if (src.length !== codes.length || codeIdx.some(i => i < 0)) {
+            throw new Error('rotationSet.codes do not match this model\'s codes');
+        }
+        const srcKey = new Map(buildAdjacencyKey(src, ordered).map(([a, b], k) => [a + '\u0000' + b, k]));
+        connIdx = buildAdjacencyKey(codes, ordered).map(([a, b]) => {
+            const k = srcKey.get(a + '\u0000' + b) ?? (ordered ? undefined : srcKey.get(b + '\u0000' + a));
+            if (k === undefined) throw new Error(`rotationSet has no connection '${a} & ${b}'`);
+            return k;
+        });
+    }
+
+    const rotation = new Float64Array(nConnections * rotCols);
+    connIdx.forEach((k, r) => rotation.set(rot[k], r * rotCols));
+    return {
+        rotation, rotRows: nConnections, rotCols,
+        nodes:       codeIdx.map(i => nodes[i]),
+        centerVec:   center ? Float64Array.from(connIdx, k => center[k]) : null,
+        eigenvalues: rs.eigenvalues ? Array.from(rs.eigenvalues, Number) : null,
+        columnNames: (rs.columnNames && rs.columnNames.length >= rotCols)
+            ? rs.columnNames.slice(0, rotCols).map(String)
+            : Array.from({ length: rotCols }, (_, d) => `Dim${d + 1}`),
+    };
+}
+
 // ── shared pipeline (post-accumulation) ──────────────────────────────────────
 
 function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
                      metaData, rotMethod, groupA, groupB, dims, gParams,
-                     rowConnectionCounts = null, ordered = false) {
+                     rowConnectionCounts = null, ordered = false, rotationSet = null) {
     const connectionNames = connectionNamesFor(qe, codes, ordered);
 
     // Sphere norm → lineWeights (= R's set$line.weights)
@@ -288,6 +367,17 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
     // out of the mean but still shifted by it.
     const { centered: pointsForProjection, centerVec } =
         center(qe, lineWeights, nUnits, nConnections, ordered);
+
+    // Custom rotation (= R's rotation.set): project into another model's
+    // space -- its rotation matrix and node positions, and, for unordered
+    // models, its centering vector (rENA's center.projection). Ordered models
+    // keep their own centering, as rENA.api's ordered pipeline does.
+    if (rotationSet) {
+        return runCustomRotation(qe, rawNetworks, lineWeights, pointsForProjection,
+                                 centerVec, nUnits, nConnections, codes, unitLabels,
+                                 metaData, dims, rowConnectionCounts, ordered,
+                                 resolveRotationSet(rotationSet, codes, nConnections, ordered));
+    }
 
     // Rotate
     let rot;
@@ -378,6 +468,74 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
     });
 }
 
+function runCustomRotation(qe, rawNetworks, lineWeights, ownCentered, ownCenterVec,
+                           nUnits, nConnections, codes, unitLabels, metaData, dims,
+                           rowConnectionCounts, ordered, rs) {
+    let pointsForProjection = ownCentered;
+    let centerVec = ownCenterVec;
+    if (!ordered) {
+        // rENA center.projection: subtract the rotation set's center vector
+        // (zero-network units stay at the origin, as center() leaves them).
+        centerVec = rs.centerVec;
+        pointsForProjection = new Float64Array(lineWeights.length);
+        for (let u = 0; u < nUnits; u++) {
+            let rowSum = 0;
+            for (let c = 0; c < nConnections; c++) rowSum += Math.abs(lineWeights[u * nConnections + c]);
+            if (rowSum === 0) continue;
+            for (let c = 0; c < nConnections; c++) {
+                pointsForProjection[u * nConnections + c] = lineWeights[u * nConnections + c] - centerVec[c];
+            }
+        }
+    }
+
+    dims = Math.min(dims, rs.rotCols);
+    const rotationMatrix = new Float64Array(rs.rotRows * dims);
+    for (let r = 0; r < rs.rotRows; r++)
+        for (let d = 0; d < dims; d++)
+            rotationMatrix[r * dims + d] = rs.rotation[r * rs.rotCols + d];
+
+    const points = project(pointsForProjection, nUnits, nConnections,
+                           rs.rotation, rs.rotRows, rs.rotCols, dims);
+
+    // Nodes are the rotation set's (R keeps rotation.set$nodes). Centroids:
+    // ordered models keep optimize()'s centroids, as rENA.api does; unordered
+    // ones place each unit at its normalised node-weight average of the
+    // pinned nodes -- libqe's node_positions weights × the rotation set's
+    // nodes -- so goodness of fit is measured against the nodes shown.
+    const nodes = new Float64Array(codes.length * dims);
+    rs.nodes.forEach((row, c) => { for (let d = 0; d < dims; d++) nodes[c * dims + d] = Number(row[d]) || 0; });
+    let centroids;
+    if (ordered) {
+        centroids = nodePositions(qe, lineWeights, nUnits, nConnections, points, dims, true).centroids;
+    } else {
+        const w = qe.node_positions(lineWeights, nUnits, nConnections, points, nUnits, dims, dims).weights;
+        centroids = matmul(Float64Array.from(w.data), nUnits, w.cols, nodes, dims);
+    }
+
+    return new ENAModel({
+        connectionCounts:     rawNetworks,
+        rowConnectionCounts,
+        lineWeights,
+        points,
+        rotationMatrix,
+        metaData,
+        connectionNames:      connectionNamesFor(qe, codes, ordered),
+        nUnits,
+        nConnections,
+        dims,
+        centroids,
+        variance:             computeVariance(points, nUnits, dims),
+        unitLabels,
+        pointsForProjection,
+        nodes,
+        columnNames:          rs.columnNames.slice(0, dims),
+        eigenvalues:          rs.eigenvalues,
+        centerVec,
+        codes,
+        adjacencyKey:         buildAdjacencyKey(codes, ordered),
+    });
+}
+
 // ── main factory ─────────────────────────────────────────────────────────────
 
 /**
@@ -409,6 +567,14 @@ export default async function loadENA() {
          * @param {number}   [opts.dims=2]         - Number of dimensions to return
          * @param {string[]} [opts.unitsUsed]      - Unit keys to model (= R's units.used);
          *                                           other units' rows remain as context
+         * @param {object}   [opts.horizons]       - Flexible horizons { by, rules: { value: [cols] } }
+         *                                           (see tensor.js buildHorizonContexts); replaces
+         *                                           the conversations as the windowing contexts
+         * @param {object}   [opts.rotationSet]    - Project into another model's space (= R's
+         *                                           rotation.set): { rotationMatrix, nodes,
+         *                                           centerVec, codes?, rotationCols?,
+         *                                           eigenvalues?, columnNames? }; overrides
+         *                                           opts.rotation
          *
          * @returns {ENAModel}
          */
@@ -429,6 +595,8 @@ export default async function loadENA() {
                 codeMask,
                 weightModel,
                 unitsUsed,
+                horizons,
+                rotationSet,
             } = opts;
 
             if (!codes?.length)         throw new Error('opts.codes is required');
@@ -452,7 +620,7 @@ export default async function loadENA() {
             const { networks: rawNetworks, rowConnectionCounts } = accumulateTensor(
                 qe, rows, codeMatrix, nRows, nCodes, nUnits,
                 unitOf, convoGroups, tensorDef ?? defaultTensor(windowSize),
-                ordered, binary, weight
+                ordered, binary, weight, horizons
             );
             const nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
 
@@ -460,7 +628,8 @@ export default async function loadENA() {
 
             return runPipeline(qe, rawNetworks, nUnits, nConnections, codes,
                                unitLabels, metaData, rotMethod, groupA, groupB,
-                               dims, gParams, rowConnectionCounts, ordered);
+                               dims, gParams, rowConnectionCounts, ordered,
+                               rotationSet);
         },
 
         /**
@@ -468,7 +637,8 @@ export default async function loadENA() {
          * Returns raw (un-normalised) network vectors.
          *
          * @param {Object[]} rows
-         * @param {object}   opts  - codes, units, conversations, window, binary, ordered, tensor, weightModel
+         * @param {object}   opts  - codes, units, conversations, window, binary, ordered, tensor,
+         *                           weightModel, codeMask, unitsUsed, horizons
          * @returns {{
          *   connectionCounts: Float64Array,
          *   rowConnectionCounts: Float64Array | null,
@@ -490,6 +660,7 @@ export default async function loadENA() {
                 codeMask,
                 weightModel,
                 unitsUsed,
+                horizons,
             } = opts;
 
             const { codeMatrix, nRows, nCodes, nUnits, unitLabels,
@@ -499,7 +670,7 @@ export default async function loadENA() {
             const { networks, rowConnectionCounts } = accumulateTensor(
                 qe, rows, codeMatrix, nRows, nCodes, nUnits,
                 unitOf, convoGroups, tensorDef ?? defaultTensor(windowSize),
-                ordered, binary, weightModelName(weightModel)
+                ordered, binary, weightModelName(weightModel), horizons
             );
             const nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
 
@@ -513,7 +684,7 @@ export default async function loadENA() {
                 // (= R's ENAAccumulation$`_function.call`).
                 _call: { rows, codes, units, conversations,
                          window: windowSize, binary, ordered, tensor: tensorDef,
-                         weightModel, unitsUsed },
+                         weightModel, unitsUsed, horizons },
             };
         },
 
@@ -551,7 +722,8 @@ export default async function loadENA() {
                 'maxSize must be greater than minSize to compare windows.'
             );
 
-            const { rows, codes, units, conversations, binary, ordered, weightModel, unitsUsed } = call;
+            const { rows, codes, units, conversations, binary, ordered, weightModel, unitsUsed,
+                    horizons } = call;
 
             // Parse once; only the window size changes between iterations.
             const { codeMatrix, nRows, nCodes, nUnits, unitLabels,
@@ -566,7 +738,7 @@ export default async function loadENA() {
                 const { networks: raw } = accumulateTensor(
                     qe, rows, codeMatrix, nRows, nCodes, nUnits,
                     unitOf, convoGroups, defaultTensor(w), ordered, binary,
-                    weightModelName(weightModel)
+                    weightModelName(weightModel), horizons
                 );
                 const model = runPipeline(
                     qe, raw, nUnits, nConnections, codes,
@@ -594,7 +766,7 @@ export default async function loadENA() {
             // 4. Rebuild the accumulation at the selected window size.
             return api.accumulate(rows, {
                 codes, units, conversations, window: bestWindow, binary, ordered,
-                weightModel, unitsUsed,
+                weightModel, unitsUsed, horizons,
             });
         },
 
@@ -727,7 +899,10 @@ export default async function loadENA() {
          * @param {object}   opts  - fit() options (codes, units, conversations,
          *                           window, binary, ordered, tensor, weightModel,
          *                           codeMask, rotation, groupA, groupB, gParams,
-         *                           unitsUsed)
+         *                           unitsUsed, horizons). A rotationSet is
+         *                           ignored: it cannot rotate the reduced
+         *                           models, so every candidate is scored in
+         *                           opts.rotation.
          *                           plus removeNum (default 3) and threshold
          *                           (default 0.95). `dims` is ignored: scoring
          *                           uses dims 1:2 and the variance uses all dims.
@@ -740,7 +915,7 @@ export default async function loadENA() {
                 window: windowSize = 4, binary = true, ordered = false,
                 tensor: tensorDef, weightModel, codeMask,
                 rotation = 'svd', gParams, groupA, groupB,
-                removeNum = 3, threshold = 0.95, unitsUsed,
+                removeNum = 3, threshold = 0.95, unitsUsed, horizons,
             } = opts;
             if (!codes?.length)         throw new Error('opts.codes is required');
             if (!units?.length)         throw new Error('opts.units is required');
@@ -758,7 +933,7 @@ export default async function loadENA() {
             const { networks: raw } = accumulateTensor(
                 qe, rows, codeMatrix, nRows, nCodes, nUnits,
                 unitOf, convoGroups, tensorDef ?? defaultTensor(windowSize),
-                ordered, binary, weightModelName(weightModel)
+                ordered, binary, weightModelName(weightModel), horizons
             );
             const nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
             applyCodeMask(raw, codeMask, nCodes, nUnits, nConnections, ordered);

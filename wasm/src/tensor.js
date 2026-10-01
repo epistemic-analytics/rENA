@@ -36,8 +36,24 @@
  *
  *     // Optional column name for per-row timestamps.
  *     // Defaults to row index (0, 1, 2, ...) — equivalent to unit-step time.
+ *     // Numeric columns are used as-is; otherwise every value is parsed as
+ *     // elapsed time (MM:SS, HH:MM:SS) or a date-time, in seconds (parseTimes).
  *     timesCol: 'timestamp',
+ *
+ *     // Optional unit the windows in `data` are expressed in when timesCol is
+ *     // set: 'secs' (default) | 'mins' | 'hours' | 'days' | 'weeks'. Windows
+ *     // are converted to seconds before accumulation, as rENA.api does with
+ *     // mins_to_seconds() etc.
+ *     timeUnit: 'mins',
+ *
+ *     // Optional end-time column (rENA.api's timeend_column). A numeric column
+ *     // is a duration added to the start time; anything else is parsed as the
+ *     // row's end timestamp. Either way the row's time becomes its end time.
+ *     timesEndCol: 'duration',
  *   }
+ *
+ * A window of Infinity (e.g. defaultTensor(Infinity), = rENA's
+ * window.size.back = Inf) includes every earlier line of the conversation.
  *
  * Simple windowed accumulation (IS_DEFAULT path):
  *   Pass `{ dims: [2], dimsSender: [], dimsReceiver: [], dimsMode: [],
@@ -75,25 +91,123 @@ export function buildContextLookup(rows, rowIndices, factors, factorLevels) {
 }
 
 /**
- * Build the context_lookup with explicit timestamp column.
+ * Build the context_lookup with explicit per-row times.
+ *
+ * @param {Float64Array} allTimes  time of every row in `rows` (see parseTimes)
  */
-export function buildContextLookupWithTimes(rows, rowIndices, factors, factorLevels, timesCol) {
-    const nRows   = rowIndices.length;
-    const nFactor = factors.length;
+export function buildContextLookupWithTimes(rows, rowIndices, factors, factorLevels, allTimes) {
+    const ctx = buildContextLookup(rows, rowIndices, factors, factorLevels);
+    for (let i = 0; i < rowIndices.length; i++) ctx.times[i] = allTimes[rowIndices[i]];
+    return ctx;
+}
 
-    const contextLookup = new Int32Array(nRows * nFactor);
-    const times         = new Float64Array(nRows);
+// Seconds per window unit (= rENA.api's mins_to_seconds, hours_to_seconds, ...).
+const SECONDS_PER = { secs: 1, mins: 60, hours: 3600, days: 86400, weeks: 604800 };
 
-    for (let i = 0; i < nRows; i++) {
-        const row = rows[rowIndices[i]];
-        times[i] = Number(row[timesCol]) || i;
-        for (let f = 0; f < nFactor; f++) {
-            const col = factors[f];
-            contextLookup[i * nFactor + f] = factorLevels[col][row[col]] ?? 0;
+/**
+ * Seconds per unit of a time-window unit name ('secs', 'mins', 'hours',
+ * 'days', 'weeks'; quotes and a trailing 's' are optional). 'lines' and empty
+ * values return null (no time scaling).
+ */
+export function secondsPerTimeUnit(unit) {
+    if (unit == null) return null;
+    let u = String(unit).replace(/['"]/g, '').trim().toLowerCase();
+    if (u === '' || u === 'lines' || u === 'auto') return null;
+    if (u === 'minutes' || u === 'min') u = 'mins';
+    if (u === 'seconds' || u === 'sec') u = 'secs';
+    if (!u.endsWith('s')) u += 's';
+    if (!(u in SECONDS_PER)) throw new Error(`Unknown time unit '${unit}'`);
+    return SECONDS_PER[u];
+}
+
+const pad2 = (s) => (s.length === 1 ? '0' + s : s);
+
+// Date-time formats rENA.api's parse_date tries, in the same order. Each
+// pattern captures the fields named in `order`; a match is accepted only when
+// the fields form a real date (so 9/17/2013 is rejected as d/m/Y and falls
+// through to m/d/Y, exactly as as.POSIXct returns NA for it in R).
+const DATE_FORMATS = [
+    { re: /^(\d{4})-(\d{2})-(\d{2})$/,                                  order: 'Ymd' },
+    { re: /^(\d{2})\/(\d{2})\/(\d{4})$/,                                order: 'dmY' },
+    { re: /^(\d{2})\/(\d{2})\/(\d{4})$/,                                order: 'mdY' },
+    { re: /^(\d{4})\/(\d{2})\/(\d{2})$/,                                order: 'Ymd' },
+    { re: /^(\d{2})-(\d{2})-(\d{4})$/,                                  order: 'mdY' },
+    { re: /^(\d{2})-(\d{2})-(\d{4})$/,                                  order: 'dmY' },
+    { re: /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/,           order: 'YmdHMS' },
+    { re: /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2}):(\d{2})$/,         order: 'dmYHMS' },
+    { re: /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2}):(\d{2})$/,         order: 'mdYHMS' },
+    { re: /^(\d{2})\/(\d{2})\/(\d{2}) (\d{2}):(\d{2})$/,                 order: 'mdyHM' },
+    { re: /^(\d{2})\/(\d{2})\/(\d{2}) (\d{2}):(\d{2})$/,                 order: 'dmyHM' },
+    { re: /^(\d{1,2})\/(\d{1,2})\/(\d{4}) (\d{2}):(\d{2})$/,             order: 'mdYHM' },
+    { re: /^(\d{1,2})\/(\d{1,2})\/(\d{2}) (\d{2}):(\d{2})$/,             order: 'mdyHM' },
+];
+
+/**
+ * Parse one time value to seconds (= rENA.api's parse_date): elapsed
+ * "MM:SS" / "HH:MM:SS" → total seconds; a date-time → seconds since the
+ * epoch (UTC). Returns NaN when the value matches no supported format.
+ */
+export function parseTimeValue(value) {
+    let s = String(value).trim();
+    s = s.replace(/ (\d):/g, ' 0$1:')
+         .replace(/^(\d)(\/|-)/, '0$1$2')
+         .replace(/(\/|-)(\d)(\/|-)/g, (_, a, d, b) => a + '0' + d + b);
+
+    let m;
+    if ((m = /^(\d{1,2}):(\d{2})$/.exec(s)))        return (+m[1]) * 60 + (+m[2]);
+    if ((m = /^(\d{1,3}):(\d{2}):(\d{2})$/.exec(s))) return (+m[1]) * 3600 + (+m[2]) * 60 + (+m[3]);
+
+    for (const { re, order } of DATE_FORMATS) {
+        if (!(m = re.exec(s))) continue;
+        const f = { Y: null, m: 1, d: 1, H: 0, M: 0, S: 0 };
+        for (let i = 0; i < order.length; i++) {
+            const v = +m[i + 1];
+            if (order[i] === 'y') f.Y = v <= 68 ? 2000 + v : 1900 + v;  // R's %y pivot
+            else f[order[i]] = v;
         }
+        if (f.m < 1 || f.m > 12 || f.d < 1 || f.H > 23 || f.M > 59 || f.S > 61) continue;
+        const ms = Date.UTC(f.Y, f.m - 1, f.d, f.H, f.M, f.S);
+        if (new Date(ms).getUTCDate() !== f.d) continue;             // e.g. 31/02
+        return ms / 1000;
     }
+    return NaN;
+}
 
-    return { contextLookup, clRows: nRows, clCols: nFactor, times };
+/**
+ * Per-row times, in seconds, for a time column (= rENA.api's handling of
+ * time_column / timeend_column before tma::accumulate). A column whose values
+ * are all numeric is used as-is; otherwise every value is parsed with
+ * parseTimeValue(). With `endCol`, a numeric end column is a duration added
+ * to the start, and any other end column is parsed as the end timestamp.
+ *
+ * @param {Object[]}    rows
+ * @param {string}      col
+ * @param {string|null} [endCol=null]
+ * @returns {Float64Array}
+ * @throws when a value cannot be parsed as a time
+ */
+export function parseTimes(rows, col, endCol = null) {
+    const column = (name) => {
+        const vals = rows.map(r => r[name]);
+        const blank = (v) => v === undefined || v === null || String(v).trim() === '';
+        const nums = vals.map(v => (blank(v) ? NaN : Number(v)));
+        const numeric = nums.every((n, i) => !Number.isNaN(n) || blank(vals[i]));
+        const out = new Float64Array(rows.length);
+        for (let i = 0; i < rows.length; i++) {
+            const t = numeric ? nums[i] : parseTimeValue(vals[i]);
+            if (Number.isNaN(t)) {
+                throw new Error(`Unable to read '${vals[i]}' (row ${i + 1}) in time column '${name}' as a time`);
+            }
+            out[i] = t;
+        }
+        return { out, numeric };
+    };
+
+    const start = column(col).out;
+    if (!endCol) return start;
+    const end = column(endCol);
+    if (end.numeric) for (let i = 0; i < start.length; i++) end.out[i] += start[i];
+    return end.out;
 }
 
 /**
@@ -119,6 +233,79 @@ export function inferFactorLevels(rows, factors) {
     return levels;
 }
 
+// libqe's apply_tensor_unit reads the IS_DEFAULT window as an int, so an
+// infinite window (or one too large for int32) is clamped to INT32_MAX — still
+// longer than any conversation, in lines or in seconds.
+const MAX_WINDOW = 2147483647;
+
+/**
+ * The tensor data libqe accumulates with: windows (the second half of the
+ * column-major data, index 1 along the last axis) converted from `timeUnit`
+ * to seconds when a time column is in use, and infinite / oversized windows
+ * clamped to MAX_WINDOW. Weights are left unchanged.
+ */
+export function resolveTensorData(tensorDef) {
+    const data  = Float64Array.from(tensorDef.data);
+    const nComb = data.length / 2;
+    const scale = tensorDef.timesCol ? (secondsPerTimeUnit(tensorDef.timeUnit) ?? 1) : 1;
+    for (let c = nComb; c < data.length; c++) {
+        const w = data[c] * scale;
+        data[c] = (Number.isNaN(w) || w > MAX_WINDOW) ? MAX_WINDOW : w;
+    }
+    return data;
+}
+
+/**
+ * Per-unit horizon-of-observation contexts (= tma::contexts with rENA.api's
+ * flexible-horizon rules). `horizons.rules` maps each value of the
+ * discriminator column `horizons.by` to the columns that define that
+ * horizon. A row with discriminator value x is in unit U's context when every
+ * rule-x column holds a value U has on at least one of its rows
+ * (`col %in% UNIT$col`); rows whose value has no rule are in no context. Each
+ * unit's context is then split on the union of every rule's columns (NOT on
+ * the discriminator, which only picks the rule), and the moving window runs
+ * within each piece.
+ *
+ * @param {Object[]}   rows
+ * @param {Int32Array} unitOf   unit index per row (-1 = not a modeled unit)
+ * @param {number}     nUnits
+ * @param {{ by: string, rules: Object<string, string[]> }} horizons
+ * @returns {number[][][]}  per unit, its context pieces as ascending row indices
+ */
+export function buildHorizonContexts(rows, unitOf, nUnits, horizons) {
+    const { by, rules } = horizons || {};
+    if (!by) throw new Error('horizons.by (the discriminator column) is required');
+    const ruleCols = new Map();
+    for (const [value, cols] of Object.entries(rules || {})) {
+        if (!Array.isArray(cols) || cols.length === 0) {
+            throw new Error(`horizon '${value}' of '${by}' has no columns assigned`);
+        }
+        ruleCols.set(String(value), cols);
+    }
+    if (ruleCols.size === 0) throw new Error('horizons.rules must define at least one horizon');
+    const splitCols = [...new Set([].concat(...ruleCols.values()))];
+
+    // UNIT$col: every value each unit takes on each rule column.
+    const unitVals = Array.from({ length: nUnits }, () => new Map(splitCols.map(c => [c, new Set()])));
+    for (let i = 0; i < rows.length; i++) {
+        const u = unitOf[i];
+        if (u < 0) continue;
+        for (const c of splitCols) unitVals[u].get(c).add(String(rows[i][c]));
+    }
+
+    return unitVals.map((vals) => {
+        const pieces = new Map();   // split key → row indices (first-appearance order)
+        for (let i = 0; i < rows.length; i++) {
+            const cols = ruleCols.get(String(rows[i][by]));
+            if (!cols || !cols.every(c => vals.get(c).has(String(rows[i][c])))) continue;
+            const key = splitCols.map(c => String(rows[i][c])).join('\u0000');
+            if (!pieces.has(key)) pieces.set(key, []);
+            pieces.get(key).push(i);
+        }
+        return [...pieces.values()];
+    });
+}
+
 /**
  * Accumulate tensor networks for all units across all conversations.
  *
@@ -141,6 +328,9 @@ export function inferFactorLevels(rows, factors) {
  * @param {string|null} [weight=null]  libqe weight model applied per line before
  *                                     the unit sum: 'binary' | 'product' |
  *                                     'sqrt' | 'log1p'
+ * @param {object|null} [horizons=null] flexible horizons (see
+ *                                     buildHorizonContexts); replaces
+ *                                     convoGroups as the windowing contexts
  *
  * @returns {{ networks: Float64Array, rowConnectionCounts: Float64Array }}
  *   networks            nUnits × nConnections, row-major
@@ -150,19 +340,21 @@ export function inferFactorLevels(rows, factors) {
  */
 export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
                                   unitOf, convoGroups, tensorDef, ordered = false,
-                                  binary = true, weight = null) {
+                                  binary = true, weight = null, horizons = null) {
     const {
         dims,
         dimsSender   = [],
         dimsReceiver = [],
         dimsMode     = [],
         factors      = [],
-        data:   tensorData,
         timesCol,
+        timesEndCol,
     } = tensorDef;
+    const tensorData = resolveTensorData(tensorDef);
 
     // Resolve factor levels (infer if not provided)
     const factorLevels = tensorDef.factorLevels ?? inferFactorLevels(rows, factors);
+    const allTimes = timesCol ? parseTimes(rows, timesCol, timesEndCol || null) : null;
 
     const nConnections = ordered
         ? nCodes * nCodes
@@ -179,74 +371,91 @@ export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
     const receiverArr = new Int32Array(dimsReceiver);
     const modeArr    = new Int32Array(dimsMode);
 
-    for (const [, rowIndices] of convoGroups) {
-        const nConvo = rowIndices.length;
+    // Accumulate `unit`'s response rows (`localRows`, indices into
+    // `rowIndices`) within one context of rows.
+    const accumulateContext = (rowIndices, unit, localRows) => {
+        const nCtx = rowIndices.length;
 
-        // Extract code rows for this conversation
-        const convoCodes = new Float64Array(nConvo * nCodes);
-        for (let r = 0; r < nConvo; r++) {
+        // Extract code rows for this context
+        const ctxCodes = new Float64Array(nCtx * nCodes);
+        for (let r = 0; r < nCtx; r++) {
             const src = rowIndices[r];
-            convoCodes.set(
+            ctxCodes.set(
                 codeMatrix.subarray(src * nCodes, src * nCodes + nCodes),
                 r * nCodes
             );
         }
 
-        // Build context_lookup and times for this conversation
-        const { contextLookup, clRows, clCols, times } = timesCol
-            ? buildContextLookupWithTimes(rows, rowIndices, factors, factorLevels, timesCol)
+        // Build context_lookup and times for this context
+        const { contextLookup, clRows, clCols, times } = allTimes
+            ? buildContextLookupWithTimes(rows, rowIndices, factors, factorLevels, allTimes)
             : buildContextLookup(rows, rowIndices, factors, factorLevels);
 
+        // Always accumulate the DIRECTED per-response-row counts (ordered
+        // kernel), exactly as tma does — it calls apply_tensor with the
+        // default ordered=TRUE and defers the ordered-vs-unordered decision
+        // to aggregation.  Passing the unordered flag here would make the
+        // kernel emit an already-symmetric matrix that the fold below would
+        // then double-count.
+        const result = qe.accumulate_tensor_unit(
+            tensorData, dimsArr,
+            senderArr, receiverArr, modeArr,
+            contextLookup, clRows, clCols,
+            new Int32Array(localRows),
+            ctxCodes, nCtx, nCodes,
+            times,
+            true
+        );
+
+        // Finalise each raw per-response-row connection vector with libqe's
+        // shared kernel, exactly as tma does in R: fold to the upper
+        // triangle (unordered) or keep the directed row (ordered), then
+        // apply the weight model per line (binary clamp, product, sqrt,
+        // log1p) before the per-unit sum. Row i is local row localRows[i].
+        const rcc = result.row_connection_counts;
+        const fin = qe.finalize_row_connections(
+            rcc.data, rcc.rows, rcc.cols, nCodes, ordered, kernelWeight
+        );
+        const unitOff = unit * nConnections;
+        for (let i = 0; i < fin.rows; i++) {
+            const rowOff = rowIndices[localRows[i]] * nConnections;
+            const finOff = i * fin.cols;
+            for (let c = 0; c < nConnections; c++) {
+                const v = fin.data[finOff + c];
+                rowConnectionCounts[rowOff + c] = v;
+                networks[unitOff + c] += v;
+            }
+        }
+    };
+
+    if (horizons) {
+        // Flexible horizons: every unit has its own contexts.
+        const unitContexts = buildHorizonContexts(rows, unitOf, nUnits, horizons);
+        unitContexts.forEach((pieces, unit) => {
+            for (const rowIndices of pieces) {
+                const localRows = [];
+                for (let r = 0; r < rowIndices.length; r++) {
+                    if (unitOf[rowIndices[r]] === unit) localRows.push(r);
+                }
+                if (localRows.length) accumulateContext(rowIndices, unit, localRows);
+            }
+        });
+        return { networks, rowConnectionCounts };
+    }
+
+    for (const [, rowIndices] of convoGroups) {
         // Group response rows by unit (within this conversation). Rows with
         // no unit (unitOf = -1, excluded via unitsUsed) are never responses,
-        // but stay in convoCodes as context for the other units' windows.
+        // but stay in the context for the other units' windows.
         const unitConvoRows = new Map();
-        for (let r = 0; r < nConvo; r++) {
+        for (let r = 0; r < rowIndices.length; r++) {
             const unit = unitOf[rowIndices[r]];
             if (unit < 0) continue;
             if (!unitConvoRows.has(unit)) unitConvoRows.set(unit, []);
             unitConvoRows.get(unit).push(r);  // local (conversation-relative) index
         }
-
-        // Accumulate per unit
         for (const [unit, localRows] of unitConvoRows) {
-            const unitRowsArr = new Int32Array(localRows);
-
-            // Always accumulate the DIRECTED per-response-row counts (ordered
-            // kernel), exactly as tma does — it calls apply_tensor with the
-            // default ordered=TRUE and defers the ordered-vs-unordered decision
-            // to aggregation.  Passing the unordered flag here would make the
-            // kernel emit an already-symmetric matrix that the fold below would
-            // then double-count.
-            const result = qe.accumulate_tensor_unit(
-                tensorData, dimsArr,
-                senderArr, receiverArr, modeArr,
-                contextLookup, clRows, clCols,
-                unitRowsArr,
-                convoCodes, nConvo, nCodes,
-                times,
-                true
-            );
-
-            // Finalise each raw per-response-row connection vector with libqe's
-            // shared kernel, exactly as tma does in R: fold to the upper
-            // triangle (unordered) or keep the directed row (ordered), then
-            // apply the weight model per line (binary clamp, product, sqrt,
-            // log1p) before the per-unit sum. Row i is local row localRows[i].
-            const rcc = result.row_connection_counts;
-            const fin = qe.finalize_row_connections(
-                rcc.data, rcc.rows, rcc.cols, nCodes, ordered, kernelWeight
-            );
-            const unitOff = unit * nConnections;
-            for (let i = 0; i < fin.rows; i++) {
-                const rowOff = rowIndices[localRows[i]] * nConnections;
-                const finOff = i * fin.cols;
-                for (let c = 0; c < nConnections; c++) {
-                    const v = fin.data[finOff + c];
-                    rowConnectionCounts[rowOff + c] = v;
-                    networks[unitOff + c] += v;
-                }
-            }
+            accumulateContext(rowIndices, unit, localRows);
         }
     }
 
