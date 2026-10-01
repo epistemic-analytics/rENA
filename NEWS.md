@@ -1,3 +1,14 @@
+## rENA 0.4.9
+
+#### Bug Fixes & Improvements
+
+  * rena-wasm 0.1.8 (`@qe-libs/rena-wasm`): `fit()`, `accumulate()`,
+    `tuneWindowSize()` and `pria()` take `unitsUsed`, the unit keys to model
+    (= `units.used` in `ena.accumulate.data()`). Other units' rows stay in the
+    data as context for the modeled units' windows, but those units are not
+    modeled: they get no network and play no part in normalization, centring
+    or rotation. Results match `ena.accumulate.data(units.used = ...)`.
+
 ## rENA 0.4.8
 
 #### Bug Fixes & Improvements
