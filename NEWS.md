@@ -24,6 +24,8 @@
     * `sphereNorm: false` (= `norm.by = fun_skip_sphere_norm`; for ordered
       models, `ona::model(normalize = skip_sphere_norm)`) and, for unordered
       models, `centerAlignToOrigin: false` (= `center.align.to.origin = FALSE`).
+  * rena-wasm 0.1.9: a time of `0` in a numeric time column (`timesCol`) is
+    now read as 0; it was replaced by the row's position in its conversation.
 
 ## rENA 0.4.9
 

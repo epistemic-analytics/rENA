@@ -327,8 +327,10 @@ npm install
 npm test
 ```
 
-Tests cover the simple windowed pipeline (`test/ena.test.js`), the
-context-tensor path (`test/tensor.test.js`), and infinite / time-based
-windows, flexible horizons and custom rotations against R
-(`test/windows-horizons-rotation.test.js`), and the normalization / centring
-options against `ena.make.set()` (`test/norm-center.test.js`).
+Tests cover the simple windowed pipeline (`test/ena.test.js`) and the
+context-tensor path (`test/tensor.test.js`), and check against R: infinite and
+time-based windows, flexible horizons and custom rotations
+(`test/windows-horizons-rotation.test.js`), the normalization and centring
+options against `ena.make.set()` (`test/norm-center.test.js`), and ordered
+models with and without sphere normalization against `ona::model()`
+(`test/ona-model.test.js`, `test/ona-sphere-norm.test.js`).
