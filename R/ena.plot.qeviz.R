@@ -213,3 +213,13 @@
     x$qe <- qeviz::qe_range(x$qe, curr_max * 1.2)
   x
 }
+
+# ── Trajectories / movies: plotly only ───────────────────────────────────────
+# Not drawn on the qeviz backend (qeviz has no trajectories yet). The call is a
+# no-op with a warning; the plotly path is unchanged.
+.qe_no_trajectories <- function(fn) {
+  warning(structure(class = c("rENA_qeviz_unsupported", "warning", "condition"), list(
+    message = sprintf(paste0("%s() is not drawn on the qeviz backend; the plot is returned ",
+                             "unchanged. Use ena.plot(..., backend = \"plotly\") for trajectories."), fn),
+    call = NULL)))
+}

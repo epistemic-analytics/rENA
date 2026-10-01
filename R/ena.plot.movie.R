@@ -38,6 +38,11 @@ ena.plot.movie = function(
   show_tips = TRUE,
   title = NULL
 ) {
+  if (.qe_backend(enaplot)) {
+    .qe_no_trajectories("ena.plot.movie")
+    return(enaplot$plot)
+  }
+
   if (!requireNamespace("plotly", quietly = TRUE)) {
     stop("plotly is required for animated trajectory movies")
   }

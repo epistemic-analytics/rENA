@@ -253,6 +253,10 @@ group <- function(x, wh = NULL) {
 #' @export
 add_trajectory <- function(x, wh = NULL, ..., name = "plot") {
   plot <- x;
+  if (.qe_backend(plot)) {
+    .qe_no_trajectories("add_trajectory")
+    return(plot)
+  }
   set <- plot$enaset;
 
   subbed <- substitute(wh)
@@ -590,6 +594,10 @@ with_trajectory <- function(
   easing = "circle-in-out"
 ) {
   set <- x
+  if (length(set$plots) && .qe_backend(set$plots[[length(set$plots)]])) {
+    .qe_no_trajectories("with_trajectory")
+    return(invisible(set))
+  }
   if(!grepl(x = set$model$model.type, pattern = "Trajectory")) {
     stop(paste0("Unable to plot trajectories on model of type: ", set$model$model.type))
   }

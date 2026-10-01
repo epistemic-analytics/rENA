@@ -232,3 +232,27 @@ test_that("check_range grows / shrinks the qeviz range as on plotly", {
   if (pts_max * 1.2 > node_ext || pts_max < node_ext * 0.5) expect_equal(r, pts_max * 1.2)
   else expect_identical(r, "network")
 })
+
+# ── Phase 4: trajectories / movies stay plotly-only ──────────────────────────
+
+test_that("trajectory and movie functions warn and change nothing on qeviz", {
+  skip_if_not(.qe_ready(), "qeviz >= 0.5.0 not available")
+  set <- .backend_set()
+  p <- ena.plot(set, backend = "qeviz")
+  before <- p$qe
+  pts <- as.matrix(set$points)[1:10, 1:2]
+  by  <- as.character(set$points$ENA_UNIT[1:10])
+
+  expect_warning(out <- ena.plot.trajectory(p, points = pts, by = by),
+                 class = "rENA_qeviz_unsupported")
+  expect_identical(out$qe, before)
+  expect_warning(out <- add_trajectory(p), "backend = \"plotly\"")
+  expect_identical(out$qe, before)
+  expect_warning(mov <- ena.plot.movie(p, points = pts, by = by, time = seq_len(10)),
+                 class = "rENA_qeviz_unsupported")
+  expect_s3_class(mov, "qeviz")
+
+  set$plots <- list(p)
+  expect_warning(res <- with_trajectory(set), class = "rENA_qeviz_unsupported")
+  expect_length(res$plots, 1)
+})

@@ -97,6 +97,11 @@ ena.plot.trajectory = function(
   show.points = TRUE,
   show.curve = TRUE
 ) {
+  if (.qe_backend(enaplot)) {
+    .qe_no_trajectories("ena.plot.trajectory")
+    return(enaplot)
+  }
+
   if(!is.character(label.font.family)) {
     label.font.size = enaplot$get("font.family");
   }
