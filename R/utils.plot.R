@@ -428,9 +428,13 @@ add_network <- function(
   set <- plot$enaset;
 
   more_args <- list(...);
+  # qeviz: weights unscaled, edge.multiplier -> magnify on this layer.
+  backend <- if (.qe_backend(plot)) "qeviz" else "plotly"
+  em <- .qe_weight_mult(backend, edge.multiplier)
+  more_args$magnify <- .qe_magnify(backend, edge.multiplier)
 
   wh_subbed <- substitute(wh)
-  network <- colMeans(set$line.weights) * edge.multiplier;
+  network <- colMeans(set$line.weights) * em;
   
   if (is.language(wh_subbed)) {
     network <- try(eval(wh_subbed, parent.frame()), silent = TRUE)
@@ -468,7 +472,7 @@ add_network <- function(
   more_args$enaplot = plot;
   more_args$colors = colors;
   if(is.data.frame(network) || is.matrix(network) || is.numeric(network)) {
-    more_args$network = network * edge.multiplier;
+    more_args$network = network * em;
     plot <- do.call(ena.plot.network, more_args);
   }
 
@@ -822,6 +826,7 @@ scale.ENAplot <- function(x, center = NULL, scale = NULL) {
 #'
 #' @export
 check_range <- function(x) {
+  if (.qe_backend(x)) return(.qe_check_range(x))
   numbers <- as.numeric(sapply(x$plotted$points, function(p) max(as.matrix(p$data))));
   means <- as.numeric(sapply(x$plotted$means, function(p) max(as.matrix(p$data))));
 

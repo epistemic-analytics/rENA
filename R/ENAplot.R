@@ -87,6 +87,11 @@ ENAplot = R6::R6Class("ENAplot",
         if(!is.null(args$multiplier)) {
           private$multiplier = args$multiplier
         }
+        # qeviz backend: an explicit edge magnification (ena.plotter's
+        # multipliers), labelled "(scaled Nx)" on the plot.
+        if(!is.null(args$magnify)) {
+          private$magnify = args$magnify
+        }
         if(!is.null(args$point.size)) {
           self$point$size = args$point.size
         }
@@ -273,6 +278,7 @@ ENAplot = R6::R6Class("ENAplot",
     ####
       backend = "plotly",
       .plot = NULL,
+      magnify = NULL,
 
       dimension.labels = c("X","Y"),
 

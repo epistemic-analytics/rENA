@@ -172,3 +172,63 @@ test_that("ena.plot.group splits by per-point colours and rejects other methods"
   expect_error(ena.plot.group(ena.plot(set, backend = "qeviz"), set$points, method = "median"),
                "mean")
 })
+
+# ── Phase 3: composites ──────────────────────────────────────────────────────
+
+.net_row <- function(p) {
+  row <- p$qe$model$networks$data[[1]]
+  unlist(row[setdiff(names(row), "name")])
+}
+
+test_that("ena.plotter subtraction on qeviz: raw weights, multipliers as magnify", {
+  skip_if_not(.qe_ready(), "qeviz >= 0.5.0 not available")
+  set <- .backend_set()
+  first  <- set$points$Condition == "FirstGame"
+  second <- set$points$Condition == "SecondGame"
+  out <- ena.plotter(set, groupVar = "Condition", groups = c("FirstGame", "SecondGame"),
+                     mean = TRUE, subtractionMultiplier = 2, backend = "qeviz")
+  expect_named(out$plots, c("FirstGame", "SecondGame", "FirstGame-SecondGame"), ignore.order = TRUE)
+  sub <- out$plots[["FirstGame-SecondGame"]]
+  expect_identical(sub$get("backend"), "qeviz")
+  expect_equal(unname(.net_row(sub)),
+               unname(.lw_mean(set, first) - .lw_mean(set, second)), tolerance = 1e-6)
+  expect_match(sub$plot$x$graph, 'magnify="2"', fixed = TRUE)
+  expect_match(out$plots[["FirstGame"]]$plot$x$graph, 'magnify="1"', fixed = TRUE)
+  expect_equal(unname(.net_row(out$plots[["FirstGame"]])), unname(.lw_mean(set, first)), tolerance = 1e-6)
+  expect_setequal(vapply(sub$qe$model$groups$data, `[[`, "", "group"), c("FirstGame", "SecondGame"))
+})
+
+test_that("ena.plotter without multipliers adds no magnify; plotly path unchanged", {
+  skip_if_not(.qe_ready(), "qeviz >= 0.5.0 not available")
+  set <- .backend_set()
+  out <- ena.plotter(set, groupVar = "Condition", groups = "FirstGame", backend = "qeviz")
+  expect_false(grepl("magnify", out$plots[[1]]$plot$x$graph))
+  old <- options(rENA.plot.backend = "qeviz"); on.exit(options(old))
+  expect_identical(ena.plotter(set, unit = as.character(set$points$ENA_UNIT[1]))$plots[[1]]$get("backend"),
+                   "qeviz")
+  expect_s3_class(ena.plotter(set, groupVar = "Condition", groups = "FirstGame",
+                              backend = "plotly")$plots[[1]]$plot, "plotly")
+})
+
+test_that("add_network(edge.multiplier) becomes the layer's magnify on qeviz", {
+  skip_if_not(.qe_ready(), "qeviz >= 0.5.0 not available")
+  set <- .backend_set()
+  first <- set$points$Condition == "FirstGame"
+  m <- as.matrix(set$line.weights)[first, ]
+  p <- add_network(ena.plot(set, backend = "qeviz"), wh = m, edge.multiplier = 2)
+  expect_match(p$plot$x$graph, 'magnify="2"', fixed = TRUE)
+  expect_equal(unname(.net_row(p)), unname(colMeans(m)), tolerance = 1e-6)
+})
+
+test_that("check_range grows / shrinks the qeviz range as on plotly", {
+  skip_if_not(.qe_ready(), "qeviz >= 0.5.0 not available")
+  set <- .backend_set()
+  p <- add_points(ena.plot(set, backend = "qeviz"))
+  p <- check_range(p)
+  pts_max  <- max(abs(as.matrix(remove_meta_data(set$points))))
+  nodes <- as.data.frame(set$rotation$nodes)
+  node_ext <- max(abs(as.matrix(nodes[, vapply(nodes, is.numeric, logical(1))][, 1:2]))) * 1.2
+  r <- p$qe$graph_opts[["range"]]
+  if (pts_max * 1.2 > node_ext || pts_max < node_ext * 0.5) expect_equal(r, pts_max * 1.2)
+  else expect_identical(r, "network")
+})

@@ -20,6 +20,10 @@
 #' @param colors vector, character, of colors for groups or points. For two-group models supply two values (group1, group2); for single-group or no-group models supply one value. Defaults to "blue"/"red" for two groups and "black" otherwise.
 #' @param confidence.interval character, style of confidence interval shown on mean points: "box" (default), "crosshairs", or "none"
 #' @param print.plots logical, TRUE will show plots in the Viewer (default: FALSE)
+#' @param backend \code{"plotly"} (default) or \code{"qeviz"}; default
+#'   \code{getOption("rENA.plot.backend", "plotly")}. On qeviz the weights are
+#'   not multiplied: the multipliers become each plot's magnification
+#'   (labelled "(scaled Nx)").
 #' @param ... Additional parameters passed to set creation and plotting functions
 #' @export
 #' @return ena.set object
@@ -37,14 +41,19 @@ ena.plotter = function(
   colors = NULL,
   confidence.interval = "box",
   print.plots = F,
+  backend = getOption("rENA.plot.backend", "plotly"),
   ...
 ) {
+  backend <- match.arg(backend, c("plotly", "qeviz"))
+  # qeviz: weights unscaled, networkMultiplier -> magnify (see .qe_magnify()).
+  wm  <- .qe_weight_mult(backend, networkMultiplier)
+  mag <- .qe_magnify(backend, networkMultiplier)
   data = set$connection.counts;
 
   # set$plots[[length(set$plots)]] <- plot
   # plot <- set$plots[[length(set$plots)]]
   if(is.null(unit) == FALSE) {
-    plot = ena.plot(enaset = set,title = unit)
+    plot = ena.plot(enaset = set, title = unit, backend = backend, magnify = mag)
 
     if(any(set$points$ENA_UNIT == unit) == FALSE){
       stop("Unit does not exist!")
@@ -52,7 +61,7 @@ ena.plotter = function(
 
     point.row = set$points$ENA_UNIT == unit
     point = as.matrix(set$points)[point.row,]
-    point.lw = as.matrix(set$line.weights)[point.row,]*networkMultiplier
+    point.lw = as.matrix(set$line.weights)[point.row,]* wm
 
     unit.color = if (!is.null(colors)) colors[1] else "black"
     plot = ena.plot.points(enaplot = plot,points = point, colors = unit.color)
@@ -68,12 +77,12 @@ ena.plotter = function(
   }
 
   if(is.null(groupVar) == TRUE) {
-    plot = ena.plot(enaset = set, title = "All Units")
+    plot = ena.plot(enaset = set, title = "All Units", backend = backend, magnify = mag)
     base.color = if (!is.null(colors)) colors[1] else "black"
 
     if(network == TRUE) {
       lineweights = as.matrix(set$line.weights)
-      mean.lineweights = colMeans(lineweights) * networkMultiplier
+      mean.lineweights = colMeans(lineweights) * wm
 
       plot = ena.plot.network(plot, network = mean.lineweights, colors = base.color)
     }
@@ -111,12 +120,12 @@ ena.plotter = function(
       group = unique.groups
 
       group.rows = set$points[[groupVar]] == group
-      g.plot = ena.plot(enaset = set, title = group)
+      g.plot = ena.plot(enaset = set, title = group, backend = backend, magnify = mag)
       base.color = if (!is.null(colors)) colors[1] else "black"
 
       if(network == TRUE) {
         g.lw = as.matrix(set$line.weights)[group.rows, , drop = FALSE]
-        g.mean.lw = colMeans(g.lw) * networkMultiplier
+        g.mean.lw = colMeans(g.lw) * wm
         g.plot = ena.plot.network(g.plot, network = g.mean.lw, colors = base.color)
       }
 
@@ -158,7 +167,7 @@ ena.plotter = function(
                subtractionMultiplier = subtractionMultiplier,
                group1.color = if (!is.null(colors)) colors[1] else "blue",
                group2.color = if (!is.null(colors)) colors[2] else "red",
-               confidence.interval = confidence.interval)
+               confidence.interval = confidence.interval, backend = backend)
 
 
       if(print.plots == TRUE) {
@@ -176,12 +185,12 @@ ena.plotter = function(
     }
 
     group.rows = set$points[[groupVar]] == group
-    g.plot = ena.plot(enaset = set, title = group)
+    g.plot = ena.plot(enaset = set, title = group, backend = backend, magnify = mag)
     base.color = if (!is.null(colors)) colors[1] else "black"
 
     if(network == TRUE) {
       g.lw = as.matrix(set$line.weights)[group.rows, , drop = FALSE]
-      g.mean.lw = colMeans(g.lw) * networkMultiplier
+      g.mean.lw = colMeans(g.lw) * wm
 
       g.plot = ena.plot.network(g.plot, network = g.mean.lw, colors = base.color)
     }
@@ -229,7 +238,7 @@ ena.plotter = function(
       subtractionMultiplier = subtractionMultiplier,
       group1.color = if (!is.null(colors)) colors[1] else "blue",
       group2.color = if (!is.null(colors)) colors[2] else "red",
-      confidence.interval = confidence.interval,
+      confidence.interval = confidence.interval, backend = backend,
       ...
     )
 

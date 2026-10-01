@@ -17,6 +17,7 @@ ena.plotter(
   colors = NULL,
   confidence.interval = "box",
   print.plots = F,
+  backend = getOption("rENA.plot.backend", "plotly"),
   ...
 )
 }
@@ -44,6 +45,11 @@ ena.plotter(
 \item{confidence.interval}{character, style of confidence interval shown on mean points: "box" (default), "crosshairs", or "none"}
 
 \item{print.plots}{logical, TRUE will show plots in the Viewer (default: FALSE)}
+
+\item{backend}{\code{"plotly"} (default) or \code{"qeviz"}; default
+\code{getOption("rENA.plot.backend", "plotly")}. On qeviz the weights are
+not multiplied: the multipliers become each plot's magnification
+(labelled "(scaled Nx)").}
 
 \item{...}{Additional parameters passed to set creation and plotting functions}
 }

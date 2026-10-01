@@ -113,24 +113,29 @@
 
   thr <- threshold[is.finite(threshold)]
   if (!length(thr) || (length(thr) == 1 && thr[1] <= 0)) thr <- NULL
+  # Magnification: a layer's own (add_network(edge.multiplier)), else the
+  # plot's (ena.plotter multipliers), else ena.plot(multiplier) relative to
+  # rENA's default of 5.
   mult <- enaplot$get("multiplier")
+  magnify <- if (!is.null(dots$magnify)) dots$magnify
+             else if (!is.null(enaplot$get("magnify"))) enaplot$get("magnify")
+             else if (!is.null(mult) && mult != 5) mult / 5
   if ("edges" %in% layers)
     qe <- qeviz::qe_edges(qe, weights = network, colors = unname(.qe_hex(colors)),
-                          threshold = thr, name = legend.name,
-                          magnify = if (!is.null(mult) && mult != 5) mult / 5)
+                          threshold = thr, name = legend.name, magnify = magnify)
   enaplot$qe <- .qe_fonts(qe, supplied, label.font.size, label.font.family, label.font.color)
   enaplot
 }
 
 # ── ena.plot.points ──────────────────────────────────────────────────────────
 .qe_plot_points <- function(enaplot, supplied, points, point.size, labels, shape, colors,
-                            label.font.size, label.font.color, label.font.family, texts) {
+                            label.font.size, label.font.color, label.font.family, texts,
+                            legend.name) {
   fn <- "ena.plot.points"
   .qe_ignored(fn, supplied, c("confidence.interval.values", "outlier.interval.values",
                               "confidence.interval", "outlier.interval"),
               "per-point intervals are not supported; use ena.plot.group() for means")
-  .qe_ignored(fn, supplied, c("label.offset", "label.group", "show.legend", "legend.name"),
-              "not supported")
+  .qe_ignored(fn, supplied, c("label.offset", "label.group", "show.legend"), "not supported")
   if (is.null(points)) points <- enaplot$enaset$points
   df <- .qe_point_df(points, enaplot,
                      ids = if (!is.null(labels) && length(labels) == NROW(points) &&
@@ -139,7 +144,10 @@
                          color = unname(.qe_hex(colors)),
                          shape = if ("shape" %in% supplied) shape,
                          labels = if (!is.null(texts)) as.character(texts),
-                         size = if ("point.size" %in% supplied) point.size / 2)
+                         size = if ("point.size" %in% supplied) point.size / 2,
+                         # legend.name names the point set (add_points() passes
+                         # one per group); calls with the same name replace it.
+                         name = if ("legend.name" %in% supplied) legend.name)
   enaplot$qe <- .qe_fonts(qe, supplied, label.font.size, label.font.family, label.font.color)
   enaplot
 }
@@ -176,4 +184,32 @@
   }
   enaplot$qe <- .qe_fonts(qe, supplied, label.font.size, label.font.family, label.font.color)
   enaplot
+}
+
+# ── Multipliers (ena.plotter, ena.plot.subtraction, add_network) ─────────────
+# The plotly path multiplies the weights. On qeviz the weights stay as they are
+# (so they sit correctly on the model-wide colour scale) and the multiplier
+# becomes the plot's magnification instead.
+.qe_weight_mult <- function(backend, k) if (identical(backend, "qeviz")) 1 else k
+.qe_magnify <- function(backend, k, labelled = k != 1) {
+  if (identical(backend, "qeviz") && isTRUE(labelled)) k else NULL
+}
+
+# ── check_range on qeviz ─────────────────────────────────────────────────────
+# Same rule as the plotly path: grow the symmetric range to 1.2x the largest
+# plotted point / mean when they exceed it, shrink when they use under half.
+.qe_check_range <- function(x) {
+  numbers <- as.numeric(sapply(x$plotted$points, function(p) max(abs(as.matrix(remove_meta_data(p$data[[1]]))))))
+  means   <- as.numeric(sapply(x$plotted$means, function(p) max(abs(as.numeric(p$data)))))
+  if (!length(numbers) && !length(means)) return(x)
+  curr_max <- max(c(numbers, means))
+  m <- x$qe$model
+  current <- x$qe$graph_opts[["range"]]
+  current <- if (is.numeric(current)) current else {
+    nodes <- do.call(rbind, lapply(m$nodes$data, function(r) c(r[[m$x_col]], r[[m$y_col]])))
+    max(abs(nodes)) * 1.2
+  }
+  if (curr_max * 1.2 > current || curr_max < current * 0.5)
+    x$qe <- qeviz::qe_range(x$qe, curr_max * 1.2)
+  x
 }

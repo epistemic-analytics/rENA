@@ -94,7 +94,7 @@ ena.plot.points = function(
       return(.qe_plot_points(enaplot, supplied = names(match.call())[-1],
         points = points, point.size = point.size, labels = labels, shape = shape,
         colors = colors, label.font.size = label.font.size, label.font.color = label.font.color,
-        label.font.family = label.font.family, texts = texts))
+        label.font.family = label.font.family, texts = texts, legend.name = legend.name))
 
     env = environment();
     for(n in c("font.size", "font.color", "font.family")) {

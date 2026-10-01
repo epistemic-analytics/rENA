@@ -13,23 +13,34 @@ ena.plot.subtraction = function(
   group1.color = "blue",
   group2.color = "red",
   confidence.interval = "box",
+  backend = getOption("rENA.plot.backend", "plotly"),
   ...
 ) {
+  backend <- match.arg(backend, c("plotly", "qeviz"))
+  # qeviz: weights unscaled; the multipliers become magnify. When either is
+  # set, the side plots are labelled too (at networkMultiplier), as webENA
+  # labels its side plots "(scaled 1.0x)".
+  any.mult <- networkMultiplier != 1 || subtractionMultiplier != 1
+  wm <- .qe_weight_mult(backend, networkMultiplier)
+  sm <- .qe_weight_mult(backend, subtractionMultiplier)
+  side.mag <- .qe_magnify(backend, networkMultiplier, any.mult)
+  sub.mag  <- .qe_magnify(backend, networkMultiplier * subtractionMultiplier, any.mult)
   group1.rows = set$points[[groupVar]] == group1
   group2.rows = set$points[[groupVar]] == group2
 
-  g1.plot = ena.plot(enaset = set, title = group1)
-  g2.plot = ena.plot(enaset = set, title = group2)
-  sub.plot = ena.plot(enaset = set, title = paste0("Network Subtraction -- ",group1," vs ",group2))
+  g1.plot = ena.plot(enaset = set, title = group1, backend = backend, magnify = side.mag)
+  g2.plot = ena.plot(enaset = set, title = group2, backend = backend, magnify = side.mag)
+  sub.plot = ena.plot(enaset = set, title = paste0("Network Subtraction -- ",group1," vs ",group2),
+                      backend = backend, magnify = sub.mag)
 
   if(network == TRUE) {
     g1.lw = as.matrix(set$line.weights)[group1.rows,,drop=FALSE]
-    g1.mean.lw = colMeans(g1.lw) * networkMultiplier
+    g1.mean.lw = colMeans(g1.lw) * wm
 
     g2.lw = as.matrix(set$line.weights)[group2.rows,,drop=FALSE]
-    g2.mean.lw = colMeans(g2.lw) * networkMultiplier
+    g2.mean.lw = colMeans(g2.lw) * wm
 
-    sub = (g1.mean.lw - g2.mean.lw) * subtractionMultiplier
+    sub = (g1.mean.lw - g2.mean.lw) * sm
 
     g1.plot = ena.plot.network(g1.plot, network = g1.mean.lw, colors = group1.color)
     g2.plot = ena.plot.network(g2.plot, network = g2.mean.lw, colors = group2.color)
