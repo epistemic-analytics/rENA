@@ -13,7 +13,7 @@ Top-level (= R's set$...):
 
 model sub-fields (= R's set$model$...):
   centroids_               np.ndarray (n_units × dims)          — LWS centroids
-  variance_                np.ndarray (dims,)                   — variance explained
+  variance_                np.ndarray (n_rotation_dims,)        — variance explained, every dimension
   unit_labels_             list[str]
   points_for_projection_   np.ndarray (n_units × n_connections) — centered normed
 
@@ -106,7 +106,9 @@ class ENA:
     rotation_matrix_        rotation matrix truncated to dims (= R set$rotation.matrix)
     meta_data_              unit metadata DataFrame (= R set$meta.data)
     centroids_              LWS centroid positions (= R model$centroids)
-    variance_               variance explained per dimension (= R model$variance)
+    variance_               share of the total variance per rotated dimension, over
+                            every dimension of the rotation (= R model$variance; the
+                            first ``dims`` entries are the plotted dimensions)
     unit_labels_            unit label strings (= R model$unit.labels)
     points_for_projection_  centered normed networks (= R model$points.for.projection)
     rotation_nodes_         code/node positions (= R rotation$nodes)
@@ -290,7 +292,10 @@ class ENA:
         )
 
         # ── derived fields ────────────────────────────────────────────────────
-        variance      = _compute_variance(t)
+        # Share of the total variance per rotated dimension, over every
+        # dimension of the rotation, as R's model$variance (not renormalised
+        # over the `dims` retained ones).
+        variance      = _compute_variance(centered @ full_rot)
         adjacency_key = _build_adjacency_key(list(accum.codes_))
 
         # ── assign all output fields ──────────────────────────────────────────

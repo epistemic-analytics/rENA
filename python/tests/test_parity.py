@@ -115,6 +115,17 @@ class TestRSDataStructural:
     def test_variance_sums_to_1(self, rs_model):
         assert np.isclose(rs_model.variance_.sum(), 1.0, atol=1e-10)
 
+    # R: model$variance covers every rotated dimension (15 here), each its
+    # share of the total variance; it is not renormalised over the 2 kept dims.
+    #   set$model$variance[1:4] for this accumulation (rENA 0.4.12):
+    def test_variance_matches_r(self, rs_model):
+        assert rs_model.variance_.shape == (15,)
+        np.testing.assert_allclose(
+            rs_model.variance_[:4],
+            [0.307565989727159, 0.235631035353756, 0.162112745982557, 0.109163058622359],
+            rtol=1e-9,
+        )
+
     # R: rotation$center.vec — centering vector, length 15
     def test_rotation_center_vec_length(self, rs_model):
         assert len(rs_model.rotation_center_vec_) == 15
