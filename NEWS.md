@@ -1,3 +1,14 @@
+## rENA (development version)
+
+#### Bug Fixes & Improvements
+
+  * rena-wasm: `model.variance` is each dimension's share of the total
+    variance whatever `dims` a fit keeps, as R's `set$model$variance` is
+    regardless of `dimensions`. It previously divided by the variance of only
+    the returned dimensions, so a default 2-dimension fit always reported
+    shares summing to 100% (58.1% / 41.9% instead of 31.9% / 23.0% on
+    RS.data). Fits that keep every dimension (the webtool's) are unchanged.
+
 ## rENA 0.4.11
 
 #### Bug Fixes & Improvements

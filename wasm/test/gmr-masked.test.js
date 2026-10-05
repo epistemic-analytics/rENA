@@ -116,3 +116,9 @@ test('masked GMR matches R ena.rotate.by.generalized (points, variance)', () => 
     }
     FIXTURE.variance.forEach((v, d) => expect(fit.model.variance[d]).toBeCloseTo(v, 9));
 });
+
+test('masked GMR variance is the share of total variance at fewer dims', () => {
+    const fit = ena.fit(rows, { ...BASE, dims: 2, rotation: 'generalized', gParams, codeMask: MASK });
+    expect(fit.dims).toBe(2);
+    for (let d = 0; d < 2; d++) expect(fit.model.variance[d]).toBeCloseTo(FIXTURE.variance[d], 9);
+});

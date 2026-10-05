@@ -466,8 +466,19 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
         }
     }
 
-    // Variance explained (= R's model$variance)
-    const variance = computeVariance(points, nUnits, dims);
+    // Variance explained (= R's model$variance): each dim's share of the
+    // variance over the FULL rotation, as ena.make.set computes it before
+    // keeping `dimensions` columns -- not of only the dims returned here, which
+    // would always sum to 1 (58%/42% instead of R's 32%/23% on RS.data).
+    // Projected rather than taken from pointsForProjection so it holds for a
+    // rotation that is not orthonormal.
+    let total = null;
+    if (dims < rot.rotCols) {
+        const full = project(pointsForProjection, nUnits, nConnections,
+                             rot.rotation, rot.rotRows, rot.rotCols, rot.rotCols);
+        total = totalVariance(full, nUnits, rot.rotCols);
+    }
+    const variance = computeVariance(points, nUnits, dims, total);
 
     // Adjacency key (= R's rotation$adjacency.key)
     const adjacencyKey = buildAdjacencyKey(codes, ordered);

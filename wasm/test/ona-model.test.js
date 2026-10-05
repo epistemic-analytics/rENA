@@ -114,6 +114,19 @@ describe('ordered fit() matches ona::model()', () => {
     }
 });
 
+describe('ordered model.variance is the share of total variance at fewer dims', () => {
+    for (const key of Object.keys(FIXTURE)) {
+        const [dn, rot] = [key.replace(/_(svd|mean)$/, ''), key.match(/(svd|mean)$/)[1]];
+        test(key, () => {
+            const R    = FIXTURE[key];
+            const rows = datasets[dn];
+            const m    = ena.fit(rows, { ...BASE, dims: 2, ...rotationOpts(rows, rot) });
+            expect(m.dims).toBe(2);
+            for (let d = 0; d < 2; d++) expect(m.model.variance[d]).toBeCloseTo(R.variance[d], 9);
+        });
+    }
+});
+
 describe('ordered pria() matches PRIA::pria on ona::model()', () => {
     for (const key of Object.keys(FIXTURE)) {
         const [dn, rot] = [key.replace(/_(svd|mean)$/, ''), key.match(/(svd|mean)$/)[1]];

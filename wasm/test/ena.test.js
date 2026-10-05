@@ -144,10 +144,18 @@ test('fit: rotation.columnNames start with SVD for default rotation', () => {
     expect(model.rotation.columnNames[1]).toBe('SVD2');
 });
 
-test('fit: model.variance sums to 1', () => {
-    const model = ena.fit(ROWS, OPTS);
-    const total = model.model.variance.reduce((a, b) => a + b, 0);
-    expect(total).toBeCloseTo(1, 10);
+test('fit: model.variance is the share of total variance, whatever dims are kept', () => {
+    // Over every dimension the shares sum to 1; keeping fewer dims must not
+    // rescale them (R's model$variance does not depend on `dimensions`).
+    // RS.data parity is in variance-total.test.js.
+    const full = ena.fit(ROWS, { ...OPTS, dims: 3 });
+    const sum  = full.model.variance.reduce((a, b) => a + b, 0);
+    expect(full.dims).toBe(3);
+    expect(sum).toBeCloseTo(1, 10);
+
+    const two = ena.fit(ROWS, { ...OPTS, dims: 2 });
+    expect(two.dims).toBe(2);
+    for (let d = 0; d < 2; d++) expect(two.model.variance[d]).toBeCloseTo(full.model.variance[d], 12);
 });
 
 test('fit: rotation.centerVec length equals nConnections', () => {
