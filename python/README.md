@@ -35,16 +35,44 @@ pip install -e ".[dev]"   # from python/ directory
 import pandas as pd
 from pyena import ENA
 
-rs = pd.read_csv("../inst/extdata/rs.data.csv")
+rs = pd.read_csv("../inst/extdata/rs.data.csv")   # rENA's RS.data
 
-CODES = ["Data", "Technical.Constraints", "Performance.Parameters",
-         "Client.and.Consultant.Requests", "Design.Reasoning", "Collaboration"]
+CODES = ["Data", "Technical Constraints", "Performance Parameters",
+         "Client and Consultant Requests", "Design Reasoning", "Collaboration"]
 
-rs["unit_key"] = rs["UserName"] + "_" + rs["Condition"] + "_" + rs["GroupName"]
-rs["convo_key"] = rs["Condition"] + "_" + rs["GroupName"]
+# Units and conversations as rENA's RS.data examples: units by Condition +
+# UserName, conversations by Condition + GroupName.
+rs["unit_key"]  = rs["Condition"] + "::" + rs["UserName"]
+rs["convo_key"] = rs["Condition"] + "::" + rs["GroupName"]
 
-model = ENA().fit(rs, "unit_key", "convo_key", CODES)
+model = ENA().fit(rs, "unit_key", "convo_key", CODES, window_size=4)
 ```
+
+---
+
+## Plotting
+
+pyENA models plot with [qeviz](https://qe-libs.org/py/project/qeviz/), the
+interactive ENA / ONA network viewer used by rENA (`pip install qeviz
+--index-url https://qe-libs.org/py/simple/`). The two conditions compared —
+FirstGame − SecondGame, with each group's mean and 95% confidence interval:
+
+```python
+import qeviz
+
+p = (qeviz.from_pyena(model, group_col="Condition", title="FirstGame − SecondGame")
+       .edges("FirstGame", compare="SecondGame", color_scale="plot", magnify=3)
+       .group())
+p                              # displays inline in Jupyter
+p.export_html("rs-data.html")  # or a self-contained HTML file
+```
+
+![FirstGame − SecondGame network subtraction of RS.data with both group means](https://gitlab.com/epistemic-analytics/qe-packages/rENA/-/raw/main/python/docs/pyena-rs-subtraction.png)
+
+Blue edges are stronger in FirstGame, red in SecondGame. `magnify=3` widens
+the edges to make a subtraction's small differences readable (the plot says so).
+See the [qeviz README](https://qe-libs.org/py/project/qeviz/) for single-group
+networks, unit points, and networks or means from your own data.
 
 ---
 
@@ -53,11 +81,13 @@ model = ENA().fit(rs, "unit_key", "convo_key", CODES)
 ```python
 model.line_weights_           # normalised adjacency vectors  (n_units × n_connections)
 model.row_connection_counts_  # row-level raw adjacency vectors (n_rows × n_connections)
-model.centroids_              # unit positions in ENA space   (n_units × dims)
+model.points_                 # unit positions in ENA space   (n_units × dims)
+model.centroids_              # network centroids             (n_units × dims)
 model.rotation_nodes_         # code node positions           (n_codes × dims)
 model.connection_counts_      # raw unit adjacency vectors    (n_units × n_connections)
 model.unit_labels_            # unit labels in order
-model.connection_names_       # e.g. ["Data & Technical.Constraints", ...]
+model.connection_names_       # e.g. ["Data & Technical Constraints", ...]
+model.variance_               # variance explained per dimension (= rENA's model$variance)
 ```
 
 ---
@@ -101,7 +131,7 @@ from pyena import ENA, mean_rotation, generalized_rotation, regression_rotation
 
 meta = (rs.drop_duplicates("unit_key")
           .set_index("unit_key")
-          .reindex(model.units_)
+          .reindex(model.unit_labels_)
           .reset_index())
 
 # Means rotation
