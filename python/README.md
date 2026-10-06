@@ -1,6 +1,10 @@
-# pyena
+# qe-ena
 
 Python implementation of Epistemic Network Analysis (ENA) — sister package to [`rENA`](../README.md).
+Install it as `qe-ena`; import it as `pyena`.
+
+> Previously published as `pyENA`. The `pyena` project on PyPI is an
+> unrelated package — install `qe-ena` from the QE index as shown below.
 
 `pyena` delegates all core math to [`pylibqe`](https://gitlab.com/epistemic-analytics/qe-packages/libqe),
 the shared C++ library that also powers rENA.
@@ -9,21 +13,22 @@ the shared C++ library that also powers rENA.
 
 ## Installation
 
-`pyena` requires `pylibqe`. Install both from the QE package index:
+`qe-ena` requires `pylibqe`, which is also on the QE package index; other
+dependencies (numpy, pandas) come from PyPI.
 
 ```bash
-pip install pyENA \
-  --index-url https://qe-libs.org/py/simple/ \
-  --extra-index-url https://pypi.org/simple/
+uv add qe-ena --index qe-libs=https://qe-libs.org/py/simple/
+# or
+pip install qe-ena --extra-index-url https://qe-libs.org/py/simple/
 ```
+
+Development builds from `main` are on a separate index,
+`https://qe-libs.org/py/dev/simple/`. See https://qe-libs.org/py/project/qe-ena/.
 
 ### Development install
 
 ```bash
-pip install pylibqe \
-  --index-url https://qe-libs.org/py/simple/ \
-  --extra-index-url https://pypi.org/simple/
-
+pip install pylibqe --extra-index-url https://qe-libs.org/py/simple/
 pip install -e ".[dev]"   # from python/ directory
 ```
 

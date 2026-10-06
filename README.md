@@ -11,7 +11,7 @@
 
 Researchers have used ENA to analyze phenomena including: cognitive connections students make while solving complex problems; interactions among brain regions in fMRI data; social gaze coordination; integration of operative skills during surgical procedures; and many others.
 
-> **Python users:** see [`python/README.md`](python/README.md) for the `pyena` package.
+> **Python users:** see [`python/README.md`](python/README.md) for the `qe-ena` package (`import pyena`).
 
 ---
 
