@@ -12,7 +12,7 @@
 
 | | R | Python |
 |---|---|---|
-| **Package** | `rENA` | `pyena` (+ `pylibqe`) |
+| **Package** | `rENA` | `qe-ena`, `import ena` (+ `qe-lib`, `import qe`) |
 | **Install** | `devtools::install("R/")` from libqe root, then `devtools::install(".")` | `pip install -e path/to/libqe/python && pip install -e path/to/rENA/python` |
 
 **R**
@@ -31,7 +31,7 @@ conversation <- c("Condition", "GroupName")
 ```python
 import pandas as pd
 import numpy as np
-from pyena import (ENA, accumulate,
+from ena import (ENA, accumulate,
                    mean_rotation, generalized_rotation,
                    regression_rotation, regression_rotation_2)
 
@@ -196,7 +196,7 @@ accum <- rs |> accumulate(units, codes, conversation, default_window = 4)
 
 **Python**
 ```python
-from pyena import accumulate, ENAAccumulation
+from ena import accumulate, ENAAccumulation
 
 accum = accumulate(rs, "unit_key", "convo_key", CODES, window_size=4)
 
@@ -572,7 +572,7 @@ cors <- ena.correlations(model)
 
 **Python**
 ```python
-from pylibqe import modeling
+from qe import modeling
 
 cors = modeling.ena_correlation(
     model.points_,     # projected unit positions

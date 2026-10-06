@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pyena import accumulate, ENAAccumulation, ena_space_dist_corr, tune_window_size
+from ena import accumulate, ENAAccumulation, ena_space_dist_corr, tune_window_size
 
 
 def make_df(n=120, n_units=8, n_convos=4, codes=("A", "B", "C", "D"), seed=0):

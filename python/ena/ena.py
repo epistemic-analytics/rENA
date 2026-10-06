@@ -1,5 +1,5 @@
 """
-pyena.ena — High-level ENA (Epistemic Network Analysis) pipeline.
+ena.ena — High-level ENA (Epistemic Network Analysis) pipeline.
 
 Output field names mirror R's ena.set object (flat — no nested sub-objects).
 
@@ -39,7 +39,7 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
-from pylibqe import normalization, modeling
+from qe import normalization, modeling
 from .accumulation import ENAAccumulation, accumulate as _accumulate
 from .rotations import mean_rotation, generalized_rotation, regression_rotation, regression_rotation_2
 

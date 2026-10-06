@@ -1,19 +1,19 @@
 # qe-ena
 
 Python implementation of Epistemic Network Analysis (ENA) — sister package to [`rENA`](../README.md).
-Install it as `qe-ena`; import it as `pyena`.
+Install it as `qe-ena`; import it as `ena`.
 
-> Previously published as `pyENA`. The `pyena` project on PyPI is an
+> Previously published as `pyENA` (`import pyena`). The `pyena` project on PyPI is an
 > unrelated package — install `qe-ena` from the QE index as shown below.
 
-`pyena` delegates all core math to [`pylibqe`](https://gitlab.com/epistemic-analytics/qe-packages/libqe),
+`ena` delegates all core math to [`qe-lib`](https://gitlab.com/epistemic-analytics/qe-packages/libqe) (`import qe`),
 the shared C++ library that also powers rENA.
 
 ---
 
 ## Installation
 
-`qe-ena` requires `pylibqe`, which is also on the QE package index; other
+`qe-ena` requires `qe-lib`, which is also on the QE package index; other
 dependencies (numpy, pandas) come from PyPI.
 
 ```bash
@@ -28,7 +28,7 @@ Development builds from `main` are on a separate index,
 ### Development install
 
 ```bash
-pip install pylibqe --extra-index-url https://qe-libs.org/py/simple/
+pip install qe-lib --extra-index-url https://qe-libs.org/py/simple/
 pip install -e ".[dev]"   # from python/ directory
 ```
 
@@ -38,7 +38,7 @@ pip install -e ".[dev]"   # from python/ directory
 
 ```python
 import pandas as pd
-from pyena import ENA
+from ena import ENA
 
 rs = pd.read_csv("../inst/extdata/rs.data.csv")   # rENA's RS.data
 
@@ -57,7 +57,7 @@ model = ENA().fit(rs, "unit_key", "convo_key", CODES, window_size=4)
 
 ## Plotting
 
-pyENA models plot with [qeviz](https://qe-libs.org/py/project/qeviz/), the
+qe-ena models plot with [qe-viz](https://qe-libs.org/py/project/qe-viz/) (`import qeviz`), the
 interactive ENA / ONA network viewer used by rENA (`pip install qeviz
 --index-url https://qe-libs.org/py/simple/`). The two conditions compared —
 FirstGame − SecondGame, with each group's mean and 95% confidence interval:
@@ -100,7 +100,7 @@ model.variance_               # variance explained per dimension (= rENA's model
 ## Separate Accumulation
 
 ```python
-from pyena import ENA, accumulate
+from ena import ENA, accumulate
 
 accum = accumulate(rs, "unit_key", "convo_key", CODES, window_size=4)
 
@@ -111,7 +111,7 @@ accum.connection_names_       # connection labels
 accum.meta                    # per-unit metadata DataFrame
 
 # Reuse the same accumulation with different rotations
-from pyena import mean_rotation, generalized_rotation
+from ena import mean_rotation, generalized_rotation
 
 model_svd = ENA().fit(accum)
 model_mr  = ENA().fit(accum, rotation=mean_rotation(g1_mask, g2_mask))
@@ -132,7 +132,7 @@ model_gmr = ENA().fit(accum, rotation=generalized_rotation(meta["Condition"]))
 | Custom matrix | `rotation=my_ndarray` |
 
 ```python
-from pyena import ENA, mean_rotation, generalized_rotation, regression_rotation
+from ena import ENA, mean_rotation, generalized_rotation, regression_rotation
 
 meta = (rs.drop_duplicates("unit_key")
           .set_index("unit_key")

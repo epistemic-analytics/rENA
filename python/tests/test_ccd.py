@@ -1,7 +1,7 @@
 """Tests for Cross-Covariance Decay (CCD) window-size estimation.
 
 Port of R's ena.ccd / ena.ccd.window, backed by the shared libqe kernel
-pylibqe.ccd.ccd_window. Verified against R on RS.data (window_size = 6,
+qe.ccd.ccd_window. Verified against R on RS.data (window_size = 6,
 peak_lag = 1; curves agree to ~5e-16).
 """
 
@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pyena import ccd, ccd_window, CCDResult
+from ena import ccd, ccd_window, CCDResult
 
 
 def make_df(seed=7):

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from pyena import ENA, accumulate, ENAAccumulation
+from ena import ENA, accumulate, ENAAccumulation
 
 
 def make_df(n_units=2, n_convos=1, n_codes=3, seed=42):
@@ -176,7 +176,7 @@ class TestRotations:
     # ------------------------------------------------------------------
 
     def test_mean_rotation_changes_positions(self):
-        from pyena.rotations import mean_rotation
+        from ena.rotations import mean_rotation
         df = make_df(n_units=4, n_codes=3, seed=7)
         unit_labels = list(dict.fromkeys(df["unit"].tolist()))
         g1 = np.array([u in unit_labels[:2] for u in unit_labels])
@@ -188,7 +188,7 @@ class TestRotations:
         # but shapes must match and both must run without error.
 
     def test_mean_rotation_output_shape(self):
-        from pyena.rotations import mean_rotation
+        from ena.rotations import mean_rotation
         df = make_df(n_units=4, n_codes=3, seed=7)
         unit_labels = list(dict.fromkeys(df["unit"].tolist()))
         g1 = np.array([u in unit_labels[:2] for u in unit_labels])
@@ -202,7 +202,7 @@ class TestRotations:
     # ------------------------------------------------------------------
 
     def test_generalized_rotation_continuous(self):
-        from pyena.rotations import generalized_rotation
+        from ena.rotations import generalized_rotation
         df = make_df(n_units=4, n_codes=3, seed=7)
         unit_labels = list(dict.fromkeys(df["unit"].tolist()))
         x_var = np.array([float(i) for i in range(len(unit_labels))])
@@ -211,7 +211,7 @@ class TestRotations:
         assert m.rotation_nodes_.shape == (3, 2)
 
     def test_generalized_rotation_categorical(self):
-        from pyena.rotations import generalized_rotation
+        from ena.rotations import generalized_rotation
         df = make_df(n_units=4, n_codes=3, seed=7)
         x_var = np.array(["A", "A", "B", "B"])
         m = ENA().fit(df, "unit", "convo", CODES,
@@ -219,7 +219,7 @@ class TestRotations:
         assert m.rotation_nodes_.shape == (3, 2)
 
     def test_generalized_rotation_select_2_groups(self):
-        from pyena.rotations import generalized_rotation
+        from ena.rotations import generalized_rotation
         df = make_df(n_units=4, n_codes=3, seed=7)
         x_var = np.array(["A", "A", "B", "B"])
         m = ENA().fit(
@@ -233,7 +233,7 @@ class TestRotations:
     # ------------------------------------------------------------------
 
     def test_regression_rotation(self):
-        from pyena.rotations import regression_rotation
+        from ena.rotations import regression_rotation
         df = make_df(n_units=4, n_codes=3, seed=7)
         x_var = np.array([1.0, 1.0, 0.0, 0.0])
         m = ENA().fit(df, "unit", "convo", CODES,
@@ -245,7 +245,7 @@ class TestRotations:
     # ------------------------------------------------------------------
 
     def test_regression_rotation_2(self):
-        from pyena.rotations import regression_rotation_2
+        from ena.rotations import regression_rotation_2
         df = make_df(n_units=4, n_codes=3, seed=7)
         x_var = np.array([1.0, 1.0, 0.0, 0.0])
         m = ENA().fit(df, "unit", "convo", CODES,
@@ -269,7 +269,7 @@ class TestRotations:
 
     def test_rotation_column_orthogonality(self):
         """Full rotation matrix columns must be orthonormal."""
-        from pyena.rotations import mean_rotation
+        from ena.rotations import mean_rotation
         df = make_df(n_units=4, n_codes=3, seed=7)
         unit_labels = list(dict.fromkeys(df["unit"].tolist()))
         g1 = np.array([u in unit_labels[:2] for u in unit_labels])
@@ -378,7 +378,7 @@ class TestAccumulate:
 
     def test_fit_from_accumulation_with_rotation(self):
         """Rotation should work when fit() receives an ENAAccumulation."""
-        from pyena.rotations import mean_rotation
+        from ena.rotations import mean_rotation
         df = make_df(n_units=4, n_codes=3, seed=7)
         accum = accumulate(df, "unit", "convo", CODES)
         unit_labels = accum.unit_labels_
@@ -415,7 +415,7 @@ class TestConstructorAndChainStyles:
 
     def test_constructor_with_fit_options(self):
         """Constructor takes accumulation params; fit() takes modeling params."""
-        from pyena.rotations import mean_rotation
+        from ena.rotations import mean_rotation
         df = make_df(n_units=4, n_codes=3, seed=7)
         unit_labels = list(dict.fromkeys(df["unit"].tolist()))
         g1 = np.array([u in unit_labels[:2] for u in unit_labels])
@@ -438,7 +438,7 @@ class TestConstructorAndChainStyles:
 
 
 class TestStatWrappers:
-    """conf_ints, outlier_ints, compare_groups — wrappers over pylibqe.modeling."""
+    """conf_ints, outlier_ints, compare_groups — wrappers over qe.modeling."""
 
     @pytest.fixture
     def model(self):

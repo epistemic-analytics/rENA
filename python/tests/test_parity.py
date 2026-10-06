@@ -1,5 +1,5 @@
 """
-test_parity.py — Cross-binding parity tests for pyena.
+test_parity.py — Cross-binding parity tests for ena.
 
 These tests replicate assertions from the R testthat suite using the same
 shared data files (inst/extdata/rs.data.csv) and the same small inline
@@ -11,7 +11,7 @@ R sources:
   - tests/testthat/test-zero-networks.R
   - tests/testthat/test.ena.accumulations.R
 
-Field names mirror R's ena.set structure (see pyena/ena.py module docstring).
+Field names mirror R's ena.set structure (see ena/ena.py module docstring).
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pyena import ENA, accumulate
+from ena import ENA, accumulate
 
 # ── paths ─────────────────────────────────────────────────────────────────────
 

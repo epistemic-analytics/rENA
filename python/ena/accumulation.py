@@ -1,11 +1,11 @@
 """
-pyena.accumulation — Standalone ENA accumulation step.
+ena.accumulation — Standalone ENA accumulation step.
 
 Separates network accumulation from modeling so users can inspect, export,
 or plug raw adjacency vectors into their own pipelines without committing
 to a particular rotation or normalization approach.
 
-    from pyena import accumulate
+    from ena import accumulate
 
     accum = accumulate(
         data,
@@ -32,7 +32,7 @@ from typing import List, Optional
 import numpy as np
 import pandas as pd
 
-from pylibqe import accumulation as _acc
+from qe import accumulation as _acc
 
 
 class ENAAccumulation:
@@ -64,7 +64,7 @@ class ENAAccumulation:
         object (``data``, ``units``, ``conversations``, ``codes``,
         ``window_size``, ``window_forward``, ``binary``).  Corresponds to R's
         ``ENAAccumulation$`_function.call```; retained so the accumulation can
-        be rebuilt at other window sizes (see :func:`pyena.tune_window_size`).
+        be rebuilt at other window sizes (see :func:`ena.tune_window_size`).
         ``None`` when the object was constructed directly rather than via
         :func:`accumulate`.
     """

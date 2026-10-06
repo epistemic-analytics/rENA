@@ -9,7 +9,7 @@ description = "Python ENA (Epistemic Network Analysis) modeling — sister packa
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "pylibqe>=0.1.3",
+    "qe-lib>=0.1.3",
     "numpy>=1.24",
     "pandas>=1.5",
 ]
@@ -18,9 +18,9 @@ dependencies = [
 dev = ["pytest>=7"]
 
 [tool.hatch.build.targets.wheel]
-# The distribution is "qe-ena" but the import package stays "pyena"; hatchling
+# The distribution is "qe-ena" but the import package is "ena"; hatchling
 # would otherwise look for a qe_ena/ directory.
-packages = ["pyena"]
+packages = ["ena"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

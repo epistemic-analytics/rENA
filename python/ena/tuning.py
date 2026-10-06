@@ -1,5 +1,5 @@
 """
-pyena.tuning — Window-size tuning for ENA accumulation.
+ena.tuning — Window-size tuning for ENA accumulation.
 
 Port of rENA's ``ena.tune.window.size`` / ``ena_space_dist_corr``.
 
@@ -9,7 +9,7 @@ pairwise unit-distance geometry of adjacent sizes reveals a "stability plateau".
 The smallest window whose adjacent correlation reaches ``cutoff`` of the maximum
 observed correlation is chosen as the tuned window size.
 
-    from pyena import accumulate, tune_window_size
+    from ena import accumulate, tune_window_size
 
     accum = accumulate(rs, "unit_key", "convo_key", CODES, window_size=4)
     tuned = tune_window_size(accum, min_size=1, max_size=20, cutoff=0.95)
@@ -25,7 +25,7 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
-from pylibqe import ccd as _ccd_kernel
+from qe import ccd as _ccd_kernel
 
 from .accumulation import ENAAccumulation, accumulate
 
@@ -114,7 +114,7 @@ def tune_window_size(
     Parameters
     ----------
     accum : ENAAccumulation
-        An accumulation produced by :func:`pyena.accumulate`.  Its
+        An accumulation produced by :func:`ena.accumulate`.  Its
         ``source_call`` is used to rebuild at each window size — pass an object
         built via :func:`accumulate` (not one constructed directly).
     min_size : int
@@ -135,7 +135,7 @@ def tune_window_size(
     call = getattr(accum, "source_call", None)
     if call is None:
         raise ValueError(
-            "accum has no stored source_call; build it with pyena.accumulate() "
+            "accum has no stored source_call; build it with ena.accumulate() "
             "to enable window-size tuning."
         )
 
@@ -211,7 +211,7 @@ def ccd(
 
     Port of rENA's ``ena.ccd``. Splits the data into conversations, then defers
     the numeric core (pooled cross-covariance curves + half-life detection) to
-    the shared libqe kernel ``pylibqe.ccd.ccd_window`` — the same kernel used by
+    the shared libqe kernel ``qe.ccd.ccd_window`` — the same kernel used by
     the R and WASM builds — so all three surfaces produce identical results.
 
     Unlike :func:`tune_window_size`, CCD runs directly on the raw code matrix

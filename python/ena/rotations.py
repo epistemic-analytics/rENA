@@ -1,5 +1,5 @@
 """
-pyena.rotations — Rotation factory functions for ENA.
+ena.rotations — Rotation factory functions for ENA.
 
 Each factory returns a callable ``rotation_fn(centered) -> np.ndarray`` where:
   - Input  ``centered``: (n_units × n_connections) centered normalised networks
