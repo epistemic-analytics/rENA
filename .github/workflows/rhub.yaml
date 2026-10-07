@@ -23,6 +23,11 @@ on:
         description: 'Unique ID. You can leave this empty now.'
         type: string
 
+# Least privilege: the jobs only check the package. Without this block the
+# GITHUB_TOKEN gets the repository default (write).
+permissions:
+  contents: read
+
 jobs:
 
   setup:

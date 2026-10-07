@@ -40,9 +40,12 @@ test:python:
   before_script:
     - apt-get update -qq
     - apt-get install -y --no-install-recommends build-essential cmake libarmadillo-dev
-    - pip install --cache-dir .pip-cache
-        --extra-index-url https://qe-libs.org/py/dev/simple/
-        qe-lib numpy pandas pytest
+    # Public dependencies from PyPI, then qe-lib from qe-libs.org *only*:
+    # --extra-index-url would let pip pick a same-named, higher-versioned
+    # package from PyPI instead (qe-lib is not claimed there).
+    - pip install --cache-dir .pip-cache numpy pandas pytest
+    - pip install --cache-dir .pip-cache --no-deps
+        --index-url https://qe-libs.org/py/dev/simple/ qe-lib
   script:
     - cd python
     - pip install --cache-dir ../.pip-cache -e ".[dev]"
