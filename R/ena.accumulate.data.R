@@ -67,12 +67,19 @@ ena.accumulate.data <- function(
   if (nrow(units) != nrow(conversation) || nrow(conversation) != nrow(codes)) {
     stop("Data Frames do not have the same number of rows");
   }
+  check_code_values(codes)
 
   df <- cbind(units, conversation);
   df <- cbind(df, codes);
 
+  # A metadata table whose rows don't line up with the data used to be dropped
+  # without a word.
+  if (!is.null(metadata) && NROW(metadata) > 0) {
+    if (NROW(metadata) != nrow(df))
+      stop("metadata has ", NROW(metadata), " rows but the data has ", nrow(df))
+  }
   metadata <- data.table::as.data.table(metadata)
-  if (!is.null(metadata) && nrow(metadata) == nrow(df)) {
+  if (nrow(metadata) == nrow(df)) {
     df <- cbind(df, metadata);
   }
 
@@ -121,4 +128,19 @@ ena.accumulate.data <- function(
   }
 
   data
+}
+
+# Code columns must be complete and numeric (or logical). An NA in a code made
+# the unit's whole connection count NA, which then became an all-zero network
+# at the origin -- dropping the unit's valid connections without a warning.
+check_code_values <- function(codes) {
+  codes <- as.data.frame(codes)
+  bad_type <- names(codes)[!vapply(codes, function(x) is.numeric(x) || is.logical(x), logical(1))]
+  if (length(bad_type))
+    stop("Code columns must be numeric or logical: ", paste(bad_type, collapse = ", "))
+  has_na <- names(codes)[vapply(codes, anyNA, logical(1))]
+  if (length(has_na))
+    stop("Code columns contain missing values (NA): ", paste(has_na, collapse = ", "),
+         ". Recode them (e.g. to 0) before accumulating.")
+  invisible(TRUE)
 }

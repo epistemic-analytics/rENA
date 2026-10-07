@@ -149,9 +149,17 @@ ena.ccd <- function(
   }
 
   # 3. Numeric matrix conversion & conversation splitting
-  code_mat <- data.matrix(raw_df[, codeNames, drop = FALSE])
-  if (any(is.na(code_mat))) {
-    code_mat[is.na(code_mat)] <- 0
+  # Factors and characters are converted by their labels ("0"/"1" -> 0/1);
+  # data.matrix() would use factor level positions (1/2) instead. Missing or
+  # non-numeric values are an error rather than a silent 0.
+  code_mat <- vapply(raw_df[, codeNames, drop = FALSE], function(col) {
+    if (is.factor(col)) col <- as.character(col)
+    suppressWarnings(as.numeric(col))
+  }, numeric(nrow(raw_df)))
+  code_mat <- matrix(code_mat, nrow = nrow(raw_df), dimnames = list(NULL, codeNames))
+  bad <- codeNames[colSums(is.na(code_mat)) > 0]
+  if (length(bad)) {
+    stop("Code columns have missing or non-numeric values: ", paste(bad, collapse = ", "))
   }
 
   conv_factor <- interaction(raw_df[conversation_cols], drop = TRUE, lex.order = FALSE)

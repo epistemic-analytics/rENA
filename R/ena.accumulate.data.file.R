@@ -71,6 +71,9 @@ ena.accumulate.data.file <- function(
   ) {
     stop("Accumulation: file, units.by, conversations.by, and codes")
   }
+  if (is.data.frame(file) && is.character(codes) && all(codes %in% colnames(file))) {
+    check_code_values(as.data.frame(file)[, codes, drop = FALSE])
+  }
 
   units <- NULL;
   model <- match.arg(model);
