@@ -62,6 +62,7 @@ test_that("confidence = FALSE drops the CI; iqr_factor is deprecated", {
 
 test_that("ena.export.html writes a self-contained page", {
   skip_if_not(.qe_ready(), "qeviz >= 0.5.0 not available")
+  skip_if_not_installed("rmarkdown")
   skip_if_not(rmarkdown::pandoc_available(), "pandoc not available")
   f <- tempfile(fileext = ".html")
   expect_message(ena.export.html(.interactive_set(), f, group_col = "Condition"), "Written")

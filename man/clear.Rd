@@ -26,10 +26,10 @@ codenames <- c("Data", "Technical.Constraints", "Performance.Parameters",
   "Client.and.Consultant.Requests", "Design.Reasoning", "Collaboration");
 
 # Standard ENA accumulation
-accum <- rENA:::ena.accumulate.data.file(
-  RS.data, units.by = c("UserName", "Condition"),
-  conversations.by = c("ActivityNumber", "GroupName"),
-  codes = codenames
+accum <- ena.accumulate.data(
+  units = RS.data[, c("UserName", "Condition")],
+  conversation = RS.data[, c("ActivityNumber", "GroupName")],
+  codes = RS.data[, codenames]
 );
 # Create a standard ENA set 
 newset <- ena.make.set(accum);
@@ -45,10 +45,10 @@ plot(newset) |>
   add_network();
 
 # Trajectory accumulation and plotting
-trajectory_accumulation <- rENA:::ena.accumulate.data.file(
-  RS.data, units.by = c("UserName", "Condition"),
-  conversations.by = c("ActivityNumber", "GroupName"),
-  codes = codenames,
+trajectory_accumulation <- ena.accumulate.data(
+  units = RS.data[, c("UserName", "Condition")],
+  conversation = RS.data[, c("ActivityNumber", "GroupName")],
+  codes = RS.data[, codenames],
   model = "A"
 );
 trajectory_model <- ena.make.set(trajectory_accumulation);

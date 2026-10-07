@@ -142,7 +142,7 @@ ena.plot.interactive <- function(
 #' as supplementary material.
 #'
 #' @param set       An \code{\link{ena.make.set}} result.
-#' @param file      Output file path.  Default \code{"ena_plot.html"}.
+#' @param file      Output file path, e.g. \code{"ena_plot.html"}.
 #' @param group_col Character. Grouping column in \code{set$points}.
 #' @param ...       Additional arguments passed to \code{\link{ena.plot.interactive}}
 #'                  (e.g. \code{group}, \code{compare}, \code{label_nodes}).
@@ -162,7 +162,7 @@ ena.plot.interactive <- function(
 #' @export
 ena.export.html <- function(
   set,
-  file          = "ena_plot.html",
+  file,
   group_col     = NULL,
   ...,
   width         = 700L,

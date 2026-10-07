@@ -10,7 +10,8 @@
 #' @param comparison character string representing the comparison used, c(NULL, "parametric", "non-parametric"). Default NULL
 #' @param comparison.groups Groups that were used for the comparison
 #' @param sig.dig Integer for the number of digits to round to
-#' @param output_dir Where to save the output file
+#' @param output_dir Where to save the output file when \code{type = "file"}.
+#'   Default \code{tempdir()}; pass a directory to keep the report.
 #' @param type c("file","stream") File will save to a file in output_dir, Stream returns the contents directly
 #' @param theory Logical indicating whether to include theory in the writeup
 #' @param methods Logical indicating whether to include methods in the writeup
@@ -20,14 +21,17 @@
 #'
 #' @export
 #'
-#' @return String representing the methods used to generate the model
+#' @return For \code{type = "file"}, the path of the rendered file; for
+#'   \code{type = "stream"}, a string with the methods text.
 ena.writeup <- function(
   enaset,
   tool = "rENA", tool.version = as.character(packageVersion(tool)),
   comparison = NULL, comparison.groups = NULL, sig.dig = 2,
-  output_dir = getwd(), type = c("file","stream"), theory = T, methods = T,
+  output_dir = tempdir(), type = c("file","stream"), theory = T, methods = T,
   params = NULL, output_file = NULL, output_format = NULL
 ) {
+  require_writeup_packages()
+
   if(is.null(enaset$`_function.params`$weight.by))
     enaset$`_function.params`$weight.by <- enaset$`_function.params`$args$weight.by
 
@@ -37,17 +41,31 @@ ena.writeup <- function(
     output_format = "word_document"
   }
 
+  # knitr runs and writes its intermediates in a scratch directory, never in
+  # the working directory; a streamed report is rendered there too.
+  work_dir <- tempfile("ena_writeup")
+  dir.create(work_dir)
+  on.exit(unlink(work_dir, recursive = TRUE), add = TRUE)
+  if (type == "stream") output_dir <- work_dir
+
   file = rmarkdown::render(system.file("rmd","methods.rmd", package="rENA"), output_dir = output_dir,
-                    knit_root_dir = output_dir, intermediates_dir = output_dir, quiet = TRUE,
+                    knit_root_dir = work_dir, intermediates_dir = work_dir, quiet = TRUE,
                     params = params, output_file = output_file
                     ,output_format = output_format
-                    # ,output_format = ifelse(type == "file", rENA::methods_report, rENA::methods_report_stream)
                   )
 
   if(type == "file")
     file
   else if (type == "stream" && endsWith(file, ".plain"))
     readChar(file, file.info(file)$size)
+}
+
+require_writeup_packages <- function() {
+  missing <- c("rmarkdown", "knitr")[!vapply(c("rmarkdown", "knitr"), requireNamespace,
+                                             logical(1), quietly = TRUE)]
+  if (length(missing) > 0)
+    stop("ENA writeups need the ", paste(missing, collapse = " and "), " package(s): ",
+         "install.packages(c(", paste0('"', missing, '"', collapse = ", "), "))", call. = FALSE)
 }
 
 #' @title methods_report
@@ -68,6 +86,7 @@ methods_report <- function(toc = FALSE,
                           keep_md = FALSE,
                           md_extensions = NULL,
                           pandoc_args = NULL) {
+  require_writeup_packages()
 
   # knitr options and hooks
   knitr <- rmarkdown::knitr_options(
@@ -132,6 +151,7 @@ methods_report_stream <- function(toc = FALSE,
                           keep_md = FALSE,
                           md_extensions = NULL,
                           pandoc_args = NULL) {
+  require_writeup_packages()
 
   # knitr options and hooks
   knitr <- rmarkdown::knitr_options(

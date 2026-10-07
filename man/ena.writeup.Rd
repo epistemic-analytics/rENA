@@ -11,7 +11,7 @@ ena.writeup(
   comparison = NULL,
   comparison.groups = NULL,
   sig.dig = 2,
-  output_dir = getwd(),
+  output_dir = tempdir(),
   type = c("file", "stream"),
   theory = T,
   methods = T,
@@ -33,7 +33,8 @@ ena.writeup(
 
 \item{sig.dig}{Integer for the number of digits to round to}
 
-\item{output_dir}{Where to save the output file}
+\item{output_dir}{Where to save the output file when \code{type = "file"}.
+Default \code{tempdir()}; pass a directory to keep the report.}
 
 \item{type}{c("file","stream") File will save to a file in output_dir, Stream returns the contents directly}
 
@@ -48,7 +49,8 @@ ena.writeup(
 \item{output_format}{character}
 }
 \value{
-String representing the methods used to generate the model
+For \code{type = "file"}, the path of the rendered file; for
+  \code{type = "stream"}, a string with the methods text.
 }
 \description{
 Calculate both Spearman and Pearson correlations for the

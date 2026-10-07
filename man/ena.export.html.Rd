@@ -6,7 +6,7 @@
 \usage{
 ena.export.html(
   set,
-  file = "ena_plot.html",
+  file,
   group_col = NULL,
   ...,
   width = 700L,
@@ -17,7 +17,7 @@ ena.export.html(
 \arguments{
 \item{set}{An \code{\link{ena.make.set}} result.}
 
-\item{file}{Output file path.  Default \code{"ena_plot.html"}.}
+\item{file}{Output file path, e.g. \code{"ena_plot.html"}.}
 
 \item{group_col}{Character. Grouping column in \code{set$points}.}
 
