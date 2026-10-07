@@ -75,6 +75,40 @@ test_that("ena.tune.window.size defaults to ccd and updates accumulation window"
   testthat::expect_true(inherits(tuned, c("ENAdata", "ena.set", "ENAset")))
 })
 
+test_that("ena.tune.window.size rebuilds from the arguments, never re-running the caller", {
+  data(RS.data)
+  codeNames <- c("Data", "Technical.Constraints", "Performance.Parameters",
+                 "Client.and.Consultant.Requests", "Design.Reasoning", "Collaboration")
+  calls <- 0
+  # The set's stored call is this wrapper (the outermost call on the stack);
+  # tuning used to evaluate it again for every candidate window.
+  build <- function() {
+    calls <<- calls + 1
+    ena.accumulate.data(
+      units = RS.data[, c("UserName", "Condition")],
+      conversation = RS.data[, c("Condition", "GroupName")],
+      codes = RS.data[, codeNames],
+      window.size.back = 4, window.size.forward = 1
+    )
+  }
+  accum <- build()
+
+  for (m in c("ccd", "stability")) {
+    tuned <- suppressWarnings(ena.tune.window.size(accum, method = m, max_size = 4))
+    testthat::expect_equal(calls, 1)
+    p <- tuned$`_function.params`
+    testthat::expect_equal(p$window.size.forward, 1)   # other arguments kept
+    direct <- ena.accumulate.data(
+      units = RS.data[, c("UserName", "Condition")],
+      conversation = RS.data[, c("Condition", "GroupName")],
+      codes = RS.data[, codeNames],
+      window.size.back = p$window.size.back, window.size.forward = 1
+    )
+    testthat::expect_equal(as.matrix(tuned$connection.counts),
+                           as.matrix(direct$connection.counts))
+  }
+})
+
 test_that("missing columns throw an informative error", {
   data(RS.data)
   testthat::expect_error(

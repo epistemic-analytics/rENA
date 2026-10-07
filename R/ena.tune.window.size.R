@@ -62,17 +62,14 @@ ena.tune.window.size <- function(
     )
   } else {
     # Legacy stability plateau method
-    orig_call <- accum_object$`_function.call`
-    call_list <- as.list(orig_call)
-
     window_range <- min_size:max_size
     all_points <- list()
 
     for (i in seq_along(window_range)) {
       window_size <- window_range[i]
-      call_list[["window.size.back"]] <- window_size
-      new_call <- as.call(call_list)
-      new_accum <- eval(new_call, envir = parent.frame())
+      new_accum <- rebuild_accumulation(accum_object, window_size)
+      if (is.null(new_accum))
+        stop("method = \"stability\" needs an accumulation made by ena.accumulate.data().")
       curr_set <- rENA::ena.make.set(new_accum)
       points <- as.matrix(curr_set$points)
       all_points[[i]] <- points
@@ -92,18 +89,9 @@ ena.tune.window.size <- function(
   }
 
   # Rebuild accumulation at best_window_size
-  # Method 1: Try evaluating modified orig_call if available and valid
-  orig_call <- accum_object$`_function.call`
-  if (!is.null(orig_call)) {
-    call_list <- as.list(orig_call)
-    call_name <- paste(deparse(call_list[[1]]), collapse = " ")
-    if (grepl("ena.accumulate.data", call_name) || grepl("accumulate", call_name)) {
-      call_list[["window.size.back"]] <- best_window_size
-      final_call <- as.call(call_list)
-      res <- tryCatch(eval(final_call, envir = parent.frame()), error = function(e) NULL)
-      if (!is.null(res)) return(res)
-    }
-  }
+  # Method 1: re-run ena.accumulate.data() with the original arguments
+  res <- rebuild_accumulation(accum_object, best_window_size)
+  if (!is.null(res)) return(res)
 
   # Method 2: Robust fallback - rebuild directly from object fields
   raw_df <- if (!is.null(accum_object$model$raw.input)) {
@@ -172,4 +160,25 @@ ena.tune.window.size <- function(
   }
 
   return(best_window_size)
+}
+
+# Re-run ena.accumulate.data() with the arguments `accum_object` was made with
+# (its `_function.params`), changing only window.size.back.  Returns NULL when
+# those arguments aren't available (e.g. an accumulation from a file).
+#
+# The stored `_function.call` is never evaluated: it is the *outermost* call on
+# the stack when the set was made (a user's wrapper function, test_that(), a
+# Shiny observer, ...), so evaluating it re-runs arbitrary code, and for an
+# accumulation loaded from a file it is whatever call that file contains.
+#
+# The window argument is deliberately not called window.size.back: ena.set()
+# records the parameters of the first frame on the stack that has a variable
+# of that name, which must be ena.accumulate.data()'s, not this function's.
+rebuild_accumulation <- function(accum_object, window_size) {
+  params <- accum_object$`_function.params`
+  arg_names <- setdiff(names(formals(ena.accumulate.data)), "...")
+  args <- params[intersect(names(params), arg_names)]
+  if (!all(c("units", "conversation", "codes") %in% names(args))) return(NULL)
+  args[["window.size.back"]] <- window_size
+  do.call(ena.accumulate.data, args)
 }
