@@ -42,7 +42,7 @@ Adds a network (set of edges) to an existing ENA plot or ENA set. The network ca
 The function determines the type of the `wh` parameter and processes it accordingly:
 \itemize{
   \item If `wh` is an unevaluated expression, it is captured and evaluated in the parent frame. This allows for flexible specification of group means or differences.
-  \item If `wh` is a numeric matrix or data.frame, it is used directly as the network data.
+  \item If `wh` is a numeric matrix or data.frame, its column means are plotted; a numeric vector (e.g. a subtracted network) is plotted as is.
   \item If `wh` is a language object, it is processed to extract the relevant network information.
   \item If `wh` is NULL, the mean network is plotted.
 }

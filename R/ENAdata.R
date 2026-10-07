@@ -81,8 +81,8 @@ ENAdata <- R6::R6Class("ENAdata", public = list(
                "window.size.back", "window.size.forward", "mask",
                "in.par", "grainSize", "include.meta")
     ) {
-      if (exists(x = p)) {
-        self$function.params[[p]] <- get(p)
+      if (exists(p, inherits = FALSE)) {
+        self$function.params[[p]] <- get(p, inherits = FALSE)
       }
       else if (!is.null(args[[p]])) {
         self$function.params[[p]] <- args[[p]]

@@ -99,8 +99,8 @@ add_points <- function(
   wh_subbed <- substitute(wh)
   if (is.language(wh_subbed)) {
     # points <- list(do.call(`[`, list(x = set$points, i = wh)));
-    points <- list(eval(str2lang(paste0(c("set$points", wh_subbed), collapse = "$"))));
-    colors <- ifelse(is.null(colors), plot$palette[length(plot$plotted$points) + 1], colors);
+    points <- list(eval(prefix_expr(wh_subbed, quote(set$points))));
+    colors <- if (is.null(colors)) plot$palette[length(plot$plotted$points) + 1] else colors[1];  # one group, one color
     named <- paste(as.character(wh_subbed)[-1], collapse = " ");
   }
   else if (!is.null(wh_subbed) && length(wh_subbed) > 0) {
@@ -132,7 +132,7 @@ add_points <- function(
     }
     else {
       points <- wh
-      colors = ifelse(is.null(colors), plot$palette[length(plot$plotted$points) + 1], colors)
+      colors <- if (is.null(colors)) plot$palette[length(plot$plotted$points) + 1] else colors[1];  # one group, one color
     }
   }
   else {
@@ -145,7 +145,7 @@ add_points <- function(
     # colors <- plot$palette[seq.int(from=length(plot$plotted$points)+1,length.out=length(meta_grps))];
     points <- list(set$points);
     named <- "all.points";
-    colors <- ifelse(is.null(colors), plot$palette[length(plot$plotted$points) + 1], colors);
+    colors <- if (is.null(colors)) plot$palette[length(plot$plotted$points) + 1] else colors[1];  # one group, one color
   }
 
   mean <- ifelse(!is.null(more.args$mean), more.args$mean, FALSE);
@@ -408,7 +408,7 @@ add_group <- function(x, wh = NULL, ...) {
 #' The function determines the type of the `wh` parameter and processes it accordingly:
 #' \itemize{
 #'   \item If `wh` is an unevaluated expression, it is captured and evaluated in the parent frame. This allows for flexible specification of group means or differences.
-#'   \item If `wh` is a numeric matrix or data.frame, it is used directly as the network data.
+#'   \item If `wh` is a numeric matrix or data.frame, its column means are plotted; a numeric vector (e.g. a subtracted network) is plotted as is.
 #'   \item If `wh` is a language object, it is processed to extract the relevant network information.
 #'   \item If `wh` is NULL, the mean network is plotted.
 #' }
@@ -438,14 +438,14 @@ add_network <- function(
   more_args$magnify <- .qe_magnify(backend, edge.multiplier)
 
   wh_subbed <- substitute(wh)
-  network <- colMeans(set$line.weights) * em;
+  network <- colMeans(set$line.weights);
   
   if (is.language(wh_subbed)) {
     network <- try(eval(wh_subbed, parent.frame()), silent = TRUE)
     if(inherits(network, "try-error")) {
       if(wh_subbed[[1]] == "-") {
         means <- sapply(c(wh_subbed[[2]], wh_subbed[[3]]), function(y) {
-          colMeans(eval(str2lang(paste0(c("set$line.weights", y), collapse = "$"))));
+          colMeans(eval(prefix_expr(y, quote(set$line.weights))));
         })
 
         network <- means[,1] - means[,2];
@@ -461,14 +461,15 @@ add_network <- function(
         }
       }
       else {
-        network <- colMeans(eval(str2lang(paste0(c("set$line.weights", wh_subbed), collapse = "$"))));
-        colors <- ifelse(is.null(colors), plot$palette[length(plot$plotted$points) + 1], colors);
+        network <- colMeans(eval(prefix_expr(wh_subbed, quote(set$line.weights))));
+        if (is.null(colors)) colors <- plot$palette[length(plot$plotted$points) + 1];
         named <- paste(as.character(wh_subbed)[-1], collapse = " ");
       }
     }
     else if (is.matrix(network) || is.data.frame(network) || is.numeric(network)) {
-      network <- colMeans(network);
-      colors <- ifelse(is.null(colors), plot$palette[length(plot$plotted$points) + 1], colors);
+      # a matrix of networks is averaged; a single network is used as is
+      if (!is.null(dim(network))) network <- colMeans(network);
+      if (is.null(colors)) colors <- plot$palette[length(plot$plotted$points) + 1];
       named <- paste(as.character(wh_subbed)[-1], collapse = " ");
     }
   }
@@ -890,4 +891,13 @@ show <- function(x, ...) {
   x$plots <- lapply(x$plots, check_range)
   print(x, ..., plot = T, set = F)
   invisible(x)
+}
+
+# Prefix the leftmost name of a selector such as `Condition$FirstGame` with
+# `prefix`, giving `set$points$Condition$FirstGame`, without deparsing and
+# re-parsing the expression.
+prefix_expr <- function(expr, prefix) {
+  if (is.symbol(expr)) return(call("$", prefix, expr))
+  expr[[2]] <- prefix_expr(expr[[2]], prefix)
+  expr
 }

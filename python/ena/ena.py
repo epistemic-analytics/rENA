@@ -405,5 +405,3 @@ class ENA:
         g1 = np.ascontiguousarray(self.points_[g1_mask], dtype=np.float64)
         g2 = np.ascontiguousarray(self.points_[g2_mask], dtype=np.float64)
         return modeling.group_stats(g1, g2)
-
-        return self

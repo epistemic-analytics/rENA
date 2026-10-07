@@ -2,6 +2,8 @@ suppressMessages(library(rENA, quietly = T, verbose = F))
 context("Test binary versus weighted accumulations on windows of 1");
 
 
+set.seed(42)
+
 fake.data <- function(rows = 30, num.units = 3, units = LETTERS[1:num.units], binary = T, num.codes = 3, codes = LETTERS[1:num.codes]) {
   if(is.logical(binary) && binary == F) {
     binary = runif(rows, 0.1, 1)
@@ -27,7 +29,7 @@ test_that("Verify binary/weighted accumulations with window > 1 are not equal", 
     window.size.back = 4,
     weight.by = sum
   )
-  # expect_equal(object = any(as.matrix(win.4.binary$connection.counts) == as.matrix(win.4.sum$connection.counts)), expected = F)
+  expect_false(all(as.matrix(win.4.binary$connection.counts) == as.matrix(win.4.sum$connection.counts)))
 })
 
 
@@ -45,10 +47,10 @@ test_that("Verify binary/weighted accumulations with window == 1 are not equal",
   )
 
   # Single row binary and sum shouldn't equal
-  # expect_false(object = all(win.1.binary$connection.counts == win.1.sum$connection.counts))
+  expect_false(all(as.matrix(win.1.binary$connection.counts) == as.matrix(win.1.sum$connection.counts)))
 })
 
-test_that("Verify binary/weighted accumulations with window == 1 are not equal", {
+test_that("A window of 1 equals one conversation per line when weighted", {
   dat = fake.data(binary = F)
 
   win.1.sum = ena.accumulate.data(
@@ -63,5 +65,6 @@ test_that("Verify binary/weighted accumulations with window == 1 are not equal",
   )
 
   # Single row sum and conversations by line and weight.sum should be equal
-  # expect_true(object = all(win.c.sum$connection.counts == win.1.sum$connection.counts))
+  expect_equal(as.matrix(win.c.sum$connection.counts), as.matrix(win.1.sum$connection.counts),
+               check.attributes = FALSE)
 })

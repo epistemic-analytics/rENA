@@ -265,7 +265,7 @@ ena.plot.network = function(
   network.opacity = abs(network.scaled);
 
   network.to.keep = (network != 0) * 1
-  if(scale.weights == T) {
+  if(scale.weights == T && any(network != 0)) {
     network.scaled = network * (1 / max(abs(network)));
     network.thickness = scales::rescale(x = abs(network.scaled), to = scale.range, from = thickness);
   }
