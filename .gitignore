@@ -37,7 +37,6 @@ __pycache__/
 
 \.bash_history
 
-inst/docker/san\.sh
 
 inst/scripts/san-check\.R
 

@@ -4,14 +4,11 @@
 \.Rproj\.user/
 ^\.gitlab-ci\.yml
 ^inst/extdata/
-^inst/docker/
-^demo/backup/
 ^.*.\.tar\.gz$
 ^\.git/.*
 ^\.github/
 ^.idea
 ^\.claude
-^ENA_rotation_test_report
 ^docs
 /\.DS_Store$
 ^\.gitlab/.*
@@ -33,3 +30,7 @@ src/*.so
 gitleaks.json
 ^wasm$
 ^python$
+^rENA\.Rcheck$
+^repo$
+^\.RData$
+^\.Rhistory$
