@@ -294,16 +294,40 @@ function applyCodeMask(networks, codeMask, nCodes, nUnits, nConnections, ordered
 
 // Rows of a matrix given as an array of row arrays, or as flat row-major data
 // with `cols` columns.
-function matrixRows(m, cols) {
+function matrixRows(m, cols, name = 'rotation matrix') {
     if (m == null) return null;
+    let rows;
     if (Array.isArray(m) && (m.length === 0 || Array.isArray(m[0]) || ArrayBuffer.isView(m[0]))) {
-        return m.map(r => Array.from(r, Number));
+        rows = m.map(r => Array.from(r, Number));
+    } else {
+        const flat = Array.from(m, Number);
+        if (!cols) throw new Error(`a flat ${name} needs its column count`);
+        if (flat.length % cols !== 0) {
+            throw new Error(`${name} has ${flat.length} values, not a multiple of ${cols} columns`);
+        }
+        rows = [];
+        for (let i = 0; i < flat.length; i += cols) rows.push(flat.slice(i, i + cols));
     }
-    const flat = Array.from(m, Number);
-    if (!cols) throw new Error('a flat rotation matrix needs its column count');
-    const rows = [];
-    for (let i = 0; i < flat.length; i += cols) rows.push(flat.slice(i, i + cols));
+    // Ragged rows used to be laid out at a fixed stride: a long row overwrote
+    // the start of the next one, a short one left zeros.
+    const width = cols || (rows[0] ? rows[0].length : 0);
+    for (const r of rows) {
+        if (r.length !== width) throw new Error(`${name} rows must all have ${width} values`);
+        if (!r.every(Number.isFinite)) throw new Error(`${name} contains a non-numeric value`);
+    }
     return rows;
+}
+
+// The libqe statistics read nRows × dims values from `points`; a mismatch
+// used to read past the array (leftover WASM heap memory) — libqe now throws,
+// this gives the reason.
+function checkPoints(name, points, nRows, dims) {
+    for (const [what, n] of [['row count', nRows], ['dims', dims]]) {
+        if (!Number.isInteger(n) || n < 0) throw new Error(`${name}: ${what} must be a non-negative integer`);
+    }
+    if (points == null || points.length !== nRows * dims) {
+        throw new Error(`${name}: expected ${nRows} × ${dims} = ${nRows * dims} values, got ${points?.length ?? 0}`);
+    }
 }
 
 /**
@@ -330,7 +354,7 @@ function resolveRotationSet(rs, codes, nConnections, ordered) {
         );
     }
     const rotCols = rot[0].length;
-    const nodes   = matrixRows(rs.nodes, rotCols);
+    const nodes   = matrixRows(rs.nodes, rotCols, 'rotationSet.nodes');
     const center  = rs.centerVec ? Array.from(rs.centerVec, Number) : null;
     if (!nodes || nodes.length !== codes.length) {
         throw new Error('rotationSet.nodes must have one row per code');
@@ -902,6 +926,7 @@ export default async function loadENA() {
          *   rows=dims, cols=3 — columns: mean, lower CI, upper CI
          */
         confInts(points, nUnits, dims, confLevel = 0.95) {
+            checkPoints('confInts', points, nUnits, dims);
             return qe.mean_ci(points, nUnits, dims, confLevel);
         },
 
@@ -917,6 +942,7 @@ export default async function loadENA() {
          *   rows=dims, cols=2 — columns: lower fence, upper fence
          */
         outlierInts(points, nUnits, dims, iqrFactor = 1.5) {
+            checkPoints('outlierInts', points, nUnits, dims);
             return qe.outlier_ci(points, nUnits, dims, iqrFactor);
         },
 
@@ -933,6 +959,8 @@ export default async function loadENA() {
          *             U, pvalue_u, effect_r, medians }}
          */
         compareGroups(g1Points, nG1, g2Points, nG2, dims) {
+            checkPoints('compareGroups (group 1)', g1Points, nG1, dims);
+            checkPoints('compareGroups (group 2)', g2Points, nG2, dims);
             return qe.group_stats(g1Points, nG1, dims, g2Points, nG2, dims);
         },
 

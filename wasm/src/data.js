@@ -17,6 +17,32 @@ export function rowKey(row, cols) {
     return cols.map(c => row[c]).join('__');
 }
 
+// rowKey() is the label callers see (and pass back as unitsUsed), but joining
+// with '__' is ambiguous: {a: 'x__y', b: 'z'} and {a: 'x', b: 'y__z'} both give
+// 'x__y__z'. Track the exact values behind each label and refuse to merge
+// different ones under the same label.
+function checkedKey(seen, row, cols, what) {
+    const key   = rowKey(row, cols);
+    const exact = JSON.stringify(cols.map(c => row[c] ?? null));
+    const prev  = seen.get(key);
+    if (prev === undefined) seen.set(key, exact);
+    else if (prev !== exact) {
+        throw new Error(`Different ${what} values both map to "${key}" because a value ` +
+                        `contains "__"; rename the values or use different ${what} columns.`);
+    }
+    return key;
+}
+
+function requireColumns(kind, cols, available) {
+    if (!Array.isArray(cols) || cols.length === 0 || !cols.every(c => typeof c === 'string')) {
+        throw new Error(`${kind} must be a non-empty array of column names`);
+    }
+    const missing = cols.filter(c => !available.has(c));
+    if (missing.length) {
+        throw new Error(`${kind}: column(s) not found in the data: ${missing.join(', ')}`);
+    }
+}
+
 /**
  * Parse tabular data into ENA-ready structures.
  *
@@ -55,9 +81,19 @@ export function parseData(rows, codes, unitCols, convoCols, unitsUsed = null) {
     const convoGroups = new Map();   // convoIdx → [rowIdx, ...]
 
     // Metadata columns: every column that is NOT a code, unit, or convo column.
-    const excludedCols = new Set([...codes, ...unitCols, ...convoCols]);
     const allCols      = nRows > 0 ? Object.keys(rows[0]) : [];
+    // A misspelled column used to read as undefined everywhere: all-zero codes,
+    // or every row in one unit called "undefined".
+    if (nRows > 0) {
+        const available = new Set(allCols);
+        requireColumns('codes', codes, available);
+        requireColumns('units', unitCols, available);
+        requireColumns('conversations', convoCols, available);
+    }
+    const excludedCols = new Set([...codes, ...unitCols, ...convoCols]);
     const metaCols     = allCols.filter(c => !excludedCols.has(c));
+    const unitSeen     = new Map();   // label → exact values (see checkedKey)
+    const convoSeen    = new Map();
 
     // Per-unit metadata rows — populated on first occurrence of each unit.
     const metaData = [];
@@ -67,13 +103,20 @@ export function parseData(rows, codes, unitCols, convoCols, unitsUsed = null) {
     for (let i = 0; i < nRows; i++) {
         const row = rows[i];
 
-        // Code values
+        // Code values: numbers, numeric strings or booleans. A missing or
+        // non-numeric value is an error rather than a silent 0.
         for (let c = 0; c < nCodes; c++) {
-            codeMatrix[i * nCodes + c] = Number(row[codes[c]]) || 0;
+            const raw = row[codes[c]];
+            const v   = typeof raw === 'string' && raw.trim() === '' ? NaN : Number(raw);
+            if (!Number.isFinite(v)) {
+                throw new Error(`Code "${codes[c]}" has a missing or non-numeric value ` +
+                                `(${JSON.stringify(raw ?? null)}) in row ${i + 1}`);
+            }
+            codeMatrix[i * nCodes + c] = v;
         }
 
         // Unit index
-        const uKey = rowKey(row, unitCols);
+        const uKey = checkedKey(unitSeen, row, unitCols, 'unit');
         if (used && !used.has(uKey)) {
             unitOf[i] = -1;
         } else if (!unitIndex.has(uKey)) {
@@ -87,7 +130,7 @@ export function parseData(rows, codes, unitCols, convoCols, unitsUsed = null) {
         if (unitOf[i] !== -1) unitOf[i] = unitIndex.get(uKey);
 
         // Conversation index
-        const cKey = rowKey(row, convoCols);
+        const cKey = checkedKey(convoSeen, row, convoCols, 'conversation');
         if (!convoIndex.has(cKey)) convoIndex.set(cKey, convoIndex.size);
         const cIdx = convoIndex.get(cKey);
         convoOf[i] = cIdx;

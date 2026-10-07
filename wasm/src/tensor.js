@@ -82,8 +82,16 @@ export function buildContextLookup(rows, rowIndices, factors, factorLevels) {
         const row = rows[rowIndices[i]];
         times[i] = i;  // default: row index as time
         for (let f = 0; f < nFactor; f++) {
-            const col = factors[f];
-            contextLookup[i * nFactor + f] = factorLevels[col][row[col]] ?? 0;
+            const col    = factors[f];
+            const levels = factorLevels[col];
+            // Own properties only: a value like "constructor" must not resolve
+            // to an inherited Object.prototype member. A value with no level
+            // used to fall back to level 0 silently.
+            if (!levels || !Object.prototype.hasOwnProperty.call(levels, row[col])) {
+                throw new Error(`tensor factor "${col}" has no level for value ` +
+                                `${JSON.stringify(row[col] ?? null)}`);
+            }
+            contextLookup[i * nFactor + f] = levels[row[col]];
         }
     }
 
@@ -221,7 +229,9 @@ export function parseTimes(rows, col, endCol = null) {
 export function inferFactorLevels(rows, factors) {
     const levels = {};
     for (const col of factors) {
-        levels[col] = {};
+        // No prototype: values such as "constructor" or "__proto__" are
+        // ordinary keys here.
+        levels[col] = Object.create(null);
         let idx = 0;
         for (const row of rows) {
             const v = row[col];
@@ -231,6 +241,39 @@ export function inferFactorLevels(rows, factors) {
         }
     }
     return levels;
+}
+
+/**
+ * Check a tensor definition before it reaches libqe, which indexes the
+ * tensor with these values (an index out of range used to read past it).
+ */
+export function validateTensor(dims, tensorData, factors, factorLevels) {
+    if (!Array.isArray(dims) && !ArrayBuffer.isView(dims)) {
+        throw new Error('tensor dims must be an array');
+    }
+    const d = Array.from(dims);
+    if (d.length === 0 || !d.every(x => Number.isInteger(x) && x > 0)) {
+        throw new Error('tensor dims must be positive integers');
+    }
+    const size = d.reduce((a, b) => a * b, 1);
+    if (size !== tensorData.length) {
+        throw new Error(`tensor data has ${tensorData.length} values but dims ` +
+                        `[${d.join(', ')}] need ${size}`);
+    }
+    if (factors.length > 0 && d.length !== factors.length + 1) {
+        throw new Error(`tensor dims need one axis per factor (${factors.length}) ` +
+                        `plus the weight/window axis; got ${d.length}`);
+    }
+    factors.forEach((col, f) => {
+        const levels = factorLevels[col];
+        if (!levels) throw new Error(`no factor levels for tensor factor "${col}"`);
+        for (const [value, level] of Object.entries(levels)) {
+            if (!Number.isInteger(level) || level < 0 || level >= d[f]) {
+                throw new Error(`level ${level} of "${col}" = ${JSON.stringify(value)} ` +
+                                `is outside its axis (size ${d[f]})`);
+            }
+        }
+    });
 }
 
 // libqe's apply_tensor_unit reads the IS_DEFAULT window as an int, so an
@@ -354,6 +397,7 @@ export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
 
     // Resolve factor levels (infer if not provided)
     const factorLevels = tensorDef.factorLevels ?? inferFactorLevels(rows, factors);
+    validateTensor(dims, tensorData, factors, factorLevels);
     const allTimes = timesCol ? parseTimes(rows, timesCol, timesEndCol || null) : null;
 
     const nConnections = ordered
