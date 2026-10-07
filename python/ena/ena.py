@@ -283,6 +283,13 @@ class ENA:
                 f"rotation must be None, np.ndarray, or callable, got {type(rotation)}"
             )
 
+        if not isinstance(dims, (int, np.integer)) or isinstance(dims, bool) or dims < 1:
+            raise ValueError(f"dims must be a positive integer, got {dims!r}")
+        if dims > full_rot.shape[1]:
+            raise ValueError(
+                f"dims={dims} but the rotation has only {full_rot.shape[1]} dimensions "
+                f"(at most min(units, connections))"
+            )
         rotation_matrix = full_rot[:, :dims]
         t = centered @ rotation_matrix   # projected unit positions (= R's set$points)
 

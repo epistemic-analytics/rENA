@@ -256,6 +256,10 @@ def generalized_rotation(x_var, y_var=None, select_2_groups=None):
             )
         ):
             g1_val, g2_val = select_2_groups
+            for g in (g1_val, g2_val):
+                if not np.any(x_arr == g):
+                    # an empty group's mean is NaN -> "SVD did not converge"
+                    raise ValueError(f"select_2_groups: no units have x_var == {g!r}")
             diff = (
                 centered[x_arr == g1_val].mean(axis=0)
                 - centered[x_arr == g2_val].mean(axis=0)

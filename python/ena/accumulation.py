@@ -98,6 +98,37 @@ class ENAAccumulation:
         )
 
 
+def _validate_accumulate_input(data, units, conversations, codes, window_size, window_forward):
+    """Reject input that used to be modelled silently wrong.
+
+    pandas' groupby drops rows whose conversation is NaN (their units then had
+    all-zero networks), NaN/None units collapsed into one unit "nan", and NaN
+    codes reached the C++ kernel and surfaced later as an unclear LinAlgError.
+    Same policy as rENA's R and JS: missing values are an error.
+    """
+    if isinstance(codes, str) or not all(isinstance(c, str) for c in codes) or not codes:
+        raise ValueError("codes must be a non-empty list of column names")
+    if len(set(codes)) != len(codes):
+        raise ValueError("codes contains duplicate column names")
+    conv_cols = [conversations] if isinstance(conversations, str) else list(conversations)
+    unit_cols = [units] if isinstance(units, str) else list(units)
+    missing = [c for c in [*unit_cols, *conv_cols, *codes] if c not in data.columns]
+    if missing:
+        raise KeyError(f"column(s) not found in data: {', '.join(map(str, missing))}")
+    for what, cols in (("units", unit_cols), ("conversations", conv_cols)):
+        na = [c for c in cols if data[c].isna().any()]
+        if na:
+            raise ValueError(f"{what} column(s) contain missing values: {', '.join(na)}")
+    numeric = data[codes].apply(pd.to_numeric, errors="coerce")
+    bad = [c for c in codes if numeric[c].isna().any() or not np.isfinite(numeric[c]).all()]
+    if bad:
+        raise ValueError(f"code column(s) contain missing or non-numeric values: {', '.join(bad)}")
+    if not (window_size == float("inf") or (float(window_size).is_integer() and window_size >= 0)):
+        raise ValueError(f"window_size must be a whole number >= 0 (or inf), got {window_size!r}")
+    if not (window_forward == float("inf") or (float(window_forward).is_integer() and window_forward >= 0)):
+        raise ValueError(f"window_forward must be a whole number >= 0 (or inf), got {window_forward!r}")
+
+
 def accumulate(
     data: pd.DataFrame,
     units: str,
@@ -152,6 +183,7 @@ def accumulate(
 
         model = ENA().fit(accum)
     """
+    _validate_accumulate_input(data, units, conversations, codes, window_size, window_forward)
     data = data.reset_index(drop=True)
     n_codes       = len(codes)
     n_connections = n_codes * (n_codes - 1) // 2
