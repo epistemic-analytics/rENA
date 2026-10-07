@@ -31,6 +31,9 @@ EXTDATA = HERE / "../../inst/extdata"
 
 RS_CSV  = EXTDATA / "rs.data.csv"
 
+# The CSV lives in the R package, outside python/, so it is not in the sdist.
+pytestmark = pytest.mark.skipif(not RS_CSV.exists(), reason="rs.data.csv from the rENA repo not found")
+
 # ── RS.data codes ─────────────────────────────────────────────────────────────
 # Column names in the CSV use spaces (R's read.csv converts them to dots).
 

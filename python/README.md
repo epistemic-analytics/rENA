@@ -58,8 +58,8 @@ model = ENA().fit(rs, "unit_key", "convo_key", CODES, window_size=4)
 ## Plotting
 
 qe-ena models plot with [qe-viz](https://qe-libs.org/py/project/qe-viz/) (`import qeviz`), the
-interactive ENA / ONA network viewer used by rENA (`pip install qeviz
---index-url https://qe-libs.org/py/simple/`). The two conditions compared —
+interactive ENA / ONA network viewer used by rENA (`pip install qe-viz
+--extra-index-url https://qe-libs.org/py/simple/`). The two conditions compared —
 FirstGame − SecondGame, with each group's mean and 95% confidence interval:
 
 ```python
@@ -76,7 +76,7 @@ p.export_html("rs-data.html")  # or a self-contained HTML file
 
 Blue edges are stronger in FirstGame, red in SecondGame. `magnify=3` widens
 the edges to make a subtraction's small differences readable (the plot says so).
-See the [qeviz README](https://qe-libs.org/py/project/qeviz/) for single-group
+See the [qeviz README](https://qe-libs.org/py/project/qe-viz/) for single-group
 networks, unit points, and networks or means from your own data.
 
 ---
