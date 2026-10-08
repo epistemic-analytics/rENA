@@ -2,9 +2,11 @@
  * @qe-libs/rena-wasm
  *
  * JavaScript/WebAssembly ENA pipeline.
- * Thin orchestration layer over @qe-libs/libqe-wasm — handles data parsing,
- * unit/conversation grouping, and the full accumulate→normalize→center→
- * rotate→project→node-positions pipeline.
+ * Handles data parsing, unit/conversation grouping, and the full
+ * accumulate→normalize→center→rotate→project→node-positions pipeline.  The
+ * ENA math (rotations, node positions, CCD) is libena, compiled into this
+ * package (dist/libena.*); generic numerics and accumulation come from
+ * @qe-libs/libqe-wasm.
  *
  * Output structure mirrors R's ena.set object (without R-specific S3 class
  * attributes and without metadata columns prepended to every matrix).
@@ -41,6 +43,7 @@
  */
 
 import loadLibQE from '@qe-libs/libqe-wasm';
+import createLibENA from '../dist/libena.js';
 import { parseData } from './data.js';
 import {
     sphereNorm, scaleNetworks, center,
@@ -609,6 +612,41 @@ function runCustomRotation(qe, rawNetworks, lineWeights, ownCentered, ownCenterV
     });
 }
 
+// ── WASM modules ─────────────────────────────────────────────────────────────
+
+// libena's functions (inst/include/libena, compiled into dist/libena.*).  They
+// moved out of libqe in libqe's phase 4a split; libqe-wasm still carries its
+// own copies until libqe 0.2.0, so these names must route to libena.
+const LIBENA_FUNCTIONS = new Set([
+    'ena_correlation',
+    'node_positions',
+    'directed_node_positions',
+    'directed_node_positions_combine_pairs',
+    'ena_svd',
+    'deflate',
+    'orthogonal_svd',
+    'complete_rotation',
+    'means_rotation',
+    'generalized_means_rotation',
+    'ccd_window',
+]);
+
+/**
+ * Load libqe-wasm and libena and present them as one module object: the
+ * pipeline (pipeline.js, tensor.js, ...) takes a single `qe`, so libena's
+ * functions are routed to libena and everything else to libqe-wasm.
+ */
+async function loadModules() {
+    const [libqe, libena] = await Promise.all([loadLibQE(), createLibENA()]);
+    return new Proxy(libqe, {
+        get(target, prop, receiver) {
+            return LIBENA_FUNCTIONS.has(prop)
+                ? libena[prop]
+                : Reflect.get(target, prop, receiver);
+        },
+    });
+}
+
 // ── main factory ─────────────────────────────────────────────────────────────
 
 /**
@@ -617,7 +655,7 @@ function runCustomRotation(qe, rawNetworks, lineWeights, ownCentered, ownCenterV
  * @returns {Promise<{fit: Function, accumulate: Function}>}
  */
 export default async function loadENA() {
-    const qe = await loadLibQE();
+    const qe = await loadModules();
 
     const api = {
         /**
@@ -1152,7 +1190,11 @@ export default async function loadENA() {
          */
         defaultTensor,
 
-        /** The underlying libqe WASM module, for custom low-level pipelines. */
+        /**
+         * The underlying WASM functions, for custom low-level pipelines:
+         * libqe-wasm's, with libena's (rotations, node positions, CCD) from
+         * this package.
+         */
         qe,
     };
 

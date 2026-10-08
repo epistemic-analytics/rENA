@@ -1,11 +1,13 @@
 # @qe-libs/rena-wasm
 
-JavaScript/WebAssembly ENA pipeline — thin orchestration layer over
-[`@qe-libs/libqe-wasm`](../../libqe/wasm/README.md).
+JavaScript/WebAssembly ENA pipeline.
 
 Handles data parsing, unit/conversation grouping, and the full
 accumulate → normalize → center → rotate → project → node-positions pipeline.
-All math is delegated to the libqe WASM module; no C++ compilation required here.
+The math runs in WebAssembly: the ENA model code (rotations, node positions,
+window estimation) is libena, rENA's C++ layer, compiled into this package
+(`dist/libena.*`), and generic numerics and accumulation come from
+[`@qe-libs/libqe-wasm`](../../libqe/wasm/README.md).
 
 ---
 
@@ -324,8 +326,15 @@ automatically unless `factorLevels` is provided explicitly.
 
 ```bash
 npm install
+npm run build   # compiles dist/libena.* — needs emscripten (emcc) and conan
 npm test
 ```
+
+`npm run build` (`scripts/build.sh`) vendors the libena and libqe headers into
+`include/` (`../scripts/sync-headers.sh`: libena from `inst/include`, libqe from
+Conan), gets Armadillo from Conan, and builds with `emcmake`.
+`test/libena.test.js` checks that this module and libqe-wasm's own copy of the
+ENA functions give identical results.
 
 Tests cover the simple windowed pipeline (`test/ena.test.js`) and the
 context-tensor path (`test/tensor.test.js`), and check against R: infinite and

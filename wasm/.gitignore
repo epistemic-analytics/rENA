@@ -1,1 +1,8 @@
 node_modules/
+
+# libena WASM module: build output and headers vendored by scripts/sync-headers.sh
+build/
+dist/
+include/
+CMakeUserPresets.json
+.conan2/

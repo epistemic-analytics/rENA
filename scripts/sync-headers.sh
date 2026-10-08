@@ -1,6 +1,7 @@
 #!/bin/sh
-# sync-headers.sh — vendor the C++ headers qe-ena's extension (python/) builds
-#                   against into python/include/:
+# sync-headers.sh — vendor the C++ headers that qe-ena's extension (python/)
+#                   and rena-wasm's module (wasm/) build against into
+#                   python/include/ and wasm/include/:
 #
 #   libena  from inst/include/libena/ (this repo's canonical copy)
 #   libqe   from Conan: libqe/$LIBQE_VERSION on the qe-libs registry, or from a
@@ -10,9 +11,10 @@
 #
 #   1. Building or installing qe-ena from a checkout:
 #        sh scripts/sync-headers.sh && pip install ./python
-#   2. A self-contained sdist (it ships python/include/):
+#   2. A self-contained qe-ena sdist (it ships python/include/):
 #        sh scripts/sync-headers.sh && python -m build --sdist python/
 #      cranqe runs this script before building, when the repo provides it.
+#   3. rena-wasm: wasm/scripts/build.sh runs it.
 #
 # Conan: uses `conan` on PATH, else installs it into a throwaway venv with
 # $PYTHON (default python3).  It runs with a throwaway CONAN_HOME, so your own
@@ -25,47 +27,49 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # Bump with DESCRIPTION's LinkingTo: libqe minimum.
 LIBQE_VERSION="${LIBQE_VERSION:-0.1.9}"
 CONAN_REMOTE="https://gitlab.com/api/v4/projects/22522458/packages/conan"
-
-DST="${REPO_ROOT}/python/include"
-# Generated (git-ignored) copies: clear them so a header that moved or was
-# removed upstream is not left behind.
-rm -rf "${DST}/libena" "${DST}/libqe"
-mkdir -p "${DST}"
-
-echo "Syncing ${REPO_ROOT}/inst/include/libena -> ${DST}/libena"
-cp -R "${REPO_ROOT}/inst/include/libena" "${DST}/libena"
-
-if [ -n "${LIBQE_INCLUDE:-}" ]; then
-    echo "Syncing ${LIBQE_INCLUDE}/libqe -> ${DST}/libqe"
-    cp -R "${LIBQE_INCLUDE}/libqe" "${DST}/libqe"
-    echo "Done."
-    exit 0
-fi
+DESTS="${REPO_ROOT}/python/include ${REPO_ROOT}/wasm/include"
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "${TMP}"' EXIT
 
-if command -v conan >/dev/null 2>&1; then
-    CONAN=conan
+# ── libqe headers ─────────────────────────────────────────────────────────────
+if [ -n "${LIBQE_INCLUDE:-}" ]; then
+    LIBQE_SRC="${LIBQE_INCLUDE}/libqe"
+    LIBQE_FROM="${LIBQE_SRC}"
 else
-    echo "Installing conan into a throwaway venv (${PYTHON:-python3})..."
-    "${PYTHON:-python3}" -m venv "${TMP}/venv"
-    VBIN="${TMP}/venv/bin"
-    [ -d "${VBIN}" ] || VBIN="${TMP}/venv/Scripts"   # Windows venv layout
-    "${VBIN}/python" -m pip install --quiet conan
-    CONAN="${VBIN}/conan"
+    if command -v conan >/dev/null 2>&1; then
+        CONAN=conan
+    else
+        echo "Installing conan into a throwaway venv (${PYTHON:-python3})..."
+        "${PYTHON:-python3}" -m venv "${TMP}/venv"
+        VBIN="${TMP}/venv/bin"
+        [ -d "${VBIN}" ] || VBIN="${TMP}/venv/Scripts"   # Windows venv layout
+        "${VBIN}/python" -m pip install --quiet conan
+        CONAN="${VBIN}/conan"
+    fi
+
+    export CONAN_HOME="${TMP}/conan-home"
+    ${CONAN} remote add qe-libs "${CONAN_REMOTE}" >/dev/null
+    echo "Downloading libqe/${LIBQE_VERSION} from ${CONAN_REMOTE}..."
+    ${CONAN} download "libqe/${LIBQE_VERSION}:*" -r qe-libs >/dev/null
+    # libqe is header-only: one package, the only one in this throwaway cache.
+    LIBQE_SRC="$(find "${CONAN_HOME}/p" -type d -path "*/p/include/libqe" | head -1)"
+    if [ -z "${LIBQE_SRC}" ]; then
+        echo "ERROR: libqe/${LIBQE_VERSION} package has no include/libqe" >&2
+        exit 1
+    fi
+    LIBQE_FROM="libqe/${LIBQE_VERSION} (Conan)"
 fi
 
-export CONAN_HOME="${TMP}/conan-home"
-${CONAN} remote add qe-libs "${CONAN_REMOTE}" >/dev/null
-echo "Downloading libqe/${LIBQE_VERSION} from ${CONAN_REMOTE}..."
-${CONAN} download "libqe/${LIBQE_VERSION}:*" -r qe-libs >/dev/null
-# libqe is header-only: one package, the only one in this throwaway cache.
-SRC="$(find "${CONAN_HOME}/p" -type d -path "*/p/include/libqe" | head -1)"
-if [ -z "${SRC}" ]; then
-    echo "ERROR: libqe/${LIBQE_VERSION} package has no include/libqe" >&2
-    exit 1
-fi
-echo "Syncing libqe/${LIBQE_VERSION} (Conan) -> ${DST}/libqe"
-cp -R "${SRC}" "${DST}/libqe"
+# ── copy into each destination ───────────────────────────────────────────────
+for DST in ${DESTS}; do
+    # Generated (git-ignored) copies: clear them so a header that moved or was
+    # removed upstream is not left behind.
+    rm -rf "${DST}/libena" "${DST}/libqe"
+    mkdir -p "${DST}"
+    echo "Syncing inst/include/libena -> ${DST}/libena"
+    cp -R "${REPO_ROOT}/inst/include/libena" "${DST}/libena"
+    echo "Syncing ${LIBQE_FROM} -> ${DST}/libqe"
+    cp -R "${LIBQE_SRC}" "${DST}/libqe"
+done
 echo "Done."
