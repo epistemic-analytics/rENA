@@ -63,3 +63,13 @@ gitleaks.json
 # qe-ena: headers vendored by scripts/sync-headers.sh; scikit-build output
 python/include/
 python/build/
+
+# ENA.jl: headers vendored by scripts/sync-headers.sh; CMake build output
+julia/include/
+julia/lib/
+julia/build/
+julia/Manifest.toml
+
+# libena Conan test package build output
+conan/conan-test/build/
+conan/conan-test/CMakeUserPresets.json

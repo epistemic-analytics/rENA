@@ -35,3 +35,5 @@ gitleaks.json
 ^\.RData$
 ^\.Rhistory$
 ^scripts$
+^julia$
+^conan$
