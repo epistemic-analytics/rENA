@@ -5,8 +5,8 @@
 #'   such that the first dimension best represents the contribution of a target
 #'   variable after controlling for covariates via Lasso. An optional second
 #'   GMR axis can be computed for \code{y_var}; remaining dimensions are filled
-#'   by SVD of the doubly-deflated space. Delegates to
-#'   \code{\link[libqe]{generalized_means_rotation}}.
+#'   by SVD of the doubly-deflated space. Computed in C++ by libena's
+#'   \code{generalized_means_rotation}.
 #'
 #' @param enaset An \code{\link{ENAset}} or compatible list with
 #'   \code{model$points.for.projection} (or \code{points.normed.centered}),
@@ -29,7 +29,6 @@
 #'       present. Set \code{FALSE} for main-effects-only Lasso.}
 #'   }
 #'
-#' @importFrom libqe generalized_means_rotation
 #' @importFrom stats model.matrix as.formula
 #' @export
 #' @return A list with \code{rotation} (q x q matrix, column names GMR1,
@@ -148,8 +147,8 @@ ena.rotate.by.generalized <- function(enaset, params) {
     y_n_groups    <- 0L
   }
 
-  ## ── Delegate to libqe ───────────────────────────────────────────────────────
-  result <- libqe::generalized_means_rotation(
+  ## ── Delegate to libena ──────────────────────────────────────────────────────
+  result <- generalized_means_rotation(
     V              = V,
     x_model_matrix = mm_x,
     x_target       = x_target_enc,

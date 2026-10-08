@@ -1,6 +1,6 @@
-# Pure-R replacements for functions that were previously compiled C++ exports
-# (rENA/src/ena.cpp).  All math now lives in libqe; these wrappers preserve
-# existing R-level function names so no call sites in R code need to change.
+# R wrappers that preserve rENA's long-standing function names.  The math
+# lives in C++: ENA model code in libena (inst/include/libena, wrapped in
+# src/libena_rcpp.cpp) and generic numerics and accumulation in libqe.
 #
 # Public API functions (exported) are marked @export.
 # Internal functions (not exported) have no @export tag.
@@ -65,7 +65,7 @@ vector_to_ut <- function(v) {
 #' @return List with nodes, centroids, weights, points
 #' @export
 directed_node_positions <- function(line_weights, points, numDims) {
-  libqe::directed_node_positions(line_weights, points, numDims)
+  directed_node_positions_c(line_weights, points, numDims)
 }
 
 #' Directed node positions with ground+response combined
@@ -80,7 +80,7 @@ directed_node_positions <- function(line_weights, points, numDims) {
 directed_node_positions_with_ground_response_added <- function(line_weights,
                                                                 points,
                                                                 numDims) {
-  libqe::directed_node_positions_combine_pairs(line_weights, points, numDims)
+  directed_node_positions_combine_pairs(line_weights, points, numDims)
 }
 
 #' Calculate ENA correlations
@@ -94,7 +94,7 @@ directed_node_positions_with_ground_response_added <- function(line_weights,
 #' @return Numeric matrix with columns: r, lower CI, upper CI
 #' @export
 ena_correlation <- function(points, centroids, conf_level = 0.95) {
-  libqe::ena_correlation(points, centroids, conf_level)
+  ena_correlation_c(points, centroids, conf_level)
 }
 
 #' Confidence intervals around group mean positions
@@ -180,7 +180,7 @@ triIndices <- function(len, row = -1L) {
 # @param t        Numeric matrix of rotated points (units x dims)
 # @param numDims  Number of dimensions
 lws_lsq_positions <- function(adjMats, t, numDims) {
-  libqe::node_positions(adjMats, t, numDims)
+  node_positions(adjMats, t, numDims)
 }
 
 # String upper-triangle pairs: "A" "B" "C" -> "A & B" "A & C" "B & C".

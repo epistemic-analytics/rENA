@@ -194,11 +194,11 @@ ena.ccd <- function(
 
   x_subsets <- x_subsets[valid_idx]
 
-  # 4. Delegate the cross-covariance decay computation to the shared libqe
-  #    kernel (qe::ccd_window). The numeric core lives in C++ so that R, the
+  # 4. Delegate the cross-covariance decay computation to the shared libena
+  #    kernel (qe::ccd_window, src/libena_rcpp.cpp). The numeric core lives in C++ so that R, the
   #    WASM build, and the Python package (ena) all share a single implementation; only the
   #    data.frame wrangling and S3 assembly stay here.
-  kern <- libqe::ccd_window(
+  kern <- ccd_window(
     lapply(x_subsets, function(s) matrix(as.numeric(s), nrow = nrow(s))),
     max_window  = max_window,
     min_overlap = min_overlap

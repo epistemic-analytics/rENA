@@ -1,3 +1,16 @@
+## rENA 0.4.13 (development version)
+
+#### Bug Fixes & Improvements
+
+  * rENA is a compiled package again. The ENA model code (rotations,
+    generalized means rotation, node positions, `ena_correlation`,
+    `ccd_window`) moved out of libqe into rENA as the header-only C++ layer
+    libena (`inst/include/libena/`, wrapped in `src/libena_rcpp.cpp`), so
+    libqe can return to generic numerics. Results are unchanged: the code and
+    its tests moved verbatim. Installing from source now needs a C++
+    toolchain (Rtools on Windows); qe-libs.org serves binaries for Windows
+    and macOS. Requires libqe >= 0.1.9.
+
 ## rENA 0.4.12
 
 #### Bug Fixes & Improvements

@@ -4,7 +4,7 @@
 #' @description Computes a dimensional reduction from a matrix of points such
 #'   that the first dimension of the projected space passes through the means of
 #'   two groups in the original space. Subsequent dimensions are computed using
-#'   SVD on the deflated data. Delegates to \code{\link[libqe]{means_rotation}}.
+#'   SVD on the deflated data. Computed in C++ by libena's \code{means_rotation}.
 #'
 #' @param enaset An \code{\link{ENAset}} or compatible list with
 #'   \code{model$points.for.projection}, \code{connection.counts$ENA_UNIT},
@@ -14,7 +14,6 @@
 #'   vectors (length = number of units) or character vectors of unit IDs.
 #' @param params Alias for \code{groups}; used when called from the pipe API.
 #'
-#' @importFrom libqe means_rotation
 #' @export
 #' @return A list with \code{rotation}, \code{codes}, \code{eigenvalues}, and
 #'   \code{node.positions = NULL}, suitable for use inside \code{rotate()}.
@@ -36,7 +35,7 @@ ena.rotate.by.mean <- function(enaset, groups = NULL, params = groups) {
   }
 
   # Convert groups (logical or character) to 0-based integer index pairs
-  # required by libqe::means_rotation
+  # required by means_rotation (libena)
   ena_unit <- enaset$connection.counts$ENA_UNIT
   group_pairs <- lapply(groups, function(pair) {
     a <- pair[[1]]
@@ -46,7 +45,7 @@ ena.rotate.by.mean <- function(enaset, groups = NULL, params = groups) {
     list(as.integer(which(a) - 1L), as.integer(which(b) - 1L))
   })
 
-  result <- libqe::means_rotation(data, group_pairs)
+  result <- means_rotation(data, group_pairs)
 
   rotation <- result$rotation
   colnames(rotation) <- result$column_names

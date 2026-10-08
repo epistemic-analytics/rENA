@@ -24,8 +24,10 @@ Imports:
     glmnet,
     htmlwidgets,
     tma (>= 0.3.4),
-    libqe (>= 0.1.6)
+    libqe (>= 0.1.9),
+    Rcpp
+LinkingTo: libqe (>= 0.1.9), Rcpp, RcppArmadillo
 Suggests: testthat (>= 2.1.0), knitr, rmarkdown, qeviz (>= 0.5.0)
 Additional_repositories: https://cran.qe-libs.org
 RoxygenNote: 7.3.3
-NeedsCompilation: no
+NeedsCompilation: yes

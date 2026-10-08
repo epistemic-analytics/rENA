@@ -13,10 +13,9 @@
 #' @importFrom libqe code_connections connection_names
 #' @importFrom libqe connection_indices accumulate_stanza
 #' @importFrom libqe row_connections rolling_window_sum
-#' @importFrom libqe node_positions directed_node_positions
-#' @importFrom libqe directed_node_positions_combine_pairs ena_correlation
-#' @importFrom libqe means_rotation
 #' @importFrom libqe mean_ci outlier_ci group_stats
+#' @importFrom Rcpp sourceCpp
+#' @useDynLib rENA, .registration = TRUE
 NULL
 
 # @title Default rENA constants

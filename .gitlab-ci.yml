@@ -21,7 +21,7 @@ test:r:
     - Rscript -e "install.packages(
         c('R6', 'data.table', 'glmnet', 'scales', 'plotly',
           'testthat', 'knitr', 'rmarkdown',
-          'libqe', 'tma'),
+          'Rcpp', 'RcppArmadillo', 'libqe', 'tma'),
         repos = c(
           'https://qe-libs.org/cran-dev/',
           'https://qe-libs.org/cran/',

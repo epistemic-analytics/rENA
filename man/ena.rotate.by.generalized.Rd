@@ -39,6 +39,6 @@ Computes a dimensional reduction from a matrix of ENA points
   such that the first dimension best represents the contribution of a target
   variable after controlling for covariates via Lasso. An optional second
   GMR axis can be computed for \code{y_var}; remaining dimensions are filled
-  by SVD of the doubly-deflated space. Delegates to
-  \code{\link[libqe]{generalized_means_rotation}}.
+  by SVD of the doubly-deflated space. Computed in C++ by libena's
+  \code{generalized_means_rotation}.
 }

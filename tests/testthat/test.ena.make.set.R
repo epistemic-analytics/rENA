@@ -135,12 +135,12 @@ test_that("Test rotation with table for weights", {
   set.svd <- ena.make.set(df_accum_usrs)
   set.svd$line.weights <- remove_meta_data(set.svd$line.weights)
 
-  # orthogonal_svd now lives in libqe (no R-level message); verify it runs and
+  # orthogonal_svd lives in libena (src/libena_rcpp.cpp); verify it runs and
   # returns a square rotation matrix of the right dimensions.
   lw_mat   <- as.matrix(set.svd$line.weights)
   n_cols   <- ncol(lw_mat)
   weights  <- matrix(c(1, rep(0, n_cols - 1)), nrow = n_cols, ncol = 1)
-  result   <- libqe::orthogonal_svd(lw_mat, weights, "MR1")
+  result   <- orthogonal_svd(lw_mat, weights, "MR1")
   testthat::expect_equal(dim(result$rotation), c(n_cols, n_cols))
 })
 

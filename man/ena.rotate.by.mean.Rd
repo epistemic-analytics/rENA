@@ -25,5 +25,5 @@ A list with \code{rotation}, \code{codes}, \code{eigenvalues}, and
 Computes a dimensional reduction from a matrix of points such
   that the first dimension of the projected space passes through the means of
   two groups in the original space. Subsequent dimensions are computed using
-  SVD on the deflated data. Delegates to \code{\link[libqe]{means_rotation}}.
+  SVD on the deflated data. Computed in C++ by libena's \code{means_rotation}.
 }
