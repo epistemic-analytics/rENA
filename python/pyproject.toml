@@ -1,6 +1,6 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["scikit-build-core>=0.10", "nanobind>=1.9"]
+build-backend = "scikit_build_core.build"
 
 [project]
 name = "qe-ena"
@@ -26,13 +26,18 @@ Issues = "https://gitlab.com/epistemic-analytics/qe-packages/rENA/-/issues"
 [project.optional-dependencies]
 dev = ["pytest>=7"]
 
-[tool.hatch.build.targets.wheel]
-# The distribution is "qe-ena" but the import package is "ena"; hatchling
-# would otherwise look for a qe_ena/ directory.
-packages = ["ena"]
-
-[tool.hatch.build.targets.sdist]
-include = ["ena", "tests", "README.md"]
+[tool.scikit-build]
+cmake.source-dir = "."
+# The distribution is "qe-ena" but the import package is "ena" (with the
+# libena extension, ena._libena).
+wheel.packages = ["ena"]
+# A fixed build dir instead of a temp one: on Windows, deleting the temp build
+# dir races with handles still held open (WinError 32) and fails the build.
+build-dir = "build/{wheel_tag}"
+# include/ is git-ignored (vendored by scripts/sync-headers.sh) but must ship
+# in the sdist; build/ must not.
+sdist.include = ["include/"]
+sdist.exclude = ["build/", ".pytest_cache/"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -40,6 +40,8 @@ import numpy as np
 import pandas as pd
 
 from qe import normalization, modeling
+
+from . import libena
 from .accumulation import ENAAccumulation, accumulate as _accumulate
 from .rotations import mean_rotation, generalized_rotation, regression_rotation, regression_rotation_2
 
@@ -294,7 +296,7 @@ class ENA:
         t = centered @ rotation_matrix   # projected unit positions (= R's set$points)
 
         # ── node positions (LWS) ─────────────────────────────────────────────
-        node_positions = modeling.node_positions(
+        node_positions = libena.node_positions(
             np.ascontiguousarray(normed), np.ascontiguousarray(t), dims
         )
 

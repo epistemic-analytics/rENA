@@ -25,7 +25,7 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
-from qe import ccd as _ccd_kernel
+from . import libena as _ccd_kernel
 
 from .accumulation import ENAAccumulation, accumulate
 

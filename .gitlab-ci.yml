@@ -47,9 +47,14 @@ test:python:
     - pip install --cache-dir .pip-cache --no-deps
         --index-url https://qe-libs.org/py/dev/simple/ qe-lib
   script:
+    # ena._libena builds against headers vendored into python/include/
+    # (libena from inst/include, libqe from Conan).
+    - sh scripts/sync-headers.sh
     - cd python
-    - pip install --cache-dir ../.pip-cache -e ".[dev]"
-    - pytest tests/ -v
+    - pip install --cache-dir ../.pip-cache ".[dev]"
+    # importlib mode tests the installed package: the source tree has no
+    # compiled ena._libena.
+    - pytest tests/ -v --import-mode=importlib
 
 # ── cranqe integration ────────────────────────────────────────────────────────
 # verify-tag-version (.pre, tags):  confirm git tag == DESCRIPTION Version

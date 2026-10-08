@@ -6,8 +6,10 @@ Install it as `qe-ena`; import it as `ena`.
 > Previously published as `pyENA` (`import pyena`). The `pyena` project on PyPI is an
 > unrelated package — install `qe-ena` from the QE index as shown below.
 
-`ena` delegates all core math to [`qe-lib`](https://gitlab.com/epistemic-analytics/qe-packages/libqe) (`import qe`),
-the shared C++ library that also powers rENA.
+`ena` runs its math in C++ shared with rENA: the ENA model code (rotations, node
+positions, window estimation) is libena, compiled into `qe-ena` itself (`ena.libena`),
+and generic numerics and accumulation come from
+[`qe-lib`](https://gitlab.com/epistemic-analytics/qe-packages/libqe) (`import qe`).
 
 ---
 
@@ -27,9 +29,18 @@ Development builds from `main` are on a separate index,
 
 ### Development install
 
+Building from a checkout compiles the libena extension: it needs a C++17
+compiler, CMake and [Armadillo](https://arma.sourceforge.net/) (`brew install
+armadillo`, `apt install libarmadillo-dev`), plus the headers that
+`scripts/sync-headers.sh` vendors into `python/include/` (libena from this repo,
+libqe from Conan; set `LIBQE_INCLUDE=<libqe checkout>/include` to use a local
+libqe instead).
+
 ```bash
+sh scripts/sync-headers.sh                 # from the repo root
 pip install qe-lib --extra-index-url https://qe-libs.org/py/simple/
-pip install -e ".[dev]"   # from python/ directory
+pip install "./python[dev]"
+pytest python/tests --import-mode=importlib   # tests the installed package
 ```
 
 ---
