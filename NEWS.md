@@ -10,6 +10,13 @@
     its tests moved verbatim. Installing from source now needs a C++
     toolchain (Rtools on Windows); qe-libs.org serves binaries for Windows
     and macOS. Requires libqe >= 0.1.9.
+  * The other bindings compile libena themselves instead of calling libqe's
+    copies: qe-ena gets the `ena._libena` extension (`ena.libena`; wheels
+    for Linux, macOS and Windows), rena-wasm builds `dist/libena.wasm`, and
+    the new Julia package ENA.jl (`julia/`) replaces LibQE.jl's ENA
+    functions — adding `ccd_window` and fixing `ena_correlation` (wrong
+    result shape) and `directed_node_positions_combine_pairs` (always
+    errored) on the way. libena is also published as a Conan package.
 
 ## rENA 0.4.12
 
