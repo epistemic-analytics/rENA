@@ -11,8 +11,7 @@
 #' @import tma
 #' @importFrom libqe normalize_networks scale_networks center_points
 #' @importFrom libqe code_connections connection_names
-#' @importFrom libqe connection_indices accumulate_stanza
-#' @importFrom libqe row_connections rolling_window_sum
+#' @importFrom libqe connection_indices
 #' @importFrom libqe mean_ci outlier_ci group_stats
 #' @importFrom Rcpp sourceCpp
 #' @useDynLib rENA, .registration = TRUE

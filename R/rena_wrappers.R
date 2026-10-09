@@ -1,6 +1,7 @@
 # R wrappers that preserve rENA's long-standing function names.  The math
 # lives in C++: ENA model code in libena (inst/include/libena, wrapped in
-# src/libena_rcpp.cpp) and generic numerics and accumulation in libqe.
+# src/libena_rcpp.cpp), accumulation in tma (libtma) and generic numerics in
+# libqe.
 #
 # Public API functions (exported) are marked @export.
 # Internal functions (not exported) have no @export tag.
@@ -142,7 +143,7 @@ ena_group_stats <- function(g1, g2) {
 # @param df     A data.frame or matrix of code columns
 # @param binary If TRUE, binarise non-zero products
 rows_to_co_occurrences <- function(df, binary = TRUE) {
-  libqe::row_connections(as.matrix(df), binary)
+  tma::row_connections(as.matrix(df), binary)
 }
 
 # Stanza-window co-occurrence accumulation.
@@ -157,7 +158,7 @@ ref_window_df <- function(df, windowSize = 1, windowForward = 0,
         else as.integer(windowSize)
   wf <- if (is.infinite(windowForward) || windowForward >= INT_MAX) INT_MAX
         else as.integer(windowForward)
-  data.table::as.data.table(libqe::accumulate_stanza(as.matrix(df), wb, wf, binary))
+  data.table::as.data.table(tma::accumulate_stanza(as.matrix(df), wb, wf, binary))
 }
 
 # Rolling backward window sum of code columns.
@@ -165,7 +166,7 @@ ref_window_df <- function(df, windowSize = 1, windowForward = 0,
 # @param windowSize Number of rows to look back (default 0, treated as 1)
 # @param binary     Unused; kept for API compatibility
 ref_window_lag <- function(df, windowSize = 0, binary = TRUE) {
-  libqe::rolling_window_sum(as.matrix(df), windowSize)
+  tma::rolling_window_sum(as.matrix(df), windowSize)
 }
 
 # Upper-triangle index pairs (0-based, +1 before use as R indices).

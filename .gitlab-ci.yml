@@ -39,10 +39,12 @@ test:r:
   stage: test
   needs: []   # don't wait for build:wasm
   image: rocker/r-ver:4.5.0
+  variables:
+    TMA_REF: develop
   before_script:
     - apt-get update -qq
     - apt-get install -y --no-install-recommends
-        build-essential gfortran
+        build-essential gfortran git
         libxml2-dev libcurl4-openssl-dev libssl-dev
         libopenblas-dev liblapack-dev
     - Rscript -e "install.packages(
@@ -55,6 +57,13 @@ test:r:
           'https://packagemanager.posit.co/cran/__linux__/noble/latest'
         ),
         quiet = TRUE)"
+    # rENA needs tma >= 0.3.6 (accumulation moved from libqe), which is on
+    # tma's develop branch and not yet published; install it from there.
+    # (tma is private; its job-token allowlist admits the epistemic-analytics
+    # group.)  Once it is on qe-libs.org, drop these two lines.
+    - git clone --depth 1 --branch "$TMA_REF"
+        "https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/epistemic-analytics/qe-packages/tma.git" /tmp/tma
+    - R CMD INSTALL /tmp/tma
   script:
     - R CMD INSTALL .
     - Rscript -e "testthat::test_local('.', reporter = 'progress')"
