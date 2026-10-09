@@ -56,15 +56,18 @@ conan_setup() {
         "${VBIN}/python" -m pip install --quiet conan
         CONAN="${VBIN}/conan"
     fi
-    export CONAN_HOME="${TMP}/conan-home"
-    ${CONAN} remote add qe-libs "${CONAN_REMOTE}" --force >/dev/null
 }
 
 # conan_headers <name> <version>: download the header-only package and print
 # its include/<name> directory (empty, and status 1, when it is not published).
+# Each package gets its own throwaway CONAN_HOME: libqe < 0.2.0 still ships a
+# stale include/libtma (and libena) of its own, so in a shared cache a search
+# for include/libtma could find libqe's copy instead of libtma's.
 # Call conan_setup first: conan_headers runs in a subshell ($(...)), so its
 # own setup would not persist.
 conan_headers() {
+    export CONAN_HOME="${TMP}/conan-$1"
+    ${CONAN} remote add qe-libs "${CONAN_REMOTE}" --force >/dev/null
     echo "Downloading $1/$2 from ${CONAN_REMOTE}..." >&2
     ${CONAN} download "$1/$2:*" -r qe-libs >/dev/null 2>&1 || return 1
     find "${CONAN_HOME}/p" -type d -path "*/p/include/$1" | head -1
