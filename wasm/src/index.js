@@ -5,8 +5,8 @@
  * Handles data parsing, unit/conversation grouping, and the full
  * accumulate→normalize→center→rotate→project→node-positions pipeline.  The
  * ENA math (rotations, node positions, CCD) is libena, compiled into this
- * package (dist/libena.*); generic numerics and accumulation come from
- * @qe-libs/libqe-wasm.
+ * package (dist/libena.*) with tma's accumulation (libtma); generic numerics
+ * come from @qe-libs/libqe-wasm.
  *
  * Output structure mirrors R's ena.set object (without R-specific S3 class
  * attributes and without metadata columns prepended to every matrix).
@@ -614,9 +614,10 @@ function runCustomRotation(qe, rawNetworks, lineWeights, ownCentered, ownCenterV
 
 // ── WASM modules ─────────────────────────────────────────────────────────────
 
-// libena's functions (inst/include/libena, compiled into dist/libena.*).  They
-// moved out of libqe in libqe's phase 4a split; libqe-wasm still carries its
-// own copies until libqe 0.2.0, so these names must route to libena.
+// Functions compiled into dist/libena.*: libena's (inst/include/libena; moved
+// out of libqe in libqe's phase 4a split) and libtma's accumulation (tma's
+// inst/include/libtma; phase 5).  libqe-wasm still carries its own copies
+// until libqe 0.2.0, so these names must route to dist/libena.
 const LIBENA_FUNCTIONS = new Set([
     'ena_correlation',
     'node_positions',
@@ -629,6 +630,17 @@ const LIBENA_FUNCTIONS = new Set([
     'means_rotation',
     'generalized_means_rotation',
     'ccd_window',
+    // libtma
+    'connection_matrix',
+    'accumulate_stanza',
+    'row_connections',
+    'rolling_window_sum',
+    'flat_index',
+    'accumulate_unit',
+    'accumulate_unit_with_rows',
+    'accumulate_tensor_unit',
+    'aggregate_row_connections',
+    'finalize_row_connections',
 ]);
 
 /**

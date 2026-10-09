@@ -1,5 +1,8 @@
 // _libena — nanobind bindings for libena, the ENA C++ layer (inst/include/libena).
 //
+// Also registers the libtma function qe-ena uses (accumulate_stanza, for
+// ena/accumulation.py), from libtma's shared bindings.
+//
 // One flat module, imported by ena/libena.py, which wraps the plain-data
 // results (dicts of numpy arrays, from libena/bind/nanobind.hpp) in Python
 // result classes.  Function bodies and docstrings moved from qe-lib's qe.cpp
@@ -20,6 +23,7 @@
 #include <libqe/bind/nanobind.hpp>
 #include <libena/generalized_rotation.hpp>
 #include <libena/bind/nanobind.hpp>
+#include <libtma/bind/nanobind.hpp>
 
 namespace nb = nanobind;
 using namespace nb::literals;
@@ -250,4 +254,10 @@ NB_MODULE(_libena, m) {
         }
         return to_dict(qe::ccd_window(convos, max_window, min_overlap));
     }, "conversations"_a, "max_window"_a = 20, "min_overlap"_a = 10);
+
+    // ── libtma: the accumulation qe-ena uses ──────────────────────────────────
+    // The binding is libtma's own (libtma/bind/nanobind.hpp, shared with
+    // qe-tma's tma._libtma): rENA compiles the libtma it needs, so qe-ena does
+    // not depend on qe-tma (which depends on qe-ena).
+    def_accumulate_stanza(m);
 }

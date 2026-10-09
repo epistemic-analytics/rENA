@@ -32,7 +32,9 @@ from typing import List, Optional
 import numpy as np
 import pandas as pd
 
-from qe import accumulation as _acc
+# accumulate_stanza is libtma's, compiled into qe-ena's extension (libqe's
+# phase 5 split; it used to come from qe-lib's qe.accumulation).
+from . import _libena as _acc
 
 
 class ENAAccumulation:

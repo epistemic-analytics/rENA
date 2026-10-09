@@ -17,6 +17,11 @@
     functions — adding `ccd_window` and fixing `ena_correlation` (wrong
     result shape) and `directed_node_positions_combine_pairs` (always
     errored) on the way. libena is also published as a Conan package.
+  * Accumulation comes from tma instead of libqe: the R stanza-window
+    wrappers call `tma::accumulate_stanza` / `row_connections` /
+    `rolling_window_sum` (requires tma >= 0.3.6), and qe-ena and rena-wasm
+    compile tma's libtma accumulation into their own modules (identical
+    results).
 
 ## rENA 0.4.12
 

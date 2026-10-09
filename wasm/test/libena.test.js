@@ -1,6 +1,7 @@
 /**
  * Tests for rena-wasm's libena module (dist/libena.*): rotations, node
- * positions and CCD.  Run `npm run build` first.
+ * positions and CCD, plus libtma's accumulation compiled into the same module.
+ * Run `npm run build` first.
  *
  * The first block moved from libqe-wasm's test/basic.test.js with the code
  * (libqe's phase 4a split), unchanged.  The parity block checks that this
@@ -175,7 +176,7 @@ test('ccd_window: conversations shorter than min_overlap default to window 1', (
 
 // ── parity with libqe-wasm, and routing ───────────────────────────────────────
 
-describe('libena module vs libqe-wasm', () => {
+describe('libena module (libena + libtma) vs libqe-wasm', () => {
     let libqe;
     beforeAll(async () => { libqe = await loadLibQE(); });
 
@@ -184,6 +185,8 @@ describe('libena module vs libqe-wasm', () => {
     const adj  = new Float64Array([1,0,0, 0,1,0, 0,0,1]);
     const t    = new Float64Array([0.1,0.2, 0.3,0.4, 0.5,0.6]);
     const lw   = new Float64Array([1,0,2,0, 0,1,0,3, 2,2,1,0]);
+    const codes   = new Float64Array([1,0,2, 0,1,1, 2,1,0, 1,1,1, 0,2,1]);   // 5 × 3
+    const rowConn = new Float64Array([0,1,0, 2,0,4, 0,0,0,  0,0,9, 0.5,0,0, 1,0,0]);  // 2 × 9
     const cases = {
         ena_svd:            m => m.ena_svd(pts, 4, 4),
         deflate:            m => m.deflate(pts, 4, 4, new Float64Array([0.5,0.5,0.5,0.5])),
@@ -199,6 +202,16 @@ describe('libena module vs libqe-wasm', () => {
         ena_correlation:    m => m.ena_correlation(Array.from(t), 3, 2, [0.2,0.1, 0.4,0.5, 0.5,0.7], 3, 2, 0.95),
         ccd_window:         m => m.ccd_window([1,0,1, 0,1,1, 1,1,0, 0,0,1, 1,0,0, 0,1,0], 6, 3,
                                     [6], [0,1,2,3,4,5], 3, 2),
+        // libtma (phase 5): compiled in from tma's shared bindings
+        accumulate_stanza:  m => m.accumulate_stanza(codes, 5, 3, 3, 1, false, false),
+        accumulate_tensor_unit:
+                            m => m.accumulate_tensor_unit([1, 3], [2], [], [], [], new Int32Array(0), 5, 0,
+                                    [2, 3, 4], codes, 5, 3, [0, 1, 2, 3, 4], true),
+        aggregate_row_connections:
+                            m => m.aggregate_row_connections(rowConn, 2, 9, 3, false, 'sqrt'),
+        finalize_row_connections:
+                            m => m.finalize_row_connections(rowConn, 2, 9, 3, true, 'log1p'),
+        rolling_window_sum: m => m.rolling_window_sum(codes, 5, 3, 3),
     };
 
     test.each(Object.keys(cases))('%s matches libqe-wasm', name => {

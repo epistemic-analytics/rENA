@@ -1,13 +1,15 @@
 cmake_minimum_required(VERSION 3.18)
 project(rena_wasm_libena LANGUAGES CXX)
 
-# ── libena + libqe headers ────────────────────────────────────────────────────
-# scripts/sync-headers.sh (run by scripts/build.sh) vendors both into
-# wasm/include/: libena from inst/include/libena, libqe from Conan.
+# ── libena + libqe + libtma headers ───────────────────────────────────────────
+# scripts/sync-headers.sh (run by scripts/build.sh) vendors them into
+# wasm/include/: libena from inst/include/libena, libqe and libtma from Conan
+# (libtma from tma until it is published).
 set(HEADER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 if(NOT EXISTS "${HEADER_DIR}/libena/libena.hpp"
-   OR NOT EXISTS "${HEADER_DIR}/libqe/bind/emscripten.hpp")
-    message(FATAL_ERROR "libena / libqe headers not found in wasm/include/. "
+   OR NOT EXISTS "${HEADER_DIR}/libqe/bind/emscripten.hpp"
+   OR NOT EXISTS "${HEADER_DIR}/libtma/bind/emscripten.hpp")
+    message(FATAL_ERROR "libena / libqe / libtma headers not found in wasm/include/. "
             "Build with `sh wasm/scripts/build.sh`, or run "
             "`sh scripts/sync-headers.sh` from the rENA repo root first.")
 endif()

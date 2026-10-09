@@ -21,14 +21,16 @@ find_package(nanobind CONFIG REQUIRED)
 # ── Armadillo ─────────────────────────────────────────────────────────────────
 find_package(Armadillo REQUIRED)
 
-# ── libena + libqe headers ────────────────────────────────────────────────────
-# scripts/sync-headers.sh (run from the repo root) vendors both into
-# python/include/: libena from inst/include/libena, libqe from Conan.  The sdist
+# ── libena + libqe + libtma headers ───────────────────────────────────────────
+# scripts/sync-headers.sh (run from the repo root) vendors them into
+# python/include/: libena from inst/include/libena, libqe and libtma from
+# Conan (libtma from tma until it is published).  The sdist
 # ships that copy, so building from it needs nothing else.
 set(HEADER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 if(NOT EXISTS "${HEADER_DIR}/libena/libena.hpp"
-   OR NOT EXISTS "${HEADER_DIR}/libqe/bind/nanobind.hpp")
-    message(FATAL_ERROR "libena / libqe headers not found in python/include/. "
+   OR NOT EXISTS "${HEADER_DIR}/libqe/bind/nanobind.hpp"
+   OR NOT EXISTS "${HEADER_DIR}/libtma/bind/nanobind.hpp")
+    message(FATAL_ERROR "libena / libqe / libtma headers not found in python/include/. "
             "Run `sh scripts/sync-headers.sh` from the rENA repo root first.")
 endif()
 

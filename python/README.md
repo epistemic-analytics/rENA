@@ -7,8 +7,8 @@ Install it as `qe-ena`; import it as `ena`.
 > unrelated package — install `qe-ena` from the QE index as shown below.
 
 `ena` runs its math in C++ shared with rENA: the ENA model code (rotations, node
-positions, window estimation) is libena, compiled into `qe-ena` itself (`ena.libena`),
-and generic numerics and accumulation come from
+positions, window estimation) is libena, compiled into `qe-ena` itself (`ena.libena`)
+together with the accumulation it uses (tma's libtma), and generic numerics come from
 [`qe-lib`](https://gitlab.com/epistemic-analytics/qe-packages/libqe) (`import qe`).
 
 ---
@@ -33,8 +33,8 @@ Building from a checkout compiles the libena extension: it needs a C++17
 compiler, CMake and [Armadillo](https://arma.sourceforge.net/) (`brew install
 armadillo`, `apt install libarmadillo-dev`), plus the headers that
 `scripts/sync-headers.sh` vendors into `python/include/` (libena from this repo,
-libqe from Conan; set `LIBQE_INCLUDE=<libqe checkout>/include` to use a local
-libqe instead).
+libqe and libtma from Conan; `LIBQE_INCLUDE` / `LIBTMA_INCLUDE` point at local
+checkouts instead, and a `../tma` checkout is used while libtma is unpublished).
 
 ```bash
 sh scripts/sync-headers.sh                 # from the repo root

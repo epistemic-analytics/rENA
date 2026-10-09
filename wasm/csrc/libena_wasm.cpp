@@ -2,9 +2,10 @@
 //
 // libena is the ENA C++ layer (inst/include/libena): rotations, node
 // positions and CCD window estimation.  These functions moved here from
-// libqe-wasm (libqe's phase 4a split) with the same signatures and bodies;
-// rena-wasm's src/index.js routes them to this module and everything else
-// to @qe-libs/libqe-wasm.
+// libqe-wasm (libqe's phase 4a split) with the same signatures and bodies.
+// The module also registers libtma's accumulation from libtma's shared
+// bindings (phase 5).  rena-wasm's src/index.js routes all of these to this
+// module and the rest (generic numerics) to @qe-libs/libqe-wasm.
 //
 // Matrix convention (as libqe-wasm): every matrix argument is a flat
 // Float64Array (row-major) plus explicit rows/cols; results are plain JS
@@ -29,6 +30,7 @@
 #include <emscripten/val.h>
 #include <libqe/bind/emscripten.hpp>
 #include <libena/bind/emscripten.hpp>
+#include <libtma/bind/emscripten.hpp>
 #include <vector>
 #include <string>
 
@@ -256,4 +258,8 @@ EMSCRIPTEN_BINDINGS(libena) {
 
     // CCD window-size estimation
     function("ccd_window",                            &ccd_window);
+
+    // libtma's accumulation (libtma/bind/emscripten.hpp, shared with
+    // tma-wasm): rENA compiles the libtma it needs.
+    register_libtma();
 }
