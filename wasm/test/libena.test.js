@@ -5,8 +5,8 @@
  *
  * The first block moved from libqe-wasm's test/basic.test.js with the code
  * (libqe's phase 4a split), unchanged.  The parity block checks that this
- * module and libqe-wasm's own copy (kept until libqe 0.2.0) give identical
- * results, and that loadENA() routes these functions to libena.
+ * module and libqe-wasm's own copy (removed in libqe 0.2.0; skipped then) give
+ * identical results, and that loadENA() routes these functions to libena.
  */
 import createLibENA from '../dist/libena.js';
 import loadLibQE from '@qe-libs/libqe-wasm';
@@ -214,7 +214,10 @@ describe('libena module (libena + libtma) vs libqe-wasm', () => {
         rolling_window_sum: m => m.rolling_window_sum(codes, 5, 3, 3),
     };
 
+    // libqe-wasm >= 0.2.0 no longer has these functions; compare only those it
+    // still provides (none, once 0.2 is installed).
     test.each(Object.keys(cases))('%s matches libqe-wasm', name => {
+        if (typeof libqe[name] !== 'function') return;
         expect(cases[name](qe)).toEqual(cases[name](libqe));
     });
 
