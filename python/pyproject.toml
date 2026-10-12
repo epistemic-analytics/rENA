@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "qe-ena"
-version = "0.1.6"
+version = "0.1.7"
 description = "Python ENA (Epistemic Network Analysis) modeling — sister package to rENA"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -13,7 +13,7 @@ authors = [{ name = "Cody L Marquart", email = "cody.marquart@wisc.edu" }]
 dependencies = [
     # qe-lib is 0.x: a minor bump may change its API. 0.1.7 is the first
     # release published as qe-lib (import qe); earlier ones were pylibqe.
-    "qe-lib>=0.1.7,<0.2",
+    "qe-lib>=0.1.7,<0.3",
     "numpy>=1.24",
     "pandas>=1.5",
 ]

@@ -1,4 +1,9 @@
-## rENA 0.4.13 (development version)
+## rENA 0.4.14 (development version)
+
+- Works with libqe 0.2.0, which drops its copies of the ENA and accumulation code (rENA no longer uses them). qe-ena 0.1.7 allows `qe-lib<0.3`.
+- CI and `scripts/sync-headers.sh` take tma and libtma from their releases; the fallbacks to tma's `develop` branch are gone.
+
+## rENA 0.4.13
 
 #### Bug Fixes & Improvements
 

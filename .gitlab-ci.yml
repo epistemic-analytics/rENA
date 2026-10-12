@@ -2,15 +2,6 @@ stages:
   - build
   - test
 
-variables:
-  # Until tma 0.3.6 / libtma are published, rENA builds against tma's develop
-  # branch: test:r installs the tma R package from it, and
-  # scripts/sync-headers.sh clones libtma's headers from it (Conan first).
-  # tma is private; its job-token allowlist admits the epistemic-analytics
-  # group.  Drop these once tma is released.
-  TMA_REF: develop
-  TMA_GIT_URL: "https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/epistemic-analytics/qe-packages/tma.git"
-
 # ── shared pip cache ──────────────────────────────────────────────────────────
 .pip-cache: &pip-cache
   cache:
@@ -64,9 +55,6 @@ test:r:
           'https://packagemanager.posit.co/cran/__linux__/noble/latest'
         ),
         quiet = TRUE)"
-    # rENA needs tma >= 0.3.6 (accumulation moved from libqe); see variables.
-    - git clone --depth 1 --branch "$TMA_REF" "$TMA_GIT_URL" /tmp/tma
-    - R CMD INSTALL /tmp/tma
   script:
     - R CMD INSTALL .
     - Rscript -e "testthat::test_local('.', reporter = 'progress')"

@@ -9,9 +9,7 @@
 #           local libqe checkout when LIBQE_INCLUDE=<libqe>/include is set
 #   libtma  (qe-ena and rena-wasm compile the accumulation they use) from
 #           LIBTMA_INCLUDE=<tma>/inst/include if set, else Conan
-#           libtma/$LIBTMA_VERSION, else -- until tma publishes it -- a sibling
-#           tma checkout (../tma), else a clone of tma's $TMA_REF branch
-#           (default develop) from $TMA_GIT_URL
+#           libtma/$LIBTMA_VERSION on the qe-libs registry
 #
 # The R package doesn't need this: it gets libqe through LinkingTo.  Needed for:
 #
@@ -34,8 +32,6 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # Bump with DESCRIPTION's LinkingTo: libqe minimum / Imports: tma minimum.
 LIBQE_VERSION="${LIBQE_VERSION:-0.1.9}"
 LIBTMA_VERSION="${LIBTMA_VERSION:-0.3.6}"
-TMA_REF="${TMA_REF:-develop}"
-TMA_GIT_URL="${TMA_GIT_URL:-https://gitlab.com/epistemic-analytics/qe-packages/tma.git}"
 CONAN_REMOTE="https://gitlab.com/api/v4/projects/22522458/packages/conan"
 DESTS="${REPO_ROOT}/python/include ${REPO_ROOT}/wasm/include ${REPO_ROOT}/julia/include"
 
@@ -95,20 +91,11 @@ if [ -n "${LIBTMA_INCLUDE:-}" ]; then
     LIBTMA_FROM="${LIBTMA_SRC}"
 else
     LIBTMA_SRC="$(conan_headers libtma "${LIBTMA_VERSION}")" || true
-    LIBTMA_FROM="libtma/${LIBTMA_VERSION} (Conan)"
-    if [ -z "${LIBTMA_SRC}" ] && [ -d "${REPO_ROOT}/../tma/inst/include/libtma" ]; then
-        # Not published yet: a local tma checkout next to this one.
-        LIBTMA_SRC="$(cd "${REPO_ROOT}/../tma/inst/include/libtma" && pwd)"
-        LIBTMA_FROM="${LIBTMA_SRC} (sibling checkout)"
-    fi
     if [ -z "${LIBTMA_SRC}" ]; then
-        # Not published yet: take it from tma's branch.  Drop this fallback once
-        # libtma is on the registry.
-        echo "libtma/${LIBTMA_VERSION} not on ${CONAN_REMOTE}; cloning tma ${TMA_REF}..."
-        git clone --quiet --depth 1 --branch "${TMA_REF}" "${TMA_GIT_URL}" "${TMP}/tma"
-        LIBTMA_SRC="${TMP}/tma/inst/include/libtma"
-        LIBTMA_FROM="tma ${TMA_REF} (git)"
+        echo "ERROR: libtma/${LIBTMA_VERSION} not found on ${CONAN_REMOTE}" >&2
+        exit 1
     fi
+    LIBTMA_FROM="libtma/${LIBTMA_VERSION} (Conan)"
 fi
 
 # ── copy into each destination ───────────────────────────────────────────────
