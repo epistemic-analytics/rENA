@@ -49,7 +49,7 @@ ena.plotter(
 \item{backend}{\code{"plotly"} (default) or \code{"qeviz"}; default
 \code{getOption("rENA.plot.backend", "plotly")}. On qeviz the weights are
 not multiplied: the multipliers become each plot's magnification
-(labelled "(scaled Nx)").}
+(labelled "(scaled Nx)"). See \link{rENA-plot-backends}.}
 
 \item{...}{Additional parameters passed to set creation and plotting functions}
 }

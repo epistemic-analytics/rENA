@@ -56,6 +56,7 @@ ENAplot = R6::R6Class("ENAplot",
       #' @param autosize Logical; whether the plot should automatically size itself.
       #' @param automargin Logical; whether the plot should automatically adjust margins.
       #' @param axispadding Numeric value specifying padding around axes.
+      #' @param backend \code{"plotly"} or \code{"qeviz"}; see \link{rENA-plot-backends}.
       #' @param ... Additional arguments passed to the plotting function.      #' 
       #'
       #' @return ENAplot

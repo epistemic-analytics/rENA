@@ -22,7 +22,8 @@
 #' @param ... additional parameters addressed in inner function
 #'
 #'
-#' @seealso \code{\link{ena.make.set}}, \code{\link{ena.plot.points}}
+#' @seealso \code{\link{ena.make.set}}, \code{\link{ena.plot.points}},
+#'   \link{rENA-plot-backends}
 #'
 #' @examples
 #' data(RS.data)

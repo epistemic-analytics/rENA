@@ -107,6 +107,8 @@ Create ENApolot}
 
 \item{\code{scale.to}}{Numeric value to scale the plot axes.}
 
+\item{\code{backend}}{\code{"plotly"} or \code{"qeviz"}; see \link{rENA-plot-backends}.}
+
 \item{\code{...}}{Additional arguments passed to the plotting function.      #'}
 
 \item{\code{showticklabels}}{Logical; whether to display axis tick labels.}

@@ -74,5 +74,6 @@ print(plot);
 
 }
 \seealso{
-\code{\link{ena.make.set}}, \code{\link{ena.plot.points}}
+\code{\link{ena.make.set}}, \code{\link{ena.plot.points}},
+  \link{rENA-plot-backends}
 }
