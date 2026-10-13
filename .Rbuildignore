@@ -37,3 +37,4 @@ gitleaks.json
 ^scripts$
 ^julia$
 ^conan$
+^PLOT-BACKENDS\.md$

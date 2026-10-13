@@ -28,14 +28,16 @@ plot was created with.
 
 \section{Side by side}{
 
-The same rENA code on RS.data, drawn with each backend (the code is in
-\code{data-raw/plot-backends-figures.R} in the package sources).
+The same rENA code on RS.data drawn with each backend (left and middle),
+and the same view written with qeviz's own functions (right). The code for
+every panel is in \code{PLOT-BACKENDS.md} in the package sources, also at
+\url{https://qe-libs.org/cran/pkg/rENA/PLOT-BACKENDS.html}.
 
 One group's mean network and its mean, from \code{ena.plot.network()} and
 \code{ena.plot.group()}. On qeviz, line width is absolute per weight and
 each node's size is the sum of its edge widths:
 
-\if{html}{\figure{backends-network.png}{options: width="100\%" alt="FirstGame network: plotly and qeviz"}}
+\if{html}{\figure{backends-network.png}{options: width="100\%" alt="FirstGame network: rENA plotly, rENA qeviz, qeviz"}}
 \if{latex}{\figure{backends-network.png}{options: width=6in}}
 
 A subtraction, FirstGame - SecondGame, with both means. Colour and width
@@ -43,13 +45,13 @@ are on the model-wide scale, so the small differences in a subtraction draw
 lighter than a group's network; \code{multiplier} (or
 \code{ena.plotter()}'s multipliers) magnifies them:
 
-\if{html}{\figure{backends-subtraction.png}{options: width="100\%" alt="FirstGame minus SecondGame: plotly and qeviz"}}
+\if{html}{\figure{backends-subtraction.png}{options: width="100\%" alt="FirstGame minus SecondGame: rENA plotly, rENA qeviz, qeviz"}}
 \if{latex}{\figure{backends-subtraction.png}{options: width=6in}}
 
 Every unit and both means with \code{scale.to = "points"}, from
 \code{ena.plot.points()} and \code{ena.plot.group()}:
 
-\if{html}{\figure{backends-points.png}{options: width="100\%" alt="Units and means: plotly and qeviz"}}
+\if{html}{\figure{backends-points.png}{options: width="100\%" alt="Units and means: rENA plotly, rENA qeviz, qeviz"}}
 \if{latex}{\figure{backends-points.png}{options: width=6in}}
 }
 

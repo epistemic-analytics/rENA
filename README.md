@@ -125,6 +125,23 @@ model_gmr <- RS.data |>
 
 ---
 
+## Plotting
+
+`ena.plot()` and the `ena.plot.*()` layer functions draw with plotly by default,
+or with [qeviz](https://qe-libs.org/cran/pkg/qeviz/) (the library behind webENA's
+network plots) when you add `backend = "qeviz"`, or for the whole session:
+
+```r
+options(rENA.plot.backend = "qeviz")
+```
+
+![A group's network: rENA with plotly, rENA with qeviz, qeviz directly](man/figures/backends-network.png)
+
+**[Compare the plot backends →](PLOT-BACKENDS.md)**: three views drawn by
+rENA with each backend and by qeviz's own functions, with the code for each.
+
+---
+
 ## Further Reading
 
 - [Trajectory models in rENA](docs/trajectory-models.md)
