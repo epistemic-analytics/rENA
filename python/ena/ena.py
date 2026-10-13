@@ -19,7 +19,7 @@ model sub-fields (= R's set$model$...):
 
 rotation sub-fields (= R's set$rotation$...):
   rotation_nodes_          np.ndarray (n_codes × dims)          — code positions
-  rotation_eigenvalues_    np.ndarray | None                    — singular values (SVD only)
+  rotation_eigenvalues_    np.ndarray | None                    — SVD eigenvalues, sdev^2 (= R rotation$eigenvalues)
   rotation_center_vec_     np.ndarray (n_connections,)          — centering vector
   rotation_adjacency_key_  list[list[str]]                      — [[codeI, codeJ], ...]
   codes_                   list[str]
@@ -115,7 +115,7 @@ class ENA:
     unit_labels_            unit label strings (= R model$unit.labels)
     points_for_projection_  centered normed networks (= R model$points.for.projection)
     rotation_nodes_         code/node positions (= R rotation$nodes)
-    rotation_eigenvalues_   singular values from SVD, or None for other rotations
+    rotation_eigenvalues_   SVD eigenvalues as sdev^2 (= R), or None for other rotations
     rotation_center_vec_    centering vector (= R rotation$center.vec)
     rotation_adjacency_key_ [[codeI, codeJ], ...] per connection
     codes_                  code name strings (= R rotation$codes)
@@ -273,10 +273,13 @@ class ENA:
         # ── rotation ─────────────────────────────────────────────────────────
         rotation_eigenvalues = None
         if rotation is None:
-            # Default: SVD rotation
-            _, s, Vt = np.linalg.svd(centered, full_matrices=False)
-            full_rot = Vt.T   # (n_connections × min(n_units, n_connections))
-            rotation_eigenvalues = s
+            # Default: SVD rotation (libena ena_svd = R's ena.svd: prcomp on the
+            # centered points, eigenvalues as sdev^2). Keep min(n_units,
+            # n_connections) axes, as prcomp returns.
+            svd = libena.ena_svd(np.ascontiguousarray(centered))
+            k = min(centered.shape)
+            full_rot = svd.rotation[:, :k]   # (n_connections × min(n_units, n_connections))
+            rotation_eigenvalues = svd.eigenvalues[:k]
         elif isinstance(rotation, np.ndarray):
             full_rot = rotation
         elif callable(rotation):

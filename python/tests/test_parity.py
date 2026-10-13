@@ -129,6 +129,18 @@ class TestRSDataStructural:
             rtol=1e-9,
         )
 
+    # R: rotation$eigenvalues — prcomp sdev^2 (not raw singular values), one
+    # per rotated dimension. ena.make.set(ena.accumulate.data(...,
+    # window.size.back = 4)) on rs.data.csv (rENA 0.4.14):
+    def test_rotation_eigenvalues_match_r(self, rs_model):
+        assert rs_model.rotation_eigenvalues_.shape == (15,)
+        np.testing.assert_allclose(
+            rs_model.rotation_eigenvalues_[:4],
+            [0.023950173989619343, 0.018348596667280621,
+             0.012623724995281398, 0.008500531055347862],
+            rtol=1e-9,
+        )
+
     # R: rotation$center.vec — centering vector, length 15
     def test_rotation_center_vec_length(self, rs_model):
         assert len(rs_model.rotation_center_vec_) == 15

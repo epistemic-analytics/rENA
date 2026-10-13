@@ -4,6 +4,7 @@
 - The other bindings get the same post-fit call: qe-ena `ENA.move_nodes_to_unit_circle(dims=(0, 1), mode="equal")` (returns a moved copy) and `ena.libena.move_nodes_to_unit_circle()`; rena-wasm `moveNodesToUnitCircle(model, { dims: [0, 1], mode: 'equal' })` (returns a moved copy) and `qe.move_nodes_to_unit_circle`; ENA.jl `move_nodes_to_unit_circle(line_weights, nodes; dims=(1, 2), mode=:equal, directed=false)`. Fitting is unchanged.
 - Works with libqe 0.2.0, which drops its copies of the ENA and accumulation code (rENA no longer uses them). qe-ena 0.1.7 allows `qe-lib<0.3`; rena-wasm allows `@qe-libs/libqe-wasm` 0.2 (its libqe-wasm parity tests skip the functions 0.2 removed).
 - CI and `scripts/sync-headers.sh` take tma and libtma from their releases; the fallbacks to tma's `develop` branch are gone.
+- qe-ena: `ENA.fit()`'s default SVD rotation reports `rotation_eigenvalues_` as sdev² (= R's `rotation$eigenvalues` and rena-wasm), not raw singular values. It now uses libena's `ena_svd` instead of `numpy.linalg.svd`, keeping min(units, connections) axes.
 
 ## rENA 0.4.13
 
