@@ -89,6 +89,29 @@ List directed_node_positions_combine_pairs(arma::mat line_weights,
     );
 }
 
+// Post-fit unit-circle node move, for move_nodes_to_unit_circle() and
+// move_nodes_to_unit_circle_with_equal_space() (R/move_nodes.R)
+// @param line_weights Numeric matrix (units x connections)
+// @param nodes        Numeric matrix (codes x dims)
+// @param dim_x        0-based column of the plane's x axis
+// @param dim_y        0-based column of the plane's y axis
+// @param mode         "equal" or "radial"
+// @param directed     Ordered (directed) networks
+// @return List with nodes (all dims; only dim_x, dim_y moved) and centroids
+// [[Rcpp::export]]
+List move_nodes_to_unit_circle_c(arma::mat line_weights, arma::mat nodes,
+                                 int dim_x, int dim_y, std::string mode,
+                                 bool directed) {
+    if (dim_x < 0 || dim_y < 0)
+        stop("move_nodes_to_unit_circle: dimension indices must be >= 0");
+    qe::MovedNodes r = qe::move_nodes_to_unit_circle(
+        line_weights, nodes, dim_x, dim_y, qe::unit_circle_mode(mode), directed);
+    return List::create(
+        _("nodes")     = r.nodes,
+        _("centroids") = r.centroids
+    );
+}
+
 // =============================================================================
 // Rotation
 // =============================================================================

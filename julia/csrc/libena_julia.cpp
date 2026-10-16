@@ -1,7 +1,8 @@
 // libena Julia bindings via CxxWrap.jl (the ENA.jl package).
 //
 // libena is the ENA C++ layer (inst/include/libena): rotations, node
-// positions and CCD window estimation.  These methods moved from LibQE.jl's
+// positions (and the post-fit unit-circle node move) and CCD window
+// estimation.  These methods moved from LibQE.jl's
 // libqe_julia.cpp (libqe's phase 4a split) with the same signatures and
 // bodies, except that results are plain tuples (libena/bind/cxxwrap.hpp)
 // instead of add_type structs, so this module loads alongside other
@@ -66,6 +67,21 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
            int32_t num_dims) -> NodePositionsTuple {
             return to_tuple(qe::directed_node_positions(
                 view_mat(lw, lr, lc), view_mat(pt, pr, pc), num_dims, true));
+        });
+
+    // Post-fit unit-circle node move → (nodes, r, c, centroids, r, c).
+    // dim_x / dim_y are 0-based here; src/ENA.jl takes 1-based dims.
+    mod.method("move_nodes_to_unit_circle",
+        [](jlcxx::ArrayRef<double> lw,    int32_t lr, int32_t lc,
+           jlcxx::ArrayRef<double> nodes, int32_t nr, int32_t nc,
+           int32_t dim_x, int32_t dim_y, const std::string& mode,
+           bool directed) -> MovedNodesTuple {
+            if (dim_x < 0 || dim_y < 0)
+                throw std::invalid_argument(
+                    "move_nodes_to_unit_circle: dimension indices must be >= 0");
+            return to_tuple(qe::move_nodes_to_unit_circle(
+                view_mat(lw, lr, lc), view_mat(nodes, nr, nc),
+                dim_x, dim_y, qe::unit_circle_mode(mode), directed));
         });
 
     // ── Rotation ──────────────────────────────────────────────────────────────

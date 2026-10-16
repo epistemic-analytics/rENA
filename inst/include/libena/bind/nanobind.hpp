@@ -6,7 +6,7 @@
  * nanobind classes, so extension modules built by different products (qe-ena,
  * a future qe-tma, ...) can be loaded together without type-registration
  * clashes.  Python-side result classes (ena.libena.NodePositions,
- * RotationResult) wrap the dicts to keep attribute access.
+ * MovedNodes, RotationResult) wrap the dicts to keep attribute access.
  *
  * Requires nanobind; never included by libena.hpp.  Array conversion comes
  * from libqe/bind/nanobind.hpp.
@@ -31,6 +31,14 @@ inline ::nanobind::dict to_dict(const qe::NodePositions& r) {
     out["centroids"] = from_mat(r.centroids);
     out["weights"]   = from_mat(r.weights);
     out["points"]    = from_mat(r.points);
+    return out;
+}
+
+/// {nodes, centroids}
+inline ::nanobind::dict to_dict(const qe::MovedNodes& r) {
+    ::nanobind::dict out;
+    out["nodes"]     = from_mat(r.nodes);
+    out["centroids"] = from_mat(r.centroids);
     return out;
 }
 

@@ -80,6 +80,7 @@ ccd_window([rand(0:1, 30, 3) .* 1.0 for _ in 1:4]; max_window = 10)
 | `node_positions(adj_mats, t, num_dims)` | `(nodes, centroids, weights, points)` |
 | `directed_node_positions(line_weights, points, num_dims)` | the same, for directed (ordered) networks |
 | `directed_node_positions_combine_pairs(line_weights, points, num_dims)` | directed, ground + response rows combined |
+| `move_nodes_to_unit_circle(line_weights, nodes; dims=(1, 2), mode=:equal, directed=false)` | `(nodes, centroids)`: a fitted model's nodes moved onto a circle in the plane of `dims` (1-based), `:equal`ly spaced or `:radial`ly, and the centroids for them (post-fit, as rENA's `move_nodes_to_unit_circle*()`) |
 | `ena_correlation(points, centroids; conf_level=0.95)` | `n_dims × 3`: `[r, ci_lower, ci_upper]` |
 | `ccd_window(conversations; max_window=20, min_overlap=10)` | `(window_size, peak_lag, lag, frob, …)` |
 

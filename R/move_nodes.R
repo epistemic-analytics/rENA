@@ -1,144 +1,133 @@
-#' Title
+# Post-fit node moves for display. The math is libena's
+# (inst/include/libena/positions.hpp: unit_circle_nodes, node_centroids),
+# shared with qe-ena, rena-wasm and ENA.jl.
+
+#' Move nodes onto a circle along their own rays
 #'
-#' @param set TBD
-#' @param dimension_name_1 TBD
-#' @param dimension_name_2 TBD
+#' A post-fit display transform: in the plane of two dimensions, pushes every
+#' node out along its own ray to the length of the longest node there, then
+#' recomputes the centroids for the moved nodes. Nothing is refit.
 #'
-#' @return TBD
+#' Nodes of length zero in the plane are left where they are, as are the
+#' nodes' other dimensions. Unit points never change. The centroids, all
+#' dimensions of them, are the model's node weights times the moved nodes:
+#' each unit's line weights split between the codes they connect (half to
+#' each code for unordered networks; for ordered ones, as the fit weights
+#' them) and normalised to sum to 1, the weighting the fit's own centroids
+#' use. So the goodness of fit (\code{\link{ena.correlations}}) reflects the
+#' moved nodes.
+#'
+#' Works for unordered and ordered (\code{accumulate(ordered = TRUE)}) sets.
+#'
+#' @param set An \code{ena.set}, e.g. from \code{\link{model}} or
+#'   \code{\link{ena.make.set}}.
+#' @param dimension_name_1 Name of the plane's x dimension (a column of
+#'   \code{set$rotation$nodes}). Defaults to the first dimension.
+#' @param dimension_name_2 Name of the plane's y dimension. Defaults to the
+#'   second dimension.
+#'
+#' @return \code{set}, with \code{set$rotation$nodes} moved on the two
+#'   dimensions and \code{set$model$centroids} recomputed.
+#'
+#' @seealso \code{\link{move_nodes_to_unit_circle_with_equal_space}}, which
+#'   also spaces the nodes equally around the circle.
+#' @examples
+#' data(RS.data)
+#' codes <- c("Data", "Technical.Constraints", "Performance.Parameters",
+#'            "Client.and.Consultant.Requests", "Design.Reasoning",
+#'            "Collaboration")
+#' set <- RS.data |>
+#'   accumulate(c("Condition", "UserName"), codes, c("Condition", "GroupName")) |>
+#'   model()
+#' circled <- move_nodes_to_unit_circle(set)
+#' circled$rotation$nodes
 #' @export
-move_nodes_to_unit_circle<-function(
+move_nodes_to_unit_circle <- function(
     set,
     dimension_name_1 = colnames(as.matrix(set$rotation$nodes))[1],
     dimension_name_2 = colnames(as.matrix(set$rotation$nodes))[2]
 ) {
-  # get node position on the specified two dimensions
-  dimension_names = c(dimension_name_1,dimension_name_2)
-  node_position = set$rotation$nodes[,..dimension_names]
-  # compute the length of each node position vector on the two dimensional plane
-  length_list = sqrt(node_position[,1]^2+node_position[,2]^2)
-  # compute the re-scaling coefficient for each non-zero node vector
-  non_zero_lengths = which(length_list!=0)
-  length_list[non_zero_lengths] = max(length_list)/length_list[non_zero_lengths]
-  # move nodes to the circle
-  for(i in non_zero_lengths)
-  {
-    set$rotation$nodes[[dimension_name_1]][i]=as.numeric(set$rotation$nodes[[dimension_name_1]][i]*length_list[i])
-    set$rotation$nodes[[dimension_name_2]][i]= as.numeric(set$rotation$nodes[[dimension_name_2]][i]*length_list[i])
-  }
-  # compute the node weights so that the centroids could be computed
-  codeNames = set$rotation$codes
-  row_counts = set$connection.counts
-  node_weights = data.frame(matrix(0,nrow=nrow(row_counts),ncol=length(codeNames)))
-
-  for(i in 1:(length(codeNames)-1))
-  {
-    for(j in (i+1):length(codeNames))
-    {
-      connection_name = paste0(codeNames[i]," & ",codeNames[j])
-      x = row_counts[,..connection_name]/2
-      node_weights[,i]=node_weights[,i]+x
-      node_weights[,j]=node_weights[,j]+x
-    }
-  }
-  rs = rowSums(node_weights)
-  rs_1 = which(rs!=0)
-  node_weights[rs_1,]=node_weights[rs_1,]/rs[rs_1]
-  # finally, recompute centroids
-  centroids = as.matrix(node_weights)%*%as.matrix(set$rotation$nodes)
-  for(j in 1:ncol(centroids))
-  {
-    set$model$centroids[,j+1] = centroids[,j]
-  }
-  return(set)
+  move_nodes_on_circle(set, dimension_name_1, dimension_name_2, "radial")
 }
 
-
-#' Title
+#' Move nodes onto a circle, equally spaced
 #'
-#' @param set TBD
-#' @param dimension_name_1 TBD
-#' @param dimension_name_2 TBD
+#' A post-fit display transform: in the plane of two dimensions, places the
+#' nodes on a circle with the radius of the longest node there, keeping
+#' their order around the origin and spacing them \eqn{2\pi/n} apart,
+#' starting from the longest node, which stays where it is. Then recomputes
+#' the centroids for the moved nodes. Nothing is refit.
 #'
-#' @return TBD
+#' The order around the origin is: nodes with a non-negative y coordinate by
+#' decreasing x, then nodes with a negative y coordinate by increasing x
+#' (ties keep the codes' order). When two nodes are equally long, the first
+#' stays fixed. Nodes of length zero in the plane are left where they are and
+#' do not count towards \eqn{n}. The rest is as for
+#' \code{\link{move_nodes_to_unit_circle}}.
+#'
+#' @inheritParams move_nodes_to_unit_circle
+#' @inherit move_nodes_to_unit_circle return
+#'
+#' @seealso \code{\link{move_nodes_to_unit_circle}}, which moves each node
+#'   along its own ray instead.
+#' @examples
+#' data(RS.data)
+#' codes <- c("Data", "Technical.Constraints", "Performance.Parameters",
+#'            "Client.and.Consultant.Requests", "Design.Reasoning",
+#'            "Collaboration")
+#' set <- RS.data |>
+#'   accumulate(c("Condition", "UserName"), codes, c("Condition", "GroupName")) |>
+#'   model()
+#' spaced <- move_nodes_to_unit_circle_with_equal_space(set)
+#' spaced$rotation$nodes
+#'
+#' # Another plane, e.g. the second and third dimensions
+#' dims <- colnames(as.matrix(set$rotation$nodes))
+#' move_nodes_to_unit_circle_with_equal_space(set, dims[2], dims[3])
 #' @export
 move_nodes_to_unit_circle_with_equal_space <- function(
   set,
   dimension_name_1 = colnames(as.matrix(set$rotation$nodes))[1],
   dimension_name_2 = colnames(as.matrix(set$rotation$nodes))[2]
 ) {
-  # get node position on the specified two dimensions
-  dimension_names = c(dimension_name_1,dimension_name_2)
-  node_position = set$rotation$nodes[,..dimension_names]
+  move_nodes_on_circle(set, dimension_name_1, dimension_name_2, "equal")
+}
 
-  # compute the length of each node position vector on the two dimensional plane
-  length_list = sqrt(node_position[,1]^2+node_position[,2]^2)
-
-  # find non-zero node positions
-  non_zero_lengths = which(length_list!=0)
-  node_position_non_zero = node_position[non_zero_lengths,]
-
-  # divide the angle
-  rotation_angle = 2*pi/nrow(node_position_non_zero)
-
-  # order the nodes along the circle
-  node_position_non_zero$id = c(1:nrow(node_position_non_zero))
-  node_position_non_zero_upper = node_position_non_zero[which(node_position_non_zero[[dimension_name_2]]>=0),]
-  node_position_non_zero_lower = node_position_non_zero[which(node_position_non_zero[[dimension_name_2]]<0),]
-  node_position_non_zero_upper = node_position_non_zero_upper[order(node_position_non_zero_upper[[dimension_name_1]],decreasing = TRUE),]
-  node_position_non_zero_lower = node_position_non_zero_lower[order(node_position_non_zero_lower[[dimension_name_1]],decreasing = FALSE),]
-  node_position_non_zero_sorted = rbind(node_position_non_zero_upper,node_position_non_zero_lower)
-
-  # find which has the max length
-  max_i = which(length_list[non_zero_lengths]==max(length_list))[1]
-  first_i = which(node_position_non_zero_sorted$id==max_i)[1]
-
-  # find the coordinates of the fixed node
-  x1=node_position_non_zero_sorted[[dimension_name_1]][first_i];
-  y1=node_position_non_zero_sorted[[dimension_name_2]][first_i];
-
-  # rotate the ordered nodes
-  for(i in 1:nrow(node_position_non_zero_sorted)) {
-    ind = (first_i+i-1)%%nrow(node_position_non_zero_sorted)
-
-    if(ind==0) {
-      ind = nrow(node_position_non_zero_sorted)
-    }
-
-    angle = (i-1)*rotation_angle
-    x2 = x1*cos(angle)-y1*sin(angle)
-    y2 = x1*sin(angle)+y1*cos(angle)
-    node_position_non_zero_sorted[[dimension_name_1]][ind]=x2
-    node_position_non_zero_sorted[[dimension_name_2]][ind]=y2
-  }
-  # match the order of the original data
-  node_position_non_zero_sorted = node_position_non_zero_sorted[order(node_position_non_zero_sorted$id,decreasing = FALSE),]
-  node_position[non_zero_lengths,]=node_position_non_zero_sorted[,..dimension_names]
-  set$rotation$nodes[,dimension_names]=node_position
-
-  # compute the node weights so that the centroids could be computed
-  codeNames = set$rotation$codes
-  row_counts = set$connection.counts
-  node_weights = data.frame(matrix(0,nrow=nrow(row_counts),ncol=length(codeNames)))
-
-  for(i in 1:(length(codeNames)-1)) {
-    for(j in (i+1):length(codeNames)) {
-      connection_name = paste0(codeNames[i]," & ",codeNames[j])
-      x = row_counts[,..connection_name]/2
-      node_weights[,i]=node_weights[,i]+x
-      node_weights[,j]=node_weights[,j]+x
-    }
+# Shared body: libena moves the nodes (mode "radial" or "equal") and
+# recomputes the centroids; the set gets them back with its column classes.
+move_nodes_on_circle <- function(set, dimension_name_1, dimension_name_2, mode) {
+  nodes <- as.matrix(set$rotation$nodes)
+  dimension_names <- c(dimension_name_1, dimension_name_2)
+  idx <- match(dimension_names, colnames(nodes))
+  if (anyNA(idx)) {
+    stop("Unknown dimension(s): ",
+         paste(dimension_names[is.na(idx)], collapse = ", "),
+         ". Use columns of set$rotation$nodes: ",
+         paste(colnames(nodes), collapse = ", "))
   }
 
-  rs = rowSums(node_weights)
-  rs_1 = which(rs!=0)
-  node_weights[rs_1,]=node_weights[rs_1,]/rs[rs_1]
+  moved <- move_nodes_to_unit_circle_c(
+    as.matrix(set$line.weights), nodes, idx[1] - 1L, idx[2] - 1L, mode,
+    is(set, "ena.ordered.set")
+  )
 
-  # finally, recompute centroids
-  centroids = as.matrix(node_weights)%*%as.matrix(set$rotation$nodes)
+  set$rotation$nodes <- replace_dimension_columns(
+    set$rotation$nodes, moved$nodes[, idx, drop = FALSE], dimension_names
+  )
+  set$model$centroids <- replace_dimension_columns(
+    set$model$centroids, moved$centroids, colnames(nodes)
+  )
+  set
+}
 
-  for(j in 1:ncol(centroids)) {
-    set$model$centroids[,j+1] = centroids[,j]
+# A copy of the data.table x (nodes or centroids) with columns `cols` replaced
+# by the columns of the matrix `values`, each keeping its attributes (class).
+replace_dimension_columns <- function(x, values, cols) {
+  x <- data.table::copy(x)
+  for (k in seq_along(cols)) {
+    value <- as.numeric(values[, k])
+    attributes(value) <- attributes(x[[cols[k]]])
+    data.table::set(x, j = cols[k], value = value)
   }
-
-  return(set);
+  x
 }

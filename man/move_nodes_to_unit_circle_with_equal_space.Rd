@@ -2,7 +2,7 @@
 % Please edit documentation in R/move_nodes.R
 \name{move_nodes_to_unit_circle_with_equal_space}
 \alias{move_nodes_to_unit_circle_with_equal_space}
-\title{Title}
+\title{Move nodes onto a circle, equally spaced}
 \usage{
 move_nodes_to_unit_circle_with_equal_space(
   set,
@@ -11,15 +11,50 @@ move_nodes_to_unit_circle_with_equal_space(
 )
 }
 \arguments{
-\item{set}{TBD}
+\item{set}{An \code{ena.set}, e.g. from \code{\link{model}} or
+\code{\link{ena.make.set}}.}
 
-\item{dimension_name_1}{TBD}
+\item{dimension_name_1}{Name of the plane's x dimension (a column of
+\code{set$rotation$nodes}). Defaults to the first dimension.}
 
-\item{dimension_name_2}{TBD}
+\item{dimension_name_2}{Name of the plane's y dimension. Defaults to the
+second dimension.}
 }
 \value{
-TBD
+\code{set}, with \code{set$rotation$nodes} moved on the two
+  dimensions and \code{set$model$centroids} recomputed.
 }
 \description{
-Title
+A post-fit display transform: in the plane of two dimensions, places the
+nodes on a circle with the radius of the longest node there, keeping
+their order around the origin and spacing them \eqn{2\pi/n} apart,
+starting from the longest node, which stays where it is. Then recomputes
+the centroids for the moved nodes. Nothing is refit.
+}
+\details{
+The order around the origin is: nodes with a non-negative y coordinate by
+decreasing x, then nodes with a negative y coordinate by increasing x
+(ties keep the codes' order). When two nodes are equally long, the first
+stays fixed. Nodes of length zero in the plane are left where they are and
+do not count towards \eqn{n}. The rest is as for
+\code{\link{move_nodes_to_unit_circle}}.
+}
+\examples{
+data(RS.data)
+codes <- c("Data", "Technical.Constraints", "Performance.Parameters",
+           "Client.and.Consultant.Requests", "Design.Reasoning",
+           "Collaboration")
+set <- RS.data |>
+  accumulate(c("Condition", "UserName"), codes, c("Condition", "GroupName")) |>
+  model()
+spaced <- move_nodes_to_unit_circle_with_equal_space(set)
+spaced$rotation$nodes
+
+# Another plane, e.g. the second and third dimensions
+dims <- colnames(as.matrix(set$rotation$nodes))
+move_nodes_to_unit_circle_with_equal_space(set, dims[2], dims[3])
+}
+\seealso{
+\code{\link{move_nodes_to_unit_circle}}, which moves each node
+  along its own ray instead.
 }

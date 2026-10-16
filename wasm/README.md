@@ -174,6 +174,33 @@ rotate the reduced models.
 
 ---
 
+## Nodes on a Circle
+
+`moveNodesToUnitCircle()` (= R's `move_nodes_to_unit_circle_with_equal_space()`
+and `move_nodes_to_unit_circle()`) is a post-fit display transform: it moves a
+fitted model's nodes onto a circle in the plane of two dimensions, with the
+radius of the longest node there, and recomputes the centroids for the moved
+nodes, so goodness of fit and exports match the plot. Nothing is refit and
+the points stay put. Unordered and ordered models.
+
+```js
+const model  = ena.fit(rows, { codes, units, conversations, window: 4 });
+const circle = ena.moveNodesToUnitCircle(model, { dims: [0, 1], mode: 'equal' });
+// circle.rotation.nodes, circle.model.centroids: moved; everything else shared
+```
+
+- `dims` — the plane's two 0-based dimensions, x then y (default `[0, 1]`).
+- `mode` — `'equal'` (default): the nodes keep their order around the origin
+  and are spaced 2π/n apart, the longest one fixed; `'radial'`: each node
+  moves out along its own ray.
+
+Nodes of length zero in the plane, and the nodes' other dimensions, are left
+as they are. It returns a copy and leaves `model` unchanged: when the plotted
+dimensions change, call it again on the fitted model. The math is libena's
+`move_nodes_to_unit_circle`, also on `ena.qe`.
+
+---
+
 ## Reduced-Code Search (PRIA)
 
 `pria()` finds the largest set of codes (up to `removeNum`, never leaving

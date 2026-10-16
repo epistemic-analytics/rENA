@@ -108,6 +108,29 @@ model.variance_               # variance explained per dimension (= rENA's model
 
 ---
 
+## Nodes on a Circle
+
+`move_nodes_to_unit_circle()` (= rENA's
+`move_nodes_to_unit_circle_with_equal_space()` and `move_nodes_to_unit_circle()`)
+is a post-fit display transform: it moves the nodes onto a circle in the plane
+of two dimensions, with the radius of the longest node there, and recomputes
+the centroids for the moved nodes. Nothing is refit and the points stay put.
+
+```python
+circle = model.move_nodes_to_unit_circle(dims=(0, 1), mode="equal")
+circle.rotation_nodes_, circle.centroids_   # moved; model itself is unchanged
+```
+
+`mode="equal"` (default) keeps the nodes' order around the origin and spaces
+them 2π/n apart, the longest one fixed; `mode="radial"` moves each node out
+along its own ray. Nodes of length zero in the plane, and the other
+dimensions, are left as they are. It returns a copy, so the move can be redone
+on the fitted model for another pair of dimensions. The array-level version,
+also for ordered networks, is `ena.libena.move_nodes_to_unit_circle(line_weights,
+nodes, dim_x, dim_y, mode, directed)`.
+
+---
+
 ## Separate Accumulation
 
 ```python

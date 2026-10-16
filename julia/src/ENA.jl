@@ -37,7 +37,7 @@ using CxxWrap
 export
     # Correlation and node positions
     ena_correlation, node_positions, directed_node_positions,
-    directed_node_positions_combine_pairs,
+    directed_node_positions_combine_pairs, move_nodes_to_unit_circle,
     # Rotation
     ena_svd, deflate, orthogonal_svd, complete_rotation,
     means_rotation, generalized_means_rotation,
@@ -96,6 +96,12 @@ _unpack_positions(t) = (
     centroids = _mat(t[4],  t[5],  t[6]),
     weights   = _mat(t[7],  t[8],  t[9]),
     points    = _mat(t[10], t[11], t[12]),
+)
+
+# (nodes, r, c, centroids, r, c)
+_unpack_moved(t) = (
+    nodes     = _mat(t[1], t[2], t[3]),
+    centroids = _mat(t[4], t[5], t[6]),
 )
 
 # (rotation, r, c, eigenvalues, column_names)
@@ -183,6 +189,59 @@ function directed_node_positions_combine_pairs(line_weights::Matrix{Float64},
             vec(points),       Int32(pr), Int32(pc),
             Int32(num_dims))
     _unpack_positions(r)
+end
+
+"""
+    move_nodes_to_unit_circle(line_weights, nodes; dims=(1, 2), mode=:equal,
+                              directed=false) -> NamedTuple
+
+Post-fit move of a model's nodes onto a circle in the plane of two dimensions,
+with the centroids recomputed for the moved nodes. Returns
+`(nodes, centroids)`; unit points are never changed.
+
+The circle's radius is the longest node's length in that plane. `mode`
+(Symbol or String):
+
+- `:equal` — the nodes keep their order around the origin and are spaced
+  `2π/n` apart, the longest one fixed (rENA's
+  `move_nodes_to_unit_circle_with_equal_space()`);
+- `:radial` — each node moves out along its own ray (rENA's
+  `move_nodes_to_unit_circle()`).
+
+Nodes of length zero in the plane, and the other dimensions, stay where they
+are. The centroids are the fit's node weights (from `line_weights`, weighted
+as `node_positions` / `directed_node_positions` weight them) times the moved
+nodes.
+
+- `line_weights`: the model's line weights, `n_units × choose(n_codes, 2)`, or
+  `n_units × n_codes^2` with `directed = true` (ordered networks)
+- `nodes`: the model's node positions, `n_codes × n_dims`
+- `dims`: the plane's x and y dimensions, 1-based columns of `nodes`
+"""
+function move_nodes_to_unit_circle(line_weights::Matrix{Float64},
+                                   nodes::Matrix{Float64};
+                                   dims = (1, 2), mode = :equal,
+                                   directed::Bool = false)
+    (all(isfinite, line_weights) && all(isfinite, nodes)) ||
+        throw(ArgumentError("move_nodes_to_unit_circle: input matrices must not contain NaN or Inf"))
+    nr, nc = size(nodes)
+    lr, lc = size(line_weights)
+    length(dims) == 2 && all(d -> d isa Integer && 1 <= d <= nc, dims) ||
+        throw(ArgumentError("move_nodes_to_unit_circle: dims must be two dimensions in 1:$nc"))
+    dims[1] != dims[2] ||
+        throw(ArgumentError("move_nodes_to_unit_circle: the two dims must differ"))
+    m = String(mode)
+    m in ("equal", "radial") ||
+        throw(ArgumentError("move_nodes_to_unit_circle: mode must be :equal or :radial, got $(repr(mode))"))
+    expected = directed ? nr^2 : nr * (nr - 1) ÷ 2
+    lc == expected ||
+        throw(ArgumentError("move_nodes_to_unit_circle: line_weights has $lc columns; " *
+                            "$nr nodes need $expected" * (directed ? " (directed)" : "")))
+    r = move_nodes_to_unit_circle(vec(line_weights), Int32(lr), Int32(lc),
+                                  vec(nodes),        Int32(nr), Int32(nc),
+                                  Int32(dims[1] - 1), Int32(dims[2] - 1),
+                                  CxxWrap.StdLib.StdString(m), directed)
+    _unpack_moved(r)
 end
 
 # ── Rotation ──────────────────────────────────────────────────────────────────

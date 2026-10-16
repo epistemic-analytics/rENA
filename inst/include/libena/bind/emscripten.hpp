@@ -8,6 +8,7 @@
  *   RotationResult → { rotation: {data, rows, cols}, eigenvalues: number[],
  *                      column_names: string[] }
  *   NodePositions  → { nodes, centroids, weights, points }  (each {data, rows, cols})
+ *   MovedNodes     → { nodes, centroids }  (each {data, rows, cols})
  *   CCDResult      → { window_size, peak_lag, lag, frob, frob_sq_unbiased,
  *                      frob_unbiased_signed, total_weight }  (curves: number[])
  *
@@ -54,6 +55,13 @@ inline ::emscripten::val to_js(const qe::NodePositions& r) {
     result.set("centroids", mat_to_js(r.centroids));
     result.set("weights",   mat_to_js(r.weights));
     result.set("points",    mat_to_js(r.points));
+    return result;
+}
+
+inline ::emscripten::val to_js(const qe::MovedNodes& r) {
+    ::emscripten::val result = ::emscripten::val::object();
+    result.set("nodes",     mat_to_js(r.nodes));
+    result.set("centroids", mat_to_js(r.centroids));
     return result;
 }
 

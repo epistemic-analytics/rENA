@@ -2,7 +2,7 @@
 % Please edit documentation in R/move_nodes.R
 \name{move_nodes_to_unit_circle}
 \alias{move_nodes_to_unit_circle}
-\title{Title}
+\title{Move nodes onto a circle along their own rays}
 \usage{
 move_nodes_to_unit_circle(
   set,
@@ -11,15 +11,48 @@ move_nodes_to_unit_circle(
 )
 }
 \arguments{
-\item{set}{TBD}
+\item{set}{An \code{ena.set}, e.g. from \code{\link{model}} or
+\code{\link{ena.make.set}}.}
 
-\item{dimension_name_1}{TBD}
+\item{dimension_name_1}{Name of the plane's x dimension (a column of
+\code{set$rotation$nodes}). Defaults to the first dimension.}
 
-\item{dimension_name_2}{TBD}
+\item{dimension_name_2}{Name of the plane's y dimension. Defaults to the
+second dimension.}
 }
 \value{
-TBD
+\code{set}, with \code{set$rotation$nodes} moved on the two
+  dimensions and \code{set$model$centroids} recomputed.
 }
 \description{
-Title
+A post-fit display transform: in the plane of two dimensions, pushes every
+node out along its own ray to the length of the longest node there, then
+recomputes the centroids for the moved nodes. Nothing is refit.
+}
+\details{
+Nodes of length zero in the plane are left where they are, as are the
+nodes' other dimensions. Unit points never change. The centroids, all
+dimensions of them, are the model's node weights times the moved nodes:
+each unit's line weights split between the codes they connect (half to
+each code for unordered networks; for ordered ones, as the fit weights
+them) and normalised to sum to 1, the weighting the fit's own centroids
+use. So the goodness of fit (\code{\link{ena.correlations}}) reflects the
+moved nodes.
+
+Works for unordered and ordered (\code{accumulate(ordered = TRUE)}) sets.
+}
+\examples{
+data(RS.data)
+codes <- c("Data", "Technical.Constraints", "Performance.Parameters",
+           "Client.and.Consultant.Requests", "Design.Reasoning",
+           "Collaboration")
+set <- RS.data |>
+  accumulate(c("Condition", "UserName"), codes, c("Condition", "GroupName")) |>
+  model()
+circled <- move_nodes_to_unit_circle(set)
+circled$rotation$nodes
+}
+\seealso{
+\code{\link{move_nodes_to_unit_circle_with_equal_space}}, which
+  also spaces the nodes equally around the circle.
 }

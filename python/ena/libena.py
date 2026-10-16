@@ -21,11 +21,13 @@ from . import _libena
 
 __all__ = [
     "NodePositions",
+    "MovedNodes",
     "RotationResult",
     "ena_correlation",
     "node_positions",
     "directed_node_positions",
     "directed_node_positions_combine_pairs",
+    "move_nodes_to_unit_circle",
     "ena_svd",
     "deflate",
     "orthogonal_svd",
@@ -52,6 +54,20 @@ class NodePositions(NamedTuple):
     def __repr__(self) -> str:
         n, c = self.nodes.shape, self.centroids.shape
         return f"<NodePositions nodes={n[0]}x{n[1]} centroids={c[0]}x{c[1]}>"
+
+
+class MovedNodes(NamedTuple):
+    """Result of :func:`move_nodes_to_unit_circle`.
+
+    nodes     : ndarray (n_codes × n_dims)   — moved node coordinates
+    centroids : ndarray (n_units × n_dims)   — centroids for the moved nodes
+    """
+    nodes: np.ndarray
+    centroids: np.ndarray
+
+    def __repr__(self) -> str:
+        n, c = self.nodes.shape, self.centroids.shape
+        return f"<MovedNodes nodes={n[0]}x{n[1]} centroids={c[0]}x{c[1]}>"
 
 
 class RotationResult(NamedTuple):
@@ -102,6 +118,13 @@ def directed_node_positions(line_weights, points, num_dims) -> NodePositions:
 def directed_node_positions_combine_pairs(line_weights, points, num_dims) -> NodePositions:
     return NodePositions(**_libena.directed_node_positions_combine_pairs(
         line_weights, points, num_dims))
+
+
+@_doc
+def move_nodes_to_unit_circle(line_weights, nodes, dim_x=0, dim_y=1, mode="equal",
+                              directed=False) -> MovedNodes:
+    return MovedNodes(**_libena.move_nodes_to_unit_circle(
+        line_weights, nodes, dim_x, dim_y, mode, directed))
 
 
 # ── rotation ─────────────────────────────────────────────────────────────────

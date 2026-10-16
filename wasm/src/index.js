@@ -333,6 +333,39 @@ function checkPoints(name, points, nRows, dims) {
     }
 }
 
+// Arguments for libena's move_nodes_to_unit_circle, checked here: this build
+// does not catch C++ exceptions, so a bad call would surface as a bare WASM
+// error instead of the reason.
+function unitCircleArgs(model, plane, mode) {
+    const name = 'moveNodesToUnitCircle';
+    const codes = model?.rotation?.codes;
+    const nodes = model?.rotation?.nodes;
+    const centroids = model?.model?.centroids;
+    const { lineWeights, nUnits, nConnections, dims } = model ?? {};
+    if (!Array.isArray(codes) || !nodes || !centroids || !lineWeights) {
+        throw new Error(`${name}: model must be a fitted model from fit()`);
+    }
+    if (mode !== 'equal' && mode !== 'radial') {
+        throw new Error(`${name}: mode must be 'equal' or 'radial', got ${JSON.stringify(mode)}`);
+    }
+    if (!Array.isArray(plane) || plane.length !== 2 ||
+        !plane.every(d => Number.isInteger(d) && d >= 0 && d < dims)) {
+        throw new Error(`${name}: dims must be two dimension indices in 0..${dims - 1}`);
+    }
+    if (plane[0] === plane[1]) throw new Error(`${name}: the two dimensions must differ`);
+    const nCodes = codes.length;
+    const ordered = nConnections === nCodes * nCodes;
+    if (!ordered && nConnections !== nCodes * (nCodes - 1) / 2) {
+        throw new Error(`${name}: ${nConnections} connections do not fit ${nCodes} codes`);
+    }
+    checkPoints(name + ' (nodes)', nodes, nCodes, dims);
+    checkPoints(name + ' (lineWeights)', lineWeights, nUnits, nConnections);
+    for (const [what, m] of [['nodes', nodes], ['lineWeights', lineWeights]]) {
+        if (!m.every(Number.isFinite)) throw new Error(`${name}: ${what} contain NaN or Inf`);
+    }
+    return { nCodes, ordered };
+}
+
 /**
  * Validate a supplied rotation set (= R's ena.rotation.set, e.g. another
  * model's rotation) against this model's codes, and reorder it to this
@@ -623,6 +656,7 @@ const LIBENA_FUNCTIONS = new Set([
     'node_positions',
     'directed_node_positions',
     'directed_node_positions_combine_pairs',
+    'move_nodes_to_unit_circle',
     'ena_svd',
     'deflate',
     'orthogonal_svd',
@@ -1195,6 +1229,48 @@ export default async function loadENA() {
                 k:              bestK,
                 variance:       bestVar === -Infinity ? null : bestVar,
             };
+        },
+
+        /**
+         * Move a fitted model's nodes onto a circle in the plane of two
+         * dimensions (= R's move_nodes_to_unit_circle_with_equal_space() and
+         * move_nodes_to_unit_circle()).
+         *
+         * A post-fit display transform, libena's move_nodes_to_unit_circle:
+         * the nodes move onto a circle with the radius of the longest node in
+         * that plane, and the centroids are recomputed for the moved nodes --
+         * the fit's node weights (from lineWeights) times the moved nodes, all
+         * dimensions -- so goodness of fit and exports reflect them. Nothing
+         * is refit; points are unchanged. Nodes of length zero in the plane,
+         * and the nodes' other dimensions, stay where they are. Unordered and
+         * ordered models.
+         *
+         * @param {ENAModel} model             - a model from fit()
+         * @param {object}   [opts]
+         * @param {number[]} [opts.dims=[0, 1]] - 0-based dimensions spanning the
+         *                                       plane, x then y
+         * @param {string}   [opts.mode='equal'] - 'equal': the nodes keep their
+         *                                       order around the origin and are
+         *                                       spaced 2π/n apart, the longest
+         *                                       one fixed; 'radial': each node
+         *                                       moves out along its own ray
+         * @returns {ENAModel} a copy of `model` with rotation.nodes and
+         *   model.centroids replaced (everything else shared). `model` is
+         *   unchanged: when the plotted dimensions change, call this again on
+         *   the fitted model.
+         */
+        moveNodesToUnitCircle(model, opts = {}) {
+            const { dims: plane = [0, 1], mode = 'equal' } = opts;
+            const { nCodes, ordered } = unitCircleArgs(model, plane, mode);
+            const r = qe.move_nodes_to_unit_circle(
+                model.lineWeights, model.nUnits, model.nConnections,
+                model.rotation.nodes, nCodes, model.dims,
+                plane[0], plane[1], mode, ordered
+            );
+            const moved = Object.assign(Object.create(Object.getPrototypeOf(model)), model);
+            moved.rotation = { ...model.rotation, nodes: new Float64Array(r.nodes.data) };
+            moved.model = { ...model.model, centroids: new Float64Array(r.centroids.data) };
+            return moved;
         },
 
         /**

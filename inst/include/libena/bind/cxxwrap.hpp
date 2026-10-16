@@ -58,6 +58,18 @@ inline NodePositionsTuple to_tuple(const qe::NodePositions& r) {
             pack(r.points),    n(r.points),    c(r.points)};
 }
 
+/// (nodes, rows, cols, centroids, rows, cols)
+using MovedNodesTuple = std::tuple<
+    std::vector<double>, int32_t, int32_t,
+    std::vector<double>, int32_t, int32_t>;
+
+inline MovedNodesTuple to_tuple(const qe::MovedNodes& r) {
+    auto n = [](const arma::mat& m) { return static_cast<int32_t>(m.n_rows); };
+    auto c = [](const arma::mat& m) { return static_cast<int32_t>(m.n_cols); };
+    return {pack(r.nodes),     n(r.nodes),     c(r.nodes),
+            pack(r.centroids), n(r.centroids), c(r.centroids)};
+}
+
 /// (rotation, rows, cols, eigenvalues, column_names)
 using RotationTuple = std::tuple<
     std::vector<double>, int32_t, int32_t,

@@ -34,6 +34,7 @@ Python-specific extras:
 
 from __future__ import annotations
 
+import copy
 from typing import List, Optional, Union
 
 import numpy as np
@@ -346,6 +347,49 @@ class ENA:
             'rotation_nodes':             'ena.dimension',
         }
         return self
+
+    def move_nodes_to_unit_circle(self, dims=(0, 1), mode: str = "equal") -> "ENA":
+        """Move the nodes onto a circle in the plane of two dimensions.
+
+        A post-fit display transform (libena's ``move_nodes_to_unit_circle``,
+        shared with rENA, rena-wasm and ENA.jl): the nodes move onto a circle
+        with the radius of the longest node in that plane, and the centroids
+        are recomputed for the moved nodes. Nothing is refit; the points are
+        unchanged. Nodes of length zero in the plane, and the nodes' other
+        dimensions, stay where they are.
+
+        Parameters
+        ----------
+        dims : (int, int)
+            0-based dimensions (columns of ``rotation_nodes_``) spanning the
+            plane, x then y. Default: the first two.
+        mode : str
+            ``"equal"`` (default) — the nodes keep their order around the
+            origin and are spaced 2π/n apart, the longest one fixed (= R's
+            ``move_nodes_to_unit_circle_with_equal_space()``).
+            ``"radial"`` — each node moves out along its own ray (= R's
+            ``move_nodes_to_unit_circle()``).
+
+        Returns
+        -------
+        ENA
+            A copy of this model with ``rotation_nodes_`` and ``centroids_``
+            replaced. This model is unchanged, so the move can be redone from
+            its fitted nodes, e.g. for another pair of dimensions.
+        """
+        if not hasattr(self, "rotation_nodes_"):
+            raise ValueError("fit() the model before moving its nodes")
+        dim_x, dim_y = dims
+        moved = libena.move_nodes_to_unit_circle(
+            np.ascontiguousarray(self.line_weights_, dtype=np.float64),
+            np.ascontiguousarray(self.rotation_nodes_, dtype=np.float64),
+            int(dim_x), int(dim_y), mode,
+            False,   # qe-ena's networks are unordered
+        )
+        out = copy.copy(self)
+        out.rotation_nodes_ = moved.nodes
+        out.centroids_      = moved.centroids
+        return out
 
     def conf_ints(self, points: Optional[np.ndarray] = None,
                   conf_level: float = 0.95) -> np.ndarray:

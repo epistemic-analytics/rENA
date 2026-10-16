@@ -69,6 +69,37 @@ NB_MODULE(_libena, m) {
         }, "line_weights"_a, "points"_a, "num_dims"_a,
         "Directed node positions with paired ground+response rows combined before solving.");
 
+    m.def("move_nodes_to_unit_circle",
+        [](NpMat line_weights, NpMat nodes, int dim_x, int dim_y,
+           const std::string& mode, bool directed) {
+            if (dim_x < 0 || dim_y < 0)
+                throw std::invalid_argument(
+                    "move_nodes_to_unit_circle: dimension indices must be >= 0");
+            return to_dict(qe::move_nodes_to_unit_circle(
+                to_mat(line_weights), to_mat(nodes), dim_x, dim_y,
+                qe::unit_circle_mode(mode), directed));
+        },
+        "line_weights"_a, "nodes"_a, "dim_x"_a = 0, "dim_y"_a = 1,
+        "mode"_a = "equal", "directed"_a = false,
+        "Post-fit move of the nodes onto a circle in the plane of two dimensions,\n"
+        "with the centroids recomputed for the moved nodes.\n\n"
+        "The circle's radius is the longest node's length in that plane. mode\n"
+        "'equal' spaces the nodes 2*pi/n apart, keeping their order around the\n"
+        "origin, the longest node fixed; 'radial' moves each node out along its\n"
+        "own ray. Nodes of length zero in the plane, and the other dimensions,\n"
+        "are unchanged. Centroids are the fit's node weights (from the line\n"
+        "weights, as node_positions / directed_node_positions weight them) times\n"
+        "the moved nodes. = rENA's move_nodes_to_unit_circle_with_equal_space()\n"
+        "('equal') and move_nodes_to_unit_circle() ('radial').\n\n"
+        "Parameters\n----------\n"
+        "line_weights : ndarray (n_units × n_connections) — the model's line weights;\n"
+        "               choose(n_codes, 2) columns, or n_codes² when directed\n"
+        "nodes        : ndarray (n_codes × n_dims) — the model's node positions\n"
+        "dim_x, dim_y : 0-based columns of nodes spanning the plane\n"
+        "mode         : 'equal' (default) or 'radial'\n"
+        "directed     : ordered (directed) networks\n\n"
+        "Returns MovedNodes (nodes, centroids).");
+
     m.def("ena_svd", [](NpMat points) {
         arma::mat pt = to_mat(points);
         qe::require_finite(pt, "points");

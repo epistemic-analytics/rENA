@@ -1,7 +1,8 @@
 // libena WebAssembly bindings via Emscripten Embind.
 //
 // libena is the ENA C++ layer (inst/include/libena): rotations, node
-// positions and CCD window estimation.  These functions moved here from
+// positions (and the post-fit unit-circle node move) and CCD window
+// estimation.  These functions moved here from
 // libqe-wasm (libqe's phase 4a split) with the same signatures and bodies.
 // The module also registers libtma's accumulation from libtma's shared
 // bindings (phase 5).  rena-wasm's src/index.js routes all of these to this
@@ -95,6 +96,27 @@ static val directed_node_positions_combine_pairs(
         js_to_mat(lw_data, lw_rows, lw_cols),
         pt,
         num_dims, /*combine_pairs=*/true));
+}
+
+// move_nodes_to_unit_circle(lw_data, lw_rows, lw_cols,
+//                           nodes_data, n_rows, n_cols,
+//                           dim_x, dim_y, mode, directed)
+// → { nodes, centroids }  (each a matrix object)
+//
+// Post-fit unit-circle node move with the centroids recomputed for the moved
+// nodes.  dim_x / dim_y: 0-based columns of nodes; mode: 'equal' | 'radial';
+// directed: ordered networks (lw_cols = n_rows²).  Exceptions are not caught
+// in this build, so src/index.js validates the arguments before calling.
+static val move_nodes_to_unit_circle(const val& lw_data, int lw_rows, int lw_cols,
+                                     const val& nodes_data, int n_rows, int n_cols,
+                                     int dim_x, int dim_y, const std::string& mode,
+                                     bool directed) {
+    if (dim_x < 0 || dim_y < 0)
+        throw std::invalid_argument("move_nodes_to_unit_circle: dimension indices must be >= 0");
+    return to_js(qe::move_nodes_to_unit_circle(
+        js_to_mat(lw_data, lw_rows, lw_cols),
+        js_to_mat(nodes_data, n_rows, n_cols),
+        dim_x, dim_y, qe::unit_circle_mode(mode), directed));
 }
 
 // ── Rotation ──────────────────────────────────────────────────────────────────
@@ -247,6 +269,7 @@ EMSCRIPTEN_BINDINGS(libena) {
     function("node_positions",                        &node_positions);
     function("directed_node_positions",               &directed_node_positions);
     function("directed_node_positions_combine_pairs", &directed_node_positions_combine_pairs);
+    function("move_nodes_to_unit_circle",             &move_nodes_to_unit_circle);
 
     // Rotation
     function("ena_svd",                               &ena_svd);

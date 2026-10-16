@@ -17,6 +17,10 @@ directed_node_positions_combine_pairs <- function(line_weights, points, num_dims
     .Call(`_rENA_directed_node_positions_combine_pairs`, line_weights, points, num_dims)
 }
 
+move_nodes_to_unit_circle_c <- function(line_weights, nodes, dim_x, dim_y, mode, directed) {
+    .Call(`_rENA_move_nodes_to_unit_circle_c`, line_weights, nodes, dim_x, dim_y, mode, directed)
+}
+
 ena_svd <- function(points) {
     .Call(`_rENA_ena_svd`, points)
 }
