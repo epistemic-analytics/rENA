@@ -1,6 +1,5 @@
-# Missed co-occurrences from tma::accumulate(misses = TRUE) carried through
-# model(). Lives in rENA (rENA depends on tma, not the reverse); skips until
-# the installed tma has the misses option.
+# Missed co-occurrences from tma::accumulate(misses = TRUE) (tma >= 0.3.7)
+# carried through model(). Lives in rENA: rENA depends on tma, not the reverse.
 
 misses_toy <- data.frame(
   u = c("x", "x", "x", "y", "y", "z", "w", "w"),
@@ -18,13 +17,7 @@ misses_accum <- function(...) {
   tma::accumulate(context_model = ctx, codes = c("A", "B", "C"), tensor = tensor, ...)
 }
 
-skip_without_tma_misses <- function() {
-  skip_if_not("misses" %in% names(formals(tma::accumulate)),
-              "installed tma has no accumulate(misses = )");
-}
-
 test_that("tma misses survive model() unchanged", {
-  skip_without_tma_misses();
   for (ord in c(FALSE, TRUE)) {
     accum <- misses_accum(ordered = ord, misses = TRUE);
     set <- model(accum);
@@ -36,7 +29,6 @@ test_that("tma misses survive model() unchanged", {
 })
 
 test_that("tma misses do not change the fitted model", {
-  skip_without_tma_misses();
   for (ord in c(FALSE, TRUE)) {
     with_misses <- model(misses_accum(ordered = ord, misses = TRUE));
     plain       <- model(misses_accum(ordered = ord));
