@@ -1,3 +1,5 @@
+## rENA 0.4.16 (development version)
+
 ## rENA 0.4.15
 
 - Requires tma >= 0.3.8 (`scripts/sync-headers.sh` vendors libtma 0.3.8), which keeps missed co-occurrences and self-connections through accumulation. Sets from `accumulate()` now carry `self.connection.counts` -- each code's ground count times its response count (the ordered network's diagonal, which unordered networks fold away) -- and, with `misses`, `miss.counts` and `self.miss.counts` (the code in the ground, absent from the response), plus their per-line tables in `model`. They are kept alongside the connection counts and do not change the model. Tests check that they survive `model()` and leave the fitted model unchanged.
