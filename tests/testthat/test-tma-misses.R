@@ -31,12 +31,32 @@ test_that("tma misses survive model() unchanged", {
 test_that("tma misses do not change the fitted model", {
   for (ord in c(FALSE, TRUE)) {
     with_misses <- model(misses_accum(ordered = ord, misses = TRUE));
-    plain       <- model(misses_accum(ordered = ord));
+    plain       <- model(misses_accum(ordered = ord, misses = FALSE));
     info <- paste("ordered", ord);
+    expect_null(plain$miss.counts, info = info);   # really without misses
     expect_equal(as.matrix(with_misses$line.weights),    as.matrix(plain$line.weights),    info = info);
     expect_equal(as.matrix(with_misses$rotation.matrix), as.matrix(plain$rotation.matrix), info = info);
     expect_equal(as.matrix(with_misses$points),          as.matrix(plain$points),          info = info);
     expect_equal(as.matrix(with_misses$rotation$nodes),  as.matrix(plain$rotation$nodes),  info = info);
     expect_equal(with_misses$model$variance,             plain$model$variance,             info = info);
   }
+})
+
+test_that("rENA accumulate() passes misses through to tma (on by default)", {
+  data(RS.data)
+  codes <- c("Data", "Technical.Constraints", "Performance.Parameters",
+             "Client.and.Consultant.Requests", "Design.Reasoning", "Collaboration")
+  units <- c("Condition", "UserName")
+  horizon <- c("Condition", "GroupName")
+  on  <- accumulate(RS.data, units, codes, horizon);
+  off <- accumulate(RS.data, units, codes, horizon, misses = FALSE);
+  expect_false(is.null(on$miss.counts));
+  expect_false(is.null(on$self.miss.counts));
+  expect_true(on$`_function.params`$misses);
+  expect_null(off$miss.counts);
+  expect_null(off$self.miss.counts);
+  expect_false(off$`_function.params`$misses);
+  # self-connections are kept either way; connections are the same
+  expect_false(is.null(off$self.connection.counts));
+  expect_equal(as.matrix(on$connection.counts), as.matrix(off$connection.counts));
 })

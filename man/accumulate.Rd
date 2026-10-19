@@ -12,7 +12,8 @@ accumulate(
   ...,
   ordered = FALSE,
   binary = TRUE,
-  weight_by = NULL
+  weight_by = NULL,
+  misses = TRUE
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ accumulate(
 \item{binary}{A logical value. If TRUE, each line's connection counts are binarized (0 or 1) before they are summed per unit (unordered networks; ordered counts are always summed raw). Defaults to TRUE. Ignored when `weight_by` is given.}
 
 \item{weight_by}{Weight model applied to each line's connection counts before they are summed into the unit network (the same stage as `weight.by` in `ena.accumulate.data()`): `"binary"`, `"product"` (the raw, non-binarized counts), `"sqrt"`, or `"log1p"` (alias `"log"`). For unordered networks the weight is applied after each line is folded to the upper triangle; for ordered networks, to each directed cell, and `"binary"` keeps the raw directed counts. Defaults to `"binary"` when `binary = TRUE`, otherwise `"product"`. Passed to [tma::accumulate()].}
+
+\item{misses}{A logical value. If TRUE (the default), also accumulate missed co-occurrences -- for each line, the ground count of code i when code j is absent from the response -- kept as `miss.counts` / `model$row.miss.counts` (and self-misses as `self.miss.counts`) alongside the connection counts; they are not used by the model. FALSE skips them (less memory for many codes or long data). Passed to [tma::accumulate()].}
 }
 \value{
 An ena.set object containing the accumulated connection counts and metadata.
