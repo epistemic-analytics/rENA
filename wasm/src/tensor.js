@@ -2,7 +2,7 @@
  * tensor.js — Context-tensor accumulation for rENA WASM.
  *
  * Maps tma's apply_tensor() semantics to the JS/WASM layer.  Each unit's
- * network is accumulated by calling qe.accumulate_tensor_unit() with a
+ * network is accumulated by calling qe.accumulate_unit_networks() with a
  * multi-dimensional tensor that encodes per-factor-combination window sizes
  * and weights.
  *
@@ -353,8 +353,8 @@ export function buildHorizonContexts(rows, unitOf, nUnits, horizons) {
  * Accumulate tensor networks for all units across all conversations.
  *
  * Every accumulation — including plain windowed ENA, via defaultTensor(window)
- * — runs through here, so the per-line finalisation (fold / binarize / weight)
- * lives in exactly one place.
+ * — runs through here, and the per-line finalisation (fold / binarize /
+ * weight / unit sum / self diagonal) happens in libtma.
  *
  * @param {object}      qe             libqe WASM module
  * @param {Object[]}    rows           Full dataset
@@ -374,16 +374,25 @@ export function buildHorizonContexts(rows, unitOf, nUnits, horizons) {
  * @param {object|null} [horizons=null] flexible horizons (see
  *                                     buildHorizonContexts); replaces
  *                                     convoGroups as the windowing contexts
+ * @param {boolean}     [misses=true]  also accumulate missed co-occurrences
+ *                                     (ground i present, response j absent)
  *
- * @returns {{ networks: Float64Array, rowConnectionCounts: Float64Array }}
+ * @returns {{ networks: Float64Array, rowConnectionCounts: Float64Array,
+ *             selfNetworks: Float64Array, missNetworks: Float64Array|null,
+ *             selfMissNetworks: Float64Array|null }}
  *   networks            nUnits × nConnections, row-major
  *   rowConnectionCounts nRows × nConnections, row-major — each row's finalised
  *                       (folded / binarized / weighted) connection vector;
  *                       rows sum by unit to `networks`
+ *   selfNetworks        nUnits × nCodes — self-connections (ground i ×
+ *                       response i, the ordered diagonal), weighted per line
+ *   missNetworks        nUnits × nConnections — missed co-occurrences (misses)
+ *   selfMissNetworks    nUnits × nCodes — self-misses (misses)
  */
 export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
                                   unitOf, convoGroups, tensorDef, ordered = false,
-                                  binary = true, weight = null, horizons = null) {
+                                  binary = true, weight = null, horizons = null,
+                                  misses = true) {
     const {
         dims,
         dimsSender   = [],
@@ -406,6 +415,9 @@ export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
 
     const networks            = new Float64Array(nUnits * nConnections);
     const rowConnectionCounts = new Float64Array(nRows * nConnections);
+    const selfNetworks        = new Float64Array(nUnits * nCodes);
+    const missNetworks        = misses ? new Float64Array(nUnits * nConnections) : null;
+    const selfMissNetworks    = misses ? new Float64Array(nUnits * nCodes) : null;
 
     // libqe weight argument: a weight-model name, or the legacy binary flag.
     const kernelWeight = weight ?? binary;
@@ -435,40 +447,38 @@ export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
             ? buildContextLookupWithTimes(rows, rowIndices, factors, factorLevels, allTimes)
             : buildContextLookup(rows, rowIndices, factors, factorLevels);
 
-        // Always accumulate the DIRECTED per-response-row counts (ordered
-        // kernel), exactly as tma does — it calls apply_tensor with the
-        // default ordered=TRUE and defers the ordered-vs-unordered decision
-        // to aggregation.  Passing the unordered flag here would make the
-        // kernel emit an already-symmetric matrix that the fold below would
-        // then double-count.
-        const result = qe.accumulate_tensor_unit(
+        // One libtma call (accumulate_unit_networks), as tma's accumulate()
+        // in R: fold (unordered), per-line weight model, unit sum and the
+        // self-connection diagonal, for hits and misses. Unit vectors are
+        // additive over lines, so a unit's contexts simply add up.
+        const result = qe.accumulate_unit_networks(
             tensorData, dimsArr,
             senderArr, receiverArr, modeArr,
             contextLookup, clRows, clCols,
             new Int32Array(localRows),
             ctxCodes, nCtx, nCodes,
             times,
-            true
+            ordered, kernelWeight, misses
         );
+        const addUnit = (target, vec, width) => {
+            const off = unit * width;
+            for (let c = 0; c < width; c++) target[off + c] += vec[c];
+        };
+        addUnit(networks, result.connection_counts, nConnections);
+        addUnit(selfNetworks, result.self_connection_counts, nCodes);
+        if (misses) {
+            addUnit(missNetworks, result.miss_counts, nConnections);
+            addUnit(selfMissNetworks, result.self_miss_counts, nCodes);
+        }
 
-        // Finalise each raw per-response-row connection vector with libqe's
-        // shared kernel, exactly as tma does in R: fold to the upper
-        // triangle (unordered) or keep the directed row (ordered), then
-        // apply the weight model per line (binary clamp, product, sqrt,
-        // log1p) before the per-unit sum. Row i is local row localRows[i].
+        // Per-line weighted rows (rowConnectionCounts): libtma's weight_rows
+        // on the raw, already-folded rows. Row i is local row localRows[i].
         const rcc = result.row_connection_counts;
-        const fin = qe.finalize_row_connections(
-            rcc.data, rcc.rows, rcc.cols, nCodes, ordered, kernelWeight
-        );
-        const unitOff = unit * nConnections;
+        const fin = qe.weight_rows(rcc.data, rcc.rows, rcc.cols, ordered, kernelWeight);
         for (let i = 0; i < fin.rows; i++) {
             const rowOff = rowIndices[localRows[i]] * nConnections;
-            const finOff = i * fin.cols;
-            for (let c = 0; c < nConnections; c++) {
-                const v = fin.data[finOff + c];
-                rowConnectionCounts[rowOff + c] = v;
-                networks[unitOff + c] += v;
-            }
+            rowConnectionCounts.set(
+                fin.data.slice(i * fin.cols, (i + 1) * fin.cols), rowOff);
         }
     };
 
@@ -484,7 +494,7 @@ export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
                 if (localRows.length) accumulateContext(rowIndices, unit, localRows);
             }
         });
-        return { networks, rowConnectionCounts };
+        return { networks, rowConnectionCounts, selfNetworks, missNetworks, selfMissNetworks };
     }
 
     for (const [, rowIndices] of convoGroups) {
@@ -503,7 +513,7 @@ export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
         }
     }
 
-    return { networks, rowConnectionCounts };
+    return { networks, rowConnectionCounts, selfNetworks, missNetworks, selfMissNetworks };
 }
 
 /**

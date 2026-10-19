@@ -15,6 +15,13 @@
  * Top-level fields (= R's set$...):
  *   connectionCounts  Float64Array  (nUnits × nConnections) — raw accumulation
  *   rowConnectionCounts Float64Array (nRows × nConnections) — per-row raw accumulation
+ *   selfConnectionCounts Float64Array (nUnits × nCodes) — self-connections:
+ *                     ground i × response i per line (the ordered diagonal),
+ *                     weighted per line; kept alongside, not used by the model
+ *   missCounts        Float64Array  (nUnits × nConnections) | null — missed
+ *                     co-occurrences (ground i present, response j absent);
+ *                     opts.misses (default true)
+ *   selfMissCounts    Float64Array  (nUnits × nCodes) | null — self-misses
  *   lineWeights       Float64Array  (nUnits × nConnections) — sphere-normed
  *   points            Float64Array  (nUnits × dims)         — projected positions
  *   rotationMatrix    Float64Array  (nConnections × dims)   — rotation vectors
@@ -291,6 +298,16 @@ function applyCodeMask(networks, codeMask, nCodes, nUnits, nConnections, ordered
             k++;
         }
     }
+}
+
+// Self vectors (nUnits × nCodes): zero a code's self-connection when the mask
+// excludes its diagonal (codeMask[i][i] === 0), as applyCodeMask does for
+// ordered networks' diagonal.
+function applySelfMask(selfNetworks, codeMask, nCodes, nUnits) {
+    if (!selfNetworks || !codeMask || codeMask.length !== nCodes) return;
+    for (let i = 0; i < nCodes; i++)
+        if (codeMask[i] && codeMask[i][i] === 0)
+            for (let u = 0; u < nUnits; u++) selfNetworks[u * nCodes + i] = 0;
 }
 
 // ── custom rotation (= R's rotation.set) ─────────────────────────────────────
@@ -675,6 +692,11 @@ const LIBENA_FUNCTIONS = new Set([
     'accumulate_tensor_unit',
     'aggregate_row_connections',
     'finalize_row_connections',
+    'accumulate_tensor_unit_misses',
+    'finalize_self_connections',
+    'aggregate_self_connections',
+    'accumulate_unit_networks',
+    'weight_rows',
 ]);
 
 /**
@@ -765,6 +787,7 @@ export default async function loadENA() {
                 rotationSet,
                 sphereNorm:          useSphereNorm       = true,
                 centerAlignToOrigin                       = true,
+                misses                                    = true,
             } = opts;
 
             if (!codes?.length)         throw new Error('opts.codes is required');
@@ -785,19 +808,29 @@ export default async function loadENA() {
 
             // Every model accumulates through the tensor path; a plain moving
             // window is expressed as defaultTensor(window).
-            const { networks: rawNetworks, rowConnectionCounts } = accumulateTensor(
+            const { networks: rawNetworks, rowConnectionCounts,
+                    selfNetworks, missNetworks, selfMissNetworks } = accumulateTensor(
                 qe, rows, codeMatrix, nRows, nCodes, nUnits,
                 unitOf, convoGroups, tensorDef ?? defaultTensor(windowSize),
-                ordered, binary, weight, horizons
+                ordered, binary, weight, horizons, misses
             );
             const nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
 
             applyCodeMask(rawNetworks, codeMask, codes.length, nUnits, nConnections, ordered);
+            applyCodeMask(missNetworks, codeMask, codes.length, nUnits, nConnections, ordered);
+            applySelfMask(selfNetworks, codeMask, codes.length, nUnits);
+            applySelfMask(selfMissNetworks, codeMask, codes.length, nUnits);
 
-            return runPipeline(qe, rawNetworks, nUnits, nConnections, codes,
+            const model = runPipeline(qe, rawNetworks, nUnits, nConnections, codes,
                                unitLabels, metaData, rotMethod, groupA, groupB,
                                dims, gParams, rowConnectionCounts, ordered,
                                rotationSet, { sphereNorm: useSphereNorm, centerAlignToOrigin });
+            // Kept alongside the model, not used by it (= R's
+            // self.connection.counts, miss.counts, self.miss.counts).
+            model.selfConnectionCounts = selfNetworks;     // nUnits × nCodes
+            model.missCounts           = missNetworks;     // nUnits × nConnections, or null
+            model.selfMissCounts       = selfMissNetworks; // nUnits × nCodes, or null
+            return model;
         },
 
         /**
@@ -829,30 +862,37 @@ export default async function loadENA() {
                 weightModel,
                 unitsUsed,
                 horizons,
+                misses = true,
             } = opts;
 
             const { codeMatrix, nRows, nCodes, nUnits, unitLabels,
                     unitOf, convoGroups, metaData } =
                 parseData(rows, codes, units, conversations, unitsUsed);
 
-            const { networks, rowConnectionCounts } = accumulateTensor(
+            const { networks, rowConnectionCounts,
+                    selfNetworks, missNetworks, selfMissNetworks } = accumulateTensor(
                 qe, rows, codeMatrix, nRows, nCodes, nUnits,
                 unitOf, convoGroups, tensorDef ?? defaultTensor(windowSize),
-                ordered, binary, weightModelName(weightModel), horizons
+                ordered, binary, weightModelName(weightModel), horizons, misses
             );
             const nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
 
             applyCodeMask(networks, codeMask, codes.length, nUnits, nConnections, ordered);
+            applyCodeMask(missNetworks, codeMask, codes.length, nUnits, nConnections, ordered);
+            applySelfMask(selfNetworks, codeMask, codes.length, nUnits);
+            applySelfMask(selfMissNetworks, codeMask, codes.length, nUnits);
 
             const connectionNames = connectionNamesFor(qe, codes, ordered);
             return {
                 connectionCounts: networks, rowConnectionCounts, unitLabels, connectionNames,
+                selfConnectionCounts: selfNetworks, missCounts: missNetworks,
+                selfMissCounts: selfMissNetworks,
                 metaData, nUnits, nConnections,
                 // Retained so tuneWindowSize() can rebuild at other window sizes
                 // (= R's ENAAccumulation$`_function.call`).
                 _call: { rows, codes, units, conversations,
                          window: windowSize, binary, ordered, tensor: tensorDef,
-                         weightModel, unitsUsed, horizons },
+                         weightModel, unitsUsed, horizons, misses },
             };
         },
 
@@ -906,7 +946,7 @@ export default async function loadENA() {
                 const { networks: raw } = accumulateTensor(
                     qe, rows, codeMatrix, nRows, nCodes, nUnits,
                     unitOf, convoGroups, defaultTensor(w), ordered, binary,
-                    weightModelName(weightModel), horizons
+                    weightModelName(weightModel), horizons, /*misses=*/false
                 );
                 const model = runPipeline(
                     qe, raw, nUnits, nConnections, codes,
@@ -1107,7 +1147,7 @@ export default async function loadENA() {
             const { networks: raw } = accumulateTensor(
                 qe, rows, codeMatrix, nRows, nCodes, nUnits,
                 unitOf, convoGroups, tensorDef ?? defaultTensor(windowSize),
-                ordered, binary, weightModelName(weightModel), horizons
+                ordered, binary, weightModelName(weightModel), horizons, /*misses=*/false
             );
             const nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
             applyCodeMask(raw, codeMask, nCodes, nUnits, nConnections, ordered);

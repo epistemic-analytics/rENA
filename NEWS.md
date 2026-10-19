@@ -1,5 +1,6 @@
 ## rENA 0.4.15 (development version)
 
+- rena-wasm: accumulation goes through libtma's `accumulate_unit_networks()` (one call per unit and context: fold, per-line weight model, unit sum, self-connection diagonal) and `weight_rows()` for the per-line `rowConnectionCounts`, so the JS no longer finalises rows itself. Results are unchanged (identical on rs.data; `sqrt` within 1e-13). `accumulate()` and `fit()` gain `selfConnectionCounts` (units × codes), and, with `misses` (default `true`), `missCounts` and `selfMissCounts` — equal to R `tma::accumulate()`'s `self.connection.counts`, `miss.counts` and `self.miss.counts`. The new libtma functions (and 0.3.7's `accumulate_tensor_unit_misses`) are now routed to libena. Needs tma/libtma with `accumulate_unit_networks` (not yet released).
 - Requires tma >= 0.3.7; `scripts/sync-headers.sh` vendors libtma 0.3.7, which adds missed co-occurrences (`tma::accumulate(misses = TRUE)`; rena-wasm's libtma module gains `accumulate_tensor_unit_misses`). Tests check that misses survive `model()` and leave the fitted model unchanged.
 - qe-ena: `ENA.fit()`'s default SVD rotation reports `rotation_eigenvalues_` as sdev² (= R's `rotation$eigenvalues` and rena-wasm), not raw singular values. It now uses libena's `ena_svd` instead of `numpy.linalg.svd`, keeping min(units, connections) axes.
 
