@@ -126,6 +126,13 @@ node_centroids_by_key <- function(line_weights, nodes, key, codes, self_weight =
   node_centroids_by_key_c(as.matrix(line_weights), as.matrix(nodes), ft$from, ft$to, self_weight)
 }
 
+# The codes as the key names them: the key is built from the connection
+# column names, which may be make.names() of the codes.
+key_codes <- function(key, codes) {
+  named <- unique(as.character(as.matrix(key)))
+  if (all(named %in% codes)) codes else make.names(codes)
+}
+
 # 0-based code indices of each key column.
 key_indices <- function(key, codes) {
   key <- as.matrix(key)

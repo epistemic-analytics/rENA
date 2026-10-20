@@ -110,10 +110,18 @@ move_nodes_on_circle <- function(set, dimension_name_1, dimension_name_2, mode) 
   # nodes were fit with. Sets fit before it was recorded used 1 (libena
   # counted self-connections once from 2026-05 until rENA 0.4.16).
   self_weight <- if (is.null(set$rotation$self.weight)) 1 else set$rotation$self.weight
-  moved <- move_nodes_to_unit_circle_c(
-    as.matrix(set$line.weights), nodes, idx[1] - 1L, idx[2] - 1L, mode,
-    is(set, "ena.ordered.set"), self_weight
-  )
+  lw <- as.matrix(set$line.weights)
+  key <- set$rotation$adjacency.key
+  moved <- if (!is(set, "ena.ordered.set") && !is.null(key) && ncol(as.matrix(key)) == ncol(lw)) {
+    # Unordered: centroids from the same key-driven weighting the fit used
+    # (self-connection columns included).
+    ft <- key_indices(key, key_codes(key, set$rotation$codes))
+    move_nodes_to_unit_circle_by_key_c(lw, nodes, idx[1] - 1L, idx[2] - 1L, mode,
+                                       ft$from, ft$to, self_weight)
+  } else {
+    move_nodes_to_unit_circle_c(lw, nodes, idx[1] - 1L, idx[2] - 1L, mode,
+                                is(set, "ena.ordered.set"), self_weight)
+  }
 
   set$rotation$nodes <- replace_dimension_columns(
     set$rotation$nodes, moved$nodes[, idx, drop = FALSE], dimension_names

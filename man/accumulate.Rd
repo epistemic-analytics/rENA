@@ -13,7 +13,8 @@ accumulate(
   ordered = FALSE,
   binary = TRUE,
   weight_by = NULL,
-  misses = TRUE
+  misses = TRUE,
+  self_connections = FALSE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ accumulate(
 \item{weight_by}{Weight model applied to each line's connection counts before they are summed into the unit network (the same stage as `weight.by` in `ena.accumulate.data()`): `"binary"`, `"product"` (the raw, non-binarized counts), `"sqrt"`, or `"log1p"` (alias `"log"`). For unordered networks the weight is applied after each line is folded to the upper triangle; for ordered networks, to each directed cell, and `"binary"` keeps the raw directed counts. Defaults to `"binary"` when `binary = TRUE`, otherwise `"product"`. Passed to [tma::accumulate()].}
 
 \item{misses}{A logical value. If TRUE (the default), also accumulate missed co-occurrences -- for each line, the ground count of code i when code j is absent from the response -- kept as `miss.counts` / `model$row.miss.counts` (and self-misses as `self.miss.counts`) alongside the connection counts; they are not used by the model. FALSE skips them (less memory for many codes or long data). Passed to [tma::accumulate()].}
+
+\item{self_connections}{A logical value, default FALSE. Unordered networks only: also include each code's self-connection (ground i -> response i, weighted per line like the other columns) as a connection column (A & A, A & B, B & B, ...), so normalization, rotation and node positions include it; nodes then count a self-connection `self_weight` times, as ordered models do (see [model()]). Ordered networks always include the diagonal. Passed to [tma::accumulate()].}
 }
 \value{
 An ena.set object containing the accumulated connection counts and metadata.

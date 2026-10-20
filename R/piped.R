@@ -11,6 +11,7 @@
 #' @param binary A logical value. If TRUE, each line's connection counts are binarized (0 or 1) before they are summed per unit (unordered networks; ordered counts are always summed raw). Defaults to TRUE. Ignored when `weight_by` is given.
 #' @param weight_by Weight model applied to each line's connection counts before they are summed into the unit network (the same stage as `weight.by` in `ena.accumulate.data()`): `"binary"`, `"product"` (the raw, non-binarized counts), `"sqrt"`, or `"log1p"` (alias `"log"`). For unordered networks the weight is applied after each line is folded to the upper triangle; for ordered networks, to each directed cell, and `"binary"` keeps the raw directed counts. Defaults to `"binary"` when `binary = TRUE`, otherwise `"product"`. Passed to [tma::accumulate()].
 #' @param misses A logical value. If TRUE (the default), also accumulate missed co-occurrences -- for each line, the ground count of code i when code j is absent from the response -- kept as `miss.counts` / `model$row.miss.counts` (and self-misses as `self.miss.counts`) alongside the connection counts; they are not used by the model. FALSE skips them (less memory for many codes or long data). Passed to [tma::accumulate()].
+#' @param self_connections A logical value, default FALSE. Unordered networks only: also include each code's self-connection (ground i -> response i, weighted per line like the other columns) as a connection column (A & A, A & B, B & B, ...), so normalization, rotation and node positions include it; nodes then count a self-connection `self_weight` times, as ordered models do (see [model()]). Ordered networks always include the diagonal. Passed to [tma::accumulate()].
 #'
 #' @return An ena.set object containing the accumulated connection counts and metadata.
 #' @export
@@ -39,7 +40,8 @@ accumulate <- function(
     ordered = FALSE,
     binary = TRUE,
     weight_by = NULL,
-    misses = TRUE
+    misses = TRUE,
+    self_connections = FALSE
 ) {
   # set <- ena.accumulate.data.file(
   #   file = x,
@@ -92,7 +94,8 @@ accumulate <- function(
     ordered = ordered,
     binary = binary,
     weight_by = weight_by,
-    misses = misses
+    misses = misses,
+    self_connections = self_connections
   )
 
   set$rotation <- list(
@@ -440,8 +443,18 @@ center <- function(x, add.meta = TRUE, exclude_zero_networks = FALSE) {
     }
 
     x_ <- as.matrix(x$line.weights)
-    is_unordered_set <- ncol(x_) == choose(length(x$rotation$codes), 2)
-    names_ <- apply(tma::adjacency_key(x$rotation$codes, is_unordered_set), 2, paste, collapse = " & ")
+    # Column names from the codes, for the three layouts: unordered
+    # (choose(p, 2)), unordered with self-connections (p(p+1)/2; A & A, A & B,
+    # B & B, ...) and ordered (p^2).
+    p_codes <- length(x$rotation$codes)
+    key_ <- if (ncol(x_) == choose(p_codes, 2)) {
+      tma::adjacency_key(x$rotation$codes, TRUE)
+    } else if (ncol(x_) == p_codes * (p_codes + 1) / 2) {
+      tma::adjacency_key(x$rotation$codes, TRUE, diagonal = TRUE)
+    } else {
+      tma::adjacency_key(x$rotation$codes, FALSE)
+    }
+    names_ <- apply(key_, 2, paste, collapse = " & ")
     if (isTRUE(add.meta)) {
       meta_ <- x$meta.data
     }
@@ -579,6 +592,11 @@ rotate <- function(
     }
   # }
 
+  # The rotation function returns a new rotation; keep what describes the
+  # columns (the adjacency key, which node optimization reads) and the
+  # centering vector.
+  kept <- if (is.list(x$rotation)) x$rotation[intersect(c("adjacency.key", "centervec"), names(x$rotation))] else list()
+
   x$rotation <- do.call(wh, list(enaset = x, params = by_vals))
 
   # Ensure x$rotation is a list with required elements
@@ -589,6 +607,7 @@ rotate <- function(
   # Only extract elements that exist in the returned list
   rotation_elements <- c("eigenvalues", "codes", "node.positions", "rotation")
   x$rotation <- x$rotation[intersect(rotation_elements, names(x$rotation))]
+  for (nm in names(kept)) if (!is.null(kept[[nm]])) x$rotation[[nm]] <- kept[[nm]]
 
   if (!is.null(x$rotation$rotation)) {
     x$rotation.matrix <- as_rotation_matrix(x$rotation$rotation)
@@ -670,7 +689,7 @@ project <- function(x, rotation = NULL, add.meta = TRUE) {
 #'
 #' @param x An \code{ena.set} object for which to optimize node and centroid positions.
 #' @param weights Optional. A numeric matrix of connection weights. If provided, the function will use this matrix instead of the connection counts from the \code{ena.set}.
-#' @param self_weight Ordered sets only: weight of a self-connection (the diagonal: ground i -> response i) in its code's node weight. 2 (default) counts it in both the node's row and column sums, the in + out rule of Zhiqiang Cai's 2021 fix; 1 counts it once. Recorded as \code{x$rotation$self.weight}.
+#' @param self_weight Weight of a self-connection (a column connecting a code to itself: the ordered diagonal, or an unordered set's A & A columns from accumulate(self_connections = TRUE)) in its code's node weight. 2 (default) counts it in both the node's row and column sums, the in + out rule of Zhiqiang Cai's 2021 fix; 1 counts it once. Recorded as \code{x$rotation$self.weight}.
 #'
 #' @return The input \code{ena.set} object with updated node and centroid positions.
 #' @export
@@ -717,8 +736,21 @@ optimize <- function(x, weights = NULL, self_weight = 2) {
     x$rotation$nodes <- as_nodes_matrix(positions$nodes, list("code" = x$rotation$codes), cols = colnames(as.matrix(x$points)), cls = "ena.nodes")
   }
   else {
-    # browser()
-    positions <- lws_lsq_positions(weights, points, ncol(points));
+    # Unordered: libena's layout-agnostic solver, driven by the set's
+    # adjacency key -- the same result as lws_lsq_positions() for the usual
+    # choose(n, 2) columns, and it also places self-connection columns
+    # (A & A; accumulate(self_connections = TRUE)), each counted
+    # `self_weight` times as in ordered models. Sets without a key matching
+    # the columns use the upper-triangle solver.
+    key <- x$rotation$adjacency.key
+    if (!is.null(key) && ncol(as.matrix(key)) == ncol(weights)) {
+      positions <- node_positions_by_key(weights, points, ncol(points), key,
+                                         key_codes(key, x$rotation$codes), self_weight = self_weight);
+    }
+    else {
+      positions <- lws_lsq_positions(weights, points, ncol(points));
+    }
+    x$rotation$self.weight <- self_weight;
     x$rotation$nodes <- as_nodes_matrix(positions$nodes, list("code" = x$rotation$codes), cols = colnames(as.matrix(x$points)), cls = "ena.nodes")
   }
 
