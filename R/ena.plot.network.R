@@ -266,14 +266,20 @@ ena.plot.network = function(
 
   network.to.keep = (network != 0) * 1
   if(scale.weights == T && any(network != 0)) {
-    network.scaled = network * (1 / max(abs(network)));
+    weight.multiplier = 1 / max(abs(network));
+    network.scaled = network * weight.multiplier;
     network.thickness = scales::rescale(x = abs(network.scaled), to = scale.range, from = thickness);
+    # saturation/opacity ranges are given in unscaled units; bring them onto
+    # the same scale as network.scaled so the rescale below stays in range
+    saturation = saturation * weight.multiplier;
+    opacity = opacity * weight.multiplier;
   }
   network.scaled = network.scaled * network.to.keep
   network.thickness = network.thickness * network.to.keep
 
-  network.saturation = scales::rescale(x = abs(network.scaled), to = scale.range, from = saturation);
-  network.opacity = scales::rescale(x = abs(network.scaled), to = scale.range, from = opacity);
+  # hsv() and the edge opacity both require values in [0, 1]
+  network.saturation = scales::squish(scales::rescale(x = abs(network.scaled), to = scale.range, from = saturation), c(0, 1));
+  network.opacity = scales::squish(scales::rescale(x = abs(network.scaled), to = scale.range, from = opacity), c(0, 1));
 
   pos.inds = as.numeric(which(network.scaled >=0));
   neg.inds = as.numeric(which(network.scaled < 0));
