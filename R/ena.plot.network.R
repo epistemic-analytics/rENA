@@ -268,11 +268,14 @@ ena.plot.network = function(
   if(scale.weights == T && any(network != 0)) {
     weight.multiplier = 1 / max(abs(network));
     network.scaled = network * weight.multiplier;
-    network.thickness = scales::rescale(x = abs(network.scaled), to = scale.range, from = thickness);
-    # saturation/opacity ranges are given in unscaled units; bring them onto
-    # the same scale as network.scaled so the rescale below stays in range
+    # thickness/saturation/opacity ranges are given in unscaled units; bring
+    # them onto the same scale as network.scaled so the rescales stay in range.
+    # Force the saturation/opacity defaults (= thickness) before thickness changes.
+    force(saturation); force(opacity);
+    thickness = thickness * weight.multiplier;
     saturation = saturation * weight.multiplier;
     opacity = opacity * weight.multiplier;
+    network.thickness = scales::rescale(x = abs(network.scaled), to = scale.range, from = thickness);
   }
   network.scaled = network.scaled * network.to.keep
   network.thickness = network.thickness * network.to.keep

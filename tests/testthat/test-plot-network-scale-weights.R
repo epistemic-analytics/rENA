@@ -29,3 +29,22 @@ test_that("scale.weights keeps saturation/opacity in [0, 1] for all-positive net
   p0 <- ena.plot(set) |> ena.plot.network(network = g1)
   expect_equal(unname(sort(op)), unname(sort(edge_opacities(p0))))
 })
+
+test_that("scale.weights maps edge thickness into scale.range", {
+  set <- RS.data |>
+    accumulate(c("Condition", "UserName"), codenames,
+               c("Condition", "GroupName"), default_window = 4) |>
+    model()
+  lw <- as.matrix(set$line.weights)
+  g1 <- colMeans(lw[set$meta.data$Condition == "FirstGame", ])
+  g2 <- colMeans(lw[set$meta.data$Condition == "SecondGame", ])
+
+  for (net in list(g1, g1 - g2)) {
+    plot <- ena.plot(set)
+    p <- plot |> ena.plot.network(network = net, scale.weights = TRUE)
+    widths <- unlist(lapply(p$plot$x$attrs, function(t) t$line$width))
+    expect_length(widths, length(net))
+    # default scale.range is c(0.1, 1) for networks with no zero weights
+    expect_equal(range(widths), c(0.1, 1) * plot$get("multiplier"))
+  }
+})
