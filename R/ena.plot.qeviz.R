@@ -87,16 +87,21 @@
     network <- colMeans(as.matrix(nw[, vapply(nw, is.numeric, logical(1)), drop = FALSE]))
   }
   network <- stats::setNames(as.numeric(unclass(network)), names(network))
-  # Same length rule as the plotly path: one weight per pair of nodes.
+  # Same length rule as the plotly path: one weight per pair of nodes, or per
+  # pair plus each node's self-connection (upper triangle with the diagonal).
   n_nodes <- NROW(node.positions)
-  if (length(network) != choose(n_nodes, 2))
-    stop(paste0("Network vector needs to be of length ", choose(n_nodes, 2)), call. = FALSE)
+  n_self <- n_nodes * (n_nodes + 1) / 2
+  if (!length(network) %in% c(choose(n_nodes, 2), n_self))
+    stop(paste0("Network vector needs to be of length ", choose(n_nodes, 2),
+                " (or ", n_self, " with self-connections)"), call. = FALSE)
   # Unnamed weights follow the adjacency key, exactly as the plotly path reads
   # them: the key given, else the one implied by node.positions' codes.
   if (!is.null(adjacency.key) || is.null(names(network))) {
     codes <- if (is(node.positions, "ena.nodes")) as.character(node.positions$code)
              else rownames(node.positions)
-    key <- as.matrix(if (!is.null(adjacency.key)) adjacency.key else namesToAdjacencyKey(codes))
+    key <- as.matrix(if (!is.null(adjacency.key)) adjacency.key
+                     else namesToAdjacencyKey(codes, diagonal = length(network) == n_self &&
+                                                                n_self != choose(n_nodes, 2)))
     names(network) <- paste(key[1, ], key[2, ], sep = " & ")
   }
 

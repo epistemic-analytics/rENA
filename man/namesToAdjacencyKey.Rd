@@ -4,16 +4,21 @@
 \alias{namesToAdjacencyKey}
 \title{Names to Adjacency Key}
 \usage{
-namesToAdjacencyKey(vector, upper_triangle = TRUE)
+namesToAdjacencyKey(vector, upper_triangle = TRUE, diagonal = FALSE)
 }
 \arguments{
 \item{vector}{Vector representing the names of a square matrix}
 
 \item{upper_triangle}{Not Implemented}
+
+\item{diagonal}{Logical, include the diagonal (self-connections). Default FALSE}
 }
 \description{
 Convert a vector of strings, representing names of a square matrix, to an adjacency
 }
 \details{
-Returns a matrix of 2 rows by choose(length(vector), 2) columns
+Returns a matrix of 2 rows by choose(length(vector), 2) columns,
+or by \code{n * (n + 1) / 2} columns when \code{diagonal} is \code{TRUE}
+(the self-connection layout: upper triangle with the diagonal, column-major,
+e.g. A & A, A & B, B & B, A & C, B & C, C & C).
 }

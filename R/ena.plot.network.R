@@ -45,6 +45,25 @@ plot_edges <- function(...) {
         show.legend = T;
       }
 
+      if (isTRUE(e$self)) {
+        if (e$line$width > 0) {
+          enaplot$plot = plotly::add_trace(
+            enaplot$plot,
+            type = "scatter",
+            mode = "markers",
+            data = data.frame(X1 = e$x0, X2 = e$y0),
+            x = ~X1, y = ~X2,
+            marker = list(color = e$line$color, size = e$line$width, line = list(width = 0)),
+            opacity = e$opacity,
+            legendgroup = if(legend.include.edges == T) this.name else legend.name,
+            showlegend = show.legend,
+            name = name,
+            hoverinfo = 'none'
+          )
+        }
+        next
+      }
+
       enaplot$plot = plotly::add_trace(
         enaplot$plot,
         type = "scatter",
@@ -187,20 +206,24 @@ ena.plot.network = function(
       labels = labels, label.font.size = label.font.size, label.font.color = label.font.color,
       label.font.family = label.font.family, legend.name = legend.name, dots = list(...)))
 
-  expected_codes <- choose(nrow(node.positions), 2)
-  if(expected_codes != length(network)) {
-    # browser()
-    if(is.data.frame(network) && ncol(as.matrix(network)) == expected_codes) {
+  # One weight per pair of nodes, or per pair plus each node's self-connection
+  # (upper triangle with the diagonal, as accumulate(self_connections = TRUE)).
+  n.nodes <- nrow(node.positions)
+  expected_codes <- c(choose(n.nodes, 2), n.nodes * (n.nodes + 1) / 2)
+  if(!length(network) %in% expected_codes) {
+    if(is.data.frame(network) && ncol(as.matrix(network)) %in% expected_codes) {
       network = as.vector(as.matrix(network))
     }
     else {
-      stop(paste0("Network vector needs to be of length ", choose(nrow(node.positions), 2)))
+      stop(paste0("Network vector needs to be of length ", choose(n.nodes, 2),
+                  " (or ", n.nodes * (n.nodes + 1) / 2, " with self-connections)"))
     }
   }
+  diagonal <- length(network) == expected_codes[2] && expected_codes[2] != expected_codes[1]
   node.rows <- NULL
   if(is(node.positions, "ena.nodes")) {
     if(is.null(adjacency.key)) {
-      adjacency.key <- namesToAdjacencyKey(node.positions$code)
+      adjacency.key <- namesToAdjacencyKey(node.positions$code, diagonal = diagonal)
     }
     node.rows <- node.positions$code
 
@@ -212,7 +235,7 @@ ena.plot.network = function(
     if(is.matrix(node.positions)) {
       node.positions <- as.data.frame(node.positions)
     }
-    adjacency.key <- namesToAdjacencyKey(rownames(node.positions))
+    adjacency.key <- namesToAdjacencyKey(rownames(node.positions), diagonal = diagonal)
     node.rows <- rownames(node.positions)
     if(is.null(labels)) {
       labels  <- rownames(node.positions)
@@ -295,8 +318,13 @@ ena.plot.network = function(
   for (i in 1:length(network)) {
     v0 <- nodes[node.rows==mat[1,i], ];
     v1 <- nodes[node.rows==mat[2,i], ];
+    is.self <- mat[1,i] == mat[2,i]
+    # A self-connection counts once toward its node's size, so the node
+    # stays larger than the circle drawn on it.
     nodes[node.rows==mat[1,i],]$weight = nodes[node.rows==mat[1,i],]$weight + abs(network.thickness[i]);
-    nodes[node.rows==mat[2,i],]$weight = nodes[node.rows==mat[2,i],]$weight + abs(network.thickness[i]);
+    if(!is.self) {
+      nodes[node.rows==mat[2,i],]$weight = nodes[node.rows==mat[2,i],]$weight + abs(network.thickness[i]);
+    }
 
     color = NULL
     if(i %in% pos.inds) {
@@ -321,7 +349,8 @@ ena.plot.network = function(
       x1 = as.numeric(v1[1]),
       y1 = as.numeric(v1[2]),
       layer = "below",
-      size = as.numeric(abs(network.scaled[i]))
+      size = as.numeric(abs(network.scaled[i])),
+      self = is.self
     );
     network.edges.shapes[[i]] = edge_shape
   };
@@ -348,6 +377,14 @@ ena.plot.network = function(
   }
   else {
     nodes$weight = node.size[2]
+  }
+  # Self-connections are circles on their node, as wide as an edge of the same
+  # weight (the edges' scale); a node is never drawn smaller than its circle.
+  for (e in network.edges.shapes) {
+    if (isTRUE(e$self)) {
+      on.node <- node.rows[rows.to.keep] == e$nodes[1]
+      nodes$weight[on.node] = pmax(nodes$weight[on.node], e$line$width)
+    }
   }
 
   show.legend = !is.null(legend.name);
