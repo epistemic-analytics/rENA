@@ -106,9 +106,13 @@ move_nodes_on_circle <- function(set, dimension_name_1, dimension_name_2, mode) 
          paste(colnames(nodes), collapse = ", "))
   }
 
+  # Ordered sets: recompute centroids with the self-connection weight the
+  # nodes were fit with. Sets fit before it was recorded used 1 (libena
+  # counted self-connections once from 2026-05 until rENA 0.4.16).
+  self_weight <- if (is.null(set$rotation$self.weight)) 1 else set$rotation$self.weight
   moved <- move_nodes_to_unit_circle_c(
     as.matrix(set$line.weights), nodes, idx[1] - 1L, idx[2] - 1L, mode,
-    is(set, "ena.ordered.set")
+    is(set, "ena.ordered.set"), self_weight
   )
 
   set$rotation$nodes <- replace_dimension_columns(

@@ -191,6 +191,9 @@ class ENAModel {
             centerVec:      opts.centerVec,
             codes:          opts.codes,
             adjacencyKey:   opts.adjacencyKey,
+            // ordered models: the node optimization's self-connection weight
+            // (= R's rotation$self.weight); null for unordered models
+            selfWeight:     opts.selfWeight ?? null,
         };
 
         // ── column class annotations (mirrors R's S3 class tags) ─────────────
@@ -448,10 +451,11 @@ function resolveRotationSet(rs, codes, nConnections, ordered) {
 
 // ── shared pipeline (post-accumulation) ──────────────────────────────────────
 
-// norm: { sphereNorm = true, centerAlignToOrigin = true } (= R's norm.by /
-// model(normalize =) and ena.make.set's center.align.to.origin). sphereNorm
-// applies to every model; centerAlignToOrigin to unordered models only --
-// ordered (ONA) models always centre as ona::model() does.
+// norm: { sphereNorm = true, centerAlignToOrigin = true, selfWeight = 2 } (=
+// R's norm.by / model(normalize =), ena.make.set's center.align.to.origin and
+// model(self_weight =)). sphereNorm applies to every model; centerAlignToOrigin
+// to unordered models only -- ordered (ONA) models always centre as
+// ona::model() does; selfWeight to ordered models' node optimization only.
 function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
                      metaData, rotMethod, groupA, groupB, dims, gParams,
                      rowConnectionCounts = null, ordered = false, rotationSet = null,
@@ -459,6 +463,7 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
     const connectionNames = connectionNamesFor(qe, codes, ordered);
     const useSphereNorm = norm.sphereNorm !== false;
     const alignToOrigin = ordered || norm.centerAlignToOrigin !== false;
+    const selfWeight = norm.selfWeight ?? 2;
 
     // Sphere norm → lineWeights (= R's set$line.weights). Without it, every
     // network is scaled by the largest network's length (fun_skip_sphere_norm).
@@ -484,7 +489,7 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
                                  centerVec, nUnits, nConnections, codes, unitLabels,
                                  metaData, dims, rowConnectionCounts, ordered,
                                  resolveRotationSet(rotationSet, codes, nConnections, ordered),
-                                 alignToOrigin);
+                                 alignToOrigin, selfWeight);
     }
 
     // Rotate
@@ -527,7 +532,7 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
     // Ordered (ONA) models use libqe's directed_node_positions, as
     // ona::model() does (via rENA's optimize()).
     const { nodes, centroids } = nodePositions(
-        qe, lineWeights, nUnits, nConnections, points, dims, ordered
+        qe, lineWeights, nUnits, nConnections, points, dims, ordered, selfWeight
     );
 
     // ONA: translate points and nodes so the points' mean is at the origin
@@ -584,12 +589,14 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
         centerVec,
         codes,
         adjacencyKey,
+        selfWeight:   ordered ? selfWeight : null,
     });
 }
 
 function runCustomRotation(qe, rawNetworks, lineWeights, ownCentered, ownCenterVec,
                            nUnits, nConnections, codes, unitLabels, metaData, dims,
-                           rowConnectionCounts, ordered, rs, alignToOrigin = true) {
+                           rowConnectionCounts, ordered, rs, alignToOrigin = true,
+                           selfWeight = 2) {
     let pointsForProjection = ownCentered;
     let centerVec = ownCenterVec;
     if (!ordered) {
@@ -626,7 +633,7 @@ function runCustomRotation(qe, rawNetworks, lineWeights, ownCentered, ownCenterV
     rs.nodes.forEach((row, c) => { for (let d = 0; d < dims; d++) nodes[c * dims + d] = Number(row[d]) || 0; });
     let centroids;
     if (ordered) {
-        centroids = nodePositions(qe, lineWeights, nUnits, nConnections, points, dims, true).centroids;
+        centroids = nodePositions(qe, lineWeights, nUnits, nConnections, points, dims, true, selfWeight).centroids;
     } else {
         const w = qe.node_positions(lineWeights, nUnits, nConnections, points, nUnits, dims, dims).weights;
         centroids = matmul(Float64Array.from(w.data), nUnits, w.cols, nodes, dims);
@@ -659,6 +666,7 @@ function runCustomRotation(qe, rawNetworks, lineWeights, ownCentered, ownCenterV
         centerVec,
         codes,
         adjacencyKey:         buildAdjacencyKey(codes, ordered),
+        selfWeight:   ordered ? selfWeight : null,
     });
 }
 
@@ -763,6 +771,14 @@ export default async function loadENA() {
          *                                           origin and out of the centring mean (= R's
          *                                           center.align.to.origin); false centres on
          *                                           every unit. Unordered only.
+         * @param {boolean}  [opts.misses=true] - Also accumulate missed co-occurrences
+         *                                           (missCounts, selfMissCounts).
+         * @param {number}   [opts.selfWeight=2] - Ordered only: weight of a self-connection
+         *                                           (ground i -> response i) in its code's node
+         *                                           weight: 2 = the node's row + column sum
+         *                                           (Zhiqiang Cai's 2021 rule); 1 = once
+         *                                           (= R's model(self_weight =)). Recorded as
+         *                                           rotation.selfWeight.
          *
          * @returns {ENAModel}
          */
@@ -788,6 +804,7 @@ export default async function loadENA() {
                 sphereNorm:          useSphereNorm       = true,
                 centerAlignToOrigin                       = true,
                 misses                                    = true,
+                selfWeight                                = 2,
             } = opts;
 
             if (!codes?.length)         throw new Error('opts.codes is required');
@@ -824,7 +841,7 @@ export default async function loadENA() {
             const model = runPipeline(qe, rawNetworks, nUnits, nConnections, codes,
                                unitLabels, metaData, rotMethod, groupA, groupB,
                                dims, gParams, rowConnectionCounts, ordered,
-                               rotationSet, { sphereNorm: useSphereNorm, centerAlignToOrigin });
+                               rotationSet, { sphereNorm: useSphereNorm, centerAlignToOrigin, selfWeight });
             // Kept alongside the model, not used by it (= R's
             // self.connection.counts, miss.counts, self.miss.counts).
             model.selfConnectionCounts = selfNetworks;     // nUnits × nCodes
@@ -1302,10 +1319,13 @@ export default async function loadENA() {
         moveNodesToUnitCircle(model, opts = {}) {
             const { dims: plane = [0, 1], mode = 'equal' } = opts;
             const { nCodes, ordered } = unitCircleArgs(model, plane, mode);
+            // The fit's self-connection weight; models built before it was
+            // recorded used 1 (libena counted self-connections once then).
+            const selfWeight = model.rotation.selfWeight ?? 1;
             const r = qe.move_nodes_to_unit_circle(
                 model.lineWeights, model.nUnits, model.nConnections,
                 model.rotation.nodes, nCodes, model.dims,
-                plane[0], plane[1], mode, ordered
+                plane[0], plane[1], mode, ordered, selfWeight
             );
             const moved = Object.assign(Object.create(Object.getPrototypeOf(model)), model);
             moved.rotation = { ...model.rotation, nodes: new Float64Array(r.nodes.data) };

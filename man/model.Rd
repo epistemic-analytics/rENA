@@ -15,7 +15,8 @@ model(
   rotate_fun = ena.rotate.by.generalized,
   rotate_params = list(),
   exclude_zero_networks = is(data, "ena.ordered.set"),
-  center_to_origin = FALSE
+  center_to_origin = FALSE,
+  self_weight = 2
 )
 }
 \arguments{
@@ -51,6 +52,11 @@ automatically for ordered sets (`accumulate(ordered = TRUE)`), `FALSE` otherwise
 points is subtracted from both the points and the node positions after
 optimization, placing the centroid of the space at the origin. This is the
 default behavior for ONA (Ordered Network Analysis). Defaults to `FALSE`.}
+
+\item{self_weight}{Ordered sets: weight of a self-connection in its code's
+node weight, passed to `optimize_with` when it takes `self_weight`. 2
+(default) = the node's row plus column sum, so a self-connection counts
+twice (Zhiqiang Cai's 2021 rule); 1 counts it once.}
 }
 \value{
 An `ena.set` object with a complete ENA model, including projected points and node positions.

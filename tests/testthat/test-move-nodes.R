@@ -9,9 +9,9 @@ rs_codes <- c("Data", "Technical.Constraints", "Performance.Parameters",
 rs_units <- c("Condition", "UserName")
 rs_horizon <- c("Condition", "GroupName")
 
-rs_set <- function(...) {
+rs_set <- function(..., self_weight = 2) {
   suppressWarnings(
-    rENA::RS.data |> accumulate(rs_units, rs_codes, rs_horizon, ...) |> model()
+    rENA::RS.data |> accumulate(rs_units, rs_codes, rs_horizon, ...) |> model(self_weight = self_weight)
   )
 }
 
@@ -40,14 +40,20 @@ fit_weights <- function(set) {
 # Directed centroids computed in R from the connection names: each directed
 # connection's weight to both of its codes (a self-connection's once), rows
 # normalised to sum to 1.
-directed_centroids <- function(set, nodes) {
+# Directed node weights: each connection to both of its codes; a
+# self-connection (a & a) `self_weight` times (the set's, 2 = row + column).
+directed_centroids <- function(set, nodes, self_weight = set$rotation$self.weight) {
   lw <- as.matrix(set$line.weights)
   codes <- set$rotation$codes
   w <- matrix(0, nrow(lw), length(codes))
   for (cn in colnames(lw)) {
     ab <- match(strsplit(cn, " & ", fixed = TRUE)[[1]], codes)
-    w[, ab[1]] <- w[, ab[1]] + lw[, cn]
-    if (ab[2] != ab[1]) w[, ab[2]] <- w[, ab[2]] + lw[, cn]
+    if (ab[2] != ab[1]) {
+      w[, ab[1]] <- w[, ab[1]] + lw[, cn]
+      w[, ab[2]] <- w[, ab[2]] + lw[, cn]
+    } else {
+      w[, ab[1]] <- w[, ab[1]] + self_weight * lw[, cn]
+    }
   }
   rs <- rowSums(w)
   w[rs != 0, ] <- w[rs != 0, ] / rs[rs != 0]
@@ -212,6 +218,23 @@ test_that("ordered set: nodes match the R implementation, centroids use directed
   moved <- move_nodes_to_unit_circle_with_equal_space(set, dims[3], dims[2])
   ref <- ref_move_nodes_to_unit_circle_with_equal_space(set, dims[3], dims[2])
   expect_equal(as.matrix(moved$rotation$nodes), as.matrix(ref$rotation$nodes), tolerance = 1e-12)
+})
+
+test_that("ordered set: self_weight is recorded and drives the centroids", {
+  set2 <- rs_set(ordered = TRUE, default_window = 4)
+  expect_equal(set2$rotation$self.weight, 2)
+  set1 <- rs_set(ordered = TRUE, default_window = 4, self_weight = 1)
+  expect_equal(set1$rotation$self.weight, 1)
+  # same points, different nodes (self-connections weigh in differently)
+  expect_equal(as.matrix(set1$points), as.matrix(set2$points))
+  expect_gt(max(abs(as.matrix(set1$rotation$nodes) - as.matrix(set2$rotation$nodes))), 0.01)
+  for (s in list(set1, set2)) {
+    expect_equal(directed_centroids(s, as.matrix(s$rotation$nodes)), as.matrix(s$model$centroids),
+                 tolerance = 1e-12, check.attributes = FALSE)
+    moved <- move_nodes_to_unit_circle_with_equal_space(s)
+    expect_equal(as.matrix(moved$model$centroids), directed_centroids(s, as.matrix(moved$rotation$nodes)),
+                 tolerance = 1e-12, check.attributes = FALSE)
+  }
 })
 
 test_that("ordered set with symmetric networks matches the R implementation", {

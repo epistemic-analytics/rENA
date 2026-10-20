@@ -77,8 +77,10 @@ function centroidsOf(model, nodes) {
             for (let j = 0; j < n; j++)
                 for (let i = 0; i < n; i++, k++) {
                     const v = model.lineWeights[u * model.nConnections + k];
-                    w[i] += v;
-                    if (i !== j) w[j] += v;
+                    // each connection to both codes; a self-connection
+                    // selfWeight times (the fit's, 2 = row + column sum)
+                    if (i !== j) { w[i] += v; w[j] += v; }
+                    else w[i] += (model.rotation.selfWeight ?? 2) * v;
                 }
         } else {
             for (let j = 1; j < n; j++)
@@ -110,7 +112,8 @@ describe('libena move_nodes_to_unit_circle matches R', () => {
             const r  = ena.qe.move_nodes_to_unit_circle(
                 lw, m.line_weights.length, m.line_weights[0].length,
                 nodes, m.nodes.length, m.nodes[0].length,
-                c.dims[0], c.dims[1], c.mode, m.directed);
+                c.dims[0], c.dims[1], c.mode, m.directed,
+                /*self_weight=*/2);   // the fixture's ordered fit uses the default
             expect([r.nodes.rows, r.nodes.cols]).toEqual([m.nodes.length, m.nodes[0].length]);
             expectClose(r.nodes.data, flat(c.nodes));
             expectClose(r.centroids.data, flat(c.centroids));
@@ -139,7 +142,7 @@ describe('ena.moveNodesToUnitCircle', () => {
                 const n = fit.rotation.codes.length, d = fit.dims;
                 const r = ena.qe.move_nodes_to_unit_circle(
                     fit.lineWeights, fit.nUnits, fit.nConnections,
-                    fit.rotation.nodes, n, d, 2, 1, mode, ordered);
+                    fit.rotation.nodes, n, d, 2, 1, mode, ordered, fit.rotation.selfWeight ?? 2);
                 expect(moved.rotation.nodes).toEqual(new Float64Array(r.nodes.data));
                 expect(moved.model.centroids).toEqual(new Float64Array(r.centroids.data));
 

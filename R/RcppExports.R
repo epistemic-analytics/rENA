@@ -9,16 +9,16 @@ node_positions <- function(adj_mats, t, num_dims) {
     .Call(`_rENA_node_positions`, adj_mats, t, num_dims)
 }
 
-directed_node_positions_c <- function(line_weights, points, num_dims) {
-    .Call(`_rENA_directed_node_positions_c`, line_weights, points, num_dims)
+directed_node_positions_c <- function(line_weights, points, num_dims, self_weight = 2.0) {
+    .Call(`_rENA_directed_node_positions_c`, line_weights, points, num_dims, self_weight)
 }
 
-directed_node_positions_combine_pairs <- function(line_weights, points, num_dims) {
-    .Call(`_rENA_directed_node_positions_combine_pairs`, line_weights, points, num_dims)
+directed_node_positions_combine_pairs <- function(line_weights, points, num_dims, self_weight = 2.0) {
+    .Call(`_rENA_directed_node_positions_combine_pairs`, line_weights, points, num_dims, self_weight)
 }
 
-move_nodes_to_unit_circle_c <- function(line_weights, nodes, dim_x, dim_y, mode, directed) {
-    .Call(`_rENA_move_nodes_to_unit_circle_c`, line_weights, nodes, dim_x, dim_y, mode, directed)
+move_nodes_to_unit_circle_c <- function(line_weights, nodes, dim_x, dim_y, mode, directed, self_weight = 2.0) {
+    .Call(`_rENA_move_nodes_to_unit_circle_c`, line_weights, nodes, dim_x, dim_y, mode, directed, self_weight)
 }
 
 ena_svd <- function(points) {

@@ -30,13 +30,19 @@ fit <- function(ordered) {
   )
 }
 
-directed_centroids <- function(set, nodes) {
+# Directed node weights: each connection to both of its codes, a
+# self-connection (a & a) `self_weight` times -- the fit's (2 = row + column).
+directed_centroids <- function(set, nodes, self_weight = set$rotation$self.weight) {
   lw <- as.matrix(set$line.weights)
   w <- matrix(0, nrow(lw), length(codes))
   for (cn in colnames(lw)) {
     ab <- match(strsplit(cn, " & ", fixed = TRUE)[[1]], codes)
-    w[, ab[1]] <- w[, ab[1]] + lw[, cn]
-    if (ab[2] != ab[1]) w[, ab[2]] <- w[, ab[2]] + lw[, cn]
+    if (ab[2] != ab[1]) {
+      w[, ab[1]] <- w[, ab[1]] + lw[, cn]
+      w[, ab[2]] <- w[, ab[2]] + lw[, cn]
+    } else {
+      w[, ab[1]] <- w[, ab[1]] + self_weight * lw[, cn]
+    }
   }
   rs <- rowSums(w)
   w[rs != 0, ] <- w[rs != 0, ] / rs[rs != 0]

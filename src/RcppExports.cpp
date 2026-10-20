@@ -38,34 +38,36 @@ BEGIN_RCPP
 END_RCPP
 }
 // directed_node_positions_c
-List directed_node_positions_c(arma::mat line_weights, arma::mat points, int num_dims);
-RcppExport SEXP _rENA_directed_node_positions_c(SEXP line_weightsSEXP, SEXP pointsSEXP, SEXP num_dimsSEXP) {
+List directed_node_positions_c(arma::mat line_weights, arma::mat points, int num_dims, double self_weight);
+RcppExport SEXP _rENA_directed_node_positions_c(SEXP line_weightsSEXP, SEXP pointsSEXP, SEXP num_dimsSEXP, SEXP self_weightSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type line_weights(line_weightsSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type points(pointsSEXP);
     Rcpp::traits::input_parameter< int >::type num_dims(num_dimsSEXP);
-    rcpp_result_gen = Rcpp::wrap(directed_node_positions_c(line_weights, points, num_dims));
+    Rcpp::traits::input_parameter< double >::type self_weight(self_weightSEXP);
+    rcpp_result_gen = Rcpp::wrap(directed_node_positions_c(line_weights, points, num_dims, self_weight));
     return rcpp_result_gen;
 END_RCPP
 }
 // directed_node_positions_combine_pairs
-List directed_node_positions_combine_pairs(arma::mat line_weights, arma::mat points, int num_dims);
-RcppExport SEXP _rENA_directed_node_positions_combine_pairs(SEXP line_weightsSEXP, SEXP pointsSEXP, SEXP num_dimsSEXP) {
+List directed_node_positions_combine_pairs(arma::mat line_weights, arma::mat points, int num_dims, double self_weight);
+RcppExport SEXP _rENA_directed_node_positions_combine_pairs(SEXP line_weightsSEXP, SEXP pointsSEXP, SEXP num_dimsSEXP, SEXP self_weightSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type line_weights(line_weightsSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type points(pointsSEXP);
     Rcpp::traits::input_parameter< int >::type num_dims(num_dimsSEXP);
-    rcpp_result_gen = Rcpp::wrap(directed_node_positions_combine_pairs(line_weights, points, num_dims));
+    Rcpp::traits::input_parameter< double >::type self_weight(self_weightSEXP);
+    rcpp_result_gen = Rcpp::wrap(directed_node_positions_combine_pairs(line_weights, points, num_dims, self_weight));
     return rcpp_result_gen;
 END_RCPP
 }
 // move_nodes_to_unit_circle_c
-List move_nodes_to_unit_circle_c(arma::mat line_weights, arma::mat nodes, int dim_x, int dim_y, std::string mode, bool directed);
-RcppExport SEXP _rENA_move_nodes_to_unit_circle_c(SEXP line_weightsSEXP, SEXP nodesSEXP, SEXP dim_xSEXP, SEXP dim_ySEXP, SEXP modeSEXP, SEXP directedSEXP) {
+List move_nodes_to_unit_circle_c(arma::mat line_weights, arma::mat nodes, int dim_x, int dim_y, std::string mode, bool directed, double self_weight);
+RcppExport SEXP _rENA_move_nodes_to_unit_circle_c(SEXP line_weightsSEXP, SEXP nodesSEXP, SEXP dim_xSEXP, SEXP dim_ySEXP, SEXP modeSEXP, SEXP directedSEXP, SEXP self_weightSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -75,7 +77,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type dim_y(dim_ySEXP);
     Rcpp::traits::input_parameter< std::string >::type mode(modeSEXP);
     Rcpp::traits::input_parameter< bool >::type directed(directedSEXP);
-    rcpp_result_gen = Rcpp::wrap(move_nodes_to_unit_circle_c(line_weights, nodes, dim_x, dim_y, mode, directed));
+    Rcpp::traits::input_parameter< double >::type self_weight(self_weightSEXP);
+    rcpp_result_gen = Rcpp::wrap(move_nodes_to_unit_circle_c(line_weights, nodes, dim_x, dim_y, mode, directed, self_weight));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -183,9 +186,9 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_rENA_ena_correlation_c", (DL_FUNC) &_rENA_ena_correlation_c, 3},
     {"_rENA_node_positions", (DL_FUNC) &_rENA_node_positions, 3},
-    {"_rENA_directed_node_positions_c", (DL_FUNC) &_rENA_directed_node_positions_c, 3},
-    {"_rENA_directed_node_positions_combine_pairs", (DL_FUNC) &_rENA_directed_node_positions_combine_pairs, 3},
-    {"_rENA_move_nodes_to_unit_circle_c", (DL_FUNC) &_rENA_move_nodes_to_unit_circle_c, 6},
+    {"_rENA_directed_node_positions_c", (DL_FUNC) &_rENA_directed_node_positions_c, 4},
+    {"_rENA_directed_node_positions_combine_pairs", (DL_FUNC) &_rENA_directed_node_positions_combine_pairs, 4},
+    {"_rENA_move_nodes_to_unit_circle_c", (DL_FUNC) &_rENA_move_nodes_to_unit_circle_c, 7},
     {"_rENA_ena_svd", (DL_FUNC) &_rENA_ena_svd, 1},
     {"_rENA_deflate", (DL_FUNC) &_rENA_deflate, 2},
     {"_rENA_orthogonal_svd", (DL_FUNC) &_rENA_orthogonal_svd, 3},

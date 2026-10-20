@@ -73,50 +73,53 @@ static val node_positions(const val& adj_data, int adj_rows, int adj_cols,
         num_dims));
 }
 
-// directed_node_positions — same signature as node_positions
+// directed_node_positions — node_positions' arguments plus self_weight: a
+// self-connection's weight in its code's node weight (2 = row + column sum,
+// libena's default; 1 = once)
 static val directed_node_positions(const val& lw_data, int lw_rows, int lw_cols,
                                     const val& pt_data,  int pt_rows, int pt_cols,
-                                    int num_dims) {
+                                    int num_dims, double self_weight) {
     arma::mat pt = js_to_mat(pt_data, pt_rows, pt_cols);
     if (num_dims <= 0) num_dims = static_cast<int>(pt.n_cols);
     return to_js(qe::directed_node_positions(
         js_to_mat(lw_data, lw_rows, lw_cols),
         pt,
-        num_dims));
+        num_dims, /*combine_pairs=*/false, self_weight));
 }
 
 // directed_node_positions_combine_pairs — ground+response rows combined before solve
 static val directed_node_positions_combine_pairs(
         const val& lw_data, int lw_rows, int lw_cols,
         const val& pt_data, int pt_rows, int pt_cols,
-        int num_dims) {
+        int num_dims, double self_weight) {
     arma::mat pt = js_to_mat(pt_data, pt_rows, pt_cols);
     if (num_dims <= 0) num_dims = static_cast<int>(pt.n_cols);
     return to_js(qe::directed_node_positions(
         js_to_mat(lw_data, lw_rows, lw_cols),
         pt,
-        num_dims, /*combine_pairs=*/true));
+        num_dims, /*combine_pairs=*/true, self_weight));
 }
 
 // move_nodes_to_unit_circle(lw_data, lw_rows, lw_cols,
 //                           nodes_data, n_rows, n_cols,
-//                           dim_x, dim_y, mode, directed)
+//                           dim_x, dim_y, mode, directed, self_weight)
 // → { nodes, centroids }  (each a matrix object)
 //
 // Post-fit unit-circle node move with the centroids recomputed for the moved
 // nodes.  dim_x / dim_y: 0-based columns of nodes; mode: 'equal' | 'radial';
-// directed: ordered networks (lw_cols = n_rows²).  Exceptions are not caught
+// directed: ordered networks (lw_cols = n_rows²); self_weight: the fit's
+// directed self-connection weight.  Exceptions are not caught
 // in this build, so src/index.js validates the arguments before calling.
 static val move_nodes_to_unit_circle(const val& lw_data, int lw_rows, int lw_cols,
                                      const val& nodes_data, int n_rows, int n_cols,
                                      int dim_x, int dim_y, const std::string& mode,
-                                     bool directed) {
+                                     bool directed, double self_weight) {
     if (dim_x < 0 || dim_y < 0)
         throw std::invalid_argument("move_nodes_to_unit_circle: dimension indices must be >= 0");
     return to_js(qe::move_nodes_to_unit_circle(
         js_to_mat(lw_data, lw_rows, lw_cols),
         js_to_mat(nodes_data, n_rows, n_cols),
-        dim_x, dim_y, qe::unit_circle_mode(mode), directed));
+        dim_x, dim_y, qe::unit_circle_mode(mode), directed, self_weight));
 }
 
 // ── Rotation ──────────────────────────────────────────────────────────────────

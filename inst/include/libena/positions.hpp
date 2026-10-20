@@ -147,18 +147,33 @@ inline arma::mat node_weights(const arma::mat& line_weights) {
     return weights;
 }
 
+/// Default @p self_weight of the directed node weights: a node's weight is
+/// the sum of its column plus the sum of its row of the unit's adjacency
+/// matrix (in + out), so a self-connection, in both, counts twice
+/// (directedENA, Zhiqiang Cai, 2021-10-29).
+constexpr double DIRECTED_SELF_WEIGHT = 2.0;
+
 /**
  * @brief Per-unit node weights for directed (ordered) ENA.
  *
- * Every directed connection's weight goes in full to both of its codes (a
- * self-connection's to its code once); each row is then L1-normalised as in
+ * A node's weight is the sum of its column plus the sum of its row of the
+ * unit's adjacency matrix: every directed connection's weight goes in full to
+ * both of its codes, and a self-connection (the diagonal, ground i × response
+ * i) goes to its code @p self_weight times -- twice by default, as it is in
+ * both the node's row and its column.  Each row is then L1-normalised as in
  * @ref node_weights.  This is the weighting @ref directed_node_positions
  * solves with, and the weighting its centroids use.
  *
  * @param[in] line_weights  Directed adjacency vectors, n_units × (n_codes²).
+ * @param[in] self_weight   Multiplier for a self-connection's contribution to
+ *                          its code: 2 (default, row + column sum) or e.g. 1
+ *                          (counted once). Must be finite and >= 0.
  * @returns n_units × n_codes weights.
  */
-inline arma::mat directed_node_weights(const arma::mat& line_weights) {
+inline arma::mat directed_node_weights(const arma::mat& line_weights,
+                                       double self_weight = DIRECTED_SELF_WEIGHT) {
+    if (!std::isfinite(self_weight) || self_weight < 0)
+        throw std::invalid_argument("directed_node_weights: self_weight must be finite and >= 0");
     int num_nodes = static_cast<int>(
         std::ceil(std::sqrt(static_cast<double>(line_weights.n_cols)))
     );
@@ -170,8 +185,12 @@ inline arma::mat directed_node_weights(const arma::mat& line_weights) {
         int z = 0;
         for (int x = 0; x < num_nodes; x++)
             for (int y = 0; y < num_nodes; y++) {
-                nw(k, x) += curr[z];
-                if (x != y) nw(k, y) += curr[z];
+                if (x != y) {
+                    nw(k, x) += curr[z];
+                    nw(k, y) += curr[z];
+                } else {
+                    nw(k, x) += self_weight * curr[z];
+                }
                 z++;
             }
     }
@@ -263,6 +282,8 @@ inline NodePositions node_positions(arma::mat adj_mats, arma::mat t,
  * @param[in] num_dims      Number of dimensions to solve for.
  * @param[in] combine_pairs If `true`, sum adjacent row pairs before solving
  *                          (ground + response model).  Default `false`.
+ * @param[in] self_weight   Self-connection multiplier (see
+ *                          @ref directed_node_weights).  Default 2.
  * @returns A @ref NodePositions struct containing `nodes`, `centroids`,
  *          `weights`, and `points`.
  *
@@ -277,10 +298,11 @@ inline NodePositions node_positions(arma::mat adj_mats, arma::mat t,
  */
 inline NodePositions directed_node_positions(arma::mat line_weights,
                                               arma::mat points, int num_dims,
-                                              bool combine_pairs = false) {
+                                              bool combine_pairs = false,
+                                              double self_weight = DIRECTED_SELF_WEIGHT) {
     if (!line_weights.is_finite() || !points.is_finite())
         throw std::invalid_argument("directed_node_positions: input matrices must not contain NaN or Inf");
-    arma::mat nw = directed_node_weights(line_weights);
+    arma::mat nw = directed_node_weights(line_weights, self_weight);
     int num_nodes = nw.n_cols;
     int row_count = line_weights.n_rows;
 
@@ -470,13 +492,16 @@ inline arma::mat unit_circle_nodes(const arma::mat& nodes, arma::uword dim_x,
  *                          @p directed.
  * @param[in] nodes         Node positions, n_codes × n_dims.
  * @param[in] directed      Ordered (directed) networks.  Default `false`.
+ * @param[in] self_weight   Directed self-connection multiplier (see
+ *                          @ref directed_node_weights); use the fit's.  Default 2.
  * @returns n_units × n_dims centroids.
  *
  * @throws std::invalid_argument if the line weights' column count does not
  *         match the number of nodes, or either input contains NaN or Inf.
  */
 inline arma::mat node_centroids(const arma::mat& line_weights,
-                                const arma::mat& nodes, bool directed = false) {
+                                const arma::mat& nodes, bool directed = false,
+                                double self_weight = DIRECTED_SELF_WEIGHT) {
     const arma::uword n = nodes.n_rows;
     if (!directed && n < 2)
         throw std::invalid_argument("node_centroids: undirected networks need at least 2 codes");
@@ -489,7 +514,7 @@ inline arma::mat node_centroids(const arma::mat& line_weights,
     if (!line_weights.is_finite() || !nodes.is_finite())
         throw std::invalid_argument("node_centroids: input matrices must not contain NaN or Inf");
 
-    const arma::mat weights = directed ? directed_node_weights(line_weights)
+    const arma::mat weights = directed ? directed_node_weights(line_weights, self_weight)
                                        : node_weights(line_weights);
     return weights * nodes;
 }
@@ -508,6 +533,7 @@ inline arma::mat node_centroids(const arma::mat& line_weights,
  * @param[in] dim_y         0-based column of the plane's y axis.
  * @param[in] mode          Equal (default) or Radial.
  * @param[in] directed      Ordered (directed) networks.  Default `false`.
+ * @param[in] self_weight   Directed self-connection multiplier, the fit's.  Default 2.
  * @returns A @ref MovedNodes with the moved nodes and recomputed centroids.
  *
  * @throws std::invalid_argument as @ref unit_circle_nodes and
@@ -517,10 +543,11 @@ inline MovedNodes move_nodes_to_unit_circle(const arma::mat& line_weights,
                                             const arma::mat& nodes,
                                             arma::uword dim_x, arma::uword dim_y,
                                             UnitCircleMode mode = UnitCircleMode::Equal,
-                                            bool directed = false) {
+                                            bool directed = false,
+                                            double self_weight = DIRECTED_SELF_WEIGHT) {
     MovedNodes r;
     r.nodes     = unit_circle_nodes(nodes, dim_x, dim_y, mode);
-    r.centroids = node_centroids(line_weights, r.nodes, directed);
+    r.centroids = node_centroids(line_weights, r.nodes, directed, self_weight);
     return r;
 }
 

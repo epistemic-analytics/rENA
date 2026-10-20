@@ -133,6 +133,10 @@ accumulate <- function(
 #'   points is subtracted from both the points and the node positions after
 #'   optimization, placing the centroid of the space at the origin. This is the
 #'   default behavior for ONA (Ordered Network Analysis). Defaults to `FALSE`.
+#' @param self_weight Ordered sets: weight of a self-connection in its code's
+#'   node weight, passed to `optimize_with` when it takes `self_weight`. 2
+#'   (default) = the node's row plus column sum, so a self-connection counts
+#'   twice (Zhiqiang Cai's 2021 rule); 1 counts it once.
 #'
 #' @return An `ena.set` object with a complete ENA model, including projected points and node positions.
 #' @export
@@ -160,7 +164,9 @@ model <- function(
   rotate_params = list(),
   # Centering options
   exclude_zero_networks = is(data, "ena.ordered.set"),
-  center_to_origin = FALSE
+  center_to_origin = FALSE,
+  # Ordered node optimization: weight of a self-connection in its node's weight
+  self_weight = 2
 ) {
     x <- normalize(data)
     x <- center_with(x, exclude_zero_networks = exclude_zero_networks)
@@ -180,7 +186,11 @@ model <- function(
     x <- project_with(x)
 
     if (!is.null(optimize_with) && !isFALSE(optimize_with)) {
-      x <- optimize_with(x)
+      x <- if ("self_weight" %in% names(formals(optimize_with))) {
+        optimize_with(x, self_weight = self_weight)
+      } else {
+        optimize_with(x)
+      }
     }
 
     if (isTRUE(center_to_origin) && !is.null(x$points)) {
@@ -660,6 +670,7 @@ project <- function(x, rotation = NULL, add.meta = TRUE) {
 #'
 #' @param x An \code{ena.set} object for which to optimize node and centroid positions.
 #' @param weights Optional. A numeric matrix of connection weights. If provided, the function will use this matrix instead of the connection counts from the \code{ena.set}.
+#' @param self_weight Ordered sets only: weight of a self-connection (the diagonal: ground i -> response i) in its code's node weight. 2 (default) counts it in both the node's row and column sums, the in + out rule of Zhiqiang Cai's 2021 fix; 1 counts it once. Recorded as \code{x$rotation$self.weight}.
 #'
 #' @return The input \code{ena.set} object with updated node and centroid positions.
 #' @export
@@ -680,7 +691,7 @@ project <- function(x, rotation = NULL, add.meta = TRUE) {
 #'   rotate() |>
 #'   project() |>
 #'   optimize()
-optimize <- function(x, weights = NULL) {
+optimize <- function(x, weights = NULL, self_weight = 2) {
   if(!is(x, "ena.set")) {
     if(is.null(weights)) {
       stop("When providing a matrix, weights must also be provided")
@@ -699,7 +710,10 @@ optimize <- function(x, weights = NULL) {
   points = as.matrix(x$points);
   weights = as.matrix(x$line.weights);
   if(is(x, "ena.ordered.set")) {
-    positions <- directed_node_positions(weights, points, ncol(points));
+    positions <- directed_node_positions(weights, points, ncol(points), self_weight = self_weight);
+    # Recorded so post-fit centroid recomputation (move_nodes_to_unit_circle)
+    # uses the weighting the nodes were fit with.
+    x$rotation$self.weight <- self_weight;
     x$rotation$nodes <- as_nodes_matrix(positions$nodes, list("code" = x$rotation$codes), cols = colnames(as.matrix(x$points)), cls = "ena.nodes")
   }
   else {

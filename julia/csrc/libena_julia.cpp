@@ -56,17 +56,17 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
     mod.method("directed_node_positions",
         [](jlcxx::ArrayRef<double> lw, int32_t lr, int32_t lc,
            jlcxx::ArrayRef<double> pt, int32_t pr, int32_t pc,
-           int32_t num_dims) -> NodePositionsTuple {
+           int32_t num_dims, double self_weight) -> NodePositionsTuple {
             return to_tuple(qe::directed_node_positions(
-                view_mat(lw, lr, lc), view_mat(pt, pr, pc), num_dims));
+                view_mat(lw, lr, lc), view_mat(pt, pr, pc), num_dims, false, self_weight));
         });
 
     mod.method("directed_node_positions_combine_pairs",
         [](jlcxx::ArrayRef<double> lw, int32_t lr, int32_t lc,
            jlcxx::ArrayRef<double> pt, int32_t pr, int32_t pc,
-           int32_t num_dims) -> NodePositionsTuple {
+           int32_t num_dims, double self_weight) -> NodePositionsTuple {
             return to_tuple(qe::directed_node_positions(
-                view_mat(lw, lr, lc), view_mat(pt, pr, pc), num_dims, true));
+                view_mat(lw, lr, lc), view_mat(pt, pr, pc), num_dims, true, self_weight));
         });
 
     // Post-fit unit-circle node move → (nodes, r, c, centroids, r, c).
@@ -75,13 +75,13 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
         [](jlcxx::ArrayRef<double> lw,    int32_t lr, int32_t lc,
            jlcxx::ArrayRef<double> nodes, int32_t nr, int32_t nc,
            int32_t dim_x, int32_t dim_y, const std::string& mode,
-           bool directed) -> MovedNodesTuple {
+           bool directed, double self_weight) -> MovedNodesTuple {
             if (dim_x < 0 || dim_y < 0)
                 throw std::invalid_argument(
                     "move_nodes_to_unit_circle: dimension indices must be >= 0");
             return to_tuple(qe::move_nodes_to_unit_circle(
                 view_mat(lw, lr, lc), view_mat(nodes, nr, nc),
-                dim_x, dim_y, qe::unit_circle_mode(mode), directed));
+                dim_x, dim_y, qe::unit_circle_mode(mode), directed, self_weight));
         });
 
     // ── Rotation ──────────────────────────────────────────────────────────────

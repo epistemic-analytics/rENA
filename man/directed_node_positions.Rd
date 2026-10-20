@@ -4,7 +4,7 @@
 \alias{directed_node_positions}
 \title{Directed ENA node positions}
 \usage{
-directed_node_positions(line_weights, points, numDims)
+directed_node_positions(line_weights, points, numDims, self_weight = 2)
 }
 \arguments{
 \item{line_weights}{Numeric matrix (units x connections)}
@@ -12,6 +12,8 @@ directed_node_positions(line_weights, points, numDims)
 \item{points}{Numeric matrix of rotated points (units x dims)}
 
 \item{numDims}{Number of dimensions}
+
+\item{self_weight}{Weight of a self-connection (the diagonal: ground i -> response i) in its code's node weight: 2 (default) counts it in both the node's row and column sums (Zhiqiang Cai's 2021 in + out rule); 1 counts it once.}
 }
 \value{
 List with nodes, centroids, weights, points

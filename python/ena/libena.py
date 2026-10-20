@@ -110,21 +110,23 @@ def node_positions(adj_mats, t, num_dims) -> NodePositions:
 
 
 @_doc
-def directed_node_positions(line_weights, points, num_dims) -> NodePositions:
-    return NodePositions(**_libena.directed_node_positions(line_weights, points, num_dims))
+def directed_node_positions(line_weights, points, num_dims, self_weight=2.0) -> NodePositions:
+    return NodePositions(**_libena.directed_node_positions(
+        line_weights, points, num_dims, self_weight))
 
 
 @_doc
-def directed_node_positions_combine_pairs(line_weights, points, num_dims) -> NodePositions:
+def directed_node_positions_combine_pairs(line_weights, points, num_dims,
+                                          self_weight=2.0) -> NodePositions:
     return NodePositions(**_libena.directed_node_positions_combine_pairs(
-        line_weights, points, num_dims))
+        line_weights, points, num_dims, self_weight))
 
 
 @_doc
 def move_nodes_to_unit_circle(line_weights, nodes, dim_x=0, dim_y=1, mode="equal",
-                              directed=False) -> MovedNodes:
+                              directed=False, self_weight=2.0) -> MovedNodes:
     return MovedNodes(**_libena.move_nodes_to_unit_circle(
-        line_weights, nodes, dim_x, dim_y, mode, directed))
+        line_weights, nodes, dim_x, dim_y, mode, directed, self_weight))
 
 
 # ── rotation ─────────────────────────────────────────────────────────────────

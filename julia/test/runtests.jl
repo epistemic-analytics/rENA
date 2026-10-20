@@ -26,6 +26,21 @@ end
     @test all(isfinite, r.nodes)
 end
 
+@testset "directed_node_positions self_weight" begin
+    # 2 codes, directed columns [a&a, b&a, a&b, b&b]; unit 1: a&a = 1, a&b = 2
+    lw  = [1.0 0.0 2.0 0.0; 0.0 1.0 0.0 3.0; 2.0 2.0 1.0 0.0]
+    pts = [0.1 0.2; 0.3 0.4; 0.5 0.6]
+    two = directed_node_positions(lw, pts, 2)                    # default: row + column sum
+    @test two.weights[1, :] ≈ [4 / 6, 2 / 6]
+    one = directed_node_positions(lw, pts, 2; self_weight = 1)   # counted once
+    @test one.weights[1, :] ≈ [3 / 5, 2 / 5]
+    for sw in (1.0, 2.0)
+        fit = directed_node_positions(lw, pts, 2; self_weight = sw)
+        m = move_nodes_to_unit_circle(lw, fit.nodes; directed = true, self_weight = sw)
+        @test m.centroids ≈ fit.weights * m.nodes
+    end
+end
+
 @testset "directed_node_positions rejects NaN" begin
     lw  = [0.1 0.2 NaN 0.4; 0.5 0.6 0.7 0.8; 0.9 0.1 0.2 0.3; 0.4 0.5 0.6 0.7; 0.8 0.9 0.1 0.2]
     pts = rand(5, 2)

@@ -95,3 +95,27 @@ class TestDirectedNodePositionsCombinePairs:
         result = modeling.directed_node_positions_combine_pairs(lw, pts, 2)
         # row pairing halves centroids
         assert result.centroids.shape[0] == n
+
+
+class TestDirectedSelfWeight:
+    """self_weight: a self-connection's weight in its code's node weight
+    (2 = row + column sum, the default; 1 = once)."""
+
+    # 2 codes, directed columns [a&a, b&a, a&b, b&b]; one unit with a&a = 1, a&b = 2
+    LW = np.array([[1.0, 0.0, 2.0, 0.0], [0.0, 1.0, 0.0, 3.0], [2.0, 2.0, 1.0, 0.0]])
+    PTS = np.array([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]])
+
+    def test_default_is_row_plus_column(self):
+        r = modeling.directed_node_positions(self.LW, self.PTS, 2)
+        np.testing.assert_allclose(r.weights[0], [4 / 6, 2 / 6])
+        np.testing.assert_allclose(r.weights, modeling.directed_node_positions(self.LW, self.PTS, 2, 2.0).weights)
+
+    def test_once(self):
+        r = modeling.directed_node_positions(self.LW, self.PTS, 2, self_weight=1.0)
+        np.testing.assert_allclose(r.weights[0], [3 / 5, 2 / 5])
+
+    def test_moved_centroids_follow_self_weight(self):
+        for sw in (1.0, 2.0):
+            fit = modeling.directed_node_positions(self.LW, self.PTS, 2, self_weight=sw)
+            m = modeling.move_nodes_to_unit_circle(self.LW, fit.nodes, directed=True, self_weight=sw)
+            np.testing.assert_allclose(m.centroids, fit.weights @ m.nodes)

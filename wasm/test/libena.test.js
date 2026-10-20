@@ -195,9 +195,15 @@ describe('libena module (libena + libtma) vs libqe-wasm', () => {
         means_rotation:     m => m.means_rotation(pts, 4, 4,
                                     [{ a: new Int32Array([0, 1]), b: new Int32Array([2, 3]) }]),
         node_positions:     m => m.node_positions(adj, 3, 3, t, 3, 2, 2),
-        directed_node_positions: m => m.directed_node_positions(lw, 3, 4, t, 3, 2, 2),
-        directed_node_positions_combine_pairs:
-                            m => m.directed_node_positions_combine_pairs(lw.subarray(0, 8), 2, 4,
+        // libena takes self_weight (default 2 since rENA 0.4.16); libqe-wasm
+        // counted self-connections once, so compare libena at self_weight 1.
+        directed_node_positions: (m, own) => own
+                            ? m.directed_node_positions(lw, 3, 4, t, 3, 2, 2, 1)
+                            : m.directed_node_positions(lw, 3, 4, t, 3, 2, 2),
+        directed_node_positions_combine_pairs: (m, own) => own
+                            ? m.directed_node_positions_combine_pairs(lw.subarray(0, 8), 2, 4,
+                                    t.subarray(0, 4), 2, 2, 2, 1)
+                            : m.directed_node_positions_combine_pairs(lw.subarray(0, 8), 2, 4,
                                     t.subarray(0, 4), 2, 2, 2),
         ena_correlation:    m => m.ena_correlation(Array.from(t), 3, 2, [0.2,0.1, 0.4,0.5, 0.5,0.7], 3, 2, 0.95),
         ccd_window:         m => m.ccd_window([1,0,1, 0,1,1, 1,1,0, 0,0,1, 1,0,0, 0,1,0], 6, 3,
@@ -218,13 +224,25 @@ describe('libena module (libena + libtma) vs libqe-wasm', () => {
     // still provides (none, once 0.2 is installed).
     test.each(Object.keys(cases))('%s matches libqe-wasm', name => {
         if (typeof libqe[name] !== 'function') return;
-        expect(cases[name](qe)).toEqual(cases[name](libqe));
+        expect(cases[name](qe, true)).toEqual(cases[name](libqe, false));
+    });
+
+    test('directed node weights: self_weight 2 (row + column sum) vs 1 (once)', () => {
+        // 2 codes, directed columns [a&a, b&a, a&b, b&b]: the diagonal is 0 and 3.
+        const two = qe.directed_node_positions(lw, 3, 4, t, 3, 2, 2, 2);
+        const one = qe.directed_node_positions(lw, 3, 4, t, 3, 2, 2, 1);
+        // unit 0: [1,0,2,0] -> code a: 2*1 + 2 = 4, code b: 2 -> [4/6, 2/6]
+        expect(two.weights.data[0]).toBeCloseTo(4 / 6, 12);
+        expect(two.weights.data[1]).toBeCloseTo(2 / 6, 12);
+        // once: code a: 1 + 2 = 3, code b: 2 -> [3/5, 2/5]
+        expect(one.weights.data[0]).toBeCloseTo(3 / 5, 12);
+        expect(one.weights.data[1]).toBeCloseTo(2 / 5, 12);
     });
 
     test('loadENA() exposes libena and libqe-wasm functions on one module', async () => {
         const ena = await loadENA();
         for (const name of Object.keys(cases))
-            expect(cases[name](ena.qe)).toEqual(cases[name](qe));
+            expect(cases[name](ena.qe, true)).toEqual(cases[name](qe, true));
         // libqe-wasm still provides everything else
         expect(ena.qe.choose_two(4)).toBe(6);
         expect(ena.qe.connection_names(['A', 'B', 'C'])).toEqual(['A & B', 'A & C', 'B & C']);

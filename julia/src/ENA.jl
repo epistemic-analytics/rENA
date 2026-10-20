@@ -151,13 +151,17 @@ function node_positions(adj_mats::Matrix{Float64}, t::Matrix{Float64},
 end
 
 """
-    directed_node_positions(line_weights, points, num_dims) -> NamedTuple
+    directed_node_positions(line_weights, points, num_dims; self_weight=2.0) -> NamedTuple
 
 Least-squares node positions for directed ENA.
 Returns `(nodes, centroids, weights, points)`.
+
+`self_weight`: weight of a self-connection (ground i → response i) in its code's
+node weight — `2` (default) = the node's row + column sum; `1` = counted once.
 """
 function directed_node_positions(line_weights::Matrix{Float64},
-                                  points::Matrix{Float64}, num_dims::Integer)
+                                  points::Matrix{Float64}, num_dims::Integer;
+                                  self_weight::Real = 2.0)
     (all(isfinite, line_weights) && all(isfinite, points)) ||
         throw(ArgumentError("directed_node_positions: input matrices must not contain NaN or Inf — " *
                             "filter or impute rows with non-finite values before calling"))
@@ -165,12 +169,12 @@ function directed_node_positions(line_weights::Matrix{Float64},
     pr, pc = size(points)
     r = directed_node_positions(vec(line_weights), Int32(lr), Int32(lc),
                                 vec(points),       Int32(pr), Int32(pc),
-                                Int32(num_dims))
+                                Int32(num_dims), Float64(self_weight))
     _unpack_positions(r)
 end
 
 """
-    directed_node_positions_combine_pairs(line_weights, points, num_dims) -> NamedTuple
+    directed_node_positions_combine_pairs(line_weights, points, num_dims; self_weight=2.0) -> NamedTuple
 
 Directed ENA node positions — ground and response rows averaged before the
 least-squares solve (`combine_pairs = true`).
@@ -178,7 +182,8 @@ Returns `(nodes, centroids, weights, points)`.
 """
 function directed_node_positions_combine_pairs(line_weights::Matrix{Float64},
                                                 points::Matrix{Float64},
-                                                num_dims::Integer)
+                                                num_dims::Integer;
+                                                self_weight::Real = 2.0)
     (all(isfinite, line_weights) && all(isfinite, points)) ||
         throw(ArgumentError("directed_node_positions_combine_pairs: input matrices must not contain NaN or Inf — " *
                             "filter or impute rows with non-finite values before calling"))
@@ -187,13 +192,13 @@ function directed_node_positions_combine_pairs(line_weights::Matrix{Float64},
     r = directed_node_positions_combine_pairs(
             vec(line_weights), Int32(lr), Int32(lc),
             vec(points),       Int32(pr), Int32(pc),
-            Int32(num_dims))
+            Int32(num_dims), Float64(self_weight))
     _unpack_positions(r)
 end
 
 """
     move_nodes_to_unit_circle(line_weights, nodes; dims=(1, 2), mode=:equal,
-                              directed=false) -> NamedTuple
+                              directed=false, self_weight=2.0) -> NamedTuple
 
 Post-fit move of a model's nodes onto a circle in the plane of two dimensions,
 with the centroids recomputed for the moved nodes. Returns
@@ -217,11 +222,14 @@ nodes.
   `n_units × n_codes^2` with `directed = true` (ordered networks)
 - `nodes`: the model's node positions, `n_codes × n_dims`
 - `dims`: the plane's x and y dimensions, 1-based columns of `nodes`
+- `self_weight`: directed only, the fit's self-connection weight (see
+  `directed_node_positions`)
 """
 function move_nodes_to_unit_circle(line_weights::Matrix{Float64},
                                    nodes::Matrix{Float64};
                                    dims = (1, 2), mode = :equal,
-                                   directed::Bool = false)
+                                   directed::Bool = false,
+                                   self_weight::Real = 2.0)
     (all(isfinite, line_weights) && all(isfinite, nodes)) ||
         throw(ArgumentError("move_nodes_to_unit_circle: input matrices must not contain NaN or Inf"))
     nr, nc = size(nodes)
@@ -240,7 +248,7 @@ function move_nodes_to_unit_circle(line_weights::Matrix{Float64},
     r = move_nodes_to_unit_circle(vec(line_weights), Int32(lr), Int32(lc),
                                   vec(nodes),        Int32(nr), Int32(nc),
                                   Int32(dims[1] - 1), Int32(dims[2] - 1),
-                                  CxxWrap.StdLib.StdString(m), directed)
+                                  CxxWrap.StdLib.StdString(m), directed, Float64(self_weight))
     _unpack_moved(r)
 end
 

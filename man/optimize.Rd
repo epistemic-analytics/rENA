@@ -4,12 +4,14 @@
 \alias{optimize}
 \title{Optimize Node and Centroid Positions in ENA Set}
 \usage{
-optimize(x, weights = NULL)
+optimize(x, weights = NULL, self_weight = 2)
 }
 \arguments{
 \item{x}{An \code{ena.set} object for which to optimize node and centroid positions.}
 
 \item{weights}{Optional. A numeric matrix of connection weights. If provided, the function will use this matrix instead of the connection counts from the \code{ena.set}.}
+
+\item{self_weight}{Ordered sets only: weight of a self-connection (the diagonal: ground i -> response i) in its code's node weight. 2 (default) counts it in both the node's row and column sums, the in + out rule of Zhiqiang Cai's 2021 fix; 1 counts it once. Recorded as \code{x$rotation$self.weight}.}
 }
 \value{
 The input \code{ena.set} object with updated node and centroid positions.

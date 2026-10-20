@@ -50,37 +50,40 @@ NB_MODULE(_libena, m) {
     }, "adj_mats"_a, "t"_a, "num_dims"_a,
         "Multiobjective least-squares node positions for undirected ENA.");
 
-    m.def("directed_node_positions", [](NpMat line_weights, NpMat points, int num_dims) {
+    m.def("directed_node_positions",
+        [](NpMat line_weights, NpMat points, int num_dims, double self_weight) {
         arma::mat lw = to_mat(line_weights);
         arma::mat pt = to_mat(points);
         qe::require_finite(lw, "line_weights");
         qe::require_finite(pt, "points");
-        return to_dict(qe::directed_node_positions(lw, pt, num_dims));
-    }, "line_weights"_a, "points"_a, "num_dims"_a,
-        "Least-squares node positions for directed (ordered) ENA.");
+        return to_dict(qe::directed_node_positions(lw, pt, num_dims, false, self_weight));
+    }, "line_weights"_a, "points"_a, "num_dims"_a, "self_weight"_a = qe::DIRECTED_SELF_WEIGHT,
+        "Least-squares node positions for directed (ordered) ENA.\n\n"
+        "self_weight: weight of a self-connection (ground i -> response i) in its\n"
+        "code's node weight -- 2 (default) = the node's row + column sum; 1 = once.");
 
     m.def("directed_node_positions_combine_pairs",
-        [](NpMat line_weights, NpMat points, int num_dims) {
+        [](NpMat line_weights, NpMat points, int num_dims, double self_weight) {
             arma::mat lw = to_mat(line_weights);
             arma::mat pt = to_mat(points);
             qe::require_finite(lw, "line_weights");
             qe::require_finite(pt, "points");
-            return to_dict(qe::directed_node_positions(lw, pt, num_dims, true));
-        }, "line_weights"_a, "points"_a, "num_dims"_a,
+            return to_dict(qe::directed_node_positions(lw, pt, num_dims, true, self_weight));
+        }, "line_weights"_a, "points"_a, "num_dims"_a, "self_weight"_a = qe::DIRECTED_SELF_WEIGHT,
         "Directed node positions with paired ground+response rows combined before solving.");
 
     m.def("move_nodes_to_unit_circle",
         [](NpMat line_weights, NpMat nodes, int dim_x, int dim_y,
-           const std::string& mode, bool directed) {
+           const std::string& mode, bool directed, double self_weight) {
             if (dim_x < 0 || dim_y < 0)
                 throw std::invalid_argument(
                     "move_nodes_to_unit_circle: dimension indices must be >= 0");
             return to_dict(qe::move_nodes_to_unit_circle(
                 to_mat(line_weights), to_mat(nodes), dim_x, dim_y,
-                qe::unit_circle_mode(mode), directed));
+                qe::unit_circle_mode(mode), directed, self_weight));
         },
         "line_weights"_a, "nodes"_a, "dim_x"_a = 0, "dim_y"_a = 1,
-        "mode"_a = "equal", "directed"_a = false,
+        "mode"_a = "equal", "directed"_a = false, "self_weight"_a = qe::DIRECTED_SELF_WEIGHT,
         "Post-fit move of the nodes onto a circle in the plane of two dimensions,\n"
         "with the centroids recomputed for the moved nodes.\n\n"
         "The circle's radius is the longest node's length in that plane. mode\n"

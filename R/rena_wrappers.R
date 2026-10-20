@@ -63,10 +63,11 @@ vector_to_ut <- function(v) {
 #' @param line_weights Numeric matrix (units x connections)
 #' @param points       Numeric matrix of rotated points (units x dims)
 #' @param numDims      Number of dimensions
+#' @param self_weight  Weight of a self-connection (the diagonal: ground i -> response i) in its code's node weight: 2 (default) counts it in both the node's row and column sums (Zhiqiang Cai's 2021 in + out rule); 1 counts it once.
 #' @return List with nodes, centroids, weights, points
 #' @export
-directed_node_positions <- function(line_weights, points, numDims) {
-  directed_node_positions_c(line_weights, points, numDims)
+directed_node_positions <- function(line_weights, points, numDims, self_weight = 2) {
+  directed_node_positions_c(line_weights, points, numDims, self_weight)
 }
 
 #' Directed node positions with ground+response combined
@@ -76,12 +77,14 @@ directed_node_positions <- function(line_weights, points, numDims) {
 #' @param line_weights Numeric matrix (units x connections)
 #' @param points       Numeric matrix of rotated points (units x dims)
 #' @param numDims      Number of dimensions
+#' @param self_weight  Weight of a self-connection (the diagonal: ground i -> response i) in its code's node weight: 2 (default) counts it in both the node's row and column sums (Zhiqiang Cai's 2021 in + out rule); 1 counts it once.
 #' @return List with nodes, centroids, weights, points
 #' @export
 directed_node_positions_with_ground_response_added <- function(line_weights,
                                                                 points,
-                                                                numDims) {
-  directed_node_positions_combine_pairs(line_weights, points, numDims)
+                                                                numDims,
+                                                                self_weight = 2) {
+  directed_node_positions_combine_pairs(line_weights, points, numDims, self_weight)
 }
 
 #' Calculate ENA correlations

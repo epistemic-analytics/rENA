@@ -7,7 +7,8 @@
 directed_node_positions_with_ground_response_added(
   line_weights,
   points,
-  numDims
+  numDims,
+  self_weight = 2
 )
 }
 \arguments{
@@ -16,6 +17,8 @@ directed_node_positions_with_ground_response_added(
 \item{points}{Numeric matrix of rotated points (units x dims)}
 
 \item{numDims}{Number of dimensions}
+
+\item{self_weight}{Weight of a self-connection (the diagonal: ground i -> response i) in its code's node weight: 2 (default) counts it in both the node's row and column sums (Zhiqiang Cai's 2021 in + out rule); 1 counts it once.}
 }
 \value{
 List with nodes, centroids, weights, points

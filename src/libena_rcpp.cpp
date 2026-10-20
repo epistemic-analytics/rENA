@@ -51,14 +51,17 @@ List node_positions(arma::mat adj_mats, arma::mat t, int num_dims) {
 // @param line_weights Numeric matrix (units x connections)
 // @param points       Numeric matrix of rotated points (units x dims)
 // @param num_dims     Number of dimensions
+// @param self_weight  Self-connection multiplier in the node weights
+//                     (2 = row + column sum, the default; 1 = once)
 // @return List with nodes, centroids, weights, points
 // [[Rcpp::export]]
 List directed_node_positions_c(arma::mat line_weights, arma::mat points,
-                                 int num_dims) {
+                                 int num_dims, double self_weight = 2.0) {
     if (!line_weights.is_finite() || !points.is_finite())
         stop("directed_node_positions: input matrices must not contain NaN or Inf - "
              "filter or impute rows with non-finite values before calling");
-    qe::NodePositions r = qe::directed_node_positions(line_weights, points, num_dims);
+    qe::NodePositions r = qe::directed_node_positions(line_weights, points, num_dims,
+                                                      false, self_weight);
     return List::create(
         _("nodes")     = r.nodes,
         _("centroids") = r.centroids,
@@ -71,16 +74,18 @@ List directed_node_positions_c(arma::mat line_weights, arma::mat points,
 // @param line_weights Numeric matrix (units x connections)
 // @param points       Numeric matrix of rotated points (units x dims)
 // @param num_dims     Number of dimensions
+// @param self_weight  Self-connection multiplier (see directed_node_positions_c)
 // @return List with nodes, centroids, weights, points
 // [[Rcpp::export]]
 List directed_node_positions_combine_pairs(arma::mat line_weights,
                                                arma::mat points,
-                                               int num_dims) {
+                                               int num_dims,
+                                               double self_weight = 2.0) {
     if (!line_weights.is_finite() || !points.is_finite())
         stop("directed_node_positions_combine_pairs: input matrices must not contain NaN or Inf - "
              "filter or impute rows with non-finite values before calling");
     qe::NodePositions r = qe::directed_node_positions(
-        line_weights, points, num_dims, true);
+        line_weights, points, num_dims, true, self_weight);
     return List::create(
         _("nodes")     = r.nodes,
         _("centroids") = r.centroids,
@@ -97,15 +102,16 @@ List directed_node_positions_combine_pairs(arma::mat line_weights,
 // @param dim_y        0-based column of the plane's y axis
 // @param mode         "equal" or "radial"
 // @param directed     Ordered (directed) networks
+// @param self_weight  Directed self-connection multiplier, the fit's
 // @return List with nodes (all dims; only dim_x, dim_y moved) and centroids
 // [[Rcpp::export]]
 List move_nodes_to_unit_circle_c(arma::mat line_weights, arma::mat nodes,
                                  int dim_x, int dim_y, std::string mode,
-                                 bool directed) {
+                                 bool directed, double self_weight = 2.0) {
     if (dim_x < 0 || dim_y < 0)
         stop("move_nodes_to_unit_circle: dimension indices must be >= 0");
     qe::MovedNodes r = qe::move_nodes_to_unit_circle(
-        line_weights, nodes, dim_x, dim_y, qe::unit_circle_mode(mode), directed);
+        line_weights, nodes, dim_x, dim_y, qe::unit_circle_mode(mode), directed, self_weight);
     return List::create(
         _("nodes")     = r.nodes,
         _("centroids") = r.centroids
