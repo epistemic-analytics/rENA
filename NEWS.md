@@ -1,5 +1,7 @@
 ## rENA 0.4.16 (development version)
 
+- `ena.plot.network(scale.weights = TRUE)` no longer fails with `invalid hsv color`. The `thickness`, `saturation` and `opacity` ranges were still in unscaled units after the network was normalised to max |w| = 1, so colours and opacities went outside [0, 1] (almost any network whose largest weight is under 1 failed, subtraction networks included). The ranges are now scaled with the network, and saturation and opacity are clamped to [0, 1]. Colour and opacity now match `scale.weights = FALSE`, and edge widths fall within `scale.range` times the plot multiplier. Before, the edges of a FirstGame - SecondGame network on `RS.data` would have been up to 44.5 px wide next to 3-10 px nodes. `scale.weights = FALSE` is unchanged.
+
 ## rENA 0.4.15
 
 - Requires tma >= 0.3.8 (`scripts/sync-headers.sh` vendors libtma 0.3.8), which keeps missed co-occurrences and self-connections through accumulation. Sets from `accumulate()` now carry `self.connection.counts` -- each code's ground count times its response count (the ordered network's diagonal, which unordered networks fold away) -- and, with `misses`, `miss.counts` and `self.miss.counts` (the code in the ground, absent from the response), plus their per-line tables in `model`. They are kept alongside the connection counts and do not change the model. Tests check that they survive `model()` and leave the fitted model unchanged.
