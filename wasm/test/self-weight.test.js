@@ -21,10 +21,12 @@ const OPTS = { codes: ['D', 'T', 'P'], units: ['U'], conversations: ['C'], windo
 let ena;
 beforeAll(async () => { ena = await loadENA(); });
 
-test('ordered fit records selfWeight (default 2)', () => {
+test('fit records selfWeight (default 2)', () => {
     expect(ena.fit(ROWS, OPTS).rotation.selfWeight).toBe(2);
     expect(ena.fit(ROWS, { ...OPTS, selfWeight: 1 }).rotation.selfWeight).toBe(1);
-    expect(ena.fit(ROWS, { ...OPTS, ordered: false }).rotation.selfWeight).toBeNull();
+    // unordered models record it too: it weighs self-connection columns
+    // (selfConnections) the same way
+    expect(ena.fit(ROWS, { ...OPTS, ordered: false }).rotation.selfWeight).toBe(2);
 });
 
 test('selfWeight changes nodes and centroids, not points', () => {

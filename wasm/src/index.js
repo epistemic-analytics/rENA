@@ -120,7 +120,9 @@ function totalVariance(m, nRows, nCols) {
  * Build the adjacency key — list of [codeA, codeB] pairs for each connection.
  * Matches R's rotation$adjacency.key.
  *
- * Unordered: the upper triangle in column-major order (choose_two(n) pairs).
+ * Unordered: the upper triangle in column-major order (choose_two(n) pairs),
+ * or with `diagonal` including self-connections: A & A, A & B, B & B, ...
+ * (n(n+1)/2 pairs, libena's undirected_connection_key(n, true) order).
  * Ordered: all n² directed connections in column-major order — column
  * j*n + i is [codes[i], codes[j]], ground codes[i] → response codes[j]
  * (as R names it "codes[i] & codes[j]").
@@ -129,7 +131,7 @@ function totalVariance(m, nRows, nCols) {
  * @param {boolean}  [ordered=false]
  * @returns {string[][]}  length nConnections, each entry is [codeI, codeJ]
  */
-function buildAdjacencyKey(codes, ordered = false) {
+function buildAdjacencyKey(codes, ordered = false, diagonal = false) {
     const key = [];
     if (ordered) {
         for (let j = 0; j < codes.length; j++)
@@ -137,10 +139,16 @@ function buildAdjacencyKey(codes, ordered = false) {
                 key.push([codes[i], codes[j]]);
         return key;
     }
-    for (let j = 1; j < codes.length; j++)
-        for (let i = 0; i < j; i++)
+    for (let j = 0; j < codes.length; j++)
+        for (let i = 0; i < (diagonal ? j + 1 : j); i++)
             key.push([codes[i], codes[j]]);
     return key;
+}
+
+// Number of connection columns for a layout.
+function connectionCount(qe, nCodes, ordered, diagonal = false) {
+    if (ordered) return nCodes * nCodes;
+    return diagonal ? (nCodes * (nCodes + 1)) / 2 : qe.choose_two(nCodes);
 }
 
 /**
@@ -152,9 +160,9 @@ function buildAdjacencyKey(codes, ordered = false) {
  * @param {boolean}  [ordered=false]
  * @returns {string[]}
  */
-function connectionNamesFor(qe, codes, ordered = false) {
-    if (!ordered) return qe.connection_names(codes);
-    return buildAdjacencyKey(codes, true).map(([a, b]) => `${a} & ${b}`);
+function connectionNamesFor(qe, codes, ordered = false, diagonal = false) {
+    if (!ordered && !diagonal) return qe.connection_names(codes);
+    return buildAdjacencyKey(codes, ordered, diagonal).map(([a, b]) => `${a} & ${b}`);
 }
 
 // ── ENA result object ─────────────────────────────────────────────────────────
@@ -281,8 +289,9 @@ function weightModelName(name) {
  * @param {number}       nUnits
  * @param {number}       nConnections
  * @param {boolean}      ordered
+ * @param {boolean}      [diagonal=false] unordered with self-connection columns
  */
-function applyCodeMask(networks, codeMask, nCodes, nUnits, nConnections, ordered) {
+function applyCodeMask(networks, codeMask, nCodes, nUnits, nConnections, ordered, diagonal = false) {
     if (!codeMask || codeMask.length !== nCodes) return;
     const zeroColumn = (k) => {
         for (let u = 0; u < nUnits; u++) networks[u * nConnections + k] = 0;
@@ -294,8 +303,8 @@ function applyCodeMask(networks, codeMask, nCodes, nUnits, nConnections, ordered
         return;
     }
     let k = 0;
-    for (let col = 1; col < nCodes; col++) {
-        for (let row = 0; row < col; row++) {
+    for (let col = diagonal ? 0 : 1; col < nCodes; col++) {
+        for (let row = 0; row < (diagonal ? col + 1 : col); row++) {
             if ((codeMask[row] && codeMask[row][col] === 0) ||
                 (codeMask[col] && codeMask[col][row] === 0)) zeroColumn(k);
             k++;
@@ -375,7 +384,8 @@ function unitCircleArgs(model, plane, mode) {
     if (plane[0] === plane[1]) throw new Error(`${name}: the two dimensions must differ`);
     const nCodes = codes.length;
     const ordered = nConnections === nCodes * nCodes;
-    if (!ordered && nConnections !== nCodes * (nCodes - 1) / 2) {
+    if (!ordered && nConnections !== nCodes * (nCodes - 1) / 2 &&
+        nConnections !== nCodes * (nCodes + 1) / 2) {   // with self-connection columns
         throw new Error(`${name}: ${nConnections} connections do not fit ${nCodes} codes`);
     }
     checkPoints(name + ' (nodes)', nodes, nCodes, dims);
@@ -400,7 +410,7 @@ function unitCircleArgs(model, plane, mode) {
  *             nodes: number[][], centerVec: Float64Array,
  *             eigenvalues: number[]|null, columnNames: string[] }}
  */
-function resolveRotationSet(rs, codes, nConnections, ordered) {
+function resolveRotationSet(rs, codes, nConnections, ordered, diagonal = false) {
     const rot = matrixRows(rs.rotationMatrix, rs.rotationCols);
     if (!rot || rot.length !== nConnections) {
         throw new Error(
@@ -428,8 +438,8 @@ function resolveRotationSet(rs, codes, nConnections, ordered) {
         if (src.length !== codes.length || codeIdx.some(i => i < 0)) {
             throw new Error('rotationSet.codes do not match this model\'s codes');
         }
-        const srcKey = new Map(buildAdjacencyKey(src, ordered).map(([a, b], k) => [a + '\u0000' + b, k]));
-        connIdx = buildAdjacencyKey(codes, ordered).map(([a, b]) => {
+        const srcKey = new Map(buildAdjacencyKey(src, ordered, diagonal).map(([a, b], k) => [a + '\u0000' + b, k]));
+        connIdx = buildAdjacencyKey(codes, ordered, diagonal).map(([a, b]) => {
             const k = srcKey.get(a + '\u0000' + b) ?? (ordered ? undefined : srcKey.get(b + '\u0000' + a));
             if (k === undefined) throw new Error(`rotationSet has no connection '${a} & ${b}'`);
             return k;
@@ -455,12 +465,18 @@ function resolveRotationSet(rs, codes, nConnections, ordered) {
 // R's norm.by / model(normalize =), ena.make.set's center.align.to.origin and
 // model(self_weight =)). sphereNorm applies to every model; centerAlignToOrigin
 // to unordered models only -- ordered (ONA) models always centre as
-// ona::model() does; selfWeight to ordered models' node optimization only.
+// ona::model() does; selfWeight to node optimization (ordered models, and
+// unordered ones with self-connection columns); selfConnections marks
+// unordered networks that carry self-connection columns (A & A, ...).
 function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
                      metaData, rotMethod, groupA, groupB, dims, gParams,
                      rowConnectionCounts = null, ordered = false, rotationSet = null,
                      norm = {}) {
-    const connectionNames = connectionNamesFor(qe, codes, ordered);
+    // Unordered models with self-connection columns (accumulate's
+    // selfConnections): the key, names and node weighting include them.
+    const diagonal = !ordered && norm.selfConnections === true;
+    const key = ordered ? null : qe.undirected_connection_key(codes.length, diagonal);
+    const connectionNames = connectionNamesFor(qe, codes, ordered, diagonal);
     const useSphereNorm = norm.sphereNorm !== false;
     const alignToOrigin = ordered || norm.centerAlignToOrigin !== false;
     const selfWeight = norm.selfWeight ?? 2;
@@ -488,8 +504,8 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
         return runCustomRotation(qe, rawNetworks, lineWeights, pointsForProjection,
                                  centerVec, nUnits, nConnections, codes, unitLabels,
                                  metaData, dims, rowConnectionCounts, ordered,
-                                 resolveRotationSet(rotationSet, codes, nConnections, ordered),
-                                 alignToOrigin, selfWeight);
+                                 resolveRotationSet(rotationSet, codes, nConnections, ordered, diagonal),
+                                 alignToOrigin, selfWeight, diagonal);
     }
 
     // Rotate
@@ -532,7 +548,8 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
     // Ordered (ONA) models use libqe's directed_node_positions, as
     // ona::model() does (via rENA's optimize()).
     const { nodes, centroids } = nodePositions(
-        qe, lineWeights, nUnits, nConnections, points, dims, ordered, selfWeight
+        qe, lineWeights, nUnits, nConnections, points, dims, ordered, selfWeight,
+        key, codes.length
     );
 
     // ONA: translate points and nodes so the points' mean is at the origin
@@ -563,7 +580,7 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
     const variance = computeVariance(points, nUnits, dims, total);
 
     // Adjacency key (= R's rotation$adjacency.key)
-    const adjacencyKey = buildAdjacencyKey(codes, ordered);
+    const adjacencyKey = buildAdjacencyKey(codes, ordered, diagonal);
 
     return new ENAModel({
         // top-level
@@ -589,14 +606,14 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
         centerVec,
         codes,
         adjacencyKey,
-        selfWeight:   ordered ? selfWeight : null,
+        selfWeight,
     });
 }
 
 function runCustomRotation(qe, rawNetworks, lineWeights, ownCentered, ownCenterVec,
                            nUnits, nConnections, codes, unitLabels, metaData, dims,
                            rowConnectionCounts, ordered, rs, alignToOrigin = true,
-                           selfWeight = 2) {
+                           selfWeight = 2, diagonal = false) {
     let pointsForProjection = ownCentered;
     let centerVec = ownCenterVec;
     if (!ordered) {
@@ -635,7 +652,9 @@ function runCustomRotation(qe, rawNetworks, lineWeights, ownCentered, ownCenterV
     if (ordered) {
         centroids = nodePositions(qe, lineWeights, nUnits, nConnections, points, dims, true, selfWeight).centroids;
     } else {
-        const w = qe.node_positions(lineWeights, nUnits, nConnections, points, nUnits, dims, dims).weights;
+        const key = qe.undirected_connection_key(codes.length, diagonal);
+        const w = qe.node_weights_by_key(lineWeights, nUnits, nConnections, key.from, key.to,
+                                         codes.length, selfWeight);
         centroids = matmul(Float64Array.from(w.data), nUnits, w.cols, nodes, dims);
     }
 
@@ -646,7 +665,7 @@ function runCustomRotation(qe, rawNetworks, lineWeights, ownCentered, ownCenterV
         points,
         rotationMatrix,
         metaData,
-        connectionNames:      connectionNamesFor(qe, codes, ordered),
+        connectionNames:      connectionNamesFor(qe, codes, ordered, diagonal),
         nUnits,
         nConnections,
         dims,
@@ -665,8 +684,8 @@ function runCustomRotation(qe, rawNetworks, lineWeights, ownCentered, ownCenterV
         eigenvalues:          rs.eigenvalues,
         centerVec,
         codes,
-        adjacencyKey:         buildAdjacencyKey(codes, ordered),
-        selfWeight:   ordered ? selfWeight : null,
+        adjacencyKey:         buildAdjacencyKey(codes, ordered, diagonal),
+        selfWeight,
     });
 }
 
@@ -811,6 +830,7 @@ export default async function loadENA() {
                 centerAlignToOrigin                       = true,
                 misses                                    = true,
                 selfWeight                                = 2,
+                selfConnections                           = false,
             } = opts;
 
             if (!codes?.length)         throw new Error('opts.codes is required');
@@ -831,23 +851,25 @@ export default async function loadENA() {
 
             // Every model accumulates through the tensor path; a plain moving
             // window is expressed as defaultTensor(window).
+            const diagonal = selfConnections === true && !ordered;
             const { networks: rawNetworks, rowConnectionCounts,
                     selfNetworks, missNetworks, selfMissNetworks } = accumulateTensor(
                 qe, rows, codeMatrix, nRows, nCodes, nUnits,
                 unitOf, convoGroups, tensorDef ?? defaultTensor(windowSize),
-                ordered, binary, weight, horizons, misses
+                ordered, binary, weight, horizons, misses, diagonal
             );
-            const nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
+            const nConnections = connectionCount(qe, nCodes, ordered, diagonal);
 
-            applyCodeMask(rawNetworks, codeMask, codes.length, nUnits, nConnections, ordered);
-            applyCodeMask(missNetworks, codeMask, codes.length, nUnits, nConnections, ordered);
+            applyCodeMask(rawNetworks, codeMask, codes.length, nUnits, nConnections, ordered, diagonal);
+            applyCodeMask(missNetworks, codeMask, codes.length, nUnits, nConnections, ordered, diagonal);
             applySelfMask(selfNetworks, codeMask, codes.length, nUnits);
             applySelfMask(selfMissNetworks, codeMask, codes.length, nUnits);
 
             const model = runPipeline(qe, rawNetworks, nUnits, nConnections, codes,
                                unitLabels, metaData, rotMethod, groupA, groupB,
                                dims, gParams, rowConnectionCounts, ordered,
-                               rotationSet, { sphereNorm: useSphereNorm, centerAlignToOrigin, selfWeight });
+                               rotationSet, { sphereNorm: useSphereNorm, centerAlignToOrigin, selfWeight,
+                                              selfConnections: diagonal });
             // Kept alongside the model, not used by it (= R's
             // self.connection.counts, miss.counts, self.miss.counts).
             model.selfConnectionCounts = selfNetworks;     // nUnits × nCodes
@@ -886,26 +908,28 @@ export default async function loadENA() {
                 unitsUsed,
                 horizons,
                 misses = true,
+                selfConnections = false,
             } = opts;
 
             const { codeMatrix, nRows, nCodes, nUnits, unitLabels,
                     unitOf, convoGroups, metaData } =
                 parseData(rows, codes, units, conversations, unitsUsed);
 
+            const diagonal = selfConnections === true && !ordered;
             const { networks, rowConnectionCounts,
                     selfNetworks, missNetworks, selfMissNetworks } = accumulateTensor(
                 qe, rows, codeMatrix, nRows, nCodes, nUnits,
                 unitOf, convoGroups, tensorDef ?? defaultTensor(windowSize),
-                ordered, binary, weightModelName(weightModel), horizons, misses
+                ordered, binary, weightModelName(weightModel), horizons, misses, diagonal
             );
-            const nConnections = ordered ? nCodes * nCodes : qe.choose_two(nCodes);
+            const nConnections = connectionCount(qe, nCodes, ordered, diagonal);
 
-            applyCodeMask(networks, codeMask, codes.length, nUnits, nConnections, ordered);
-            applyCodeMask(missNetworks, codeMask, codes.length, nUnits, nConnections, ordered);
+            applyCodeMask(networks, codeMask, codes.length, nUnits, nConnections, ordered, diagonal);
+            applyCodeMask(missNetworks, codeMask, codes.length, nUnits, nConnections, ordered, diagonal);
             applySelfMask(selfNetworks, codeMask, codes.length, nUnits);
             applySelfMask(selfMissNetworks, codeMask, codes.length, nUnits);
 
-            const connectionNames = connectionNamesFor(qe, codes, ordered);
+            const connectionNames = connectionNamesFor(qe, codes, ordered, diagonal);
             return {
                 connectionCounts: networks, rowConnectionCounts, unitLabels, connectionNames,
                 selfConnectionCounts: selfNetworks, missCounts: missNetworks,
@@ -915,7 +939,7 @@ export default async function loadENA() {
                 // (= R's ENAAccumulation$`_function.call`).
                 _call: { rows, codes, units, conversations,
                          window: windowSize, binary, ordered, tensor: tensorDef,
-                         weightModel, unitsUsed, horizons, misses },
+                         weightModel, unitsUsed, horizons, misses, selfConnections: diagonal },
             };
         },
 
@@ -1328,11 +1352,20 @@ export default async function loadENA() {
             // The fit's self-connection weight; models built before it was
             // recorded used 1 (libena counted self-connections once then).
             const selfWeight = model.rotation.selfWeight ?? 1;
-            const r = qe.move_nodes_to_unit_circle(
-                model.lineWeights, model.nUnits, model.nConnections,
-                model.rotation.nodes, nCodes, model.dims,
-                plane[0], plane[1], mode, ordered, selfWeight
-            );
+            // Unordered: centroids from libena's key-driven weighting (as the
+            // fit), self-connection columns included when the model has them.
+            const diagonal = !ordered &&
+                (model.rotation.adjacencyKey ?? []).some(([a, b]) => a === b);
+            const key = ordered ? null : qe.undirected_connection_key(nCodes, diagonal);
+            const r = ordered
+                ? qe.move_nodes_to_unit_circle(
+                    model.lineWeights, model.nUnits, model.nConnections,
+                    model.rotation.nodes, nCodes, model.dims,
+                    plane[0], plane[1], mode, ordered, selfWeight)
+                : qe.move_nodes_to_unit_circle_by_key(
+                    model.lineWeights, model.nUnits, model.nConnections,
+                    model.rotation.nodes, nCodes, model.dims,
+                    plane[0], plane[1], mode, key.from, key.to, selfWeight);
             const moved = Object.assign(Object.create(Object.getPrototypeOf(model)), model);
             moved.rotation = { ...model.rotation, nodes: new Float64Array(r.nodes.data) };
             moved.model = { ...model.model, centroids: new Float64Array(r.centroids.data) };

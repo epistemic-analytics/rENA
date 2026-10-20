@@ -321,8 +321,13 @@ export function project(centered, nUnits, nConnections, rotation, rotRows, rotCo
  *
  * @param {boolean} [directed=false]  Use libena's directed_node_positions (for
  *   ordered n² networks), as rENA's optimize() does for ordered sets.
- * @param {number}  [selfWeight=2]    Directed only: weight of a self-connection
- *   in its code's node weight (2 = row + column sum, the default; 1 = once).
+ * @param {number}  [selfWeight=2]    Weight of a self-connection in its code's
+ *   node weight (2 = row + column sum, the default; 1 = once).
+ * @param {{from, to}|null} [key=null] Unordered: libena's column key
+ *   (undirected_connection_key); the nodes come from node_positions_by_key --
+ *   the same as node_positions for choose(n, 2) columns, and it also places
+ *   self-connection columns. null keeps node_positions.
+ * @param {number|null} [nCodes=null] Number of codes (with `key`).
  * @returns {{ nodes: Float64Array, nodeRows: number, nodeCols: number,
  *             centroids: Float64Array|null }}
  *   nodes     — code positions in ENA space (= R's rotation$nodes)
@@ -330,10 +335,13 @@ export function project(centered, nUnits, nConnections, rotation, rotRows, rotCo
  *               if libqe does not expose them
  */
 export function nodePositions(qe, networks, nUnits, nConnections, points, nDims,
-                              directed = false, selfWeight = 2) {
+                              directed = false, selfWeight = 2, key = null, nCodes = null) {
     const r = directed
         ? qe.directed_node_positions(networks, nUnits, nConnections, points, nUnits, nDims, nDims, selfWeight)
-        : qe.node_positions(networks, nUnits, nConnections, points, nUnits, nDims, nDims);
+        : key
+            ? qe.node_positions_by_key(networks, nUnits, nConnections, points, nUnits, nDims, nDims,
+                                       key.from, key.to, nCodes, selfWeight)
+            : qe.node_positions(networks, nUnits, nConnections, points, nUnits, nDims, nDims);
     return {
         nodes:     new Float64Array(r.nodes.data),
         nodeRows:  r.nodes.rows,

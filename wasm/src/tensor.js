@@ -376,6 +376,9 @@ export function buildHorizonContexts(rows, unitOf, nUnits, horizons) {
  *                                     convoGroups as the windowing contexts
  * @param {boolean}     [misses=true]  also accumulate missed co-occurrences
  *                                     (ground i present, response j absent)
+ * @param {boolean}     [diagonal=false] unordered only: self-connections are
+ *                                     also connection columns (A & A, A & B,
+ *                                     B & B, ...; n(n+1)/2 columns)
  *
  * @returns {{ networks: Float64Array, rowConnectionCounts: Float64Array,
  *             selfNetworks: Float64Array, missNetworks: Float64Array|null,
@@ -392,7 +395,7 @@ export function buildHorizonContexts(rows, unitOf, nUnits, horizons) {
 export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
                                   unitOf, convoGroups, tensorDef, ordered = false,
                                   binary = true, weight = null, horizons = null,
-                                  misses = true) {
+                                  misses = true, diagonal = false) {
     const {
         dims,
         dimsSender   = [],
@@ -409,9 +412,10 @@ export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
     validateTensor(dims, tensorData, factors, factorLevels);
     const allTimes = timesCol ? parseTimes(rows, timesCol, timesEndCol || null) : null;
 
+    const withDiagonal = diagonal && !ordered;
     const nConnections = ordered
         ? nCodes * nCodes
-        : qe.choose_two(nCodes);
+        : withDiagonal ? (nCodes * (nCodes + 1)) / 2 : qe.choose_two(nCodes);
 
     const networks            = new Float64Array(nUnits * nConnections);
     const rowConnectionCounts = new Float64Array(nRows * nConnections);
@@ -451,15 +455,19 @@ export function accumulateTensor(qe, rows, codeMatrix, nRows, nCodes, nUnits,
         // in R: fold (unordered), per-line weight model, unit sum and the
         // self-connection diagonal, for hits and misses. Unit vectors are
         // additive over lines, so a unit's contexts simply add up.
-        const result = qe.accumulate_unit_networks(
+        const args = [
             tensorData, dimsArr,
             senderArr, receiverArr, modeArr,
             contextLookup, clRows, clCols,
             new Int32Array(localRows),
             ctxCodes, nCtx, nCodes,
             times,
-            ordered, kernelWeight, misses
-        );
+            ordered, kernelWeight, misses,
+        ];
+        // The trailing `diagonal` is an optional overload in libtma's binding.
+        const result = withDiagonal
+            ? qe.accumulate_unit_networks(...args, true)
+            : qe.accumulate_unit_networks(...args);
         const addUnit = (target, vec, width) => {
             const off = unit * width;
             for (let c = 0; c < width; c++) target[off + c] += vec[c];
