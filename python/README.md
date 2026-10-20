@@ -154,6 +154,28 @@ model_gmr = ENA().fit(accum, rotation=generalized_rotation(meta["Condition"]))
 
 ---
 
+## TMA and ordered (ONA) networks
+
+qe-ena also models accumulations from [qe-tma](https://qe-libs.org/py/project/qe-tma/)
+(context tensors, ordered networks, self-connections), as rENA's `model()`
+models tma's `accumulate()` in R. qe-tma accumulates; qe-ena models:
+
+```python
+from tma import accumulate, context_tensor   # pip install qe-tma
+from ena import ENA
+
+accum = accumulate(data, "speaker", "group", CODES,
+                   tensor=context_tensor(data, default_window=4), ordered=True)
+model = ENA().fit(accum)                    # ONA's directed node positions
+model = ENA().fit(accum, self_weight=1)     # self-connections counted once
+
+# Unordered with self-connection columns (A & A, A & B, B & B, ...),
+# placed by their adjacency key:
+model = ENA().fit(accumulate(data, "speaker", "group", CODES, self_connections=True))
+```
+
+---
+
 ## Rotation Methods
 
 | Rotation | Argument |

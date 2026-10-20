@@ -29,7 +29,9 @@ Python-specific extras:
   full_rotation_           np.ndarray (n_connections × k) — full pre-truncation rotation
   weights_                 np.ndarray                     — LWS weights
   column_classes_          dict                           — R S3 class annotation per matrix
-  accum_                   ENAAccumulation
+  accum_                   ENAAccumulation (or qe-tma's TMAAccumulation)
+  ordered_                 bool — directed (ONA) networks, from the accumulation
+  self_weight_             float — a self-connection's weight in its node's weight
 """
 
 from __future__ import annotations
@@ -75,6 +77,21 @@ def _build_adjacency_key(codes: List[str]) -> List[List[str]]:
         for j in range(1, len(codes))
         for i in range(j)
     ]
+
+
+def _is_accumulation(data) -> bool:
+    """An ENAAccumulation, or any accumulation with its fields -- e.g. qe-tma's
+    TMAAccumulation (``tma.accumulate()``), which qe-ena models as rENA
+    models tma's accumulation in R."""
+    return isinstance(data, ENAAccumulation) or (
+        hasattr(data, "connection_counts_") and hasattr(data, "codes_")
+    )
+
+
+def _key_indices(key: List[List[str]], codes: List[str]):
+    """0-based (from, to) code indices per column of an adjacency key."""
+    index = {c: i for i, c in enumerate(codes)}
+    return [index[a] for a, _ in key], [index[b] for _, b in key]
 
 
 # ── ENA model ─────────────────────────────────────────────────────────────────
@@ -182,7 +199,7 @@ class ENA:
 
             model = ENA().accumulate(rs, "unit_key", "convo_key", CODES).fit()
         """
-        if isinstance(data, ENAAccumulation):
+        if _is_accumulation(data):
             self.accum_ = data
         else:
             if units is None or conversations is None or codes is None:
@@ -210,15 +227,21 @@ class ENA:
         dims: int = 2,
         norm: str = "sphere",
         rotation=None,
+        self_weight: float = 2.0,
     ) -> "ENA":
         """Fit an ENA model.
 
         Parameters
         ----------
-        data : pd.DataFrame | ENAAccumulation | None
+        data : pd.DataFrame | ENAAccumulation | TMAAccumulation | None
             * ``None``          — use the accumulation already stored by the
               constructor or a prior :meth:`accumulate` call.
             * ``ENAAccumulation`` — use this pre-built accumulation directly.
+            * qe-tma's ``TMAAccumulation`` (``tma.accumulate()``) — model it
+              (= rENA's ``model()`` on tma's accumulation): ordered networks
+              get ONA's directed node positions; unordered ones with
+              self-connection columns (A & A, A & B, B & B, ...) are placed by
+              their adjacency key.
             * ``pd.DataFrame``  — accumulate and model in one step (``units``,
               ``conversations``, and ``codes`` are then required).
         dims : int
@@ -231,6 +254,11 @@ class ENA:
             * callable        — factory from :func:`mean_rotation`,
               :func:`generalized_rotation`, :func:`regression_rotation`, or
               :func:`regression_rotation_2`.
+        self_weight : float
+            Weight of a self-connection (an ordered network's diagonal, or an
+            unordered network's A & A columns) in its code's node weight:
+            2 (default, = R's ``self_weight``) = row + column sum; 1 = once.
+            Has no effect on networks without self-connections.
         """
         if norm not in ("sphere", "skip_sphere"):
             raise ValueError(f"norm must be 'sphere' or 'skip_sphere', got {norm!r}")
@@ -300,23 +328,38 @@ class ENA:
         t = centered @ rotation_matrix   # projected unit positions (= R's set$points)
 
         # ── node positions (LWS) ─────────────────────────────────────────────
-        node_positions = libena.node_positions(
-            np.ascontiguousarray(normed), np.ascontiguousarray(t), dims
-        )
+        # Ordered: ONA's directed weighting. Unordered: the standard
+        # choose(n, 2) layout keeps the undirected solver; any other layout
+        # (self-connection columns) is placed by its adjacency key (libena's
+        # key-driven solver, = the undirected one for choose(n, 2)).
+        codes    = list(accum.codes_)
+        ordered  = bool(getattr(accum, "ordered_", False))
+        key      = getattr(accum, "adjacency_key_", None)
+        key      = [list(k) for k in key] if key is not None else _build_adjacency_key(codes)
+        by_key   = not ordered and key != _build_adjacency_key(codes)
+        lw_c, t_c = np.ascontiguousarray(normed), np.ascontiguousarray(t)
+        if ordered:
+            node_positions = libena.directed_node_positions(lw_c, t_c, dims, self_weight=self_weight)
+        elif by_key:
+            key_from, key_to = _key_indices(key, codes)
+            node_positions = libena.node_positions_by_key(lw_c, t_c, dims, key_from, key_to,
+                                                          len(codes), self_weight=self_weight)
+        else:
+            node_positions = libena.node_positions(lw_c, t_c, dims)
 
         # ── derived fields ────────────────────────────────────────────────────
         # Share of the total variance per rotated dimension, over every
         # dimension of the rotation, as R's model$variance (not renormalised
         # over the `dims` retained ones).
         variance      = _compute_variance(centered @ full_rot)
-        adjacency_key = _build_adjacency_key(list(accum.codes_))
+        adjacency_key = key
 
         # ── assign all output fields ──────────────────────────────────────────
         self.accum_                  = accum
 
         # top-level (= R's set$...)
         self.connection_counts_      = raw_networks          # set$connection.counts
-        self.row_connection_counts_  = accum.row_connection_counts_
+        self.row_connection_counts_  = getattr(accum, "row_connection_counts_", None)
         self.line_weights_           = normed                # set$line.weights
         self.points_                 = node_positions.points # set$points
         self.rotation_matrix_        = rotation_matrix       # set$rotation.matrix
@@ -338,6 +381,8 @@ class ENA:
 
         # Python-specific extras
         self.full_rotation_          = full_rot               # full pre-truncation rotation
+        self.ordered_                = ordered                # directed (ONA) networks
+        self.self_weight_            = float(self_weight)     # rotation$self.weight
         self.weights_                = node_positions.weights # LWS weights
 
         # Column class annotations (mirrors R's S3 class tags per column)
@@ -383,12 +428,17 @@ class ENA:
         if not hasattr(self, "rotation_nodes_"):
             raise ValueError("fit() the model before moving its nodes")
         dim_x, dim_y = dims
-        moved = libena.move_nodes_to_unit_circle(
-            np.ascontiguousarray(self.line_weights_, dtype=np.float64),
-            np.ascontiguousarray(self.rotation_nodes_, dtype=np.float64),
-            int(dim_x), int(dim_y), mode,
-            False,   # qe-ena's networks are unordered
-        )
+        lw    = np.ascontiguousarray(self.line_weights_, dtype=np.float64)
+        nodes = np.ascontiguousarray(self.rotation_nodes_, dtype=np.float64)
+        ordered     = getattr(self, "ordered_", False)
+        self_weight = getattr(self, "self_weight_", 2.0)
+        if not ordered and self.rotation_adjacency_key_ != _build_adjacency_key(list(self.codes_)):
+            key_from, key_to = _key_indices(self.rotation_adjacency_key_, list(self.codes_))
+            moved = libena.move_nodes_to_unit_circle_by_key(
+                lw, nodes, int(dim_x), int(dim_y), mode, key_from, key_to, self_weight)
+        else:
+            moved = libena.move_nodes_to_unit_circle(
+                lw, nodes, int(dim_x), int(dim_y), mode, ordered, self_weight)
         out = copy.copy(self)
         out.rotation_nodes_ = moved.nodes
         out.centroids_      = moved.centroids
