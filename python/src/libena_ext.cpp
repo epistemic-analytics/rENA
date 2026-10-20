@@ -32,6 +32,17 @@ using namespace nb::literals;
 // results (libena/bind/nanobind.hpp).
 using namespace qe::bind::py;
 
+static qe::ConnectionKey key_from_vectors(const std::vector<int>& from, const std::vector<int>& to) {
+    if (from.size() != to.size()) throw std::invalid_argument("from and to must have the same length");
+    qe::ConnectionKey key{ arma::uvec(from.size()), arma::uvec(to.size()) };
+    for (size_t k = 0; k < from.size(); ++k) {
+        if (from[k] < 0 || to[k] < 0) throw std::invalid_argument("key indices must be >= 0");
+        key.from[k] = static_cast<arma::uword>(from[k]);
+        key.to[k]   = static_cast<arma::uword>(to[k]);
+    }
+    return key;
+}
+
 NB_MODULE(_libena, m) {
     m.doc() = "_libena — nanobind bindings for libena (ENA rotations, node positions, CCD)";
 
@@ -102,6 +113,54 @@ NB_MODULE(_libena, m) {
         "mode         : 'equal' (default) or 'radial'\n"
         "directed     : ordered (directed) networks\n\n"
         "Returns MovedNodes (nodes, centroids).");
+
+    // ── Layout-agnostic node optimization (column key: from[k], to[k], 0-based) ──
+    m.def("undirected_connection_key", [](int n_codes, bool diagonal) {
+        qe::ConnectionKey k = qe::undirected_connection_key(n_codes, diagonal);
+        return nb::make_tuple(from_uvec(k.from), from_uvec(k.to));
+    }, "n_codes"_a, "diagonal"_a = false,
+        "(from, to) code indices of the undirected columns: A & B, A & C, B & C, ...;\n"
+        "with diagonal A & A, A & B, B & B, ...");
+    m.def("directed_connection_key", [](int n_codes) {
+        qe::ConnectionKey k = qe::directed_connection_key(n_codes);
+        return nb::make_tuple(from_uvec(k.from), from_uvec(k.to));
+    }, "n_codes"_a, "(from, to) of the ordered columns: column j*n+i is ground i -> response j.");
+    m.def("node_weights_by_key",
+        [](NpMat line_weights, std::vector<int> from, std::vector<int> to, int n_codes, double self_weight) {
+            return from_mat(qe::node_weights_by_key(to_mat(line_weights), key_from_vectors(from, to),
+                                                    n_codes, self_weight));
+        }, "line_weights"_a, "from_"_a, "to"_a, "n_codes"_a, "self_weight"_a = qe::DIRECTED_SELF_WEIGHT,
+        "Layout-agnostic node weights: each column counts toward each code it connects\n"
+        "(from_[k], to[k]); a self-connection (from_ == to) self_weight times; rows L1-normalised.");
+    m.def("node_positions_by_key",
+        [](NpMat line_weights, NpMat points, int num_dims, std::vector<int> from, std::vector<int> to,
+           int n_codes, double self_weight) {
+            arma::mat lw = to_mat(line_weights), pt = to_mat(points);
+            qe::require_finite(lw, "line_weights");
+            qe::require_finite(pt, "points");
+            return to_dict(qe::node_positions_by_key(lw, pt, num_dims, key_from_vectors(from, to),
+                                                     n_codes, self_weight));
+        }, "line_weights"_a, "points"_a, "num_dims"_a, "from_"_a, "to"_a, "n_codes"_a,
+        "self_weight"_a = qe::DIRECTED_SELF_WEIGHT,
+        "Layout-agnostic least-squares node positions with node_weights_by_key: matches\n"
+        "node_positions (undirected key) and directed_node_positions (ordered key).");
+    m.def("node_centroids_by_key",
+        [](NpMat line_weights, NpMat nodes, std::vector<int> from, std::vector<int> to, double self_weight) {
+            return from_mat(qe::node_centroids_by_key(to_mat(line_weights), to_mat(nodes),
+                                                      key_from_vectors(from, to), self_weight));
+        }, "line_weights"_a, "nodes"_a, "from_"_a, "to"_a, "self_weight"_a = qe::DIRECTED_SELF_WEIGHT,
+        "node_weights_by_key(...) @ nodes.");
+    m.def("move_nodes_to_unit_circle_by_key",
+        [](NpMat line_weights, NpMat nodes, int dim_x, int dim_y, const std::string& mode,
+           std::vector<int> from, std::vector<int> to, double self_weight) {
+            if (dim_x < 0 || dim_y < 0)
+                throw std::invalid_argument("move_nodes_to_unit_circle: dimension indices must be >= 0");
+            return to_dict(qe::move_nodes_to_unit_circle_by_key(
+                to_mat(line_weights), to_mat(nodes), dim_x, dim_y, qe::unit_circle_mode(mode),
+                key_from_vectors(from, to), self_weight));
+        }, "line_weights"_a, "nodes"_a, "dim_x"_a, "dim_y"_a, "mode"_a, "from_"_a, "to"_a,
+        "self_weight"_a = qe::DIRECTED_SELF_WEIGHT,
+        "move_nodes_to_unit_circle with centroids from node_centroids_by_key.");
 
     m.def("ena_svd", [](NpMat points) {
         arma::mat pt = to_mat(points);

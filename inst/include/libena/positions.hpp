@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <libqe/adjacency.hpp>        // qe::connection_indices (keys)
 #include <libqe/linalg_fallback.hpp>  // qe::linalg::solve_spd
 #include <libqe/stats.hpp>            // normal_quantile
 
@@ -202,6 +203,98 @@ inline arma::mat directed_node_weights(const arma::mat& line_weights,
     return nw;
 }
 
+/**
+ * @brief Which two codes each connection column connects: the column map the
+ *        layout-agnostic (@c _by_key) node weighting works from.
+ *
+ * Column @c k connects codes @c from[k] and @c to[k] (0-based).  A
+ * self-connection has @c from[k] == to[k].  Direction is not used by the node
+ * weights (every connection counts toward both of its codes), so any column
+ * layout -- undirected, undirected with the diagonal, ordered -- is described
+ * by its key alone.
+ */
+struct ConnectionKey {
+    arma::uvec from;  ///< First code of each column (0-based).
+    arma::uvec to;    ///< Second code of each column (0-based).
+};
+
+/**
+ * @brief Key of the undirected layout: the column-major upper triangle (libqe
+ *        @c connection_indices), with the diagonal (A & A, A & B, B & B, ...)
+ *        when @p diagonal.
+ */
+inline ConnectionKey undirected_connection_key(int n_codes, bool diagonal = false) {
+    arma::umat idx = connection_indices(n_codes, -1, diagonal);
+    return ConnectionKey{ arma::uvec(idx.row(0).t()), arma::uvec(idx.row(1).t()) };
+}
+
+/**
+ * @brief Key of the ordered (directed) layout: column @c j*n+i is ground i ->
+ *        response j, so @c from = i and @c to = j.
+ */
+inline ConnectionKey directed_connection_key(int n_codes) {
+    const arma::uword n = static_cast<arma::uword>(n_codes);
+    ConnectionKey key{ arma::uvec(n * n), arma::uvec(n * n) };
+    for (arma::uword j = 0; j < n; ++j)
+        for (arma::uword i = 0; i < n; ++i) {
+            key.from[j * n + i] = i;
+            key.to[j * n + i]   = j;
+        }
+    return key;
+}
+
+/**
+ * @brief Layout-agnostic node weights: every column counts toward each code it
+ *        connects; a self-connection (from == to) toward its code
+ *        @p self_weight times.  Each row is then L1-normalised (as
+ *        @ref node_weights).
+ *
+ * One rule for every layout.  With the undirected key it equals
+ * @ref node_weights; with the directed key, @ref directed_node_weights at the
+ * same @p self_weight; with the undirected-with-diagonal key, the undirected
+ * weighting plus self-connections that count as they do in ordered models.
+ *
+ * @param[in] line_weights  n_units × n_columns.
+ * @param[in] key           Column map, @c n_columns long (see @ref ConnectionKey).
+ * @param[in] n_codes       Number of codes (nodes).
+ * @param[in] self_weight   Self-connection multiplier; default 2 (a node's row
+ *                          plus column sum, as @ref directed_node_weights).
+ * @returns n_units × n_codes weights.
+ * @throws std::invalid_argument if the key's length does not match the
+ *         columns, an index is out of range, or @p self_weight is negative or
+ *         not finite.
+ */
+inline arma::mat node_weights_by_key(const arma::mat& line_weights,
+                                     const ConnectionKey& key, int n_codes,
+                                     double self_weight = DIRECTED_SELF_WEIGHT) {
+    if (key.from.n_elem != line_weights.n_cols || key.to.n_elem != line_weights.n_cols)
+        throw std::invalid_argument(
+            "node_weights_by_key: the key has " + std::to_string(key.from.n_elem) +
+            " columns; line_weights has " + std::to_string(line_weights.n_cols));
+    if (n_codes < 1 || (key.from.n_elem && (key.from.max() >= static_cast<arma::uword>(n_codes) ||
+                                            key.to.max()   >= static_cast<arma::uword>(n_codes))))
+        throw std::invalid_argument("node_weights_by_key: key index out of range for n_codes");
+    if (!std::isfinite(self_weight) || self_weight < 0)
+        throw std::invalid_argument("node_weights_by_key: self_weight must be finite and >= 0");
+
+    arma::mat w(line_weights.n_rows, n_codes, arma::fill::zeros);
+    for (arma::uword k = 0; k < line_weights.n_cols; ++k) {
+        const arma::uword a = key.from[k], b = key.to[k];
+        if (a != b) {
+            w.col(a) += line_weights.col(k);
+            w.col(b) += line_weights.col(k);
+        } else {
+            w.col(a) += self_weight * line_weights.col(k);
+        }
+    }
+    for (arma::uword u = 0; u < w.n_rows; ++u) {
+        double len = arma::accu(arma::abs(w.row(u)));
+        if (len < 0.0001) len = 0.0001;
+        w.row(u) /= len;
+    }
+    return w;
+}
+
 /// @}
 
 // ---------------------------------------------------------------------------
@@ -341,6 +434,42 @@ inline NodePositions directed_node_positions(arma::mat line_weights,
     r.nodes     = ssX.t();
     r.centroids = (ssX * nw.t()).t();
     r.weights   = nw;
+    r.points    = points;
+    return r;
+}
+
+/**
+ * @brief Layout-agnostic least-squares node positions: the solve of
+ *        @ref node_positions / @ref directed_node_positions with
+ *        @ref node_weights_by_key.
+ *
+ * @param[in] line_weights  n_units × n_columns, any layout.
+ * @param[in] points        Rotated unit points, n_units × n_dims.
+ * @param[in] num_dims      Number of dimensions to solve for.
+ * @param[in] key           Column map (see @ref ConnectionKey).
+ * @param[in] n_codes       Number of codes (nodes).
+ * @param[in] self_weight   Self-connection multiplier.  Default 2.
+ * @returns A @ref NodePositions struct.
+ */
+inline NodePositions node_positions_by_key(const arma::mat& line_weights,
+                                           const arma::mat& points, int num_dims,
+                                           const ConnectionKey& key, int n_codes,
+                                           double self_weight = DIRECTED_SELF_WEIGHT) {
+    if (!line_weights.is_finite() || !points.is_finite())
+        throw std::invalid_argument("node_positions_by_key: input matrices must not contain NaN or Inf");
+    arma::mat w = node_weights_by_key(line_weights, key, n_codes, self_weight);
+
+    arma::mat ssX(num_dims, n_codes, arma::fill::zeros);
+    arma::mat ssA = w.t() * w;
+    for (int i = 0; i < num_dims; i++) {
+        arma::mat ssb = w.t() * points.col(i);
+        ssX.row(i) = qe::linalg::solve_spd(ssA, ssb).t();
+    }
+
+    NodePositions r;
+    r.nodes     = ssX.t();
+    r.centroids = (ssX * w.t()).t();
+    r.weights   = w;
     r.points    = points;
     return r;
 }
@@ -548,6 +677,35 @@ inline MovedNodes move_nodes_to_unit_circle(const arma::mat& line_weights,
     MovedNodes r;
     r.nodes     = unit_circle_nodes(nodes, dim_x, dim_y, mode);
     r.centroids = node_centroids(line_weights, r.nodes, directed, self_weight);
+    return r;
+}
+
+/**
+ * @brief Layout-agnostic unit centroids: @ref node_weights_by_key times
+ *        @p nodes (as @ref node_centroids).
+ */
+inline arma::mat node_centroids_by_key(const arma::mat& line_weights, const arma::mat& nodes,
+                                       const ConnectionKey& key,
+                                       double self_weight = DIRECTED_SELF_WEIGHT) {
+    if (!line_weights.is_finite() || !nodes.is_finite())
+        throw std::invalid_argument("node_centroids_by_key: input matrices must not contain NaN or Inf");
+    return node_weights_by_key(line_weights, key, static_cast<int>(nodes.n_rows), self_weight) * nodes;
+}
+
+/**
+ * @brief Layout-agnostic post-fit unit-circle move (as
+ *        @ref move_nodes_to_unit_circle), centroids from
+ *        @ref node_centroids_by_key.
+ */
+inline MovedNodes move_nodes_to_unit_circle_by_key(const arma::mat& line_weights,
+                                                   const arma::mat& nodes,
+                                                   arma::uword dim_x, arma::uword dim_y,
+                                                   UnitCircleMode mode,
+                                                   const ConnectionKey& key,
+                                                   double self_weight = DIRECTED_SELF_WEIGHT) {
+    MovedNodes r;
+    r.nodes     = unit_circle_nodes(nodes, dim_x, dim_y, mode);
+    r.centroids = node_centroids_by_key(line_weights, r.nodes, key, self_weight);
     return r;
 }
 

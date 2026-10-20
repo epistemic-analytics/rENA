@@ -94,6 +94,52 @@ List directed_node_positions_combine_pairs(arma::mat line_weights,
     );
 }
 
+// Layout-agnostic node optimization: column k connects codes from[k] and
+// to[k] (0-based; equal for a self-connection). See libena's ConnectionKey.
+static qe::ConnectionKey key_of(const IntegerVector& from, const IntegerVector& to) {
+    if (from.size() != to.size()) stop("from and to must have the same length");
+    qe::ConnectionKey key{ arma::uvec(from.size()), arma::uvec(to.size()) };
+    for (R_xlen_t k = 0; k < from.size(); ++k) {
+        if (from[k] < 0 || to[k] < 0) stop("key indices must be >= 0");
+        key.from[k] = from[k]; key.to[k] = to[k];
+    }
+    return key;
+}
+
+// [[Rcpp::export]]
+arma::mat node_weights_by_key_c(arma::mat line_weights, IntegerVector from, IntegerVector to,
+                                int n_codes, double self_weight = 2.0) {
+    return qe::node_weights_by_key(line_weights, key_of(from, to), n_codes, self_weight);
+}
+
+// [[Rcpp::export]]
+List node_positions_by_key_c(arma::mat line_weights, arma::mat points, int num_dims,
+                             IntegerVector from, IntegerVector to, int n_codes,
+                             double self_weight = 2.0) {
+    qe::NodePositions r = qe::node_positions_by_key(
+        line_weights, points, num_dims, key_of(from, to), n_codes, self_weight);
+    return List::create(_("nodes") = r.nodes, _("centroids") = r.centroids,
+                        _("weights") = r.weights, _("points") = r.points);
+}
+
+// [[Rcpp::export]]
+arma::mat node_centroids_by_key_c(arma::mat line_weights, arma::mat nodes,
+                                  IntegerVector from, IntegerVector to, double self_weight = 2.0) {
+    return qe::node_centroids_by_key(line_weights, nodes, key_of(from, to), self_weight);
+}
+
+// [[Rcpp::export]]
+List move_nodes_to_unit_circle_by_key_c(arma::mat line_weights, arma::mat nodes,
+                                        int dim_x, int dim_y, std::string mode,
+                                        IntegerVector from, IntegerVector to,
+                                        double self_weight = 2.0) {
+    if (dim_x < 0 || dim_y < 0)
+        stop("move_nodes_to_unit_circle: dimension indices must be >= 0");
+    qe::MovedNodes r = qe::move_nodes_to_unit_circle_by_key(
+        line_weights, nodes, dim_x, dim_y, qe::unit_circle_mode(mode), key_of(from, to), self_weight);
+    return List::create(_("nodes") = r.nodes, _("centroids") = r.centroids);
+}
+
 // Post-fit unit-circle node move, for move_nodes_to_unit_circle() and
 // move_nodes_to_unit_circle_with_equal_space() (R/move_nodes.R)
 // @param line_weights Numeric matrix (units x connections)

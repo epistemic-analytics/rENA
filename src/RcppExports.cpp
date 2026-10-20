@@ -65,6 +65,71 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// node_weights_by_key_c
+arma::mat node_weights_by_key_c(arma::mat line_weights, IntegerVector from, IntegerVector to, int n_codes, double self_weight);
+RcppExport SEXP _rENA_node_weights_by_key_c(SEXP line_weightsSEXP, SEXP fromSEXP, SEXP toSEXP, SEXP n_codesSEXP, SEXP self_weightSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type line_weights(line_weightsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type from(fromSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type to(toSEXP);
+    Rcpp::traits::input_parameter< int >::type n_codes(n_codesSEXP);
+    Rcpp::traits::input_parameter< double >::type self_weight(self_weightSEXP);
+    rcpp_result_gen = Rcpp::wrap(node_weights_by_key_c(line_weights, from, to, n_codes, self_weight));
+    return rcpp_result_gen;
+END_RCPP
+}
+// node_positions_by_key_c
+List node_positions_by_key_c(arma::mat line_weights, arma::mat points, int num_dims, IntegerVector from, IntegerVector to, int n_codes, double self_weight);
+RcppExport SEXP _rENA_node_positions_by_key_c(SEXP line_weightsSEXP, SEXP pointsSEXP, SEXP num_dimsSEXP, SEXP fromSEXP, SEXP toSEXP, SEXP n_codesSEXP, SEXP self_weightSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type line_weights(line_weightsSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type points(pointsSEXP);
+    Rcpp::traits::input_parameter< int >::type num_dims(num_dimsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type from(fromSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type to(toSEXP);
+    Rcpp::traits::input_parameter< int >::type n_codes(n_codesSEXP);
+    Rcpp::traits::input_parameter< double >::type self_weight(self_weightSEXP);
+    rcpp_result_gen = Rcpp::wrap(node_positions_by_key_c(line_weights, points, num_dims, from, to, n_codes, self_weight));
+    return rcpp_result_gen;
+END_RCPP
+}
+// node_centroids_by_key_c
+arma::mat node_centroids_by_key_c(arma::mat line_weights, arma::mat nodes, IntegerVector from, IntegerVector to, double self_weight);
+RcppExport SEXP _rENA_node_centroids_by_key_c(SEXP line_weightsSEXP, SEXP nodesSEXP, SEXP fromSEXP, SEXP toSEXP, SEXP self_weightSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type line_weights(line_weightsSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type nodes(nodesSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type from(fromSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type to(toSEXP);
+    Rcpp::traits::input_parameter< double >::type self_weight(self_weightSEXP);
+    rcpp_result_gen = Rcpp::wrap(node_centroids_by_key_c(line_weights, nodes, from, to, self_weight));
+    return rcpp_result_gen;
+END_RCPP
+}
+// move_nodes_to_unit_circle_by_key_c
+List move_nodes_to_unit_circle_by_key_c(arma::mat line_weights, arma::mat nodes, int dim_x, int dim_y, std::string mode, IntegerVector from, IntegerVector to, double self_weight);
+RcppExport SEXP _rENA_move_nodes_to_unit_circle_by_key_c(SEXP line_weightsSEXP, SEXP nodesSEXP, SEXP dim_xSEXP, SEXP dim_ySEXP, SEXP modeSEXP, SEXP fromSEXP, SEXP toSEXP, SEXP self_weightSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type line_weights(line_weightsSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type nodes(nodesSEXP);
+    Rcpp::traits::input_parameter< int >::type dim_x(dim_xSEXP);
+    Rcpp::traits::input_parameter< int >::type dim_y(dim_ySEXP);
+    Rcpp::traits::input_parameter< std::string >::type mode(modeSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type from(fromSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type to(toSEXP);
+    Rcpp::traits::input_parameter< double >::type self_weight(self_weightSEXP);
+    rcpp_result_gen = Rcpp::wrap(move_nodes_to_unit_circle_by_key_c(line_weights, nodes, dim_x, dim_y, mode, from, to, self_weight));
+    return rcpp_result_gen;
+END_RCPP
+}
 // move_nodes_to_unit_circle_c
 List move_nodes_to_unit_circle_c(arma::mat line_weights, arma::mat nodes, int dim_x, int dim_y, std::string mode, bool directed, double self_weight);
 RcppExport SEXP _rENA_move_nodes_to_unit_circle_c(SEXP line_weightsSEXP, SEXP nodesSEXP, SEXP dim_xSEXP, SEXP dim_ySEXP, SEXP modeSEXP, SEXP directedSEXP, SEXP self_weightSEXP) {
@@ -188,6 +253,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rENA_node_positions", (DL_FUNC) &_rENA_node_positions, 3},
     {"_rENA_directed_node_positions_c", (DL_FUNC) &_rENA_directed_node_positions_c, 4},
     {"_rENA_directed_node_positions_combine_pairs", (DL_FUNC) &_rENA_directed_node_positions_combine_pairs, 4},
+    {"_rENA_node_weights_by_key_c", (DL_FUNC) &_rENA_node_weights_by_key_c, 5},
+    {"_rENA_node_positions_by_key_c", (DL_FUNC) &_rENA_node_positions_by_key_c, 7},
+    {"_rENA_node_centroids_by_key_c", (DL_FUNC) &_rENA_node_centroids_by_key_c, 5},
+    {"_rENA_move_nodes_to_unit_circle_by_key_c", (DL_FUNC) &_rENA_move_nodes_to_unit_circle_by_key_c, 8},
     {"_rENA_move_nodes_to_unit_circle_c", (DL_FUNC) &_rENA_move_nodes_to_unit_circle_c, 7},
     {"_rENA_ena_svd", (DL_FUNC) &_rENA_ena_svd, 1},
     {"_rENA_deflate", (DL_FUNC) &_rENA_deflate, 2},

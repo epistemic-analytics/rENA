@@ -248,3 +248,29 @@ describe('libena module (libena + libtma) vs libqe-wasm', () => {
         expect(ena.qe.connection_names(['A', 'B', 'C'])).toEqual(['A & B', 'A & C', 'B & C']);
     });
 });
+
+// ── layout-agnostic node optimization (column key) ───────────────────────────
+
+describe('node_positions_by_key', () => {
+    const t  = new Float64Array([0.1,0.2, 0.3,0.4, 0.5,0.6]);
+    const lw = new Float64Array([1,0,2,0, 0,1,0,3, 2,2,1,0]);   // 3 units, 2 codes, directed
+
+    test('ordered key reproduces directed_node_positions at each self_weight', () => {
+        const key = qe.directed_connection_key(2);
+        for (const sw of [1, 2]) {
+            const ref = qe.directed_node_positions(lw, 3, 4, t, 3, 2, 2, sw);
+            const got = qe.node_positions_by_key(lw, 3, 4, t, 3, 2, 2, key.from, key.to, 2, sw);
+            Array.from(ref.weights.data).forEach((v, i) => expect(got.weights.data[i]).toBeCloseTo(v, 12));
+            Array.from(ref.nodes.data).forEach((v, i) => expect(got.nodes.data[i]).toBeCloseTo(v, 10));
+        }
+    });
+
+    test('undirected key with the diagonal: A & A, A & B, B & B, ...', () => {
+        const key = qe.undirected_connection_key(3, true);
+        expect(Array.from(key.from)).toEqual([0, 0, 1, 0, 1, 2]);
+        expect(Array.from(key.to)).toEqual([0, 1, 1, 2, 2, 2]);
+        const u = qe.undirected_connection_key(3, false);
+        expect(Array.from(u.from)).toEqual([0, 0, 1]);
+        expect(Array.from(u.to)).toEqual([1, 2, 2]);
+    });
+});

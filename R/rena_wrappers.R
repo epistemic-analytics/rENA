@@ -87,6 +87,58 @@ directed_node_positions_with_ground_response_added <- function(line_weights,
   directed_node_positions_combine_pairs(line_weights, points, numDims, self_weight)
 }
 
+#' Layout-agnostic node positions from an adjacency key
+#'
+#' Node optimization for any connection layout -- undirected, undirected with
+#' self-connections, or ordered: every connection counts toward each code it
+#' connects, a self-connection (a column whose two codes are the same) toward
+#' its code \code{self_weight} times; each unit's weights are then
+#' L1-normalised and the nodes solved by least squares against the points.
+#' With an undirected key it matches \code{lws_lsq_positions()}; with an
+#' ordered key, \code{directed_node_positions()} at the same \code{self_weight}.
+#'
+#' @param line_weights Numeric matrix (units x connections)
+#' @param points       Numeric matrix of rotated points (units x dims)
+#' @param numDims      Number of dimensions
+#' @param key          Adjacency key: a 2 x n_connections matrix of code names,
+#'   one column per connection (e.g. \code{set$rotation$adjacency.key})
+#' @param codes        Character vector of codes; node order
+#' @param self_weight  Weight of a self-connection in its code's node weight
+#'   (2 = row + column sum, as ordered models; 1 = once)
+#' @return List with nodes, centroids, weights, points
+#' @export
+node_positions_by_key <- function(line_weights, points, numDims, key, codes, self_weight = 2) {
+  ft <- key_indices(key, codes)
+  node_positions_by_key_c(as.matrix(line_weights), as.matrix(points), numDims,
+                          ft$from, ft$to, length(codes), self_weight)
+}
+
+#' Layout-agnostic node centroids from an adjacency key
+#'
+#' The weighting of \code{node_positions_by_key()} times \code{nodes}.
+#'
+#' @inheritParams node_positions_by_key
+#' @param nodes Numeric matrix of node positions (codes x dims), in \code{codes} order
+#' @return Numeric matrix of centroids (units x dims)
+#' @export
+node_centroids_by_key <- function(line_weights, nodes, key, codes, self_weight = 2) {
+  ft <- key_indices(key, codes)
+  node_centroids_by_key_c(as.matrix(line_weights), as.matrix(nodes), ft$from, ft$to, self_weight)
+}
+
+# 0-based code indices of each key column.
+key_indices <- function(key, codes) {
+  key <- as.matrix(key)
+  if (nrow(key) != 2) stop("key must have 2 rows (one column per connection)")
+  from <- match(as.character(key[1, ]), codes)
+  to   <- match(as.character(key[2, ]), codes)
+  if (anyNA(c(from, to))) {
+    stop("key names codes not in `codes`: ",
+         paste(unique(c(key[1, is.na(from)], key[2, is.na(to)])), collapse = ", "))
+  }
+  list(from = from - 1L, to = to - 1L)
+}
+
 #' Calculate ENA correlations
 #'
 #' Pearson correlation with confidence interval between ENA points and

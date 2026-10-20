@@ -119,3 +119,36 @@ class TestDirectedSelfWeight:
             fit = modeling.directed_node_positions(self.LW, self.PTS, 2, self_weight=sw)
             m = modeling.move_nodes_to_unit_circle(self.LW, fit.nodes, directed=True, self_weight=sw)
             np.testing.assert_allclose(m.centroids, fit.weights @ m.nodes)
+
+
+class TestByKey:
+    """Layout-agnostic node optimization reproduces the layout-specific solvers."""
+
+    rng = np.random.default_rng(5)
+    PTS = rng.normal(size=(8, 2))
+
+    def test_undirected_key(self):
+        lw = self.rng.random((8, 6))                      # 4 codes, choose(4,2)
+        f, t = modeling.undirected_connection_key(4)
+        ref = modeling.node_positions(lw, self.PTS, 2)
+        got = modeling.node_positions_by_key(lw, self.PTS, 2, f, t, 4)
+        np.testing.assert_allclose(got.weights, ref.weights, atol=1e-12)
+        np.testing.assert_allclose(got.nodes, ref.nodes, atol=1e-10)
+
+    def test_directed_key(self):
+        lw = self.rng.random((8, 16))                     # 4 codes, 4^2
+        f, t = modeling.directed_connection_key(4)
+        for sw in (1.0, 2.0):
+            ref = modeling.directed_node_positions(lw, self.PTS, 2, self_weight=sw)
+            got = modeling.node_positions_by_key(lw, self.PTS, 2, f, t, 4, self_weight=sw)
+            np.testing.assert_allclose(got.weights, ref.weights, atol=1e-12)
+            np.testing.assert_allclose(got.nodes, ref.nodes, atol=1e-10)
+
+    def test_diagonal_key_and_centroids(self):
+        f, t = modeling.undirected_connection_key(3, True)
+        np.testing.assert_array_equal(f, [0, 0, 1, 0, 1, 2])
+        np.testing.assert_array_equal(t, [0, 1, 1, 2, 2, 2])
+        lw = self.rng.random((8, 6))
+        fit = modeling.node_positions_by_key(lw, self.PTS, 2, f, t, 3)
+        np.testing.assert_allclose(modeling.node_centroids_by_key(lw, fit.nodes, f, t),
+                                   fit.centroids, atol=1e-12)

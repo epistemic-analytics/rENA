@@ -26,6 +26,19 @@ end
     @test all(isfinite, r.nodes)
 end
 
+@testset "node_positions_by_key" begin
+    lw  = [1.0 0.0 2.0 0.0; 0.0 1.0 0.0 3.0; 2.0 2.0 1.0 0.0]   # 2 codes, directed
+    pts = [0.1 0.2; 0.3 0.4; 0.5 0.6]
+    from, to = [1, 2, 1, 2], [1, 1, 2, 2]                        # column j*n+i: ground i -> response j
+    for sw in (1.0, 2.0)
+        ref = directed_node_positions(lw, pts, 2; self_weight = sw)
+        got = node_positions_by_key(lw, pts, 2, from, to, 2; self_weight = sw)
+        @test got.weights ≈ ref.weights
+        @test got.nodes ≈ ref.nodes
+        @test node_centroids_by_key(lw, got.nodes, from, to; self_weight = sw) ≈ got.centroids
+    end
+end
+
 @testset "directed_node_positions self_weight" begin
     # 2 codes, directed columns [a&a, b&a, a&b, b&b]; unit 1: a&a = 1, a&b = 2
     lw  = [1.0 0.0 2.0 0.0; 0.0 1.0 0.0 3.0; 2.0 2.0 1.0 0.0]

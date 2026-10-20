@@ -122,6 +122,67 @@ static val move_nodes_to_unit_circle(const val& lw_data, int lw_rows, int lw_col
         dim_x, dim_y, qe::unit_circle_mode(mode), directed, self_weight));
 }
 
+static qe::ConnectionKey key_from_vectors(const std::vector<int>& from, const std::vector<int>& to) {
+    if (from.size() != to.size()) throw std::invalid_argument("from and to must have the same length");
+    qe::ConnectionKey key{ arma::uvec(from.size()), arma::uvec(to.size()) };
+    for (size_t k = 0; k < from.size(); ++k) {
+        if (from[k] < 0 || to[k] < 0) throw std::invalid_argument("key indices must be >= 0");
+        key.from[k] = static_cast<arma::uword>(from[k]);
+        key.to[k]   = static_cast<arma::uword>(to[k]);
+    }
+    return key;
+}
+
+static val key_to_js(const qe::ConnectionKey& k) {
+    std::vector<int> f(k.from.begin(), k.from.end()), t(k.to.begin(), k.to.end());
+    val r = val::object();
+    r.set("from", val::array(f.begin(), f.end()));
+    r.set("to",   val::array(t.begin(), t.end()));
+    return r;
+}
+
+// Layout-agnostic node optimization. from / to: Int32Array (0-based code of
+// each column; equal for a self-connection). See libena's ConnectionKey.
+static val undirected_connection_key(int n_codes, bool diagonal) {
+    return key_to_js(qe::undirected_connection_key(n_codes, diagonal));
+}
+static val directed_connection_key(int n_codes) {
+    return key_to_js(qe::directed_connection_key(n_codes));
+}
+static val node_weights_by_key(const val& lw_data, int lw_rows, int lw_cols,
+                               const val& from, const val& to, int n_codes, double self_weight) {
+    return mat_to_js(qe::node_weights_by_key(
+        js_to_mat(lw_data, lw_rows, lw_cols),
+        key_from_vectors(vecFromJSArray<int>(from), vecFromJSArray<int>(to)), n_codes, self_weight));
+}
+static val node_positions_by_key(const val& lw_data, int lw_rows, int lw_cols,
+                                 const val& pt_data, int pt_rows, int pt_cols, int num_dims,
+                                 const val& from, const val& to, int n_codes, double self_weight) {
+    arma::mat pt = js_to_mat(pt_data, pt_rows, pt_cols);
+    if (num_dims <= 0) num_dims = static_cast<int>(pt.n_cols);
+    return to_js(qe::node_positions_by_key(
+        js_to_mat(lw_data, lw_rows, lw_cols), pt, num_dims,
+        key_from_vectors(vecFromJSArray<int>(from), vecFromJSArray<int>(to)), n_codes, self_weight));
+}
+static val node_centroids_by_key(const val& lw_data, int lw_rows, int lw_cols,
+                                 const val& nodes_data, int n_rows, int n_cols,
+                                 const val& from, const val& to, double self_weight) {
+    return mat_to_js(qe::node_centroids_by_key(
+        js_to_mat(lw_data, lw_rows, lw_cols), js_to_mat(nodes_data, n_rows, n_cols),
+        key_from_vectors(vecFromJSArray<int>(from), vecFromJSArray<int>(to)), self_weight));
+}
+static val move_nodes_to_unit_circle_by_key(const val& lw_data, int lw_rows, int lw_cols,
+                                            const val& nodes_data, int n_rows, int n_cols,
+                                            int dim_x, int dim_y, const std::string& mode,
+                                            const val& from, const val& to, double self_weight) {
+    if (dim_x < 0 || dim_y < 0)
+        throw std::invalid_argument("move_nodes_to_unit_circle: dimension indices must be >= 0");
+    return to_js(qe::move_nodes_to_unit_circle_by_key(
+        js_to_mat(lw_data, lw_rows, lw_cols), js_to_mat(nodes_data, n_rows, n_cols),
+        dim_x, dim_y, qe::unit_circle_mode(mode),
+        key_from_vectors(vecFromJSArray<int>(from), vecFromJSArray<int>(to)), self_weight));
+}
+
 // ── Rotation ──────────────────────────────────────────────────────────────────
 
 // ena_svd(data, rows, cols)
@@ -273,6 +334,12 @@ EMSCRIPTEN_BINDINGS(libena) {
     function("directed_node_positions",               &directed_node_positions);
     function("directed_node_positions_combine_pairs", &directed_node_positions_combine_pairs);
     function("move_nodes_to_unit_circle",             &move_nodes_to_unit_circle);
+    function("undirected_connection_key",             &undirected_connection_key);
+    function("directed_connection_key",               &directed_connection_key);
+    function("node_weights_by_key",                   &node_weights_by_key);
+    function("node_positions_by_key",                 &node_positions_by_key);
+    function("node_centroids_by_key",                 &node_centroids_by_key);
+    function("move_nodes_to_unit_circle_by_key",      &move_nodes_to_unit_circle_by_key);
 
     // Rotation
     function("ena_svd",                               &ena_svd);

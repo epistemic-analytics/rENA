@@ -38,6 +38,7 @@ export
     # Correlation and node positions
     ena_correlation, node_positions, directed_node_positions,
     directed_node_positions_combine_pairs, move_nodes_to_unit_circle,
+    node_weights_by_key, node_positions_by_key, node_centroids_by_key,
     # Rotation
     ena_svd, deflate, orthogonal_svd, complete_rotation,
     means_rotation, generalized_means_rotation,
@@ -250,6 +251,55 @@ function move_nodes_to_unit_circle(line_weights::Matrix{Float64},
                                   Int32(dims[1] - 1), Int32(dims[2] - 1),
                                   CxxWrap.StdLib.StdString(m), directed, Float64(self_weight))
     _unpack_moved(r)
+end
+
+# ── Layout-agnostic node optimization ─────────────────────────────────────────
+
+_key0(v) = _sv_i32(collect(v) .- 1)   # 1-based (Julia) → 0-based C++ std::vector
+
+"""
+    node_weights_by_key(line_weights, from, to, n_codes; self_weight=2.0) -> Matrix{Float64}
+
+Layout-agnostic node weights: column `k` counts toward codes `from[k]` and
+`to[k]` (1-based; equal for a self-connection, which counts `self_weight`
+times); each row L1-normalised.
+"""
+function node_weights_by_key(line_weights::Matrix{Float64}, from::AbstractVector{<:Integer},
+                             to::AbstractVector{<:Integer}, n_codes::Integer; self_weight::Real = 2.0)
+    lr, lc = size(line_weights)
+    reshape(collect(Float64, node_weights_by_key(vec(line_weights), Int32(lr), Int32(lc),
+                                                 _key0(from), _key0(to), Int32(n_codes),
+                                                 Float64(self_weight))), lr, Int(n_codes))
+end
+
+"""
+    node_positions_by_key(line_weights, points, num_dims, from, to, n_codes; self_weight=2.0) -> NamedTuple
+
+Layout-agnostic least-squares node positions (see `node_weights_by_key`).
+Returns `(nodes, centroids, weights, points)`.
+"""
+function node_positions_by_key(line_weights::Matrix{Float64}, points::Matrix{Float64},
+                               num_dims::Integer, from::AbstractVector{<:Integer},
+                               to::AbstractVector{<:Integer}, n_codes::Integer;
+                               self_weight::Real = 2.0)
+    lr, lc = size(line_weights); pr, pc = size(points)
+    _unpack_positions(node_positions_by_key(vec(line_weights), Int32(lr), Int32(lc),
+                                            vec(points), Int32(pr), Int32(pc), Int32(num_dims),
+                                            _key0(from), _key0(to), Int32(n_codes), Float64(self_weight)))
+end
+
+"""
+    node_centroids_by_key(line_weights, nodes, from, to; self_weight=2.0) -> Matrix{Float64}
+
+`node_weights_by_key(...) * nodes`.
+"""
+function node_centroids_by_key(line_weights::Matrix{Float64}, nodes::Matrix{Float64},
+                               from::AbstractVector{<:Integer}, to::AbstractVector{<:Integer};
+                               self_weight::Real = 2.0)
+    lr, lc = size(line_weights); nr, nc = size(nodes)
+    reshape(collect(Float64, node_centroids_by_key(vec(line_weights), Int32(lr), Int32(lc),
+                                                   vec(nodes), Int32(nr), Int32(nc),
+                                                   _key0(from), _key0(to), Float64(self_weight))), lr, nc)
 end
 
 # ── Rotation ──────────────────────────────────────────────────────────────────

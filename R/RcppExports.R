@@ -17,6 +17,22 @@ directed_node_positions_combine_pairs <- function(line_weights, points, num_dims
     .Call(`_rENA_directed_node_positions_combine_pairs`, line_weights, points, num_dims, self_weight)
 }
 
+node_weights_by_key_c <- function(line_weights, from, to, n_codes, self_weight = 2.0) {
+    .Call(`_rENA_node_weights_by_key_c`, line_weights, from, to, n_codes, self_weight)
+}
+
+node_positions_by_key_c <- function(line_weights, points, num_dims, from, to, n_codes, self_weight = 2.0) {
+    .Call(`_rENA_node_positions_by_key_c`, line_weights, points, num_dims, from, to, n_codes, self_weight)
+}
+
+node_centroids_by_key_c <- function(line_weights, nodes, from, to, self_weight = 2.0) {
+    .Call(`_rENA_node_centroids_by_key_c`, line_weights, nodes, from, to, self_weight)
+}
+
+move_nodes_to_unit_circle_by_key_c <- function(line_weights, nodes, dim_x, dim_y, mode, from, to, self_weight = 2.0) {
+    .Call(`_rENA_move_nodes_to_unit_circle_by_key_c`, line_weights, nodes, dim_x, dim_y, mode, from, to, self_weight)
+}
+
 move_nodes_to_unit_circle_c <- function(line_weights, nodes, dim_x, dim_y, mode, directed, self_weight = 2.0) {
     .Call(`_rENA_move_nodes_to_unit_circle_c`, line_weights, nodes, dim_x, dim_y, mode, directed, self_weight)
 }

@@ -28,6 +28,12 @@ __all__ = [
     "directed_node_positions",
     "directed_node_positions_combine_pairs",
     "move_nodes_to_unit_circle",
+    "undirected_connection_key",
+    "directed_connection_key",
+    "node_weights_by_key",
+    "node_positions_by_key",
+    "node_centroids_by_key",
+    "move_nodes_to_unit_circle_by_key",
     "ena_svd",
     "deflate",
     "orthogonal_svd",
@@ -127,6 +133,44 @@ def move_nodes_to_unit_circle(line_weights, nodes, dim_x=0, dim_y=1, mode="equal
                               directed=False, self_weight=2.0) -> MovedNodes:
     return MovedNodes(**_libena.move_nodes_to_unit_circle(
         line_weights, nodes, dim_x, dim_y, mode, directed, self_weight))
+
+
+# ── layout-agnostic node optimization (column key) ───────────────────────────
+
+@_doc
+def undirected_connection_key(n_codes, diagonal=False):
+    return _libena.undirected_connection_key(n_codes, diagonal)
+
+
+@_doc
+def directed_connection_key(n_codes):
+    return _libena.directed_connection_key(n_codes)
+
+
+@_doc
+def node_weights_by_key(line_weights, from_, to, n_codes, self_weight=2.0):
+    return _libena.node_weights_by_key(line_weights, list(map(int, from_)), list(map(int, to)),
+                                       n_codes, self_weight)
+
+
+@_doc
+def node_positions_by_key(line_weights, points, num_dims, from_, to, n_codes,
+                          self_weight=2.0) -> NodePositions:
+    return NodePositions(**_libena.node_positions_by_key(
+        line_weights, points, num_dims, list(map(int, from_)), list(map(int, to)), n_codes, self_weight))
+
+
+@_doc
+def node_centroids_by_key(line_weights, nodes, from_, to, self_weight=2.0):
+    return _libena.node_centroids_by_key(line_weights, nodes, list(map(int, from_)),
+                                         list(map(int, to)), self_weight)
+
+
+@_doc
+def move_nodes_to_unit_circle_by_key(line_weights, nodes, dim_x, dim_y, mode, from_, to,
+                                     self_weight=2.0) -> MovedNodes:
+    return MovedNodes(**_libena.move_nodes_to_unit_circle_by_key(
+        line_weights, nodes, dim_x, dim_y, mode, list(map(int, from_)), list(map(int, to)), self_weight))
 
 
 # ── rotation ─────────────────────────────────────────────────────────────────

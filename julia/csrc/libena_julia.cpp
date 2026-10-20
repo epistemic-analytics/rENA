@@ -84,6 +84,40 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
                 dim_x, dim_y, qe::unit_circle_mode(mode), directed, self_weight));
         });
 
+    // ── Layout-agnostic node optimization (key: 0-based from / to here; ENA.jl
+    //    takes 1-based) ─────────────────────────────────────────────────────────
+    auto key_of = [](const std::vector<int32_t>& f, const std::vector<int32_t>& t) {
+        if (f.size() != t.size()) throw std::invalid_argument("from and to must have the same length");
+        qe::ConnectionKey k{ arma::uvec(f.size()), arma::uvec(t.size()) };
+        for (size_t i = 0; i < f.size(); ++i) {
+            if (f[i] < 0 || t[i] < 0) throw std::invalid_argument("key indices must be >= 0");
+            k.from[i] = static_cast<arma::uword>(f[i]); k.to[i] = static_cast<arma::uword>(t[i]);
+        }
+        return k;
+    };
+    mod.method("node_weights_by_key",
+        [key_of](jlcxx::ArrayRef<double> lw, int32_t lr, int32_t lc,
+                 const std::vector<int32_t>& f, const std::vector<int32_t>& t,
+                 int32_t n_codes, double self_weight) -> std::vector<double> {
+            return pack(qe::node_weights_by_key(view_mat(lw, lr, lc), key_of(f, t), n_codes, self_weight));
+        });
+    mod.method("node_positions_by_key",
+        [key_of](jlcxx::ArrayRef<double> lw, int32_t lr, int32_t lc,
+                 jlcxx::ArrayRef<double> pt, int32_t pr, int32_t pc, int32_t num_dims,
+                 const std::vector<int32_t>& f, const std::vector<int32_t>& t,
+                 int32_t n_codes, double self_weight) -> NodePositionsTuple {
+            return to_tuple(qe::node_positions_by_key(view_mat(lw, lr, lc), view_mat(pt, pr, pc),
+                                                      num_dims, key_of(f, t), n_codes, self_weight));
+        });
+    mod.method("node_centroids_by_key",
+        [key_of](jlcxx::ArrayRef<double> lw, int32_t lr, int32_t lc,
+                 jlcxx::ArrayRef<double> nodes, int32_t nr, int32_t nc,
+                 const std::vector<int32_t>& f, const std::vector<int32_t>& t,
+                 double self_weight) -> std::vector<double> {
+            return pack(qe::node_centroids_by_key(view_mat(lw, lr, lc), view_mat(nodes, nr, nc),
+                                                  key_of(f, t), self_weight));
+        });
+
     // ── Rotation ──────────────────────────────────────────────────────────────
 
     mod.method("ena_svd",
