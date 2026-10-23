@@ -21,31 +21,53 @@ npm install @qe-libs/rena-wasm
 
 ## Quick Start
 
-```js
+On [qe-libs.org/npm/qe-libs-rena-wasm/](https://qe-libs.org/npm/qe-libs-rena-wasm/)
+the examples marked `js run` have a **Run** button: they run in your browser,
+on the WebAssembly build, against `demo/RS.csv` (rENA's `RS.data`, shipped in
+this package without its `text` column). There, `console.log` prints under the
+example, `demo.csv(url)` loads a CSV into row objects and `demo.plot(model, opts)`
+draws the model with [`@qe-libs/qeviz`](https://qe-libs.org/npm/qe-libs-qeviz/);
+`demo` exists only on that page.
+
+```js run
 import loadENA from '@qe-libs/rena-wasm';
 
-const ena = await loadENA();
+const ena  = await loadENA();
+const rows = await demo.csv('@qe-libs/rena-wasm/demo/RS.csv');
 
 const model = ena.fit(rows, {
-  codes:         ['Data', 'Technical.Constraints', 'Performance.Parameters'],
-  units:         ['UserName', 'Condition'],
+  codes:         ['Data', 'Technical.Constraints', 'Performance.Parameters',
+                  'Client.and.Consultant.Requests', 'Design.Reasoning', 'Collaboration'],
+  units:         ['Condition', 'UserName'],
   conversations: ['Condition', 'GroupName'],
   window:        4,
   dims:          2,
 });
 
+console.log(model.nUnits, 'units,', model.nConnections, 'connections');
+console.log('axes:', model.rotation.columnNames, 'variance explained:', model.model.variance.slice(0, 2));
+console.log('first unit:', model.model.unitLabels[0], model.centroid(model.model.unitLabels[0]));
+
+// Colour by the first unit column (Condition); subtract the two conditions' mean networks
+await demo.plot(model, { group: 0, edges: ['FirstGame', 'SecondGame'] });
+```
+
+The fitted model:
+
+```js
 model.model.centroids  // Float64Array  nUnits × dims
 model.lineWeights      // Float64Array  nUnits × nConnections (normed)
 model.connectionCounts // Float64Array  nUnits × nConnections (unit counts, before normalisation)
 model.rowConnectionCounts // Float64Array nRows × nConnections (each row's counts after binarize / weight; rows sum to connectionCounts)
+model.points           // Float64Array  nUnits × dims (projected positions)
 model.rotation.nodes   // Float64Array  nCodes × dims
 model.connectionNames  // ['Data & Technical.Constraints', ...]
-model.model.unitLabels // ['UserName1_ConditionA', ...]
+model.model.unitLabels // ['FirstGame__steven z', ...] — unit column values joined with '__'
 model.rotation.columnNames // ['SVD1', 'SVD2']
 
 // Per-unit helpers
-model.centroid('Alice_A')  // number[]  length = dims
-model.network('Alice_A')   // number[]  length = nConnections
+model.centroid('FirstGame__steven z')  // number[]  length = dims
+model.network('FirstGame__steven z')   // number[]  length = nConnections
 ```
 
 ---
@@ -57,14 +79,33 @@ model.network('Alice_A')   // number[]  length = nConnections
 | SVD (default) | `'svd'` | — |
 | Means | `'mean'` | `groupA: [unitIdx, ...]`, `groupB: [unitIdx, ...]` |
 
-```js
+```js run
 // Means rotation — groupA/groupB are unit indices (position in unitLabels)
+import loadENA from '@qe-libs/rena-wasm';
+
+const ena  = await loadENA();
+const rows = await demo.csv('@qe-libs/rena-wasm/demo/RS.csv');
+const opts = {
+  codes:         ['Data', 'Technical.Constraints', 'Performance.Parameters',
+                  'Client.and.Consultant.Requests', 'Design.Reasoning', 'Collaboration'],
+  units:         ['Condition', 'UserName'],
+  conversations: ['Condition', 'GroupName'],
+  window:        4,
+};
+
+// Unit keys are the unit columns joined with '__': 'FirstGame__steven z'
+const labels = ena.fit(rows, opts).model.unitLabels;
+const idx = cond => labels.flatMap((u, i) => u.startsWith(cond + '__') ? [i] : []);
+
 const model = ena.fit(rows, {
-  codes, units, conversations,
+  ...opts,
   rotation: 'mean',
-  groupA: [0, 1, 2],
-  groupB: [3, 4, 5],
+  groupA: idx('FirstGame'),
+  groupB: idx('SecondGame'),
 });
+console.log('axes:', model.rotation.columnNames);
+
+await demo.plot(model, { group: 0, edges: ['FirstGame', 'SecondGame'] });
 ```
 
 ---
