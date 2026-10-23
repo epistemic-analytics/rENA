@@ -25,15 +25,15 @@ On [qe-libs.org/npm/qe-libs-rena-wasm/](https://qe-libs.org/npm/qe-libs-rena-was
 the examples marked `js run` have a **Run** button: they run in your browser,
 on the WebAssembly build, against `demo/RS.csv` (rENA's `RS.data`, shipped in
 this package without its `text` column). There, `console.log` prints under the
-example, `qe.csv(url)` loads a CSV into row objects and `qe.plot(model, opts)`
+example, `demo.csv(url)` loads a CSV into row objects and `demo.plot(model, opts)`
 draws the model with [`@qe-libs/qeviz`](https://qe-libs.org/npm/qe-libs-qeviz/);
-`qe` exists only on that page.
+`demo` exists only on that page.
 
 ```js run
 import loadENA from '@qe-libs/rena-wasm';
 
 const ena  = await loadENA();
-const rows = await qe.csv('@qe-libs/rena-wasm/demo/RS.csv');
+const rows = await demo.csv('@qe-libs/rena-wasm/demo/RS.csv');
 
 const model = ena.fit(rows, {
   codes:         ['Data', 'Technical.Constraints', 'Performance.Parameters',
@@ -49,7 +49,7 @@ console.log('axes:', model.rotation.columnNames, 'variance explained:', model.mo
 console.log('first unit:', model.model.unitLabels[0], model.centroid(model.model.unitLabels[0]));
 
 // Colour by the first unit column (Condition); subtract the two conditions' mean networks
-await qe.plot(model, { group: 0, edges: ['FirstGame', 'SecondGame'] });
+await demo.plot(model, { group: 0, edges: ['FirstGame', 'SecondGame'] });
 ```
 
 The fitted model:
@@ -84,7 +84,7 @@ model.network('FirstGame__steven z')   // number[]  length = nConnections
 import loadENA from '@qe-libs/rena-wasm';
 
 const ena  = await loadENA();
-const rows = await qe.csv('@qe-libs/rena-wasm/demo/RS.csv');
+const rows = await demo.csv('@qe-libs/rena-wasm/demo/RS.csv');
 const opts = {
   codes:         ['Data', 'Technical.Constraints', 'Performance.Parameters',
                   'Client.and.Consultant.Requests', 'Design.Reasoning', 'Collaboration'],
@@ -105,7 +105,7 @@ const model = ena.fit(rows, {
 });
 console.log('axes:', model.rotation.columnNames);
 
-await qe.plot(model, { group: 0, edges: ['FirstGame', 'SecondGame'] });
+await demo.plot(model, { group: 0, edges: ['FirstGame', 'SecondGame'] });
 ```
 
 ---
