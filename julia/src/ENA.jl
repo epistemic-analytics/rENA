@@ -1,16 +1,17 @@
 """
     ENA
 
-Julia bindings for libena — the Epistemic Network Analysis C++ layer shared by
-rENA (R), qe-ena (Python) and rena-wasm (JavaScript): rotations (SVD, means,
-generalized means), least-squares node positions, ENA correlations and CCD
-window estimation.
+Epistemic Network Analysis: `ENA.accumulate` (stanza-window networks, via
+TMA.jl) and `ENA.fit` (an `ENAModel`: SVD, means or generalized rotation,
+node positions; also of `TMA.accumulate` results), and the libena kernels
+they use — the ENA C++ layer shared by rENA (R), qe-ena (Python) and rena-wasm
+(JavaScript): rotations (SVD, means, generalized means), least-squares node
+positions, ENA correlations and CCD window estimation.
 
 The C++ lives in the rENA repository (`inst/include/libena`) and builds on
-libqe's generic numerics.  These functions moved here from LibQE.jl (libqe's
-phase 4a split) with the same signatures and results.
+libqe's generic numerics (LibQE.jl).
 
-All functions accept standard Julia `Matrix{Float64}` / `Vector{Float64}`
+All kernels accept standard Julia `Matrix{Float64}` / `Vector{Float64}`
 arguments.  Matrix inputs are zero-copy (Julia and Armadillo are both
 column-major); results are copied out once.
 
@@ -32,6 +33,9 @@ __precompile__(false)
 module ENA
 
 using CxxWrap
+using Tables
+import LibQE
+import TMA
 
 # ── Public API ────────────────────────────────────────────────────────────────
 export
@@ -42,8 +46,12 @@ export
     # Rotation
     ena_svd, deflate, orthogonal_svd, complete_rotation,
     means_rotation, generalized_means_rotation,
+    move_nodes_to_unit_circle_by_key,
     # Window estimation
-    ccd_window
+    ccd_window,
+    # The pipeline (src/model.jl); `accumulate` and `fit` themselves are
+    # ENA.accumulate / ENA.fit (not exported).
+    ENAAccumulation, ENAModel, MeansRotation, GeneralizedRotation
 
 # ── Load shared library ───────────────────────────────────────────────────────
 # The library built by CMake is installed into julia/lib/ (one level up from
@@ -264,6 +272,37 @@ end
 _key0(v) = _sv_i32(collect(v) .- 1)   # 1-based (Julia) → 0-based C++ std::vector
 
 """
+    move_nodes_to_unit_circle_by_key(line_weights, nodes, from, to; dims=(1, 2),
+                                     mode=:equal, self_weight=2.0) -> NamedTuple
+
+[`move_nodes_to_unit_circle`](@ref) for any layout of connection columns:
+column `k` of `line_weights` connects codes `from[k]` and `to[k]` (1-based),
+and the centroids are [`node_centroids_by_key`](@ref) of the moved nodes —
+e.g. unordered networks with self-connection columns (A & A, A & B, …).
+Returns `(nodes, centroids)`.
+"""
+function move_nodes_to_unit_circle_by_key(line_weights::Matrix{Float64}, nodes::Matrix{Float64},
+                                          from::AbstractVector{<:Integer},
+                                          to::AbstractVector{<:Integer};
+                                          dims = (1, 2), mode = :equal, self_weight::Real = 2.0)
+    (all(isfinite, line_weights) && all(isfinite, nodes)) ||
+        throw(ArgumentError("move_nodes_to_unit_circle_by_key: input matrices must not contain NaN or Inf"))
+    nr, nc = size(nodes)
+    lr, lc = size(line_weights)
+    length(dims) == 2 && all(d -> d isa Integer && 1 <= d <= nc, dims) && dims[1] != dims[2] ||
+        throw(ArgumentError("move_nodes_to_unit_circle_by_key: dims must be two different dimensions in 1:$nc"))
+    m = String(mode)
+    m in ("equal", "radial") ||
+        throw(ArgumentError("move_nodes_to_unit_circle_by_key: mode must be :equal or :radial, got $(repr(mode))"))
+    length(from) == length(to) == lc ||
+        throw(ArgumentError("move_nodes_to_unit_circle_by_key: from and to need one entry per column ($lc)"))
+    _unpack_moved(move_nodes_to_unit_circle_by_key(
+        vec(line_weights), Int32(lr), Int32(lc), vec(nodes), Int32(nr), Int32(nc),
+        Int32(dims[1] - 1), Int32(dims[2] - 1), CxxWrap.StdLib.StdString(m),
+        _key0(from), _key0(to), Float64(self_weight)))
+end
+
+"""
     node_weights_by_key(line_weights, from, to, n_codes; self_weight=2.0) -> Matrix{Float64}
 
 Layout-agnostic node weights: column `k` counts toward codes `from[k]` and
@@ -477,5 +516,7 @@ function ccd_window(conversations::AbstractVector{<:AbstractMatrix{<:Real}};
         total_weight         = collect(Float64, t[7]),
     )
 end
+
+include("model.jl")
 
 end # module ENA

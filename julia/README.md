@@ -1,15 +1,14 @@
 # ENA.jl
 
-Julia bindings for libena, the Epistemic Network Analysis C++ layer shared by
-[rENA](https://gitlab.com/epistemic-analytics/qe-packages/rENA) (R), qe-ena
-(Python) and rena-wasm (JavaScript): rotations, node positions, ENA
-correlations and CCD window estimation. The C++ lives in this repository
-(`inst/include/libena`) and builds on [libqe](https://github.com/epistemic-analytics/libqe)'s
-generic numerics.
-
-These functions moved here from LibQE.jl, which keeps them only until libqe
-0.2.0. Built with [CxxWrap.jl](https://github.com/JuliaInterop/CxxWrap.jl);
-results are plain NamedTuples, so ENA.jl loads alongside LibQE.jl.
+Epistemic Network Analysis in Julia: accumulate coded data into networks and
+fit ENA models — SVD, means and generalized (GMR) rotations, node positions,
+ordered (ONA) and self-connection models from TMA.jl — with the same results
+as [rENA](https://gitlab.com/epistemic-analytics/qe-packages/rENA) (R), qe-ena
+(Python) and rena-wasm (JavaScript). The numerics are libena, the C++ layer
+those packages share (`inst/include/libena` in this repository), built on
+[libqe](https://github.com/epistemic-analytics/libqe)'s generic numerics
+(LibQE.jl); accumulation is TMA.jl's. Built with
+[CxxWrap.jl](https://github.com/JuliaInterop/CxxWrap.jl).
 
 ## Install
 
@@ -43,6 +42,21 @@ cmake --build build && cmake --install build      # → julia/lib/libena_julia
 julia --project=. -e 'using Pkg; Pkg.test()'
 ```
 
+ENA.jl depends on TMA.jl and LibQE.jl, which come from the QE registry (add
+it as in Install). To work against local checkouts of them instead, develop
+their `julia/` directories (and their `dev/<Name>_jll` stand-ins) into one
+environment and test from there:
+
+```julia
+using Pkg
+Pkg.activate(mktempdir())
+Pkg.develop([PackageSpec(path = p) for p in [
+    "../libqe/julia/dev/LibQE_jll", "../libqe/julia",    # paths from this repo's parent
+    "../tma/julia/dev/TMA_jll", "../tma/julia",
+    "julia/dev/ENA_jll", "julia"]])
+Pkg.test("ENA")
+```
+
 Outside a checkout (a registered install contains `julia/` only), CMake takes
 libena and libqe from their Conan packages instead:
 
@@ -56,25 +70,80 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release \
 
 ## Quick start
 
+`data` is any [Tables.jl](https://github.com/JuliaData/Tables.jl) table — a
+`DataFrame`, a CSV.jl file, or a `NamedTuple` of columns — with one row per
+line of talk: who said it, which conversation it belongs to, and 0/1 codes.
+
 ```julia
-using ENA
+using ENA, CSV
 
-pts = randn(20, 4)
-pts .-= sum(pts, dims = 1) ./ size(pts, 1)   # center first, as rENA does
+rs = CSV.File("rs.data.csv")      # rENA's RS.data (inst/extdata/rs.data.csv)
+codes = [:Data, Symbol("Technical Constraints"), Symbol("Performance Parameters"),
+         Symbol("Client and Consultant Requests"), Symbol("Design Reasoning"), :Collaboration]
 
-r = ena_svd(pts)              # (rotation, eigenvalues, column_names)
-r.column_names                # ["SVD1", "SVD2", "SVD3", "SVD4"]
+# 1. Accumulate: each unit's co-occurrence network, a moving stanza window of
+#    4 lines within each conversation (= rENA's ena.accumulate.data).
+acc = ENA.accumulate(rs, [:UserName, :Condition], [:ActivityNumber, :GroupName], codes;
+                     window_size = 4)
+acc.connection_counts            # 48 units × 15 connections
+acc.unit_labels[1]               # "steven z::FirstGame"
 
-m = means_rotation(pts, [(Int32[0, 1, 2], Int32[3, 4, 5])])   # 0-based rows
-m.column_names[1]             # "MR1"
+# 2. Fit (= rENA's ena.make.set): sphere-normalize, center, rotate, place nodes.
+m = ENA.fit(acc)                                                     # SVD
+m = ENA.fit(acc; rotation = MeansRotation(:Condition, "FirstGame", "SecondGame"))
+m = ENA.fit(acc; rotation = GeneralizedRotation(:Condition))         # GMR
+m = ENA.fit(acc; rotation = GeneralizedRotation([:Condition, Symbol("CONFIDENCE.Pre")]))
 
-np = node_positions(abs.(randn(20, 6)), pts * r.rotation[:, 1:2], 2)
-size(np.nodes)                # (4, 2): 4 codes → choose_two(4) = 6 connections
+m.points        # units × 2: each unit's position
+m.nodes         # codes × 2: the codes' positions
+m.centroids     # units × 2: each network's centroid (fits m.points)
+m.variance      # each dimension's share of the variance
+m.rotation_names[1:2]            # ["MR1", "SVD2"], ["GMR1", "SVD2"], …
 
-ccd_window([rand(0:1, 30, 3) .* 1.0 for _ in 1:4]; max_window = 10)
+# Post-fit: nodes on a circle in the plane of dimensions 1 and 2.
+m2 = move_nodes_to_unit_circle(m; dims = (1, 2), mode = :equal)
+```
+
+Group units for a means rotation by a `meta` column (one value per unit: the
+unit's first line), `Bool` vectors over the units, or unit labels. A
+generalized rotation's target is a `meta` column (numeric → regression, else
+categorical), vectors of `Symbol`s add covariates (with pairwise interactions,
+`interactions = true`), `y = …` gives a second GMR dimension, and
+`select_2_groups = (a, b)` fits a categorical target on two of its groups.
+
+### Ordered (ONA) and self-connection models
+
+`ENA.fit` also models TMA.jl's accumulations (as rENA's `model()` models tma's):
+ordered networks get ONA's directed node positions, and unordered networks
+with self-connection columns (A & A, A & B, B & B, …) are placed by their
+adjacency key. `self_weight` (default 2, as rENA) is a self-connection's
+weight in its code's node weight.
+
+```julia
+using TMA
+tensor = context_tensor(rs; default_window = 4)
+ona = TMA.accumulate(rs, [:UserName, :Condition], [:ActivityNumber, :GroupName], codes;
+                     tensor, ordered = true, split_by = [:ActivityNumber, :GroupName])
+m = ENA.fit(ona)                 # m.ordered == true; 36 directed connections
 ```
 
 ## API
+
+The pipeline:
+
+| Function | Returns |
+|----------|---------|
+| `ENA.accumulate(data, units, conversations, codes; window_size=4, window_forward=0, binary=true)` | `ENAAccumulation`: `connection_counts`, `row_connection_counts`, `unit_labels`, `codes`, `connection_names`, `adjacency_key`, `meta` |
+| `ENA.fit(accumulation; dims=2, norm=:sphere, rotation=:svd, self_weight=2.0)` | `ENAModel`: `points`, `nodes`, `centroids`, `rotation` (and `full_rotation`, `rotation_names`, `eigenvalues`), `line_weights`, `points_for_projection`, `variance`, `center_vec`, `weights`, … |
+| `ENA.fit(data, units, conversations, codes; window_size=4, …)` | accumulate, then fit |
+| `MeansRotation(group1, group2)`, `MeansRotation(column, value1, value2)` | a means rotation for `fit` |
+| `GeneralizedRotation(x; y, select_2_groups, interactions=true, n_lambda=50, k_folds=5, lasso_eps=0.01)` | a GMR for `fit` |
+| `move_nodes_to_unit_circle(model; dims=(1, 2), mode=:equal)` | the model with its nodes on a circle (post-fit) |
+
+`accumulate` and `fit` are not exported: call them `ENA.accumulate` /
+`ENA.fit`.
+
+The libena kernels the pipeline uses, for working with matrices directly:
 
 | Function | Returns |
 |----------|---------|
@@ -85,10 +154,12 @@ ccd_window([rand(0:1, 30, 3) .* 1.0 for _ in 1:4]; max_window = 10)
 | `means_rotation(data, group_pairs)` | means rotation (`MR1`, …); pairs of 0-based `Int32` row indices |
 | `generalized_means_rotation(V, x_model, x_target, x1_cols, …)` | GMR (`GMR1`, `GMR2`/`SVD2`, …) with Lasso covariate adjustment |
 | `node_positions(adj_mats, t, num_dims)` | `(nodes, centroids, weights, points)` |
-| `directed_node_positions(line_weights, points, num_dims)` | the same, for directed (ordered) networks |
-| `directed_node_positions_combine_pairs(line_weights, points, num_dims)` | directed, ground + response rows combined |
-| `move_nodes_to_unit_circle(line_weights, nodes; dims=(1, 2), mode=:equal, directed=false)` | `(nodes, centroids)`: a fitted model's nodes moved onto a circle in the plane of `dims` (1-based), `:equal`ly spaced or `:radial`ly, and the centroids for them (post-fit, as rENA's `move_nodes_to_unit_circle*()`) |
+| `directed_node_positions(line_weights, points, num_dims; self_weight=2.0)` | the same, for directed (ordered) networks |
+| `directed_node_positions_combine_pairs(line_weights, points, num_dims; self_weight=2.0)` | directed, ground + response rows combined |
+| `node_weights_by_key(line_weights, from, to, n_codes; self_weight=2.0)`, `node_positions_by_key(…)`, `node_centroids_by_key(…)` | node weights / positions / centroids for any layout of connection columns (column `k` connects codes `from[k]`, `to[k]`, 1-based) |
+| `move_nodes_to_unit_circle(line_weights, nodes; dims=(1, 2), mode=:equal, directed=false, self_weight=2.0)` | `(nodes, centroids)`: a fitted model's nodes moved onto a circle in the plane of `dims` (1-based), `:equal`ly spaced or `:radial`ly, and the centroids for them (post-fit, as rENA's `move_nodes_to_unit_circle*()`) |
+| `move_nodes_to_unit_circle_by_key(line_weights, nodes, from, to; dims, mode, self_weight)` | the same for any layout of connection columns |
 | `ena_correlation(points, centroids; conf_level=0.95)` | `n_dims × 3`: `[r, ci_lower, ci_upper]` |
 | `ccd_window(conversations; max_window=20, min_overlap=10)` | `(window_size, peak_lag, lag, frob, …)` |
 
-Docstrings (`?ena_svd`) give the full argument lists.
+Docstrings (`?ENA.fit`, `?ena_svd`) give the full argument lists.

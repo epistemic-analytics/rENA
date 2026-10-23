@@ -192,3 +192,6 @@ end
     @test_throws ArgumentError move_nodes_to_unit_circle(m.line_weights, m.nodes; dims = (2, 2))
     @test_throws ArgumentError move_nodes_to_unit_circle(m.line_weights, m.nodes; directed = true)
 end
+
+# ── The pipeline: ENA.accumulate / ENA.fit vs rENA ────────────────────────────
+include("models.jl")

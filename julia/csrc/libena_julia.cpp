@@ -117,6 +117,19 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
             return pack(qe::node_centroids_by_key(view_mat(lw, lr, lc), view_mat(nodes, nr, nc),
                                                   key_of(f, t), self_weight));
         });
+    mod.method("move_nodes_to_unit_circle_by_key",
+        [key_of](jlcxx::ArrayRef<double> lw,    int32_t lr, int32_t lc,
+                 jlcxx::ArrayRef<double> nodes, int32_t nr, int32_t nc,
+                 int32_t dim_x, int32_t dim_y, const std::string& mode,
+                 const std::vector<int32_t>& f, const std::vector<int32_t>& t,
+                 double self_weight) -> MovedNodesTuple {
+            if (dim_x < 0 || dim_y < 0)
+                throw std::invalid_argument(
+                    "move_nodes_to_unit_circle: dimension indices must be >= 0");
+            return to_tuple(qe::move_nodes_to_unit_circle_by_key(
+                view_mat(lw, lr, lc), view_mat(nodes, nr, nc), dim_x, dim_y,
+                qe::unit_circle_mode(mode), key_of(f, t), self_weight));
+        });
 
     // ── Rotation ──────────────────────────────────────────────────────────────
 
