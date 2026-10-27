@@ -47,7 +47,9 @@ end
         "gmr_categorical" => GeneralizedRotation(:Condition),
         "gmr_numeric"     => GeneralizedRotation(Symbol("CONFIDENCE.Change")),
         "gmr_covariate"   => GeneralizedRotation([:Condition, Symbol("CONFIDENCE.Pre")]),
-        "gmr_y"           => GeneralizedRotation(:Condition; y = Symbol("CONFIDENCE.Change")))
+        "gmr_y"           => GeneralizedRotation(:Condition; y = Symbol("CONFIDENCE.Change")),
+        "gmr_multigroup"  => GeneralizedRotation(:ConfidenceLevel),
+        "gmr_select_2"    => GeneralizedRotation(:ConfidenceLevel; select_2_groups = ("low", "high")))
     ref = RS[name]
     m = ENA.fit(rs_acc(); rotation)
     order = [findfirst(==(l), m.unit_labels) for l in RS["units"]]
