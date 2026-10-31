@@ -50,6 +50,7 @@ target_link_options(libena PRIVATE
     -sWASM=1
     -sALLOW_MEMORY_GROWTH=1
     "-sENVIRONMENT=web,node"
+    -sDYNAMIC_EXECUTION=0   # no eval/new Function in the glue: runs under Cloudflare Workers' CSP
     --bind
     -O3
 )
