@@ -1,5 +1,6 @@
 ## rENA 0.4.17 (development version)
 
+- rena-wasm 0.1.17 (released on its own, tag `wasm/v0.1.17`) is linked with `-sDYNAMIC_EXECUTION=0`, so libena's Embind glue no longer builds function invokers with `new Function`. It loads under Cloudflare Workers and any Content Security Policy without `unsafe-eval` (the ENA MCP server's Worker build needs this, together with libqe-wasm 0.2.4). Results are unchanged. R, qe-ena, ENA.jl and the C++ are unchanged.
 ## rENA 0.4.16
 
 Released with qe-ena 0.1.10 (tag `python/v0.1.10`), rena-wasm 0.1.16 (`wasm/v0.1.16`) and libena 0.4.16 (`conan/v0.4.16`). rena-wasm's README examples run in the browser on qe-libs.org, and libena's Conan docs gain a main page.
