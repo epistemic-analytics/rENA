@@ -39,7 +39,7 @@ test_that("center(exclude_zero_networks=FALSE) uses all rows for the mean", {
 # center() — exclude_zero_networks = TRUE
 # --------------------------------------------------------------------------
 
-test_that("center(exclude_zero_networks=TRUE) computes mean from non-zero rows only", {
+test_that("center(exclude_zero_networks=TRUE) centers non-zero rows on their mean and leaves zero rows at zero", {
   normed <- rENA::sphere_norm(accum)
   lw     <- as.matrix(normed$line.weights)
 
@@ -49,10 +49,11 @@ test_that("center(exclude_zero_networks=TRUE) computes mean from non-zero rows o
   nonzero_rows  <- rowSums(lw) != 0
   expected_mean <- colMeans(lw[nonzero_rows, , drop = FALSE])
 
-  # Each row of pts should equal lw[row,] - expected_mean
-  for (i in seq_len(nrow(lw))) {
+  for (i in which(nonzero_rows)) {
     expect_equal(pts[i, ], lw[i, ] - expected_mean, tolerance = 1e-10)
   }
+  # an empty network stays at zero, i.e. at the centroid of the others
+  expect_true(all(pts[!nonzero_rows, ] == 0))
 })
 
 test_that("center(exclude_zero_networks=TRUE) produces different result than FALSE when zeros present", {
@@ -109,11 +110,13 @@ test_that("model() defaults exclude_zero_networks=TRUE for ordered sets", {
   )
 })
 
-test_that("model() defaults exclude_zero_networks=FALSE for unordered sets", {
-  # For a normal (unordered) set, model() should NOT exclude zeros by default
+test_that("model() defaults exclude_zero_networks=TRUE for unordered sets too", {
+  # Same rule as ena.make.set(center.align.to.origin = TRUE): empty units at the origin
   set_model <- rENA::model(accum)
-  pts       <- as.matrix(set_model$model$points.for.projection)
+  pts       <- as.matrix(set_model$points)
+  expect_true(all(pts[zero_unit_rows, ] == 0))
 
-  # Column means of centered result should be ~0 (global mean subtracted)
-  expect_true(all(abs(colMeans(pts)) < 1e-10))
+  set_all <- rENA::model(accum, exclude_zero_networks = FALSE)
+  pts_all <- as.matrix(set_all$model$points.for.projection)
+  expect_true(all(abs(colMeans(pts_all)) < 1e-10))
 })

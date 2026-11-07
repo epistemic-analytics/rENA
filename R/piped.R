@@ -128,10 +128,13 @@ accumulate <- function(
 #'   `ena.rotate.by.generalized`. The nested form `list(params = <params>)` is
 #'   also accepted. When empty (the default), `rotate()` picks its default
 #'   parameters.
-#' @param exclude_zero_networks A logical value passed to `center_with`. When `TRUE`,
-#'   units with all-zero line weights are excluded from the mean computation during
-#'   centering (but all units are still shifted by that mean). Defaults to `TRUE`
-#'   automatically for ordered sets (`accumulate(ordered = TRUE)`), `FALSE` otherwise.
+#' @param exclude_zero_networks A logical value passed to `center_with` and
+#'   `optimize_with`. When `TRUE` (default), units whose line weights are all
+#'   zero are left at the origin: they do not enter the centering mean, the
+#'   rotation or the node optimization, and their points and centroids are
+#'   zero. This is `ena.make.set(center.align.to.origin = TRUE)`, the webtool's
+#'   rule, for every kind of set. `FALSE` centers on all units, as
+#'   `center.align.to.origin = FALSE` does.
 #' @param center_to_origin A logical value. When `TRUE`, the mean of all projected
 #'   points is subtracted from both the points and the node positions after
 #'   optimization, placing the centroid of the space at the origin. This is the
@@ -166,7 +169,7 @@ model <- function(
   rotate_fun = ena.rotate.by.generalized,
   rotate_params = list(),
   # Centering options
-  exclude_zero_networks = is(data, "ena.ordered.set"),
+  exclude_zero_networks = TRUE,
   center_to_origin = FALSE,
   # Ordered node optimization: weight of a self-connection in its node's weight
   self_weight = 2
@@ -189,11 +192,11 @@ model <- function(
     x <- project_with(x)
 
     if (!is.null(optimize_with) && !isFALSE(optimize_with)) {
-      x <- if ("self_weight" %in% names(formals(optimize_with))) {
-        optimize_with(x, self_weight = self_weight)
-      } else {
-        optimize_with(x)
-      }
+      opt_args <- list(x)
+      opt_formals <- names(formals(optimize_with))
+      if ("self_weight" %in% opt_formals) opt_args$self_weight <- self_weight
+      if ("exclude_zero_networks" %in% opt_formals) opt_args$exclude_zero_networks <- exclude_zero_networks
+      x <- do.call(optimize_with, opt_args)
     }
 
     if (isTRUE(center_to_origin) && !is.null(x$points)) {
@@ -397,13 +400,13 @@ as_nodes_matrix <- function(x, rows, cols = NULL, cls = "ena.matrix") {
 #'
 #' @param x An `ena.set` object (typically after `sphere_norm()`) or a numeric matrix.
 #' @param add.meta A logical value. If `TRUE` (the default), metadata is preserved. Ignored if `x` is a matrix.
-#' @param exclude_zero_networks A logical value. If `TRUE`, units whose line weights are
-#'   all zero are excluded when computing the column means used for centering. The mean
-#'   is computed from non-zero units only, but all units (including zero-network ones)
-#'   are shifted by that mean. This prevents empty networks from pulling the centroid
-#'   toward zero. Defaults to `FALSE` (standard behaviour: all units contribute to
-#'   the mean). Use `TRUE` for ordered/directed ENA sets produced by
-#'   `accumulate(ordered = TRUE)`.
+#' @param exclude_zero_networks A logical value. If `TRUE`, units whose line
+#'   weights are all zero are left at zero: the column means are computed from
+#'   the other units and subtracted from those units only, so an empty network
+#'   sits at the centroid of the others and projects to the origin. This is
+#'   what `ena.make.set(center.align.to.origin = TRUE)` does. `FALSE` (default
+#'   here; `model()` defaults to `TRUE`) subtracts the mean of all units from
+#'   every unit, so an empty network becomes minus the mean.
 #'
 #' @return If `x` is an `ena.set`, it returns the modified `ena.set` with the centered data stored in `x$model$points.for.projection`. If `x` is a matrix, it returns a centered matrix.
 #' @export
@@ -425,15 +428,16 @@ center <- function(x, add.meta = TRUE, exclude_zero_networks = FALSE) {
   names_ <- NULL
   meta_ <- NULL
 
-  # Helper: subtract column means computed from non-zero rows, applied to all rows.
+  # Center the non-zero rows on their own mean and leave all-zero rows at
+  # zero, as ENAset's center.align.to.origin does: an empty network then sits
+  # at the centroid of the others rather than at minus their mean.
   center_excluding_zeros <- function(m) {
     nonzero <- rowSums(m) != 0
     if (!any(nonzero)) {
-      # All rows are zero — fall back to standard centering (result is all zeros)
       return(center_data_c(m))
     }
-    col_means <- colMeans(m[nonzero, , drop = FALSE])
-    sweep(m, 2, col_means, "-")
+    m[nonzero, ] <- center_data_c(m[nonzero, , drop = FALSE])
+    m
   }
 
   if (is(x, "ena.set")) {
@@ -689,6 +693,13 @@ project <- function(x, rotation = NULL, add.meta = TRUE) {
 #'
 #' @param x An \code{ena.set} object for which to optimize node and centroid positions.
 #' @param weights Optional. A numeric matrix of connection weights. If provided, the function will use this matrix instead of the connection counts from the \code{ena.set}.
+#' @param exclude_zero_networks A logical value. If `TRUE` (default), units
+#'   whose line weights are all zero are left out of the fit, their centroids
+#'   are zero, and for unordered sets the nodes and centroids are shifted so the
+#'   mean centroid of the fitted units is at the origin, as
+#'   `ena.make.set(center.align.to.origin = TRUE)` does. Ordered sets are fit
+#'   on the other units without that shift, as ONA does. With no empty units
+#'   the result is unchanged.
 #' @param self_weight Weight of a self-connection (a column connecting a code to itself: the ordered diagonal, or an unordered set's A & A columns from accumulate(self_connections = TRUE)) in its code's node weight. 2 (default) counts it in both the node's row and column sums, the in + out rule of Zhiqiang Cai's 2021 fix; 1 counts it once. Recorded as \code{x$rotation$self.weight}.
 #'
 #' @return The input \code{ena.set} object with updated node and centroid positions.
@@ -710,7 +721,7 @@ project <- function(x, rotation = NULL, add.meta = TRUE) {
 #'   rotate() |>
 #'   project() |>
 #'   optimize()
-optimize <- function(x, weights = NULL, self_weight = 2) {
+optimize <- function(x, weights = NULL, self_weight = 2, exclude_zero_networks = TRUE) {
   if(!is(x, "ena.set")) {
     if(is.null(weights)) {
       stop("When providing a matrix, weights must also be provided")
@@ -728,12 +739,21 @@ optimize <- function(x, weights = NULL, self_weight = 2) {
 
   points = as.matrix(x$points);
   weights = as.matrix(x$line.weights);
-  if(is(x, "ena.ordered.set")) {
-    positions <- directed_node_positions(weights, points, ncol(points), self_weight = self_weight);
-    # Recorded so post-fit centroid recomputation (move_nodes_to_unit_circle)
-    # uses the weighting the nodes were fit with.
-    x$rotation$self.weight <- self_weight;
-    x$rotation$nodes <- as_nodes_matrix(positions$nodes, list("code" = x$rotation$codes), cols = colnames(as.matrix(x$points)), cls = "ena.nodes")
+  ordered <- is(x, "ena.ordered.set")
+
+  # Units with no connections carry no information about where the nodes go:
+  # fit on the others and give the empty units a zero centroid (they sit at
+  # the origin after center(exclude_zero_networks = TRUE)).
+  fit_rows <- rep(TRUE, nrow(weights))
+  if (isTRUE(exclude_zero_networks)) {
+    fit_rows <- rowSums(abs(weights)) != 0
+    if (!any(fit_rows)) fit_rows[] <- TRUE
+  }
+  fit_points <- points[fit_rows, , drop = FALSE]
+  fit_weights <- weights[fit_rows, , drop = FALSE]
+
+  if(ordered) {
+    positions <- directed_node_positions(fit_weights, fit_points, ncol(points), self_weight = self_weight);
   }
   else {
     # Unordered: libena's layout-agnostic solver, driven by the set's
@@ -744,15 +764,31 @@ optimize <- function(x, weights = NULL, self_weight = 2) {
     # the columns use the upper-triangle solver.
     key <- x$rotation$adjacency.key
     if (!is.null(key) && ncol(as.matrix(key)) == ncol(weights)) {
-      positions <- node_positions_by_key(weights, points, ncol(points), key,
+      positions <- node_positions_by_key(fit_weights, fit_points, ncol(points), key,
                                          key_codes(key, x$rotation$codes), self_weight = self_weight);
     }
     else {
-      positions <- lws_lsq_positions(weights, points, ncol(points));
+      positions <- lws_lsq_positions(fit_weights, fit_points, ncol(points));
     }
-    x$rotation$self.weight <- self_weight;
-    x$rotation$nodes <- as_nodes_matrix(positions$nodes, list("code" = x$rotation$codes), cols = colnames(as.matrix(x$points)), cls = "ena.nodes")
+    if (!all(fit_rows)) {
+      # ENAset's center.align.to.origin rule for unordered sets: put the mean
+      # centroid of the fitted units at the origin, moving the nodes with it.
+      mean_centroid <- colMeans(positions$centroids)
+      positions$centroids <- sweep(positions$centroids, 2, mean_centroid, "-")
+      positions$nodes <- sweep(positions$nodes, 2, mean_centroid, "-")
+    }
   }
+
+  if (!all(fit_rows)) {
+    centroids <- matrix(0, nrow = nrow(weights), ncol = ncol(positions$centroids))
+    centroids[fit_rows, ] <- positions$centroids
+    positions$centroids <- centroids
+  }
+
+  # Recorded so post-fit centroid recomputation (move_nodes_to_unit_circle)
+  # uses the weighting the nodes were fit with.
+  x$rotation$self.weight <- self_weight;
+  x$rotation$nodes <- as_nodes_matrix(positions$nodes, list("code" = x$rotation$codes), cols = colnames(as.matrix(x$points)), cls = "ena.nodes")
 
   x$model$centroids <- as_nodes_matrix(positions$centroids, rows = list("ENA_UNIT" = x$points$ENA_UNIT), cols = colnames(as.matrix(x$points)))
 

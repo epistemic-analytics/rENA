@@ -11,13 +11,13 @@ center(x, add.meta = TRUE, exclude_zero_networks = FALSE)
 
 \item{add.meta}{A logical value. If `TRUE` (the default), metadata is preserved. Ignored if `x` is a matrix.}
 
-\item{exclude_zero_networks}{A logical value. If `TRUE`, units whose line weights are
-all zero are excluded when computing the column means used for centering. The mean
-is computed from non-zero units only, but all units (including zero-network ones)
-are shifted by that mean. This prevents empty networks from pulling the centroid
-toward zero. Defaults to `FALSE` (standard behaviour: all units contribute to
-the mean). Use `TRUE` for ordered/directed ENA sets produced by
-`accumulate(ordered = TRUE)`.}
+\item{exclude_zero_networks}{A logical value. If `TRUE`, units whose line
+weights are all zero are left at zero: the column means are computed from
+the other units and subtracted from those units only, so an empty network
+sits at the centroid of the others and projects to the origin. This is
+what `ena.make.set(center.align.to.origin = TRUE)` does. `FALSE` (default
+here; `model()` defaults to `TRUE`) subtracts the mean of all units from
+every unit, so an empty network becomes minus the mean.}
 }
 \value{
 If `x` is an `ena.set`, it returns the modified `ena.set` with the centered data stored in `x$model$points.for.projection`. If `x` is a matrix, it returns a centered matrix.
