@@ -14,7 +14,7 @@ model(
   optimize_with = optimize,
   rotate_fun = ena.rotate.by.generalized,
   rotate_params = list(),
-  exclude_zero_networks = is(data, "ena.ordered.set"),
+  exclude_zero_networks = TRUE,
   center_to_origin = FALSE,
   self_weight = 2
 )
@@ -43,10 +43,13 @@ model(
 also accepted. When empty (the default), `rotate()` picks its default
 parameters.}
 
-\item{exclude_zero_networks}{A logical value passed to `center_with`. When `TRUE`,
-units with all-zero line weights are excluded from the mean computation during
-centering (but all units are still shifted by that mean). Defaults to `TRUE`
-automatically for ordered sets (`accumulate(ordered = TRUE)`), `FALSE` otherwise.}
+\item{exclude_zero_networks}{A logical value passed to `center_with` and
+`optimize_with`. When `TRUE` (default), units whose line weights are all
+zero are left at the origin: they do not enter the centering mean, the
+rotation or the node optimization, and their points and centroids are
+zero. This is `ena.make.set(center.align.to.origin = TRUE)`, the webtool's
+rule, for every kind of set. `FALSE` centers on all units, as
+`center.align.to.origin = FALSE` does.}
 
 \item{center_to_origin}{A logical value. When `TRUE`, the mean of all projected
 points is subtracted from both the points and the node positions after

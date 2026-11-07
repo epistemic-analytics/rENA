@@ -4,7 +4,7 @@
 \alias{optimize}
 \title{Optimize Node and Centroid Positions in ENA Set}
 \usage{
-optimize(x, weights = NULL, self_weight = 2)
+optimize(x, weights = NULL, self_weight = 2, exclude_zero_networks = TRUE)
 }
 \arguments{
 \item{x}{An \code{ena.set} object for which to optimize node and centroid positions.}
@@ -12,6 +12,14 @@ optimize(x, weights = NULL, self_weight = 2)
 \item{weights}{Optional. A numeric matrix of connection weights. If provided, the function will use this matrix instead of the connection counts from the \code{ena.set}.}
 
 \item{self_weight}{Weight of a self-connection (a column connecting a code to itself: the ordered diagonal, or an unordered set's A & A columns from accumulate(self_connections = TRUE)) in its code's node weight. 2 (default) counts it in both the node's row and column sums, the in + out rule of Zhiqiang Cai's 2021 fix; 1 counts it once. Recorded as \code{x$rotation$self.weight}.}
+
+\item{exclude_zero_networks}{A logical value. If `TRUE` (default), units
+whose line weights are all zero are left out of the fit, their centroids
+are zero, and for unordered sets the nodes and centroids are shifted so the
+mean centroid of the fitted units is at the origin, as
+`ena.make.set(center.align.to.origin = TRUE)` does. Ordered sets are fit
+on the other units without that shift, as ONA does. With no empty units
+the result is unchanged.}
 }
 \value{
 The input \code{ena.set} object with updated node and centroid positions.
