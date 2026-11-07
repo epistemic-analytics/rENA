@@ -137,3 +137,63 @@ tma_acc(; kw...) = TMA.accumulate(TOY, :u, :c, [:A, :B, :C];
     u = move_nodes_to_unit_circle(m)
     @test size(u.nodes) == size(m.nodes) && u.points == m.points
 end
+
+# ── Units with an empty network ───────────────────────────────────────────────
+# fixtures/zero-networks.json (a copy of python/tests/fixtures/zero-networks.json,
+# from python/tests/fixtures/zero-networks.R): rENA's model() (SVD) on RS.data
+# accumulated by UserName, Condition and GroupName at window 4 -- two units
+# with an all-zero network in the unordered set, one in the ordered set. Such
+# a unit follows ena.make.set(center.align.to.origin = TRUE), the rule of
+# rENA's model(exclude_zero_networks = TRUE) and of ONA 0.1.1: it stays at the
+# origin, is left out of the centering mean and the node fit, and has a zero
+# centroid; unordered models shift the nodes and centroids so the fitted
+# units' mean centroid is at the origin.
+
+const ZN = JSON.parsefile(joinpath(@__DIR__, "fixtures", "zero-networks.json"))
+const ZN_CODES = String.(ZN["codes"])
+
+# The accumulations rebuilt from R's connection counts (per-line counts are
+# not needed by fit).
+function zn_acc(case, ordered; keep = trues(length(case["units"])))
+    cc = rowmajor(case["connection_counts"])[keep, :]
+    labels = String.(case["units"])[keep]
+    key = [Tuple(String.(k)) for k in case["adjacency_key"]]
+    names = [a * " & " * b for (a, b) in key]
+    n, p = size(cc, 1), length(ZN_CODES)
+    if ordered
+        TMA.TMAAccumulation(cc, zeros(n, p), nothing, nothing, zeros(0, size(cc, 2)), zeros(0, p),
+                            nothing, nothing, labels, ZN_CODES, names, key, (;), true, false, "product")
+    else
+        ENAAccumulation(cc, zeros(0, size(cc, 2)), labels, ZN_CODES, names, key, (;), 4.0, 0.0, true)
+    end
+end
+zn_empty(case) = [i in case["empty"] for i in 1:length(case["units"])]
+
+@testset "ENA.fit with empty units matches rENA's model() ($name)" for (name, ordered) in
+        ("unordered" => false, "ordered" => true)
+    ref = ZN[name]
+    empty = zn_empty(ref)
+    @test count(empty) == (ordered ? 1 : 2)
+    m = ENA.fit(zn_acc(ref, ordered); dims = 6)
+    @test m.ordered == ordered
+    @test m.line_weights ≈ rowmajor(ref["line_weights"]) atol = 1e-12
+    pts, s = aligned(m.points, rowmajor(ref["points"]))
+    @test pts ≈ rowmajor(ref["points"]) atol = 1e-10
+    @test m.nodes .* permutedims(s) ≈ rowmajor(ref["nodes"]) atol = 1e-10
+    @test m.centroids .* permutedims(s) ≈ rowmajor(ref["centroids"]) atol = 1e-10
+    @test m.eigenvalues[1:6] ≈ vecf(ref["eigenvalues"]) atol = 1e-10
+    @test m.variance[1:6] ≈ vecf(ref["variance"]) atol = 1e-10
+    # the empty units: at the origin, zero centroids, out of the centre vector
+    @test all(m.points_for_projection[empty, :] .== 0)
+    @test all(m.points[empty, :] .== 0)
+    @test all(m.centroids[empty, :] .== 0)
+    @test m.center_vec ≈ vec(sum(m.line_weights[.!empty, :]; dims = 1)) ./ count(.!empty)
+    # dropping them beforehand gives the same nodes and the same points and
+    # centroids for the others
+    d = ENA.fit(zn_acc(ref, ordered; keep = .!empty); dims = 6)
+    dpts, ds = aligned(d.points, m.points[.!empty, :])
+    @test dpts ≈ m.points[.!empty, :] atol = 1e-10
+    @test d.nodes .* permutedims(ds) ≈ m.nodes atol = 1e-10
+    @test d.centroids .* permutedims(ds) ≈ m.centroids[.!empty, :] atol = 1e-10
+    ordered || @test vec(sum(m.centroids[.!empty, :]; dims = 1)) ./ count(.!empty) ≈ zeros(6) atol = 1e-10
+end

@@ -374,7 +374,10 @@ stanza accumulation runs first.
 
 1. normalize: `norm = :sphere` (each network to unit length) or `:scale`
    (all divided by the longest);
-2. center the networks that are not all zero;
+2. center the networks that are not all zero (`ena.make.set`'s
+   `center.align.to.origin = TRUE`, rENA's `model(exclude_zero_networks =
+   TRUE)`): a unit whose network is all zeros is left out of the mean, stays
+   at the origin, is left out of the node fit and has a zero centroid;
 3. rotate: `:svd` (default), a [`MeansRotation`](@ref), a
    [`GeneralizedRotation`](@ref), or a matrix (connections × k);
 4. project onto the first `dims` dimensions, and place the nodes by least
@@ -391,7 +394,7 @@ function fit(acc::Accumulation; dims::Integer = 2, norm::Symbol = :sphere,
     # (LibQE returns its results as reshaped C++ vectors.)
     normed = Matrix{Float64}(norm === :sphere ? LibQE.normalize_networks(raw) : LibQE.scale_networks(raw))
 
-    nonzero = vec(sum(normed; dims = 2)) .!= 0
+    nonzero = vec(sum(abs, normed; dims = 2)) .!= 0
     center_vec = any(nonzero) ? vec(sum(normed[nonzero, :]; dims = 1)) ./ count(nonzero) :
                                 zeros(size(normed, 2))
     centered = zeros(size(normed))
@@ -408,18 +411,39 @@ function fit(acc::Accumulation; dims::Integer = 2, norm::Symbol = :sphere,
     codes = acc.codes
     ordered = _ordered(acc)
     key = acc.adjacency_key
+    # Units with no connections carry no information about where the nodes go
+    # (rENA's optimize(exclude_zero_networks = TRUE)): fit on the others and
+    # give the empty units a zero centroid. Unordered models then shift the
+    # nodes and centroids so the fitted units' mean centroid is at the origin,
+    # as lws.positions.sq.R6 does; ordered models are fit on the other units
+    # without that shift, as ONA 0.1.1 did. With no empty unit this is the
+    # plain fit on every unit.
+    fit_rows = any(nonzero) ? nonzero : trues(size(normed, 1))
+    lw, tf = normed[fit_rows, :], t[fit_rows, :]
     pos = if ordered
-        directed_node_positions(normed, t, dims; self_weight)
+        directed_node_positions(lw, tf, dims; self_weight)
     elseif _by_key(ordered, key, codes)
         from, to = _key_indices(key, codes)
-        node_positions_by_key(normed, t, dims, from, to, length(codes); self_weight)
+        node_positions_by_key(lw, tf, dims, from, to, length(codes); self_weight)
     else
-        node_positions(normed, t, dims)
+        node_positions(lw, tf, dims)
+    end
+    nodes, centroids, weights = Matrix{Float64}(pos.nodes), Matrix{Float64}(pos.centroids),
+                               Matrix{Float64}(pos.weights)
+    if !all(fit_rows)
+        if !ordered
+            mean_centroid = permutedims(vec(sum(centroids; dims = 1)) ./ size(centroids, 1))
+            centroids = centroids .- mean_centroid
+            nodes = nodes .- mean_centroid
+        end
+        full_c = zeros(size(normed, 1), size(centroids, 2)); full_c[fit_rows, :] = centroids
+        full_w = zeros(size(normed, 1), size(weights, 2)); full_w[fit_rows, :] = weights
+        centroids, weights = full_c, full_w
     end
 
     ENAModel(raw, acc.row_connection_counts, normed, centered, rmat, full,
-             rot.column_names, rot.eigenvalues, pos.points, pos.nodes, pos.centroids,
-             pos.weights, _variance(centered * full), center_vec, labels, codes,
+             rot.column_names, rot.eigenvalues, t, nodes, centroids,
+             weights, _variance(centered * full), center_vec, labels, codes,
              acc.connection_names, key, acc.meta, ordered, Float64(self_weight), acc)
 end
 
