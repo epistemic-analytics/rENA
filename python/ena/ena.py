@@ -287,9 +287,12 @@ class ENA:
             normed = normalization.scale_networks(raw_networks)
 
         # ── centering ────────────────────────────────────────────────────────
-        # Center only non-zero rows (rENA center.align.to.origin=TRUE default).
+        # Center only non-zero rows, as ena.make.set(center.align.to.origin =
+        # TRUE) and rENA's model(exclude_zero_networks = TRUE) do: a unit whose
+        # network is all zeros is left out of the mean and stays at the origin
+        # (and, below, out of the node fit, with a zero centroid).
         # center_vec = column means of non-zero rows (= R's rotation$center.vec).
-        non_zero   = normed.sum(axis=1) != 0
+        non_zero   = np.abs(normed).sum(axis=1) != 0
         center_vec = normed[non_zero].mean(axis=0) if non_zero.any() else np.zeros(normed.shape[1])
 
         centered = np.zeros_like(normed)
@@ -337,7 +340,16 @@ class ENA:
         key      = getattr(accum, "adjacency_key_", None)
         key      = [list(k) for k in key] if key is not None else _build_adjacency_key(codes)
         by_key   = not ordered and key != _build_adjacency_key(codes)
-        lw_c, t_c = np.ascontiguousarray(normed), np.ascontiguousarray(t)
+        # Units with no connections carry no information about where the
+        # nodes go (rENA's optimize(exclude_zero_networks = TRUE)): fit on the
+        # others and give the empty units a zero centroid. Unordered models
+        # then shift the nodes and centroids so the fitted units' mean
+        # centroid is at the origin, as lws.positions.sq.R6 does; ordered
+        # models are fit on the other units without that shift, as ONA 0.1.1
+        # did. With no empty unit this is the plain fit on every unit.
+        fit_rows = non_zero if non_zero.any() else np.ones(len(normed), dtype=bool)
+        lw_c = np.ascontiguousarray(normed[fit_rows])
+        t_c  = np.ascontiguousarray(t[fit_rows])
         if ordered:
             node_positions = libena.directed_node_positions(lw_c, t_c, dims, self_weight=self_weight)
         elif by_key:
@@ -346,6 +358,19 @@ class ENA:
                                                           len(codes), self_weight=self_weight)
         else:
             node_positions = libena.node_positions(lw_c, t_c, dims)
+        nodes, weights = node_positions.nodes, node_positions.weights
+        centroids = node_positions.centroids
+        if not fit_rows.all():
+            if not ordered:
+                mean_centroid = centroids.mean(axis=0)
+                centroids = centroids - mean_centroid
+                nodes = nodes - mean_centroid
+            full = np.zeros((len(normed), centroids.shape[1]))
+            full[fit_rows] = centroids
+            centroids = full
+            full_w = np.zeros((len(normed), weights.shape[1]))
+            full_w[fit_rows] = weights
+            weights = full_w
 
         # ── derived fields ────────────────────────────────────────────────────
         # Share of the total variance per rotated dimension, over every
@@ -361,18 +386,18 @@ class ENA:
         self.connection_counts_      = raw_networks          # set$connection.counts
         self.row_connection_counts_  = getattr(accum, "row_connection_counts_", None)
         self.line_weights_           = normed                # set$line.weights
-        self.points_                 = node_positions.points # set$points
+        self.points_                 = t                     # set$points
         self.rotation_matrix_        = rotation_matrix       # set$rotation.matrix
         self.meta_data_              = accum.meta            # set$meta.data
 
         # model sub-fields (= R's set$model$...)
-        self.centroids_              = node_positions.centroids  # model$centroids (LWS)
+        self.centroids_              = centroids                 # model$centroids (LWS)
         self.variance_               = variance                  # model$variance
         self.unit_labels_            = accum.unit_labels_        # model$unit.labels
         self.points_for_projection_  = centered                  # model$points.for.projection
 
         # rotation sub-fields (= R's set$rotation$...)
-        self.rotation_nodes_         = node_positions.nodes      # rotation$nodes
+        self.rotation_nodes_         = nodes                     # rotation$nodes
         self.rotation_eigenvalues_   = rotation_eigenvalues      # rotation$eigenvalues
         self.rotation_center_vec_    = center_vec                # rotation$center.vec
         self.rotation_adjacency_key_ = adjacency_key             # rotation$adjacency.key
@@ -383,7 +408,7 @@ class ENA:
         self.full_rotation_          = full_rot               # full pre-truncation rotation
         self.ordered_                = ordered                # directed (ONA) networks
         self.self_weight_            = float(self_weight)     # rotation$self.weight
-        self.weights_                = node_positions.weights # LWS weights
+        self.weights_                = weights                # LWS weights
 
         # Column class annotations (mirrors R's S3 class tags per column)
         self.column_classes_         = {
