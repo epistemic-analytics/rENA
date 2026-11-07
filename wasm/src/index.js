@@ -462,12 +462,12 @@ function resolveRotationSet(rs, codes, nConnections, ordered, diagonal = false) 
 // ── shared pipeline (post-accumulation) ──────────────────────────────────────
 
 // norm: { sphereNorm = true, centerAlignToOrigin = true, selfWeight = 2 } (=
-// R's norm.by / model(normalize =), ena.make.set's center.align.to.origin and
-// model(self_weight =)). sphereNorm applies to every model; centerAlignToOrigin
-// to unordered models only -- ordered (ONA) models always centre as
-// ona::model() does; selfWeight to node optimization (ordered models, and
-// unordered ones with self-connection columns); selfConnections marks
-// unordered networks that carry self-connection columns (A & A, ...).
+// R's norm.by / model(normalize =), ena.make.set's center.align.to.origin /
+// model(exclude_zero_networks =) and model(self_weight =)). sphereNorm and
+// centerAlignToOrigin apply to every model, ordered (ONA) ones included;
+// selfWeight to node optimization (ordered models, and unordered ones with
+// self-connection columns); selfConnections marks unordered networks that
+// carry self-connection columns (A & A, ...).
 function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
                      metaData, rotMethod, groupA, groupB, dims, gParams,
                      rowConnectionCounts = null, ordered = false, rotationSet = null,
@@ -478,7 +478,7 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
     const key = ordered ? null : qe.undirected_connection_key(codes.length, diagonal);
     const connectionNames = connectionNamesFor(qe, codes, ordered, diagonal);
     const useSphereNorm = norm.sphereNorm !== false;
-    const alignToOrigin = ordered || norm.centerAlignToOrigin !== false;
+    const alignToOrigin = norm.centerAlignToOrigin !== false;
     const selfWeight = norm.selfWeight ?? 2;
 
     // Sphere norm → lineWeights (= R's set$line.weights). Without it, every
@@ -491,10 +491,10 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
     //          centerVec             (= R's rotation$center.vec)
     // Zero-network units are left out of the mean and stay at the origin,
     // unless centerAlignToOrigin is false (mean over, and shift of, every
-    // unit). Ordered (ONA) models follow ona::model(): zero-network units are
-    // left out of the mean but still shifted by it.
+    // unit) -- ena.make.set(center.align.to.origin =), for ordered (ONA)
+    // models too, as rENA's model(exclude_zero_networks =) and ONA 0.1.1.
     const { centered: pointsForProjection, centerVec } =
-        center(qe, lineWeights, nUnits, nConnections, ordered, !alignToOrigin);
+        center(qe, lineWeights, nUnits, nConnections, false, !alignToOrigin);
 
     // Custom rotation (= R's rotation.set): project into another model's
     // space -- its rotation matrix and node positions, and, for unordered
@@ -546,10 +546,11 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
     // the SPHERE-normed line weights (enaset$line.weights) — not the centered
     // networks.  Verified node-for-node against R rENA on rs.data.new.csv.
     // Ordered (ONA) models use libqe's directed_node_positions, as
-    // ona::model() does (via rENA's optimize()).
-    const { nodes, centroids } = nodePositions(
+    // ona::model() does (via rENA's optimize()). Zero-network units are left
+    // out of the fit when they are aligned to the origin.
+    const { nodes, centroids } = fitNodes(
         qe, lineWeights, nUnits, nConnections, points, dims, ordered, selfWeight,
-        key, codes.length
+        key, codes.length, alignToOrigin
     );
 
     // ONA: translate points and nodes so the points' mean is at the origin
@@ -608,6 +609,55 @@ function runPipeline(qe, rawNetworks, nUnits, nConnections, codes, unitLabels,
         adjacencyKey,
         selfWeight,
     });
+}
+
+// Node positions with ena.make.set(center.align.to.origin = TRUE)'s rule for
+// units whose network is all zeros (rENA's optimize(exclude_zero_networks =
+// TRUE)): they carry no information about where the nodes go, so they are
+// left out of the fit and get zero centroids (they sit at the origin after
+// center()). Unordered models then shift the nodes and centroids so the
+// fitted units' mean centroid is at the origin, as lws.positions.sq.R6 does;
+// ordered models are fit on the other units without that shift, as ONA 0.1.1
+// did. With excludeEmpty false (centerAlignToOrigin: false), or no empty
+// unit, this is the plain fit on every unit.
+function fitNodes(qe, lineWeights, nUnits, nConnections, points, dims, ordered,
+                  selfWeight, key, nCodes, excludeEmpty = true) {
+    const fitRows = [];
+    for (let u = 0; u < nUnits; u++) {
+        let rowSum = 0;
+        for (let c = 0; c < nConnections; c++) rowSum += Math.abs(lineWeights[u * nConnections + c]);
+        if (rowSum > 0 || !excludeEmpty) fitRows.push(u);
+    }
+    if (fitRows.length === nUnits || fitRows.length === 0) {
+        const r = nodePositions(qe, lineWeights, nUnits, nConnections, points, dims,
+                                ordered, selfWeight, key, nCodes);
+        return { nodes: r.nodes, centroids: r.centroids };
+    }
+
+    const n = fitRows.length;
+    const fitWeights = new Float64Array(n * nConnections);
+    const fitPoints  = new Float64Array(n * dims);
+    fitRows.forEach((u, i) => {
+        fitWeights.set(lineWeights.subarray(u * nConnections, (u + 1) * nConnections), i * nConnections);
+        fitPoints.set(points.subarray(u * dims, (u + 1) * dims), i * dims);
+    });
+    const r = nodePositions(qe, fitWeights, n, nConnections, fitPoints, dims,
+                            ordered, selfWeight, key, nCodes);
+    const nodes = r.nodes;
+    const fitted = r.centroids;
+    if (!ordered) {
+        const nNodes = nodes.length / dims;
+        for (let d = 0; d < dims; d++) {
+            let mean = 0;
+            for (let i = 0; i < n; i++) mean += fitted[i * dims + d];
+            mean /= n;
+            for (let i = 0; i < n; i++) fitted[i * dims + d] -= mean;
+            for (let c = 0; c < nNodes; c++) nodes[c * dims + d] -= mean;
+        }
+    }
+    const centroids = new Float64Array(nUnits * dims);
+    fitRows.forEach((u, i) => centroids.set(fitted.subarray(i * dims, (i + 1) * dims), u * dims));
+    return { nodes, centroids };
 }
 
 function runCustomRotation(qe, rawNetworks, lineWeights, ownCentered, ownCenterVec,
@@ -793,9 +843,11 @@ export default async function loadENA() {
          *                                           (fun_skip_sphere_norm; for ordered models,
          *                                           ona::model(normalize = skip_sphere_norm)).
          * @param {boolean}  [opts.centerAlignToOrigin=true] - Keep zero-network units at the
-         *                                           origin and out of the centring mean (= R's
-         *                                           center.align.to.origin); false centres on
-         *                                           every unit. Unordered only.
+         *                                           origin, out of the centring mean and out
+         *                                           of the node fit, with zero centroids (= R's
+         *                                           center.align.to.origin / model's
+         *                                           exclude_zero_networks); false centres on,
+         *                                           and fits, every unit. Ordered models too.
          * @param {boolean}  [opts.misses=true] - Also accumulate missed co-occurrences
          *                                           (missCounts, selfMissCounts).
          * @param {number}   [opts.selfWeight=2] - Ordered only: weight of a self-connection

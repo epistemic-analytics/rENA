@@ -121,8 +121,25 @@ test('rotationSet with centerAlignToOrigin=false shifts zero networks by the set
     expect(max).toBeLessThan(1e-12);
 });
 
-test('ordered models ignore centerAlignToOrigin (ona::model centring)', () => {
+test('ordered models follow centerAlignToOrigin like unordered ones (rENA model(exclude_zero_networks =))', () => {
     const a = ena.fit(rows, { ...BASE, window: 4, ordered: true });
     const b = ena.fit(rows, { ...BASE, window: 4, ordered: true, centerAlignToOrigin: false });
-    expect(Array.from(b.points)).toEqual(Array.from(a.points));
+    const u = a.model.unitLabels.indexOf('zero user__FirstGame');
+    // aligned: the empty unit sits at the origin with a zero centroid, and the
+    // centre vector is the mean of the other units' networks
+    expect(Array.from(a.points.subarray(u * a.dims, (u + 1) * a.dims)).every(v => Math.abs(v) < 1e-12)).toBe(true);
+    expect(Array.from(a.model.centroids.subarray(u * a.dims, (u + 1) * a.dims)).every(v => v === 0)).toBe(true);
+    const n = a.nUnits, nc = a.nConnections;
+    for (let c = 0; c < nc; c++) {
+        let sum = 0;
+        for (let i = 0; i < n; i++) sum += a.lineWeights[i * nc + c];
+        expect(Math.abs(a.rotation.centerVec[c] - sum / (n - 1))).toBeLessThan(1e-12);
+        let all = 0;
+        for (let i = 0; i < n; i++) all += b.lineWeights[i * nc + c];
+        expect(Math.abs(b.rotation.centerVec[c] - all / n)).toBeLessThan(1e-12);
+    }
+    // not aligned: every unit is centred on the mean over all of them
+    const zb = Array.from(b.points.subarray(u * b.dims, (u + 1) * b.dims));
+    expect(zb.some(v => Math.abs(v) > 1e-6)).toBe(true);
+    expect(Array.from(b.points)).not.toEqual(Array.from(a.points));
 });

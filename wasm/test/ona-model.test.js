@@ -13,9 +13,13 @@
  * for RS.data and for RS.data plus one zero-network unit ("zero user": the
  * first three FirstGame / GroupName 2 rows, all codes 0).
  *
- * ona::model centres with zero networks left out of the mean but shifted by
- * it, places nodes with directed_node_positions, and translates points and
- * nodes so the points' mean is at the origin.
+ * ona::model (rENA 0.4.17's model(exclude_zero_networks = TRUE)) leaves a
+ * zero-network unit at the origin: out of the centring mean, the rotation and
+ * the node fit, with a zero centroid (ena.make.set's center.align.to.origin =
+ * TRUE, as ONA 0.1.1). It places nodes with directed_node_positions and
+ * translates points and nodes so the points' mean is at the origin. The
+ * rs_zero fixture was refrozen from that rule (wasm/test/fixtures/
+ * ona-fixtures-rs.R); before, the empty unit sat at minus the mean.
  */
 import fs   from 'fs';
 import path from 'path';
