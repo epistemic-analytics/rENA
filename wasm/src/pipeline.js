@@ -144,9 +144,9 @@ export function scaleNetworks(qe, networks, nUnits, nConnections) {
  * Excludes all-zero rows from the mean calculation (zero-network exclusion).
  *
  * @param {boolean} [shiftZeroRows=false]  Also subtract the mean from all-zero
- *   rows, as rENA's center(exclude_zero_networks = TRUE) does -- the ONA
- *   convention (ona::model). By default zero-network rows stay at zero, as in
- *   rENA's ena.make.set().
+ *   rows (the rule rENA's center(exclude_zero_networks = TRUE) and ona::model
+ *   followed before rENA 0.4.17; no longer used by fit()). By default
+ *   zero-network rows stay at zero, as in rENA's ena.make.set() and model().
  * @param {boolean} [includeZeroRows=false]  Take the mean over every row,
  *   zero networks included, and shift every row by it: rENA's
  *   ena.make.set(center.align.to.origin = FALSE). Overrides shiftZeroRows.

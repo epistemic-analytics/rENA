@@ -173,10 +173,11 @@ unit's network to length 1. With `false` (= `fun_skip_sphere_norm`) every
 network is scaled by the longest network's length instead, keeping relative
 magnitudes; for ordered (ONA) models this is
 `ona::model(normalize = skip_sphere_norm)`. `centerAlignToOrigin` (default
-`true`, = `ena.make.set`'s `center.align.to.origin`) leaves zero-network units
-out of the centring mean and at the origin; with `false` the mean is taken
-over, and subtracted from, every unit. It applies to unordered models only —
-ordered models always centre as `ona::model()` does. Both work in `fit()` and
+`true`, = `ena.make.set`'s `center.align.to.origin` and rENA `model()`'s
+`exclude_zero_networks`) leaves zero-network units out of the centring mean
+and the node fit, at the origin with a zero centroid; with `false` the mean is
+taken over, and subtracted from, every unit, and every unit is fitted. It
+applies to ordered (ONA) models too, as in ONA 0.1.1. Both work in `fit()` and
 `pria()`.
 
 ```js
@@ -288,9 +289,9 @@ columns in the data.
 const model = ena.fit(rows, {
   codes, units, conversations,
   ordered: true,   // directed (n² connections); also works without a tensor.
-                   // Ordered models follow ona::model(): zero-network units are
-                   // left out of the centring mean but shifted by it, nodes use
-                   // directed positions, and points/nodes are centred on the origin.
+                   // Ordered models follow ona::model(): zero-network units stay
+                   // at the origin (centerAlignToOrigin), nodes use directed
+                   // positions, and points/nodes are centred on the origin.
                    // connectionNames / rotation.adjacencyKey list all n² directed
                    // connections as R names them: column j*n + i is
                    // "codes[i] & codes[j]", ground codes[i] → response codes[j].

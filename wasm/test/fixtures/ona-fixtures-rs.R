@@ -1,12 +1,21 @@
-# Regenerates the nodes and centroids of test/fixtures/ona-model-rs.json and
-# ona-sphere-norm-rs.json with the current rENA / ona (node optimization's
-# self_weight). Each model is rebuilt from the recipe in the test headers and
-# its units, points and variance are checked against the fixture first -- they
-# do not depend on node weighting -- so only nodes and centroids change.
-# PRIA fields are carried over (PRIA's removals do not use node positions).
+# Regenerates test/fixtures/ona-model-rs.json and ona-sphere-norm-rs.json with
+# the current rENA / ona source (this checkout's rENA and the ona checkout next
+# to it, so a fix in rENA's model() is in the fixture before it is installed).
+# Each model is rebuilt from the recipe in the test headers. For the datasets
+# without an empty network (rs, and ona-sphere-norm) the units, points and
+# variance are checked against the fixture first -- they do not depend on node
+# weighting -- so only nodes and centroids change, and PRIA fields are carried
+# over. For rs_zero (one all-zero unit, "zero user") everything is refreshed:
+# the zero-network rule of rENA 0.4.17 (the empty unit stays at the origin and
+# is left out of the centering, rotation and node fit) moves its points and
+# rotation too.
 #
-#   Rscript wasm/test/fixtures/ona-fixtures-rs.R   (from the rENA root; rENA + ona installed)
-suppressMessages({ library(rENA); library(ona); library(jsonlite) })
+#   Rscript wasm/test/fixtures/ona-fixtures-rs.R   (from the rENA root; ../ona checked out)
+suppressMessages({
+  pkgload::load_all(".", quiet = TRUE)
+  pkgload::load_all("../ona", quiet = TRUE)
+  library(jsonlite)
+})
 
 x <- read.csv("inst/extdata/rs.data.csv")
 codes <- c("Data", "Technical.Constraints", "Performance.Parameters",
@@ -33,13 +42,24 @@ same <- function(a, b, what) {
 # ona-model-rs.json
 f <- "wasm/test/fixtures/ona-model-rs.json"; fx <- fromJSON(f, simplifyVector = FALSE)
 for (dn in names(datasets)) for (rot in c("svd", "mean")) {
-  key <- paste(dn, rot, sep = "_"); set <- fit(acc_of(datasets[[dn]]), rot)
+  key <- paste(dn, rot, sep = "_"); acc <- acc_of(datasets[[dn]]); set <- fit(acc, rot)
   stopifnot(identical(units_of(set), unlist(fx[[key]]$units)))
-  same(dims12(set$points), fx[[key]]$points, paste(key, "points"))
-  if (max(abs(set$model$variance[1:2] - unlist(fx[[key]]$variance))) > 1e-9) stop(key, " variance differs")
+  if (dn == "rs_zero") {
+    stopifnot(sum(rowSums(as.matrix(set$line.weights)) == 0) == 1)
+    fx[[key]]$points   <- dims12(set$points)
+    fx[[key]]$variance <- unname(as.numeric(set$model$variance)[1:2])
+    rb <- function(a) fit(a, rot)
+    removed <- PRIA::pria(set, remove.num = 3, threshold = 0.95, rebuild = rb)
+    fx[[key]]$pria_removed  <- as.character(removed)
+    fx[[key]]$pria_variance <- unname(as.numeric(PRIA:::get_pria_scores_2Ds(set, removed, rebuild = rb)$vr1))
+    cat(key, ": points, variance, nodes, centroids and PRIA updated\n")
+  } else {
+    same(dims12(set$points), fx[[key]]$points, paste(key, "points"))
+    if (max(abs(set$model$variance[1:2] - unlist(fx[[key]]$variance))) > 1e-9) stop(key, " variance differs")
+    cat(key, ": points/variance match; nodes, centroids updated\n")
+  }
   fx[[key]]$nodes     <- dims12(set$rotation$nodes)
   fx[[key]]$centroids <- dims12(set$model$centroids)
-  cat(key, ": points/variance match; nodes, centroids updated\n")
 }
 write_json(fx, f, digits = NA, auto_unbox = TRUE)
 
