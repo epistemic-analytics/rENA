@@ -1,3 +1,5 @@
+## rENA 0.4.18 (development version)
+
 ## rENA 0.4.17
 
 Released with qe-ena 0.1.11 (tag `python/v0.1.11`) and rena-wasm 0.1.18 (`wasm/v0.1.18`). libena's C++ is unchanged since 0.4.16, so there is no libena release this cycle. ENA.jl's matching fix ships with ENA.jl 0.1.5 (tag `julia/v0.1.5`), released on its own once its ENA_jll build is available.
